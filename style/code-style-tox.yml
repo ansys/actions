@@ -1,0 +1,31 @@
+name: Code style
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Desired Python version for Tox'
+        default: '3.10'
+        required: false
+        type: string
+
+jobs:
+
+  code-style:
+    name: Run code style using Tox
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Install Git and clone project
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4.2.0
+        with:
+          python-version: ${{ input.python-version }}
+
+      - name: Install tox
+        run: python -m pip install --upgrade pip tox
+
+      - name: Run tox
+        run: tox -e style
