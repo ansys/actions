@@ -25,9 +25,10 @@ jobs:
           python-version: ${{ input.python-version }}
 
       - name: Install pre-commit
-        run: python -m pip install --upgrade pip pre-commit
+        run: |
+          python -m pip install --upgrade pip pre-commit
+          pre-commit install
 
       - name: Run pre-commit
         run: |
-            pre-commit install
             pre-commit run --all-files --show-diff-on-failure
