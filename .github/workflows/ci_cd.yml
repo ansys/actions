@@ -73,7 +73,6 @@ jobs:
     steps:
     - name: Suggest to add labels
       uses: peter-evans/create-or-update-comment@v2
-      # Execute only when no labels have been applied to the pull request
       if: toJSON(github.event.pull_request.labels.*.name) == '{}'
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -88,6 +87,7 @@ jobs:
 
   code-style:
     name: Run code style using pre-commit
+    needs: [labeler]
     runs-on: ubuntu-latest
     steps:
 
@@ -101,7 +101,7 @@ jobs:
 
       - name: Install pre-commit
         run: |
-          python -m pip install --upgrade pip pre-commitpre-commit
+          python -m pip install --upgrade pip pre-commit
           pre-commit install
 
       - name: Run pre-commit
@@ -111,9 +111,8 @@ jobs:
   release:
     name: Release
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-    needs: [style]
+    needs: [code-style]
     runs-on: ubuntu-latest
-  
     steps:
 
       - name: Install Git and clone project
