@@ -12,10 +12,10 @@ runs:
   using: "composite"
   steps:
 
-    - name: Install Git and clone project
+    - name: "Install Git and clone project"
       uses: actions/checkout@v3
 
-    - name: Run Vale
+    - name: "Run Vale"
       uses: errata-ai/vale-action@reviewdog
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
