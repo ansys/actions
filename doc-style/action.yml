@@ -1,32 +1,28 @@
-name: Doc style
+name: "Documentation style"
+description: "Check documentation style using Vale"
 
-on:
-  workflow_call:
-    inputs:
-      vale-config:
-        description: 'Path to the Vale configuration file'
-        default: 'doc/.vale.ini'
-        required: false
-        type: string
+inputs:
+  vale-config:
+    description: 'Path to the Vale configuration file'
+    default: 'doc/.vale.ini'
+    required: false
+    type: string
 
-jobs:
+runs:
+  using: "composite"
+  steps:
 
-  doc-style:
-    name: Documentation Style Check
-    runs-on: ubuntu-latest
-    steps:
+    - name: Install Git and clone project
+      uses: actions/checkout@v3
 
-      - name: Install Git and clone project
-        uses: actions/checkout@v3
-
-      - name: Run Vale
-        uses: errata-ai/vale-action@reviewdog
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: doc
-          reporter: github-pr-check
-          level: error
-          filter_mode: nofilter
-          fail_on_error: true
-          vale_flags: "--config=${{ inputs.vale-config }}"
+    - name: Run Vale
+      uses: errata-ai/vale-action@reviewdog
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: doc
+        reporter: github-pr-check
+        level: error
+        filter_mode: nofilter
+        fail_on_error: true
+        vale_flags: "--config=${{ inputs.vale-config }}"
