@@ -1,0 +1,4 @@
+maintenance:
+- .github/**/*
+- .pre-commit-config.yaml
+- VERSION
