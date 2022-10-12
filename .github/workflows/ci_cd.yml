@@ -27,7 +27,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4.2.0
         with:
-          python-version: ${{ input.python-version }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
       - name: Install pre-commit
         run: |
