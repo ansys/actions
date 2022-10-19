@@ -1,0 +1,46 @@
+name: "Documentation deploy development version"
+description: "Deploy development documentation to GitHub pages"
+
+inputs:
+  cname:
+    description: 'The canonical name of the documentation website'
+    required: true
+    type: string
+  token:
+    description: "Required token for documentation deployment"
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Checkout project in the GitHub Pages branch"
+      uses: actions/checkout@v3
+
+    - name: "Download the HTML documentation artifact"
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation-html
+        path: documentation-html
+
+    - name: "Display structure of downloaded files"
+      shell: bash
+      run: |
+        ls -R
+  
+    - name: "Include CNAME and nojekyll files expected by GitHub pages"
+      shell: bash
+      run: |
+        touch documentation-html/CNAME documentation-html/.nojekyll
+        echo ${{ inputs.cname }} > documentation-html/CNAME
+
+    - name: "Deploy devevelopment documentation"
+      uses: JamesIves/github-pages-deploy-action@v4.4.0                       
+      with:                                                                   
+        token: ${{ inputs.token }}                                    
+        branch: gh-pages                                                      
+        folder: documentation-html
+        clean: true                                                           
+        clean-exclude: release                                                
+        single-commit: true 

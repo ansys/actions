@@ -77,18 +77,18 @@ runs:
       run: python -m pip install .[doc]
     
     - name: "Build HTML and JSON documentation"
-      if: inputs.requies_xvfb == false
+      if: inputs.requies_xvfb
       shell: bash
       run: |
-        xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run make -C json html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
 
     - name: "Build HTML and JSON documentation using xvfb"
-      if: inputs.requies_xvfb == true
+      if: inputs.requies_xvfb
       shell: bash
       run: |
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run make -C json html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
 
     - name: "Upload HTML documentation artifact"
       uses: actions/upload-artifact@v3
