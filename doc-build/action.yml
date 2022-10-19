@@ -76,22 +76,30 @@ runs:
       shell: bash
       run: python -m pip install .[doc]
     
-    - name: "Build HTML documentation"
+    - name: "Build HTML and JSON documentation"
+      if: inputs.requies_xvfb == false
       shell: bash
       run: |
-          if [ ${{ inputs.requies_xvfb }} ];
-          then
-            xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-          else
-            make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-          fi  
+        xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        xvfb-run make -C json html SPHINXOPTS="${{ inputs.sphinxopts }}"
 
-    - name: "Build JSON documentation"
+    - name: "Build HTML and JSON documentation using xvfb"
+      if: inputs.requies_xvfb == true
       shell: bash
       run: |
-          if [ ${{ inputs.requies_xvfb }} ];
-          then
-            xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
-          else
-            make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
-          fi  
+        xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        xvfb-run make -C json html SPHINXOPTS="${{ inputs.sphinxopts }}"
+
+    - name: "Upload HTML documentation artifact"
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation-html
+        path: doc/_build/html
+        retention-days: 7
+
+    - name: "Upload JSON documentation artifact"
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation-json
+        path: doc/_build/json
+        retention-days: 7
