@@ -1,0 +1,97 @@
+name: "Documentation build"
+description: "Build library documentation using Sphinx"
+
+inputs:
+  python-version:
+    description: 'Desired Python version for pre-commit'
+    default: '3.10'
+    required: false
+    type: string
+  sphinxopts:
+    description: 'Desired set of options to be passed to Sphinx builder'
+    default: '-j auto -W --keep-going'
+    required: false
+    type: string
+  dependencies:
+    description: 'System dependencies required for building the documentation'
+    default: ''
+    required: false
+    type: string
+  requies_xvfb:
+      description: 'Whether to use X Virtual Frame Buffer for rendering the docs'
+      default: false
+      required: false
+      type: boolean
+
+runs:
+  using: "composite"
+  steps:
+  
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v3
+  
+    - name: "Setup Python"
+      uses: actions/setup-python@v4.2.0
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: "Update pip"
+      shell: bash
+      run: python -m pip install -U pip
+  
+    - name: "Install system dependencies"
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install ${{ inputs.dependencies }}
+
+    - name: "Install X Virtual Frame Buffer"
+      shell: bash
+      if: inputs.requies_xvfb
+      run: |
+        sudo apt-get install xvfb
+
+    - name: "Install Python library"
+      shell: bash
+      run:
+        python -m pip install .
+
+    - name: "Check if requirements.txt file exists"
+      shell: bash
+      run: |
+        echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f requirements/requirements_doc.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+
+    - name: "Print previous output"
+      shell: bash
+      run:
+        echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
+
+    - name: "Install documentation dependencies from requirements file"
+      if: env.EXISTS_DOC_REQUIREMENTS == 'true'
+      shell: bash
+      run: python -m pip install -r requirements/requirements_doc.txt
+
+    - name: "Install documentation dependencies from pyproject.toml"
+      if: env.EXISTS_DOC_REQUIREMENTS == 'false'
+      shell: bash
+      run: python -m pip install .[doc]
+    
+    - name: "Build HTML documentation"
+      shell: bash
+      run: |
+          if [ ${{ inputs.requies_xvfb }} ];
+          then
+            xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+          else
+            make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+          fi  
+
+    - name: "Build JSON documentation"
+      shell: bash
+      run: |
+          if [ ${{ inputs.requies_xvfb }} ];
+          then
+            xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+          else
+            make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+          fi  
