@@ -30,16 +30,16 @@ runs:
   using: "composite"
   steps:
   
-     - name: "Set up Python"
-       uses: actions/setup-python@v4
-       with:
-         python-version: ${{ env.MAIN_PYTHON_VERSION }}
+    - name: "Set up Python"
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
-     - name: "Install required dependencies"
-       shell: bash
-       run: |
-         python -m pip install --upgrade pip
-         python -m pip install twine
+    - name: "Install required dependencies"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install twine
 
     - name: "Download the library artifacts from build-library step"
       uses: actions/download-artifact@v3
@@ -48,9 +48,11 @@ runs:
         path: ${{ inputs.library-name }}-artifacts
 
     - name: "Display the structure of downloaded files"
+      shell: bash
       run: ls -R
 
     - name: "Upload artifacts to private PyPi"
+      shell: bash
       run: |
         python -m twine upload --skip-existing ${{ inputs.library-name }}-artifacts/**/*.whl
         python -m twine upload --skip-existing ${{ inputs.library-name }}-artifacts/**/*.tar.gz
