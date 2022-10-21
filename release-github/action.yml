@@ -1,0 +1,29 @@
+name: "Release to GitHub"
+description: "Release library artifacts to GitHub release page"
+
+inputs:
+  library-name:
+    description: 'Name of the Python library'
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+  
+    - name: "Download the library artifacts from build-library step"
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.library-name }}-artifacts
+        path: ${{ inputs.library-name }}-artifacts
+
+    - name: "Display the structure of downloaded files"
+      shell: bash
+      run: ls -R
+
+    - name: "Release to GitHub"
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ${{ inputs.library-name }}/**/*.whl
+          ${{ inputs.library-name }}/**/*.tar.gz
