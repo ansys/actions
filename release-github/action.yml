@@ -23,6 +23,12 @@ runs:
         name: documentation-html
         path: documentation-html
 
+    - name: "Download {{ inputs.library-name }} PDF documentation"
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation-pdf
+        path: documentation-pdf
+
     - name: "Display the structure of downloaded files"
       shell: bash
       run: ls -R
@@ -34,3 +40,4 @@ runs:
           ${{ inputs.library-name }}/**/*.whl
           ${{ inputs.library-name }}/**/*.tar.gz
           ${{ inputs.library-name }}/**/*.zip
+          ${{ inputs.library-name }}/**/*.pdf
