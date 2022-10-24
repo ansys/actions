@@ -1,5 +1,9 @@
 .. include:: ../../README.rst
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :hidden:
+   :maxdepth: 3
+
+   style-actions/index
+   doc-actions/index
+   release-actions/index
