@@ -29,7 +29,7 @@ runs:
       run: |
         echo "EXISTS_BUILD_REQUIREMENTS=$(if [ -f requirements/requirements_build.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
-    - name: "Install documentation dependencies from requirements file"
+    - name: "Install build dependencies from requirements file"
       if: env.EXISTS_BUILD_REQUIREMENTS == 'true'
       shell: bash
       run: |
