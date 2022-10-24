@@ -11,7 +11,67 @@ PyAnsys Actions
    :alt: MIT
 
 A repository containing a collection of `GitHub Workflows`_ to be reused by
-projects in the `PyAnsys` ecosystem.
+projects in the PyAnsys ecosystem.
+
+
+Available actions
+-----------------
+This section collects all the available actions. If you encounter any issues
+when reusing those in your project, please `open an issue
+<https://github.com/pyansys/actions/issues>`_. 
+
+Code style action
+^^^^^^^^^^^^^^^^^
+This action evaluates the code quality of your project by using `pre-commit
+<https://pre-commit.com/>`_. It is assumed that your project contains a
+``.pre-comit-config.yaml`` file in the base root directory.
+
++-----------------+----------------------------------------+-----------+---------+----------+
+| Input           | Description                            | Required  | Type    | Default  |
++=================+========================================+===========+=========+==========+
+| python-version  | Desired Python version for pre-commit  | False     | string  | '3.10'   |
++-----------------+----------------------------------------+-----------+---------+----------+
+
+Code sample for using this action:
+
+.. code-block:: yaml
+
+    code-style:
+      name: Code style
+      runs-on: ubuntu-latest
+      steps:
+        - name: "Run PyAnsys code style checks"
+          uses: pyansys/actions/code-style@main
+
+
+Doc style action
+^^^^^^^^^^^^^^^^
+This action evaluates the documentation quality of your project by using `Vale
+<https://vale.sh/>`_. It is assumed that your project contains a
+``.pre-comit-config.yaml`` file in the base root directory. A token is expected
+as input for Vale to indicate quality errors by making comments. This token can
+be the ``${{ secrets.GITHUB_TOKEN }}`` one.
+
+
++--------------+--------------------------------------+-----------+---------+------------------+
+| Input        | Description                          | Required  | Type    | Default          |
++==============+======================================+===========+=========+==================+
+| vale-config  | Path to the Vale configuration file  | False     | string  | 'doc/.vale.ini'  |
+| token        | Required token for Vale commenter    | True      |         |                  |
++--------------+--------------------------------------+-----------+---------+------------------+
+
+Code sample for using this action:
+
+.. code-block:: yaml
+
+    doc-style:
+      name: Doc style
+      runs-on: ubuntu-latest
+      steps:
+        - name: "Run Ansys documentation style checks"
+          uses: pyansys/actions/doc-style@main
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
 
 
 .. LINKS AND REFERENCES
