@@ -10,8 +10,7 @@ to implement these tools, please contact `pyansys.support@ansys.com
 
 Code style action
 -----------------
-This action evaluates the code quality of your project by using `pre-commit
-<https://pre-commit.com/>`_. It is assumed that your project contains a
+This action evaluates the code quality of your project by using `pre-commit`_. It is assumed that your project contains a
 ``.pre-comit-config.yaml`` file in the base root directory.
 
 +-----------------+----------------------------------------+-----------+---------+----------+
@@ -34,10 +33,11 @@ Code sample for using this action:
 
 Doc style action
 ----------------
-This action evaluates the documentation quality of your project by using Vale.
-It assumes that Vale's configuration file is stored in ``doc/.vale.ini``. A
-token is expected as input for Vale to indicate quality errors by making
-comments. This token can be the ``${{ secrets.GITHUB_TOKEN }}`` one.
+This action evaluates the documentation quality of your project by using
+`Vale`_. It assumes that Vale's configuration file is stored in
+``doc/.vale.ini``. A token is expected as input for Vale to indicate quality
+errors by making comments. This token can be the ``${{ secrets.GITHUB_TOKEN }}``
+one.
 
 +--------------+--------------------------------------+-----------+---------+------------------+
 | Input        | Description                          | Required  | Type    | Default          |

@@ -22,7 +22,7 @@ html_theme = "ansys_sphinx_theme"
 
 # specify the location of your github repo
 html_theme_options = {
-    "github_url": "https://github.com/pyansys/pyansys-template",
+    "github_url": "https://github.com/pyansys/actions",
     "show_prev_next": False,
     "switcher": {
         "json_url": "https://raw.githubusercontent.com/pyansys/actions/gh-pages/release/version_mapper.json",
