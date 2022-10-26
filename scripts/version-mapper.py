@@ -36,14 +36,21 @@ def parse_cli_arguments():
     parser = argparse.ArgumentParser(description="Switcher JSON file updater.")
     parser.add_argument("-cname", type=str, help="URL of website.")
     parser.add_argument("-version", type=str, help="New version to be added.")
-    parser.add_argument("-filename", type=str, default="version_mapper.json", help="Name of the JSON file.")
+    parser.add_argument(
+        "-filename",
+        type=str,
+        default="version_mapper.json",
+        help="Name of the JSON file.",
+    )
     args = parser.parse_args()
     return args
+
 
 def main():
     """Entry function of the script."""
     args = parse_cli_arguments()
     add_version_to_switcher_file(args.cname, args.version, args.filename)
+
 
 if __name__ == "__main__":
     main()
