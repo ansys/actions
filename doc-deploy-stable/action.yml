@@ -68,10 +68,11 @@ runs:
       run: | 
         python version-mapper.py -cname ${{ inputs.cname }} -version ${{ github.ref_name }} -filename ${{ inputs.version-config }}
 
-    - name: "Deploy stable documentation"
-      uses: JamesIves/github-pages-deploy-action@v4.4.0                       
-      with:                                                                   
-        token: ${{ inputs.token }}                                    
-        branch: gh-pages                                                      
-        clean: false
-        single-commit: true 
+    - name: "Commit new changes"
+      shell: bash
+      run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add release/
+          git commit -m "DOC: add documentation for ${{ github.ref_name }}"
+          git push
