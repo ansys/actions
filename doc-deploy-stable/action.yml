@@ -6,6 +6,11 @@ inputs:
     description: 'The canonical name of the documentation website'
     required: true
     type: string
+  version-config:
+    description: 'Path to the JSON file specifying version configuration'
+    default: 'release/version_mapper.json'
+    required: false
+    type: string
   token:
     description: "Required token for documentation deployment"
     required: true
@@ -57,7 +62,7 @@ runs:
     - name: "Update the version JSON file"
       shell: bash
       run: | 
-        python version-mapper.py -base-url ${{ inputs.cname }} -version ${{ github.ref_name }}
+        python version-mapper.py -base-url ${{ inputs.cname }} -version ${{ github.ref_name }} -filename ${{ inputs.version-config }}
 
     - name: "Deploy stable documentation"
       uses: JamesIves/github-pages-deploy-action@v4.4.0                       
