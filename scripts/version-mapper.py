@@ -4,7 +4,7 @@ import argparse
 import json
 
 
-def add_version_to_switcher_file(version, base_url, filename="switcher.json"):
+def add_version_to_switcher_file(version, base_url, filename="version_mapper.json"):
     """Add new version number and associated URL to JSON file.
 
     Parameters
