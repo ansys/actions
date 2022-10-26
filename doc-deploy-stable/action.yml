@@ -28,7 +28,11 @@ runs:
     - name: "Checkout project in the GitHub Pages branch"
       uses: actions/checkout@v3
       with:
-        ref: gh-pages
+        ref: 'gh-pages'
+
+    - name: "List gh-pages content"
+      shell: bash
+      run: ls -R
 
     - name: "Prepare destination folder"
       shell: bash
