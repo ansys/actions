@@ -72,6 +72,8 @@ runs:
       uses: JamesIves/github-pages-deploy-action@v4.4.0                       
       with:                                                                   
         token: ${{ inputs.token }}                                    
+        folder: release
+        target-folder: release
         branch: gh-pages                                                      
         clean: false
         single-commit: true 
