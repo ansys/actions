@@ -66,7 +66,7 @@ runs:
     - name: "Update the version JSON file"
       shell: bash
       run: | 
-        python version-mapper.py -base-url ${{ inputs.cname }} -version ${{ github.ref_name }} -filename ${{ inputs.version-config }}
+        python version-mapper.py -cname ${{ inputs.cname }} -version ${{ github.ref_name }} -filename ${{ inputs.version-config }}
 
     - name: "Deploy stable documentation"
       uses: JamesIves/github-pages-deploy-action@v4.4.0                       
