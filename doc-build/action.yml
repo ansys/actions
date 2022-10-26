@@ -82,7 +82,7 @@ runs:
       run: python -m pip install .[doc]
     
     - name: "Build HTML, PDF, and JSON documentation"
-      if: inputs.requires-xvfb == false
+      if: ${{ inputs.requires-xvfb == false }}
       shell: bash
       run: |
         make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
@@ -90,7 +90,7 @@ runs:
         make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
 
     - name: "Build HTML and JSON documentation using xvfb"
-      if: inputs.requires-xvfb == true
+      if: ${{ inputs.requires-xvfb == true }}
       shell: bash
       run: |
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
