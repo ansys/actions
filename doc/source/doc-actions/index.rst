@@ -21,17 +21,9 @@ artifacts:
 * ``documentation-pdf``: file-based documentation to be used in off-line tasks.
 * ``documetation-json``: documentation to be consumed by Ansys developer's portal.
 
-+-----------------+--------------------------------------------------------------+-----------+---------+----------------------------+
-| Input           | Description                                                  | Required  | Type    | Default                    |
-+=================+==============================================================+===========+=========+============================+
-| python-version  | Desired Python version for Sphinx                            | false     | string  | '3.10'                     |
-+-----------------+--------------------------------------------------------------+-----------+---------+----------------------------+
-| sphinxopts      | Desired set of options to be passed to Sphinx builder        | false     | string  | '-j auto -W --keep-going'  |
-+-----------------+--------------------------------------------------------------+-----------+---------+----------------------------+
-| dependencies    | System dependencies required for building the documentation  | false     | string  | ''                         |
-+-----------------+--------------------------------------------------------------+-----------+---------+----------------------------+
-| requires-xvfb   | Whether to use X Virtual Frame Buffer for rendering the docs | false     | boolean | false                      |
-+-----------------+--------------------------------------------------------------+-----------+---------+----------------------------+
+.. jinja:: doc-build
+
+    {{ inputs_table }}
 
 Code sample for using this action:
 

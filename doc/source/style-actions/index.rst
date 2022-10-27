@@ -13,11 +13,9 @@ Code style action
 This action evaluates the code quality of your project by using `pre-commit`_. It is assumed that your project contains a
 ``.pre-comit-config.yaml`` file in the base root directory.
 
-+-----------------+----------------------------------------+-----------+---------+----------+
-| Input           | Description                            | Required  | Type    | Default  |
-+=================+========================================+===========+=========+==========+
-| python-version  | Desired Python version for pre-commit  | False     | string  | '3.10'   |
-+-----------------+----------------------------------------+-----------+---------+----------+
+.. jinja:: code-style
+
+    {{ inputs_table }}
 
 Code sample for using this action:
 
