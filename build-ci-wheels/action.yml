@@ -22,7 +22,7 @@ inputs:
     default: " auto "
     required: false
     type: string
-  requires-PyPy:
+  requires-pypy:
       description: 'Whether requires build wheel for PyPy'
       default: false
       required: false
@@ -42,7 +42,7 @@ runs:
         platforms: arm64
 
     - name: Build wheels for CPython ${{ inputs.python-version }}
-      if: ${{ inputs.cibw_build}} != 'cp38-*' ${{ inputs.requires-PyPy == 'false' }}
+      if: ${{ inputs.cibw_build  != 'cp38-*'}} && ${{ inputs.requires-pypy }} == 'false' 
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: ${{ inputs.cibw_build }}
@@ -52,7 +52,7 @@ runs:
         CIBW_ARCHS: ${{ inputs.cibw_archs }}
 
     - name: Build wheels for CPython 3.8
-      if: ${{ inputs.cibw_build}} == 'cp38-*' ${{ inputs.requires-PyPy == 'false' }}
+      if: ${{ inputs.cibw_build == 'cp38-*' }} && ${{ inputs.requires-pypy }} == 'false'
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: ${{ inputs.cibw_build }}
@@ -62,7 +62,7 @@ runs:
         CIBW_ARCHS: ${{ inputs.cibw_archs }}
 
     - name: Build wheels for PyPy
-      if: ${{ inputs.requires-PyPy == 'True' }} && ${{ inputs.cibw_archs }} != 'aarch64'
+      if: ${{ inputs.requires-pypy }} == 'True' && ${{ inputs.cibw_archs != 'aarch64' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: "pp38-* pp39-*"
