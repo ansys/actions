@@ -8,17 +8,17 @@ inputs:
     required: false
     type: string
   sphinxopts:
-    description: 'Desired set of options to be passed to Sphinx builder'
+    description: 'Set of options to be passed to Sphinx builder'
     default: '-j auto -W --keep-going'
     required: false
     type: string
   dependencies:
-    description: 'System dependencies required for building the documentation'
+    description: 'Set of system dependencies'
     default: ''
     required: false
     type: string
   requires-xvfb:
-      description: 'Whether to use X Virtual Frame Buffer for rendering the docs'
+      description: 'Requires the usage of X Virtual Frame Buffer'
       default: false
       required: false
       type: boolean

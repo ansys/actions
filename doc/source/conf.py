@@ -38,6 +38,7 @@ html_theme_options = {
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.autosectionlabel",
     "sphinx_copybutton",
     "sphinx_jinja",
 ]
@@ -54,14 +55,17 @@ source_suffix = ".rst"
 # The master toctree document.
 master_doc = "index"
 
+# Generate section labels up to four levels
+autosectionlabel_maxdepth = 4
+
 
 def action_file_inputs_to_rst_table(action_name):
     """Read and convert input variables of a GitHub YAML action file into RST table.
 
     Parameters
     ----------
-    action_file : ~pathlib.Path
-        A path object pointing to the desired YAML file.
+    action_file : str
+        The name of the action file.
 
     Returns
     -------
@@ -89,6 +93,7 @@ def action_file_inputs_to_rst_table(action_name):
 # Generate documentation for the action inputs in a dynamic way
 ACTIONS_NAMES = [
     "code-style",
+    "build-library",
     "doc-style",
     "doc-build",
     "doc-deploy-dev",
