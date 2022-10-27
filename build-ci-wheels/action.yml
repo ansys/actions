@@ -1,0 +1,77 @@
+name: "Build a c-extension Python library"
+description: "Build a c-extension Python library by generating manylinux wheels"
+
+inputs:
+  CPython:
+    description: 'Desired CPython version'
+    default: '3.10'
+    required: false
+    type: string
+  cibw_build:
+    description: 'Desired build wheel cpython version'
+    default: "cp310-*"
+    required: false
+    type: string
+  cibw_skip:
+    description: 'Desired build wheel for skipping'
+    default: "*-musllinux* "
+    required: false
+    type: string
+  cibw_archs:
+    description: 'Desired build arhitecture'
+    default: " auto "
+    required: false
+    type: string
+  requires-PyPy:
+      description: 'Whether requires build wheel for PyPy'
+      default: false
+      required: false
+      type: boolean
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v3
+   
+    - name: Set up QEMU
+      if: ${{ inputs.cibw_archs }} == 'aarch64'
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: arm64
+
+    - name: Build wheels for CPython ${{ inputs.python-version }}
+      if: ${{ inputs.cibw_build}} != 'cp38-*' ${{ inputs.requires-PyPy == 'false' }}
+      uses: pypa/cibuildwheel@v2.11.1
+      env:
+        CIBW_BUILD: ${{ inputs.cibw_build }}
+        CIBW_SKIP: ${{ inputs.cibw_skip }}
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+        CIBW_MANYLINUX_I686_IMAGE: manylinux2014
+        CIBW_ARCHS: ${{ inputs.cibw_archs }}
+
+    - name: Build wheels for CPython 3.8
+      if: ${{ inputs.cibw_build}} == 'cp38-*' ${{ inputs.requires-PyPy == 'false' }}
+      uses: pypa/cibuildwheel@v2.11.1
+      env:
+        CIBW_BUILD: ${{ inputs.cibw_build }}
+        CIBW_SKIP: ${{ inputs.cibw_skip }}
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+        CIBW_MANYLINUX_I686_IMAGE: manylinux2010
+        CIBW_ARCHS: ${{ inputs.cibw_archs }}
+
+    - name: Build wheels for PyPy
+      if: ${{ inputs.requires-PyPy == 'True' }} && ${{ inputs.cibw_archs }} != 'aarch64'
+      uses: pypa/cibuildwheel@v2.11.1
+      env:
+        CIBW_BUILD: "pp38-* pp39-*"
+        CIBW_SKIP: ${{ inputs.cibw_skip }}
+        CIBW_ARCHS: ${{ matrix.cibw_archs }}
+
+    - name: Upload wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: ./wheelhouse/*.whl
+        retention-days: 7
