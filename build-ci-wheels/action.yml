@@ -2,22 +2,22 @@ name: "Build a c-extension Python library"
 description: "Build a c-extension Python library by generating manylinux wheels"
 
 inputs:
-  CPython:
+  cpython-version:
     description: 'Desired CPython version'
     default: '3.10'
     required: false
     type: string
-  cibw_build:
-    description: 'Desired build wheel cpython version'
+  cibw-build:
+    description: 'Desired build wheel CPython version'
     default: "cp310-*"
     required: false
     type: string
-  cibw_skip:
+  cibw-skip:
     description: 'Desired build wheel for skipping'
     default: "*-musllinux* "
     required: false
     type: string
-  cibw_archs:
+  cibw-archs:
     description: 'Desired build arhitecture'
     default: " auto "
     required: false
@@ -36,38 +36,38 @@ runs:
       uses: actions/checkout@v3
    
     - name: Set up QEMU
-      if: ${{ inputs.cibw_archs }} == 'aarch64'
+      if: ${{ inputs.cibw-archs }} == 'aarch64'
       uses: docker/setup-qemu-action@v2
       with:
         platforms: arm64
 
-    - name: Build wheels for CPython ${{ inputs.python-version }}
-      if: ${{ inputs.cibw_build  != 'cp38-*'}} && ${{ inputs.requires-pypy }} == 'false' 
+    - name: Build wheels for CPython ${{ inputs.cpython-version }}
+      if: ${{ inputs.cibw-build  != 'cp38-*'}} && ${{ inputs.requires-pypy == 'false' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
-        CIBW_BUILD: ${{ inputs.cibw_build }}
-        CIBW_SKIP: ${{ inputs.cibw_skip }}
+        CIBW_BUILD: ${{ inputs.cibw-build }}
+        CIBW_SKIP: ${{ inputs.cibw-skip }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_MANYLINUX_I686_IMAGE: manylinux2014
-        CIBW_ARCHS: ${{ inputs.cibw_archs }}
+        CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: Build wheels for CPython 3.8
-      if: ${{ inputs.cibw_build == 'cp38-*' }} && ${{ inputs.requires-pypy }} == 'false'
+      if: ${{ inputs.cibw-build == 'cp38-*' }} && ${{ inputs.requires-pypy == 'false' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
-        CIBW_BUILD: ${{ inputs.cibw_build }}
-        CIBW_SKIP: ${{ inputs.cibw_skip }}
+        CIBW_BUILD: ${{ inputs.cibw-build }}
+        CIBW_SKIP: ${{ inputs.cibw-skip }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_MANYLINUX_I686_IMAGE: manylinux2010
-        CIBW_ARCHS: ${{ inputs.cibw_archs }}
+        CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: Build wheels for PyPy
-      if: ${{ inputs.requires-pypy }} == 'True' && ${{ inputs.cibw_archs != 'aarch64' }}
+      if: ${{ inputs.requires-pypy == 'True' }} && ${{ inputs.cibw-archs != 'aarch64' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: "pp38-* pp39-*"
-        CIBW_SKIP: ${{ inputs.cibw_skip }}
-        CIBW_ARCHS: ${{ matrix.cibw_archs }}
+        CIBW_SKIP: ${{ inputs.cibw-skip }}
+        CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: Upload wheel
       uses: actions/upload-artifact@v3
