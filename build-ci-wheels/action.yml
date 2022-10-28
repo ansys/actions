@@ -34,6 +34,11 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
+    
+    - name: Setup Python ${{ inputs.cpython-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ inputs.cpython-version }}
    
     - name: Set up QEMU
       if: ${{ inputs.cibw-archs }} == 'aarch64'
