@@ -1,5 +1,5 @@
-name: "Build a C-extension Python library"
-description: "Build a C-extension Python library by generating manylinux wheels"
+name: "Build wheels for a C-extension Python library"
+description: "Build wheels for a C-extension Python library"
 
 inputs:
   cpython-version:
@@ -19,7 +19,7 @@ inputs:
     type: string
   cibw-archs:
     description: 'Desired build arhitecture'
-    default: " auto "
+    default: "auto"
     required: false
     type: string
   requires-pypy:
@@ -62,7 +62,7 @@ runs:
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: Build wheels for PyPy
-      if: ${{ inputs.requires-pypy == 'True' }} && ${{ inputs.cibw-archs != 'aarch64' }}
+      if: ${{ inputs.requires-pypy == 'true' }} && ${{ inputs.cibw-archs != 'aarch64' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: "pp38-* pp39-*"
