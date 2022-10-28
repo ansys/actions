@@ -1,5 +1,5 @@
-name: "Build a c-extension Python library"
-description: "Build a c-extension Python library by generating manylinux wheels"
+name: "Build a C-extension Python library"
+description: "Build a C-extension Python library by generating manylinux wheels"
 
 inputs:
   cpython-version:
