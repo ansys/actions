@@ -35,10 +35,10 @@ runs:
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
     
-    - name: Setup Python ${{ inputs.cpython-version }}
-      uses: actions/setup-python@v4
+    - name: Setup Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v2
       with:
-        python-version: ${{ inputs.cpython-version }}
+        python-version: ${{ inputs.python-version }}
    
     - name: Set up QEMU
       if: ${{ inputs.cibw-archs }} == 'aarch64'
@@ -46,7 +46,7 @@ runs:
       with:
         platforms: arm64
 
-    - name: Build wheels for CPython ${{ inputs.cpython-version }}
+    - name: Build wheels for CPython ${{ inputs.python-version }}
       if: ${{ inputs.cibw-build  != 'cp38-*'}} && ${{ inputs.requires-pypy == 'false' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
