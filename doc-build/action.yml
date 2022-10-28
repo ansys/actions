@@ -3,7 +3,7 @@ description: "Build library documentation using Sphinx"
 
 inputs:
   python-version:
-    description: 'Desired Python version for pre-commit'
+    description: 'Desired Python version for sphinx-build'
     default: '3.10'
     required: false
     type: string
