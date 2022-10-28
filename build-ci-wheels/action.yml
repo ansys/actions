@@ -2,8 +2,8 @@ name: "Build wheels for a C-extension Python library"
 description: "Build wheels for a C-extension Python library"
 
 inputs:
-  cpython-version:
-    description: 'Desired CPython version'
+  python-version:
+    description: 'Desired Python version'
     default: '3.10'
     required: false
     type: string
