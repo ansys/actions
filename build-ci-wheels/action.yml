@@ -41,7 +41,7 @@ runs:
         python-version: ${{ inputs.python-version }}
    
     - name: Set up QEMU
-      if: ${{ inputs.cibw-archs }} == 'aarch64'
+      if: ${{ inputs.cibw-archs == 'aarch64' }}
       uses: docker/setup-qemu-action@v2
       with:
         platforms: arm64
