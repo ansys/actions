@@ -57,7 +57,7 @@ runs:
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: Build wheels for CPython 3.8
-      if: ${{ inputs.cibw-build == 'cp38-*' }} && ${{ inputs.requires-pypy == 'false' }}
+      if: ${{ inputs.cibw-build == 'cp38-*' }} && ${{ inputs.requires-pypi == 'false' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
