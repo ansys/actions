@@ -16,13 +16,34 @@ This action allows for building source and wheel artifacts for a Python library.
 
 Code sample for using this action:
 
-.. code-sample:: yaml
+.. code-block:: yaml
 
-    code-style:
-  name: Code style
-  runs-on: ubuntu-latest
-  steps:
-    - name: "Run PyAnsys code style checks"
-      uses: pyansys/actions/build-library@main
-      with:
-        library-name: "ansys-<product>-<library"
+    build-library:
+      name: Build library
+      runs-on: ubuntu-latest
+      steps:
+        - name: "Build library source and wheel artifacts"
+          uses: pyansys/actions/build-library@main
+          with:
+            library-name: "ansys-<product>-<library"
+
+
+Build C-extension library action
+--------------------------------
+This action allows for building wheel artifacts for a Python library using
+a C-extension.
+
+.. jinja:: build-ci-wheels
+
+    {{ inputs_table }}
+
+
+.. code-block:: yaml
+
+    build-c-extension:
+      name: Build a C-extension library
+      runs-on: ubuntu-latest
+      steps:
+        - name: "Build a C-extension library wheel artifacts"
+          uses: pyansys/actions/build-ci-library@main
+

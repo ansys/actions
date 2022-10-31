@@ -94,6 +94,7 @@ def action_file_inputs_to_rst_table(action_name):
 ACTIONS_NAMES = [
     "code-style",
     "build-library",
+    "build-ci-wheels",
     "doc-style",
     "doc-build",
     "doc-deploy-dev",
