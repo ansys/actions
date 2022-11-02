@@ -37,15 +37,24 @@ runs:
     - name: "Prepare destination folder"
       shell: bash
       run: |
-        folder=release/${{ github.ref_name }}
+        # Remove the 'v' at the beginning of the tag
+        version=$(${{ github.ref_name }}##*v)
+        # Filter out the major and minor version numbers
+        major=$(echo $version | cut -d. -f1)
+        minor=$(echo $version | cut -d. -f2)
+        folder=release/$major.$minor
+        # Create a new folder for the version (remove existing one if required)
         if [[ -d $folder ]]; then rm -rf $folder; fi 
         mkdir -p $folder
+        # Output the version
+        echo "VERSION=$major.$minor" >> $GITHUB_ENV
+
 
     - name: "Download the HTML documentation artifact in release/${{ github.ref_name }}"
       uses: actions/download-artifact@v3
       with:
         name: documentation-html
-        path: release/${{ github.ref_name }}
+        path: release/${{ env.VERSION }}
   
     - name: "Setup Python ${{ inputs.python-version }}"
       uses: actions/setup-python@v4
@@ -66,7 +75,7 @@ runs:
     - name: "Update the version JSON file"
       shell: bash
       run: | 
-        python version-mapper.py -cname ${{ inputs.cname }} -version ${{ github.ref_name }} -filename ${{ inputs.version-config }}
+        python version-mapper.py -cname ${{ inputs.cname }} -version ${{ env.VERSION }} -filename ${{ inputs.version-config }}
 
     - name: "Commit new changes"
       shell: bash
