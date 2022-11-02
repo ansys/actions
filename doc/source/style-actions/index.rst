@@ -11,7 +11,7 @@ to implement these tools, please contact `pyansys.support@ansys.com
 Code style action
 -----------------
 This action evaluates the code quality of your project by using `pre-commit`_. It is assumed that your project contains a
-``.pre-comit-config.yaml`` file in the base root directory.
+``.pre-commit-config.yaml`` file in the root directory.
 
 .. jinja:: code-style
 

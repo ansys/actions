@@ -3,7 +3,7 @@
 import pathlib
 
 import yaml
-from ansys_sphinx_theme import ansys_logo_black
+from ansys_sphinx_theme import ansys_favicon, ansys_logo_black
 from tabulate import tabulate as Table
 
 # Project information
@@ -21,6 +21,7 @@ release = version = __version__
 # use the default pyansys logo
 html_logo = ansys_logo_black
 html_theme = "ansys_sphinx_theme"
+html_favicon = ansys_favicon
 
 # specify the location of your github repo
 version_mapper = "https://raw.githubusercontent.com/pyansys/actions/gh-pages/release/version_mapper.json"

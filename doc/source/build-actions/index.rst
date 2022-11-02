@@ -31,7 +31,7 @@ Code sample for using this action:
 Build C-extension library action
 --------------------------------
 This action allows for building wheel artifacts for a Python library using
-a C-extension.
+C-extension.
 
 .. jinja:: build-ci-wheels
 
@@ -42,7 +42,10 @@ a C-extension.
 
     build-c-extension:
       name: Build a C-extension library
-      runs-on: ubuntu-latest
+      runs-on: ${{ matrix.os }}
+      strategy:
+         matrix:
+             os: [ubuntu-latest, windows-latest, macos-11]
       steps:
         - name: "Build a C-extension library wheel artifacts"
           uses: pyansys/actions/build-ci-library@main
