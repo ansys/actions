@@ -9,12 +9,12 @@ inputs:
     type: string
   cibw-build:
     description: 'Desired build wheel CPython version'
-    default: "cp310-*"
+    default: 'cp310-*'
     required: false
     type: string
   cibw-skip:
     description: 'Desired build wheel for skipping'
-    default: "*-musllinux* "
+    default: "*-musllinux*"
     required: false
     type: string
   cibw-archs:
@@ -32,7 +32,7 @@ runs:
   using: "composite"
   steps:
 
-    - name: "Install Git and clone repository"
+    - name: "Install Git and clone project"
       uses: actions/checkout@v3
     
     - name: Setup Python ${{ inputs.python-version }}
@@ -41,13 +41,13 @@ runs:
         python-version: ${{ inputs.python-version }}
    
     - name: Set up QEMU
-      if: ${{ inputs.cibw-archs == 'aarch64' }}
+      if: ${{ inputs.cibw-archs }} == 'aarch64'
       uses: docker/setup-qemu-action@v2
       with:
         platforms: arm64
 
     - name: Build wheels for CPython ${{ inputs.python-version }}
-      if: ${{ inputs.cibw-build  != 'cp38-*'}} && ${{ inputs.requires-pypy == 'false' }}
+      if: ${{ inputs.cibw-build  != 'cp38-*' && inputs.requires-pypy == 'false' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
@@ -57,7 +57,7 @@ runs:
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: Build wheels for CPython 3.8
-      if: ${{ inputs.cibw-build == 'cp38-*' }} && ${{ inputs.requires-pypi == 'false' }}
+      if: ${{ inputs.cibw-build == 'cp38-*' && inputs.requires-pypy == 'false' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
@@ -67,7 +67,7 @@ runs:
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: Build wheels for PyPy
-      if: ${{ inputs.requires-pypy == 'true' }} && ${{ inputs.cibw-archs != 'aarch64' }}
+      if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
       uses: pypa/cibuildwheel@v2.11.1
       env:
         CIBW_BUILD: "pp38-* pp39-*"
