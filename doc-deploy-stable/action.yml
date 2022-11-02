@@ -77,12 +77,17 @@ runs:
       shell: bash
       run: | 
         python version-mapper.py -cname ${{ inputs.cname }} -version ${{ env.VERSION }} -filename ${{ inputs.version-config }}
+        # Remove the scrip to avoid Git tracking it
+        rm version-mapper.py
 
-    - name: "Commit new changes"
+    - name: "Commit new changes (if required)"
       shell: bash
       run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add release/
-          git commit -m "DOC: add documentation for ${{ github.ref_name }}"
-          git push
+          if [[ ! -z $(git status -s) ]];
+          then
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add release/
+            git commit -m "DOC: add documentation for ${{ github.ref_name }}"
+            git push
+          fi
