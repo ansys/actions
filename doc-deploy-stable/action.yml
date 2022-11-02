@@ -37,15 +37,25 @@ runs:
     - name: "Prepare destination folder"
       shell: bash
       run: |
-        folder=release/${{ github.ref_name }}
+        # Remove the 'v' at the beginning of the tag
+        ref_name="${{ github.ref_name }}"
+        version=${ref_name##*v}
+        # Filter out the major and minor version numbers
+        major=$(echo $version | cut -d. -f1)
+        minor=$(echo $version | cut -d. -f2)
+        folder=release/$major.$minor
+        # Create a new folder for the version (remove existing one if required)
         if [[ -d $folder ]]; then rm -rf $folder; fi 
         mkdir -p $folder
+        # Output the version
+        echo "VERSION=$major.$minor" >> $GITHUB_ENV
+
 
     - name: "Download the HTML documentation artifact in release/${{ github.ref_name }}"
       uses: actions/download-artifact@v3
       with:
         name: documentation-html
-        path: release/${{ github.ref_name }}
+        path: release/${{ env.VERSION }}
   
     - name: "Setup Python ${{ inputs.python-version }}"
       uses: actions/setup-python@v4
@@ -66,13 +76,18 @@ runs:
     - name: "Update the version JSON file"
       shell: bash
       run: | 
-        python version-mapper.py -cname ${{ inputs.cname }} -version ${{ github.ref_name }} -filename ${{ inputs.version-config }}
+        python version-mapper.py -cname ${{ inputs.cname }} -version ${{ env.VERSION }} -filename ${{ inputs.version-config }}
+        # Remove the scrip to avoid Git tracking it
+        rm version-mapper.py
 
-    - name: "Commit new changes"
+    - name: "Commit new changes (if required)"
       shell: bash
       run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add release/
-          git commit -m "DOC: add documentation for ${{ github.ref_name }}"
-          git push
+          if [[ ! -z $(git status -s) ]];
+          then
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add release/
+            git commit -m "DOC: add documentation for ${{ github.ref_name }}"
+            git push
+          fi

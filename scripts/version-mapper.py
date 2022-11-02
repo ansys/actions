@@ -19,6 +19,15 @@ def add_version_to_switcher_file(cname, version, filename):
         # Get the whole content of the file
         content = json.load(switcher_file)
 
+        # If the version already exists do not add anything
+        for data in content:
+            if data["version"] == version:
+                return
+
+        # Add HTTPS to the cname
+        if not cname.startswith("https://"):
+            cname += "https://"
+
         # Add the new version name and its url according to Sphinx format
         version_data = {
             "version": version,
