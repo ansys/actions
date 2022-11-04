@@ -10,6 +10,7 @@ on:
 env:
   MAIN_PYTHON_VERSION: '3.10'
   CNAME: 'actions.docs.pyansys.com'
+  code-style-action: "pyansys/actions/code-style@${{ github.sha }}"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -94,7 +95,7 @@ jobs:
     needs: commenter
     steps:
       - name: "Run code style checks"
-        uses: pyansys/actions/code-style@main
+        uses: ${{ env.code-style-action }}
 
   doc-style:
     name: "Doc style"
