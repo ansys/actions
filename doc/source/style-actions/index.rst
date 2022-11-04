@@ -1,11 +1,11 @@
 Style actions
 =============
-The style actions allow for checking code and documentation quality compliance
+Style actions check code and documentation quality compliance
 with PyAnsys guidelines.
 
-For using these actions, a project needs to use `pre-commit
-<https://pre-commit.com>`_ and `Vale <https://vale.sh>`_. If your project needs
-to implement these tools, please contact `pyansys.support@ansys.com
+To use these actions, a project must use `pre-commit
+<https://pre-commit.com>`_ and `Vale <https://vale.sh>`_. For help
+implementing these tools, send an email to `pyansys.support@ansys.com
 <mailto:pyansys.support@ansys.com>`_.
 
 Code style action
@@ -17,7 +17,7 @@ This action evaluates the code quality of your project by using `pre-commit`_. I
 
     {{ inputs_table }}
 
-Code sample for using this action:
+Here is a code sample for using this action:
 
 .. code-block:: yaml
 
@@ -45,7 +45,7 @@ one.
 | token        | Required token for Vale commenter    | True      |         |                  |
 +--------------+--------------------------------------+-----------+---------+------------------+
 
-Code sample for using this action:
+Here is a code sample for using this action:
 
 .. code-block:: yaml
 

@@ -14,5 +14,4 @@ A repository containing a collection of `GitHub Workflows
 <https://docs.github.com/en/actions/using-workflows/about-workflows>`_ to be
 reused by projects in the PyAnsys ecosystem.
 
-Refer to `actions.docs.pyansys.com <https://actions.docs.pyansys.com>`_ for more
-information about available actions and how to use those.
+For more information on available actions and how to use them, see `actions.docs.pyansys.com <https://actions.docs.pyansys.com>`_ .

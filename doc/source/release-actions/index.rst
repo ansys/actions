@@ -1,15 +1,15 @@
 Release actions
 ===============
-The release actions allow for releasing the various artifacts of a Python library.
+Release actions provide for releasing the various artifacts of a Python library.
 
-These set of actions assume that you have used the :ref:`Documentation actions`
+These actions assume that you have used the :ref:`Documentation actions`
 and the :ref:`Build actions`. The reason is that the artifacts generated during these
 actions are the ones to be released.
 
 
 Release private action
 ----------------------
-This action allows for deploying all Python library artifacts into the `Ansys
+This action deploys all Python library artifacts into the `Ansys
 private PyPI index
 <https://dev.docs.pyansys.com/how-to/releasing.html#publish-privately-on-pypi>`_.
 
@@ -21,7 +21,7 @@ this action.
 
     {{ inputs_table }}
 
-Code sample for using this action:
+Here is a code sample for using this action:
 
 .. code-block:: yaml
 
@@ -40,7 +40,7 @@ Code sample for using this action:
 
 Release public action
 ---------------------
-This action allows for deploying all Python library artifacts into the public
+This action deploys all Python library artifacts into the public
 `PyPI index <https://pypi.org/>`_.
 
 Similarly to :ref:`Release private action`, the ``PYPI_TOKEN`` is required.
@@ -50,7 +50,7 @@ Similarly to :ref:`Release private action`, the ``PYPI_TOKEN`` is required.
 
     {{ inputs_table }}
 
-Code sample for using this action:
+Here is a code sample for using this action:
 
 .. code-block:: yaml
 
@@ -69,7 +69,7 @@ Code sample for using this action:
 
 Release GitHub action
 ---------------------
-This action allows for deploying all Python library artifacts into the `GitHub
+This action deploys all Python library artifacts into the `GitHub
 releases section
 <https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository>`_
 of a repository.
@@ -78,7 +78,7 @@ of a repository.
 
     {{ inputs_table }}
 
-Code sample for using this action:
+Here is a code sample for using this action:
 
 .. code-block:: yaml
 

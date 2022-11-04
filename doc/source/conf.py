@@ -18,12 +18,12 @@ with open(str(version_file), "r") as file:
     __version__ = file.readlines()[0]
 release = version = __version__
 
-# use the default pyansys logo
+# Use the default pyansys logo
 html_logo = ansys_logo_black
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 
-# specify the location of your github repo
+# Specify the location of your GitHub repo
 version_mapper = "https://raw.githubusercontent.com/pyansys/actions/gh-pages/release/version_mapper.json"
 html_theme_options = {
     "github_url": "https://github.com/pyansys/actions",
@@ -35,7 +35,7 @@ html_theme_options = {
     "navbar_start": ["navbar-logo", "version-switcher"],
 }
 
-# Sphinx extensions
+# Specify Sphinx extensions to use
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
@@ -44,34 +44,34 @@ extensions = [
     "sphinx_jinja",
 ]
 
-# static path
+# Specify the static path
 html_static_path = ["_static"]
 
-# Add any paths that contain templates here, relative to this directory.
+# Add any paths that contain templates, relative to this directory
 templates_path = ["_templates"]
 
-# The suffix(es) of source filenames.
+# Specify the suffixes of source filenames
 source_suffix = ".rst"
 
-# The master toctree document.
+# Specify the master toctree document
 master_doc = "index"
 
-# Generate section labels up to four levels
+# Generate section labels for up to four levels
 autosectionlabel_maxdepth = 4
 
 
 def action_file_inputs_to_rst_table(action_name):
-    """Read and convert input variables of a GitHub YAML action file into RST table.
+    """Read and convert input variables of a GitHub YAML action file into a RST table.
 
     Parameters
     ----------
     action_file : str
-        The name of the action file.
+        Name of the action file.
 
     Returns
     -------
     str
-        A string representing the RST table.
+        String representing the RST table.
 
     """
     field_names = ["input", "description", "required", "type", "default"]

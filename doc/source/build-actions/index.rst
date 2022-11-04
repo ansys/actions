@@ -7,14 +7,14 @@ artifacts include both source distribution files and wheels.
 
 Build library action
 --------------------
-This action allows for building source and wheel artifacts for a Python library.
+This action builds source and wheel artifacts for a Python library.
 
 .. jinja:: build-library
 
     {{ inputs_table }}
 
 
-Code sample for using this action:
+Here is a code sample for using this action:
 
 .. code-block:: yaml
 
@@ -30,7 +30,7 @@ Code sample for using this action:
 
 Build C-extension library action
 --------------------------------
-This action allows for building wheel artifacts for a Python library using
+This action builds wheel artifacts for a Python library using
 C-extension.
 
 .. jinja:: build-ci-wheels
