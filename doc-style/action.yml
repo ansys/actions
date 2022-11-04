@@ -4,7 +4,7 @@ description: "Check documentation style using Vale"
 inputs:
   vale-config:
     description: "Path to the Vale configuration file"
-    default: 'doc/.vale.ini'
+    default: "doc/.vale.ini"
     required: false
     type: string
   token:
