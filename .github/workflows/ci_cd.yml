@@ -110,6 +110,8 @@ jobs:
     steps:
       - name: "Build documentation"
         uses: pyansys/actions/doc-build@main
+        with:
+          skip-install: true
 
   doc-deploy-dev:
     name: "Deploy developers documentation"
