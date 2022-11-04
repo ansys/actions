@@ -18,6 +18,15 @@ with open(str(version_file), "r") as file:
     __version__ = file.readlines()[0]
 release = version = __version__
 
+
+def get_version_match(semver):
+    """Evaluate the version match for the multi-documentation."""
+    if semver.endswith("dev0"):
+        return "dev"
+    major, minor, _ = semver.split(".")
+    return ".".join([major, minor])
+
+
 # Use the default pyansys logo
 html_logo = ansys_logo_black
 html_theme = "ansys_sphinx_theme"
@@ -30,9 +39,9 @@ html_theme_options = {
     "show_prev_next": False,
     "switcher": {
         "json_url": version_mapper,
-        "version_match": "dev" if version.endswith("dev0") else version,
+        "version_match": get_version_match(__version__),
     },
-    "navbar_start": ["navbar-logo", "version-switcher"],
+    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
 }
 
 # Specify Sphinx extensions to use
