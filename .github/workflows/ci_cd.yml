@@ -86,27 +86,20 @@ jobs:
           - [release](https://github.com/pyansys/actions/pulls?q=label%3Arelease+)
 
   code-style:
-    name: Run code style using pre-commit
-    needs: [labeler]
+    name: "Code style"
     runs-on: ubuntu-latest
     steps:
+      - name: "Run PyAnsys code style checks"
+        uses: pyansys/actions/code-style@main
 
-      - name: Install Git and clone project
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4.3.0
+  doc-style:
+    name: "Doc style"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Run Ansys documentation style checks"
+        uses: pyansys/actions/doc-style@main
         with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
-      - name: Install pre-commit
-        run: |
-          python -m pip install --upgrade pip pre-commit
-          pre-commit install
-
-      - name: Run pre-commit
-        run: pre-commit run --all-files --show-diff-on-failure
-
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   release:
     name: Release

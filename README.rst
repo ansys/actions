@@ -10,11 +10,8 @@ PyAnsys Actions
    :target: https://opensource.org/licenses/MIT
    :alt: MIT
 
-A repository containing a collection of `GitHub Workflows`_ to be reused by
-projects in the `PyAnsys` ecosystem.
+A repository containing a collection of `GitHub Workflows
+<https://docs.github.com/en/actions/using-workflows/about-workflows>`_ to be
+reused by projects in the PyAnsys ecosystem.
 
-
-.. LINKS AND REFERENCES
-
-.. _GitHub workflows: https://docs.github.com/en/actions/using-workflows/about-workflows
-.. _pyansys: https://docs.pyansys.com/
+For more information on available actions and how to use them, see `actions.docs.pyansys.com <https://actions.docs.pyansys.com>`_ .

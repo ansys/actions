@@ -19,7 +19,7 @@ runs:
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
   
-    - name: "Setup Python"
+    - name: "Set up Python"
       uses: actions/setup-python@v4.2.0
       with:
         python-version: ${{ inputs.python-version }}
