@@ -22,6 +22,11 @@ inputs:
       default: false
       required: false
       type: boolean
+  skip-install:
+      description: 'Whether to skip the installation of the Python library'
+      default: false
+      required: false
+      type: boolean
 
 runs:
   using: "composite"
@@ -58,6 +63,7 @@ runs:
 
     - name: "Install Python library"
       shell: bash
+      if: inputs.skip-install == 'false'
       run:
         python -m pip install .
 
@@ -72,17 +78,17 @@ runs:
         echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
 
     - name: "Install documentation dependencies from requirements file"
-      if: env.EXISTS_DOC_REQUIREMENTS == 'true'
       shell: bash
+      if: env.EXISTS_DOC_REQUIREMENTS == 'true'
       run: python -m pip install -r requirements/requirements_doc.txt
 
     - name: "Install documentation dependencies from pyproject.toml"
-      if: env.EXISTS_DOC_REQUIREMENTS == 'false'
       shell: bash
+      if: env.EXISTS_DOC_REQUIREMENTS == 'false'
       run: python -m pip install .[doc]
     
     - name: "Build HTML, PDF, and JSON documentation"
-      if: ${{ inputs.requires-xvfb == 'false' }}
+      if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
         make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
@@ -90,7 +96,7 @@ runs:
         make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
 
     - name: "Build HTML and JSON documentation using xvfb"
-      if: ${{ inputs.requires-xvfb == 'true' }}
+      if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"

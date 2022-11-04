@@ -15,7 +15,7 @@ author = "ANSYS, Inc."
 source_dir = pathlib.Path(__file__).parent.resolve().absolute()
 version_file = source_dir / "../../VERSION"
 with open(str(version_file), "r") as file:
-    __version__ = file.readlines()[0]
+    __version__ = file.read().splitlines()[0]
 release = version = __version__
 
 
