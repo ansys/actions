@@ -1,9 +1,17 @@
-name: "Release to public PyPI"
-description: "Release library artifacts to public PyPI"
+name: "Release to desired PyPI index"
+description: "Release library artifacts to PyPI desired index"
 
 inputs:
   library-name:
     description: 'Name of the Python library'
+    required: true
+    type: string
+  index-name:
+    description: 'Name of the Python library'
+    required: true
+    type: string
+  twine-username:
+    description: 'Desired twine user name'
     required: true
     type: string
   twine-token:
@@ -12,8 +20,7 @@ inputs:
     type: string
   python-version:
     description: 'Desired Python version for using twine'
-    default: '3.10'
-    required: false
+    required: true
     type: string
 
 runs:
@@ -47,5 +54,6 @@ runs:
         python -m twine upload --skip-existing ${{ inputs.library-name }}-artifacts/**/*.whl
         python -m twine upload --skip-existing ${{ inputs.library-name }}-artifacts/**/*.tar.gz
       env:
-        TWINE_USERNAME: "__token__"
+        TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
+        TWINE_REPOSITORY_URL: ${{ inputs.index-name }}
