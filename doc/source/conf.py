@@ -109,9 +109,10 @@ ACTIONS_NAMES = [
     "doc-build",
     "doc-deploy-dev",
     "doc-deploy-stable",
+    "release-pypi-private",
+    "release-pypi-test",
+    "release-pypi-public",
     "release-github",
-    "release-private",
-    "release-public",
 ]
 jinja_contexts = {
     action_name: {"inputs_table": action_file_inputs_to_rst_table(action_name)}

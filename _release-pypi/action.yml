@@ -1,29 +1,26 @@
-name: "Release to private PyPI"
-description: "Release library artifacts to company private PyPI"
+name: "Release to desired PyPI index"
+description: "Release library artifacts to PyPI desired index"
 
 inputs:
   library-name:
     description: 'Name of the Python library'
     required: true
     type: string
+  index-name:
+    description: 'Name of the Python library'
+    required: true
+    type: string
   twine-username:
     description: 'Desired twine user name'
-    default: 'PAT'
-    required: false
+    required: true
     type: string
   twine-token:
     description: 'Password to be used when uploading to private PyPI'
     required: true
     type: string
-  index-url:
-    description: 'The URL for the private PyPI index'
-    required: false
-    default: 'https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload'
-    type: string
   python-version:
     description: 'Desired Python version for using twine'
-    default: '3.10'
-    required: false
+    required: true
     type: string
 
 runs:
@@ -59,4 +56,4 @@ runs:
       env:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
-        TWINE_REPOSITORY_URL: ${{ inputs.index-url }}
+        TWINE_REPOSITORY_URL: ${{ inputs.index-name }}

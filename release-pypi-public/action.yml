@@ -1,0 +1,34 @@
+name: "Release to public PyPI index"
+description: "Release library artifacts to public PyPI index"
+
+inputs:
+  library-name:
+    description: 'Name of the Python library'
+    required: true
+    type: string
+  twine-username:
+    description: 'Desired twine user name'
+    required: true
+    type: string
+  twine-token:
+    description: 'Password to be used when uploading to private PyPI'
+    required: true
+    type: string
+  python-version:
+    description: 'Desired Python version for using twine'
+    required: false
+    default: '3.10'
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+  
+    - name: "Release to public PyPI index"
+      uses: pyansys/actions/_release-pypi@main
+      with:
+        library-name: ${ inputs.library-name }}
+        index-name: "https://upload.pypi.org"
+        twine-username: ${{ inputs.twine-username }}
+        twine-token: ${{ inputs.twine-token }}
+        python-version: ${{ inputs.python-version }}
