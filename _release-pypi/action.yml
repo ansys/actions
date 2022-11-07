@@ -51,8 +51,8 @@ runs:
     - name: "Upload artifacts to private PyPi"
       shell: bash
       run: |
-        python -m twine upload --skip-existing ${{ inputs.library-name }}-artifacts/*.whl
-        python -m twine upload --skip-existing ${{ inputs.library-name }}-artifacts/*.tar.gz
+        python -m twine upload --verbose --skip-existing ${{ inputs.library-name }}-artifacts/*.whl
+        python -m twine upload --verbose --skip-existing ${{ inputs.library-name }}-artifacts/*.tar.gz
       env:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
