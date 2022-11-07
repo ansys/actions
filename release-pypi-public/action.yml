@@ -11,7 +11,7 @@ inputs:
     required: true
     type: string
   twine-token:
-    description: 'Password to be used when uploading to private PyPI'
+    description: 'Password to be used when uploading to public PyPI'
     required: true
     type: string
   python-version:
