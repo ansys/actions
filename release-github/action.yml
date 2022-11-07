@@ -37,7 +37,7 @@ runs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ${{ inputs.library-name }}/**/*.whl
-          ${{ inputs.library-name }}/**/*.tar.gz
-          ${{ inputs.library-name }}/**/*.zip
-          ${{ inputs.library-name }}/**/*.pdf
+          ${{ inputs.library-name }}/*.whl
+          ${{ inputs.library-name }}/*.tar.gz
+          documentation-html/*.html
+          documentation-pdf/*.pdf
