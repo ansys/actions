@@ -27,7 +27,7 @@ runs:
     - name: "Release to private PyPI index"
       uses: pyansys/actions/_release-pypi@main
       with:
-        library-name: ${ inputs.library-name }}
+        library-name: ${{ inputs.library-name }}
         index-name: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}

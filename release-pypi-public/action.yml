@@ -27,7 +27,7 @@ runs:
     - name: "Release to public PyPI index"
       uses: pyansys/actions/_release-pypi@main
       with:
-        library-name: ${ inputs.library-name }}
+        library-name: ${{ inputs.library-name }}
         index-name: "https://upload.pypi.org"
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}
