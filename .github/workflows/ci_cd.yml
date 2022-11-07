@@ -187,3 +187,37 @@ jobs:
         library-name: ${{ env.test-library-name }}
         twine-username: "__token__"
         twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+
+  release-gitub:
+    name: "Release to GitHub"
+    runs-on: ubuntu-latest
+    needs: [doc-deploy-stable, tests-release-pypi-test]
+    steps:
+      - name: "Download the ${{ inputs.library-name }} artifacts from build-library step"
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.library-name }}-artifacts
+          path: ${{ inputs.library-name }}-artifacts
+
+      - name: "Download {{ inputs.library-name }} HTML documentation"
+        uses: actions/download-artifact@v3
+        with:
+          name: documentation-html
+          path: documentation-html
+
+      - name: "Download {{ inputs.library-name }} PDF documentation"
+        uses: actions/download-artifact@v3
+        with:
+          name: documentation-pdf
+          path: documentation-pdf
+
+      - name: "Display the structure of downloaded files"
+        run: ls -R
+
+      - name: "Release to GitHub"
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            documentation-html/*.html
+            documentation-pdf/*.pdf
