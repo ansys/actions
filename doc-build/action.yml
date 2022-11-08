@@ -57,7 +57,7 @@ runs:
 
     - name: "Install X Virtual Frame Buffer"
       shell: bash
-      if: inputs.requires-xvfb
+      if: inputs.requires-xvfb == 'true'
       run: |
         sudo apt-get install xvfb
 
