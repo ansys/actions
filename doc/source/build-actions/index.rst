@@ -25,7 +25,7 @@ Here is a code sample for using this action:
         - name: "Build library source and wheel artifacts"
           uses: pyansys/actions/build-library@main
           with:
-            library-name: "ansys-<product>-<library"
+            library-name: "ansys-<product>-<library>"
 
 
 Build C-extension library action
