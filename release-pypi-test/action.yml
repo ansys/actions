@@ -1,5 +1,5 @@
 name: "Release to test PyPI index"
-description: "Release library artifacts to public PyPI index"
+description: "Release library artifacts to test PyPI index"
 
 inputs:
   library-name:
@@ -11,7 +11,7 @@ inputs:
     required: true
     type: string
   twine-token:
-    description: 'Password to be used when uploading to private PyPI'
+    description: 'Password to be used when uploading to test PyPI'
     required: true
     type: string
   python-version:
