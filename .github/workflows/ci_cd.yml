@@ -122,7 +122,7 @@ jobs:
           python -m pip install -r requirements/requirements_tests.txt
 
       - name: "Run tests"
-        run: pytest tests -vv
+        run: cd tests/tests_scripts && pytest -vv
 
   doc-style:
     name: "Doc style"
