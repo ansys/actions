@@ -1,6 +1,6 @@
 Style actions
 =============
-Style actions check code and documentation quality compliance
+Style actions verify code and documentation quality compliance
 with PyAnsys guidelines.
 
 To use these actions, a project must use `pre-commit

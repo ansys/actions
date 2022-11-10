@@ -7,8 +7,8 @@ inputs:
     required: true
     type: string
   version-config:
-    description: 'Path to the JSON file specifying version configuration'
-    default: 'release/version_mapper.json'
+    description: 'Name of the JSON file specifying version configuration'
+    default: 'versions.json'
     required: false
     type: string
   token:
@@ -71,14 +71,18 @@ runs:
     - name: "Get the version_mapper.py utility"
       shell: bash
       run: |
-        curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/version-mapper.py -o version-mapper.py
+        curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/version_mapper.py -o version_mapper.py
 
     - name: "Update the version JSON file"
       shell: bash
       run: | 
-        python version-mapper.py -cname ${{ inputs.cname }} -version ${{ env.VERSION }} -filename ${{ inputs.version-config }}
+        version-mapper \
+          --cname ${{ inputs.cname }} \
+          --json_filename ${{ inputs.version-config }} \
+          --new_version ${{ env.VERSION }} \
+          --render_last 3
         # Remove the scrip to avoid Git tracking it
-        rm version-mapper.py
+        rm -rf version_mapper.py
 
     - name: "Commit new changes (if required)"
       shell: bash

@@ -33,7 +33,9 @@ html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 
 # Specify the location of your GitHub repo
-version_mapper = "https://raw.githubusercontent.com/pyansys/actions/gh-pages/release/version_mapper.json"
+version_mapper = (
+    "https://raw.githubusercontent.com/pyansys/actions/gh-pages/release/versions.json"
+)
 html_theme_options = {
     "github_url": "https://github.com/pyansys/actions",
     "show_prev_next": False,
