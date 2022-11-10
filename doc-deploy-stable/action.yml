@@ -1,5 +1,3 @@
-name: "Documentation deploy stable version"
-description: "Deploy stable documentation to GitHub pages"
 
 inputs:
   cname:
@@ -37,19 +35,20 @@ runs:
     - name: "Prepare destination folder"
       shell: bash
       run: |
-        # Remove the 'v' at the beginning of the tag
+        # Remove the 'v' or the 'release/' at the beginning of the tag
         ref_name="${{ github.ref_name }}"
         version=${ref_name##*v}
+        version=${ref_name##*release/}
         # Filter out the major and minor version numbers
         major=$(echo $version | cut -d. -f1)
         minor=$(echo $version | cut -d. -f2)
         folder=release/$major.$minor
+        echo "Folder was found to be $folder"
         # Create a new folder for the version (remove existing one if required)
         if [[ -d $folder ]]; then rm -rf $folder; fi 
         mkdir -p $folder
         # Output the version
         echo "VERSION=$major.$minor" >> $GITHUB_ENV
-
 
     - name: "Download the HTML documentation artifact in release/${{ github.ref_name }}"
       uses: actions/download-artifact@v3
@@ -76,7 +75,7 @@ runs:
     - name: "Update the version JSON file"
       shell: bash
       run: | 
-        version-mapper \
+        python version_mapper.py \
           --cname ${{ inputs.cname }} \
           --json_filename ${{ inputs.version-config }} \
           --new_version ${{ env.VERSION }} \
