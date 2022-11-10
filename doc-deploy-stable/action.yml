@@ -1,5 +1,3 @@
-name: "Documentation deploy stable version"
-description: "Deploy stable documentation to GitHub pages"
 
 inputs:
   cname:
@@ -76,7 +74,7 @@ runs:
     - name: "Update the version JSON file"
       shell: bash
       run: | 
-        version-mapper \
+        version_mapper \
           --cname ${{ inputs.cname }} \
           --json_filename ${{ inputs.version-config }} \
           --new_version ${{ env.VERSION }} \
