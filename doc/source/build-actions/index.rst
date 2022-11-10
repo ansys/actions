@@ -39,11 +39,6 @@ artifacts.
 
     {{ inputs_table }}
 
-
-.. note::
-
-   To take all the advantage of this action
-
 Here is a code sample for using this action:
 
 .. code-block:: yaml
