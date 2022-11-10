@@ -1,0 +1,62 @@
+name: "Build the wheelhouse of a Python library"
+description: "Generate a Zip aritfacts for the wheelhouse of a Python library"
+
+inputs:
+  library-name:
+    description: 'Name of the Python library'
+    required: true
+    type: string
+  library-namespace:
+    description: 'Namespace of the Python library'
+    required: true
+    type: string
+  operating-system:
+    description: 'Name of the operating system'
+    required: true
+    type: string
+  python-version:
+    description: 'Desired Python version for build'
+    required: true
+    type: string
+
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v3
+  
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: "Update pip and install dependencies"
+      shell: bash
+      run: pip install --upgrade pip build wheel
+
+    - name: "Install the library"
+      shell: bash
+      run: pip install .
+
+    - name: "Verify libray is properly installed and get its version number"
+      run: |
+        echo "library_version=$(python -c "from ${{ inputs.library-namespace }} import __version__; print(__version__)")" >> $GITHUB_ENV
+
+    - name: "Generate wheelhouse"
+      shell: bash
+      run: python -m pip wheel . -w wheelhouse
+
+    - name: "Zip wheelhouse"
+      uses: vimtor/action-zip@v1
+      with:
+        files: wheelhouse
+        dest: ${{ inputs.library-name }}-v${{ env.library_version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+
+    - name: "Upload wheelhouse"
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.library-name }}-v${{ inputs.library-version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}
+        path: '*.zip'
+        retention-days: 7
