@@ -37,9 +37,17 @@ def update_switch_version_file(filename, new_version, cname, render_last):
         current_content = json.load(switcher_file)
 
         # Collect all the version numbers in the JSON file
-        current_versions_list = [
+        current_raw_versions_list = [
             data["version"] for data in current_content if data["version"] != "dev"
         ]
+
+        # Remove the "(stable)" label to retain only version numbers
+        current_versions_list = []
+        for version in current_raw_versions_list:
+            if version.endswith(" (stable)"):
+                current_versions_list.append(version[: -len(" (stable)")])
+            else:
+                current_versions_list.append(version)
 
         # Verify if new version is alerady registered in the JSON file
         new_version_exists = new_version in current_versions_list
@@ -65,8 +73,9 @@ def update_switch_version_file(filename, new_version, cname, render_last):
         new_content.append(dict(version="dev", url=cname))
 
         # Append the information for the new content
-        for version in new_versions_list:
-            new_data = dict(version=version, url=f"{cname}/release/{version}")
+        for ith_version, version in enumerate(new_versions_list):
+            version_name = f"{version} (stable)" if ith_version == 0 else version
+            new_data = dict(version=version_name, url=f"{cname}/release/{version}")
             new_content.append(new_data)
 
     # Override the whole content of the version switches JSON file with the new

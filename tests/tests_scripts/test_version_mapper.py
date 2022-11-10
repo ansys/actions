@@ -17,10 +17,14 @@ def test_update_switch_version_file(new_version, render_last, cname):
     expected_content.append(dict(version="dev", url=f"https://{cname}"))
     minor_version = int(new_version[-1])
     lower_bound, upper_bound = minor_version + 1 - render_last, minor_version + 1
-    for minor_version in reversed(range(lower_bound, upper_bound)):
+    for ith_version, minor_version in enumerate(
+        reversed(range(lower_bound, upper_bound))
+    ):
+        version_name = f"0.{minor_version}"
+        version_name = f"{version_name} (stable)" if ith_version == 0 else version_name
         expected_content.append(
             dict(
-                version=f"0.{minor_version}",
+                version=version_name,
                 url=f"https://{cname}/release/0.{minor_version}",
             )
         )
@@ -38,6 +42,4 @@ def test_update_switch_version_file(new_version, render_last, cname):
         current_content = json.load(switcher_file)
 
         # Verify that the content of the file is the expected one
-        print(current_content)
-        print(expected_content)
         assert current_content == expected_content
