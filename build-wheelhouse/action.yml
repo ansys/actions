@@ -58,6 +58,6 @@ runs:
     - name: "Upload wheelhouse"
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.library-name }}-v${{ inputs.library-version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}
+        name: ${{ inputs.library-name }}-v${{ env.library-version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: '*.zip'
         retention-days: 7
