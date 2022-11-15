@@ -41,6 +41,7 @@ runs:
       run: pip install .
 
     - name: "Verify libray is properly installed and get its version number"
+      shell: bash
       run: |
         echo "library_version=$(python -c "from ${{ inputs.library-namespace }} import __version__; print(__version__)")" >> $GITHUB_ENV
 
