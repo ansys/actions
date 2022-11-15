@@ -38,7 +38,7 @@ runs:
         # Remove the 'v' or the 'release/' at the beginning of the tag
         ref_name="${{ github.ref_name }}"
         version=${ref_name##*v}
-        version=${ref_name##*release/}
+        version=${version##*release/}
         # Filter out the major and minor version numbers
         major=$(echo $version | cut -d. -f1)
         minor=$(echo $version | cut -d. -f2)
