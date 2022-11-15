@@ -112,7 +112,7 @@ jobs:
         run: ls -R tests
   
       - name: "Set up Python"
-        uses: actions/setup-python@v4.2.0
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
