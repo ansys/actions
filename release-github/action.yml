@@ -23,6 +23,12 @@ runs:
         name: documentation-html
         path: documentation-html
 
+    - name: Zip HTML Documentation
+      uses: vimtor/action-zip@v1
+      with:
+        files: documentation-html
+        dest: documentation-html.zip
+
     - name: "Download {{ inputs.library-name }} PDF documentation"
       uses: actions/download-artifact@v3
       with:
@@ -39,5 +45,5 @@ runs:
         files: |
           ${{ inputs.library-name }}/*.whl
           ${{ inputs.library-name }}/*.tar.gz
-          documentation-html/*.html
+          documentation-html.zip
           documentation-pdf/*.pdf
