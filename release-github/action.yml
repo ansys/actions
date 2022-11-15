@@ -23,7 +23,7 @@ runs:
         name: documentation-html
         path: documentation-html
 
-    - name: Zip HTML Documentation
+    - name: "Zip HTML documentation"
       uses: vimtor/action-zip@v1
       with:
         files: documentation-html
