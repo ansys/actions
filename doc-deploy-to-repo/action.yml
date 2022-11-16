@@ -1,21 +1,21 @@
-name: "Documentation deploy to specific repository"
-description: "Deploy documentation to a specific documentation repository"
+name: "Documentation deploy to specific repository."
+description: "Deploy documentation to a specific documentation repository."
 
 inputs:
   cname:
-    description: 'The canonical name of the documentation website'
+    description: 'The canonical name of the documentation website.'
     required: true
     type: string
   repository:
-    description: "Repository for documentation deployment"
+    description: "Repository for documentation deployment."
     required: true
     type: string
   bot-id:
-    description: "Required application ID for documentation deployment"
+    description: "Required application ID for documentation deployment."
     required: true
     type: string
   bot-token:
-    description: "Required application token for documentation deployment"
+    description: "Required application token for documentation deployment."
     required: true
     type: string
 

@@ -1,9 +1,9 @@
-name: "Code style"
-description: "Check code style using pre-commit"
+name: "Code style."
+description: "Check code style using pre-commit."
 
 inputs:
   python-version:
-    description: 'Desired Python version for pre-commit'
+    description: 'Desired Python version for pre-commit.'
     default: '3.10'
     required: false
     type: string
