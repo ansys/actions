@@ -18,9 +18,10 @@ inputs:
     description: 'Desired Python version for build'
     required: true
     type: string
-  use-cache:
+  use-python-cache:
     description: 'Whether to use Python chache or not. Requires a pyproject.toml file.'
     required: false
+    default: true
     type: boolean
 
 
@@ -35,7 +36,7 @@ runs:
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
-        use-cache: ${{ inputs.use-cache }}
+        use-cache: ${{ inputs.use-python-cache }}
 
     - name: "Update pip and install dependencies"
       shell: bash

@@ -8,7 +8,7 @@ inputs:
     type: string
   use-cache:
     description: 'Whether to use Python chache or not. Requires a pyproject.toml file.'
-    required: false
+    required: true
     type: boolean
 
 runs:

@@ -96,6 +96,9 @@ jobs:
     steps:
       - name: "Run code style checks"
         uses: pyansys/actions/code-style@main
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
 
   tests:
     name: "Tests"
@@ -112,9 +115,10 @@ jobs:
         run: ls -R tests
   
       - name: "Set up Python"
-        uses: actions/setup-python@v4
+        uses: pyansys/actions/_setup-python@main
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-cache: false
 
       - name: "Update pip and install requirements"
         run: |
@@ -143,6 +147,8 @@ jobs:
         uses: pyansys/actions/doc-build@main
         with:
           skip-install: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
 
   doc-deploy-to-repo:
     name: "Deploy developers documentation to specific repository"
@@ -179,6 +185,8 @@ jobs:
         with:
             cname: ${{ env.CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
+            python-version: ${{ env.MAIN_PYTHON_VERSION }}
+            use-python-cache: false
 
   tests-build:
     name: "Test library build"
@@ -190,9 +198,10 @@ jobs:
       uses: actions/checkout@v3
   
     - name: "Set up Python"
-      uses: actions/setup-python@v4
+      uses: pyansys/actions/_setup-python@main
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: ${{ env.MAIN_PYTHON_VERSION }}
+        use-cache: false
 
     - name: "Isolate testing library"
       run: mv tests/${{ env.test-library-name }} ~/
@@ -226,6 +235,8 @@ jobs:
         library-name: ${{ env.test-library-name }}
         twine-username: "__token__"
         twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+        python-version: ${{ env.MAIN_PYTHON_VERSION }}
+        use-python-cache: false
 
   release-gitub:
     name: "Release to GitHub"
