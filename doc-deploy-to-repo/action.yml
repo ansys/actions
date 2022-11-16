@@ -49,13 +49,13 @@ runs:
       id: get-workflow-token
       uses: peter-murray/workflow-application-token-action@v2
       with:
-        application_id: ${{ inputs.bot-id }}  
-        application_private_key: ${{ inputs.bot-token }}  
+        application_id: ${{ inputs.bot-id }}
+        application_private_key: ${{ inputs.bot-token }}
 
     - name: "Deploy documentation"
       uses: JamesIves/github-pages-deploy-action@v4.4.0
       with:
-        repository-name: ${{ inputs.repository }} 
+        repository-name: ${{ inputs.repository }}
         token: ${{ steps.get-workflow-token.outputs.token }}
         branch: gh-pages
         folder: documentation-html
