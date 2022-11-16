@@ -53,12 +53,6 @@ runs:
         rm -rf other-artifacts/documentation-pdf
         rm -rf other-artifacts/${{ inputs.library-name }}-artifacts
 
-    - name: "Zip other artifacts"
-      uses: vimtor/action-zip@v1
-      with:
-        files: other-artifacts
-        dest: other-artifacts.zip
-
     - name: "Display the structure of downloaded files"
       shell: bash
       run: ls -R
@@ -71,4 +65,4 @@ runs:
           ${{ inputs.library-name }}/*.tar.gz
           documentation-html.zip
           documentation-pdf.zip
-          other-artifacts/**/*-wheelhouse-*.zip
+          other-artifacts/**/*-wheelhouse-*.whl
