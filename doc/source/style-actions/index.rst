@@ -26,7 +26,7 @@ Here is a code sample for using this action:
       runs-on: ubuntu-latest
       steps:
         - name: "Run PyAnsys code style checks"
-          uses: pyansys/actions/code-style@main
+          uses: pyansys/actions/code-style@v1
 
 
 Doc style action
@@ -54,7 +54,7 @@ Here is a code sample for using this action:
       runs-on: ubuntu-latest
       steps:
         - name: "Run Ansys documentation style checks"
-          uses: pyansys/actions/doc-style@main
+          uses: pyansys/actions/doc-style@v1
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
 
