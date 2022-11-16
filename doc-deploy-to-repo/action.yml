@@ -60,4 +60,5 @@ runs:
         branch: gh-pages
         folder: documentation-html
         clean: true
+        clean-exclude: release
         single-commit: true 
