@@ -20,7 +20,7 @@ inputs:
     default: '3.10'
     type: string
   use-python-cache:
-    description: 'Whether to use Python chache or not. Requires a pyproject.toml file.'
+    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
     default: true
     required: false
     type: boolean
