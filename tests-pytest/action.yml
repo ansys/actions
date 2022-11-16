@@ -7,6 +7,10 @@ inputs:
     default: '3.10'
     required: false
     type: string
+  use-cache:
+    description: 'Whether to use Python chache or not. Requires a pyproject.toml file.'
+    required: false
+    type: boolean
   pytest-markers:
     description: 'Set of markers to filter out tests'
     default: ''
@@ -38,6 +42,7 @@ runs:
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-cache }}
 
     - name: "Update pip"
       shell: bash
