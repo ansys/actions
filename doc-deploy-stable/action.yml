@@ -50,7 +50,7 @@ runs:
         echo "VERSION=$major.$minor" >> $GITHUB_ENV
 
     - name: "Download the HTML documentation artifact in release/${{ github.ref_name }}"
-      uses: pyansys/actions/_setup-python@main
+      uses: actions/download-artifact@v3
       with:
         name: documentation-html
         path: release/${{ env.VERSION }}
