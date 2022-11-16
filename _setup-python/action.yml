@@ -1,0 +1,19 @@
+name: "Set up Python"
+description: "Set up Python and enables cache"
+
+inputs:
+  python-version:
+    description: 'Desired Python version'
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+  
+    - name: "Set up Python"
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+        cache-dependency-path: 'pyproject.toml'
