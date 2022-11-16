@@ -35,6 +35,30 @@ runs:
         name: documentation-pdf
         path: documentation-pdf
 
+    - name: "Zip PDF documentation"
+      uses: vimtor/action-zip@v1
+      with:
+        files: documentation-pdf
+        dest: documentation-pdf.zip
+
+    - name: "Download other artifacts (wheelhouse, cibuildwheel...)"
+      uses: actions/download-artifact@v3
+      with:
+        path: other-artifacts
+
+    - name: "Remove duplicated artifacts"
+      shell: bash
+      run: |
+        rm -rf other-artifacts/documentation-html
+        rm -rf other-artifacts/documentation-pdf
+        rm -rf other-artifacts/${{ inputs.library-name }}-artifacts
+
+    - name: "Zip other artifacts"
+      uses: vimtor/action-zip@v1
+      with:
+        files: other-artifacts
+        dest: other-artifacts.zip
+
     - name: "Display the structure of downloaded files"
       shell: bash
       run: ls -R
@@ -46,4 +70,5 @@ runs:
           ${{ inputs.library-name }}/*.whl
           ${{ inputs.library-name }}/*.tar.gz
           documentation-html.zip
-          documentation-pdf/*.pdf
+          documentation-pdf.zip
+          other-artifacts.zip
