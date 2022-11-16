@@ -34,7 +34,7 @@ runs:
 
     - name: "Update pip and install dependencies"
       shell: bash
-      run: pip install --upgrade pip build wheel
+      run: python -m pip install --upgrade pip build wheel
 
     - name: "Install the library"
       shell: bash
@@ -58,6 +58,6 @@ runs:
     - name: "Upload wheelhouse"
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.library-name }}-v${{ inputs.library-version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}
+        name: ${{ inputs.library-name }}-v${{ env.library_version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: '*.zip'
         retention-days: 7
