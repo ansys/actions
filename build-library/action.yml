@@ -20,7 +20,7 @@ runs:
       uses: actions/checkout@v3
   
     - name: "Set up Python"
-      uses: actions/setup-python@v4.2.0
+      uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
 

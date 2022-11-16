@@ -28,7 +28,7 @@ runs:
   steps:
   
     - name: "Set up Python"
-      uses: actions/setup-python@v4
+      uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
