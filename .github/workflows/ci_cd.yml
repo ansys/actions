@@ -159,8 +159,10 @@ jobs:
         if: github.event_name == 'push'
         uses: pyansys/actions/doc-deploy-to-repo@main
         with:
-            cname: ${{ env.CNAME }}
-            repository: "pyansys/actions"
+          cname: ${{ env.CNAME }}
+          repository: "pyansys/actions"
+          bot-id: ${{ secrets.BOT_APPLICATION_ID }}
+          bot-token: ${{ secrets.BOT_APPLICATION_PRIVATE_KEY }}
 
   doc-deploy-dev:
     name: "Deploy developers documentation"
