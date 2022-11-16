@@ -7,6 +7,11 @@ inputs:
     default: '3.10'
     required: false
     type: string
+  use-python-cache:
+    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    required: false
+    default: true
+    type: boolean
   sphinxopts:
     description: 'Set of options to pass to the Sphinx builder'
     default: '-j auto -W --keep-going'
@@ -39,6 +44,7 @@ runs:
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
 
     - name: "Update pip"
       shell: bash

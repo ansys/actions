@@ -6,14 +6,25 @@ inputs:
     description: 'Desired Python version'
     required: true
     type: string
+  use-cache:
+    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    required: true
+    type: boolean
 
 runs:
   using: "composite"
   steps:
   
-    - name: "Set up Python"
+    - name: "Set up Python using cache"
       uses: actions/setup-python@v4
+      if: inputs.use-cache == 'true'
       with:
         python-version: ${{ inputs.python-version }}
         cache: 'pip'
         cache-dependency-path: 'pyproject.toml'
+
+    - name: "Set up Python without using cache"
+      uses: actions/setup-python@v4
+      if: inputs.use-cache == 'false'
+      with:
+        python-version: ${{ inputs.python-version }}
