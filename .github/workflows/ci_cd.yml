@@ -243,28 +243,41 @@ jobs:
   release-gitub:
     name: "Release to GitHub"
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: [doc-deploy-stable, tests-release-pypi-test]
     steps:
 
-      - name: "Download {{ inputs.library-name }} HTML documentation"
-        uses: actions/download-artifact@v3
-        with:
-          name: documentation-html
-          path: documentation-html
+    - name: "Download HTML documentation"
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation-html
+        path: documentation-html
 
-      - name: "Download {{ inputs.library-name }} PDF documentation"
-        uses: actions/download-artifact@v3
-        with:
-          name: documentation-pdf
-          path: documentation-pdf
+    - name: "Zip HTML documentation"
+      uses: vimtor/action-zip@v1
+      with:
+        files: documentation-html
+        dest: documentation-html.zip
 
-      - name: "Display the structure of downloaded files"
-        run: ls -R
+    - name: "Download PDF documentation"
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation-pdf
+        path: documentation-pdf
 
-      - name: "Release to GitHub"
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            documentation-html/*.html
-            documentation-pdf/*.pdf
+    - name: "Zip PDF documentation"
+      uses: vimtor/action-zip@v1
+      with:
+        files: documentation-pdf
+        dest: documentation-pdf.zip
+
+    - name: "Display the structure of downloaded files"
+      shell: bash
+      run: ls -R
+
+    - name: "Release to GitHub"
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          documentation-html.zip
+          documentation-pdf.zip
