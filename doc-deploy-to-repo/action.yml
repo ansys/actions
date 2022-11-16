@@ -12,13 +12,11 @@ inputs:
     type: string
   bot-id:
     description: "Required application ID for documentation deployment"
-    default: ${{ secrets.BOT_APPLICATION_ID }}
-    required: false
+    required: true
     type: string
   bot-token:
     description: "Required application token for documentation deployment"
-    default: ${{ secrets.BOT_APPLICATION_PRIVATE_KEY }}
-    required: false
+    required: true
     type: string
 
 runs:
