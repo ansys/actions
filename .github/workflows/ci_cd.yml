@@ -144,10 +144,22 @@ jobs:
         with:
           skip-install: true
 
+  doc-deploy-to-repo:
+    name: "Deploy developers documentation to specific repository"
+    runs-on: ubuntu-latest
+    needs: doc-build
+    steps:
+      - name: "Deploy developers documentation"
+        if: github.event_name == 'push'
+        uses: pyansys/actions/doc-deploy-to-repo@main
+        with:
+            cname: ${{ env.CNAME }}
+            repository: "pyansys/actions"
+
   doc-deploy-dev:
     name: "Deploy developers documentation"
     runs-on: ubuntu-latest
-    needs: doc-build
+    needs: doc-deploy-to-repo
     steps:
       - name: "Deploy developers documentation"
         if: github.event_name == 'push'
@@ -159,7 +171,7 @@ jobs:
   doc-deploy-stable:
     name: "Deploy stable documentation"
     runs-on: ubuntu-latest
-    needs: doc-build
+    needs: doc-deploy-dev
     steps:
       - name: "Deploy stable documentation"
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags')

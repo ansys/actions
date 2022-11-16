@@ -112,6 +112,7 @@ ACTIONS_NAMES = [
     "doc-build",
     "doc-deploy-dev",
     "doc-deploy-stable",
+    "doc-deploy-to-repo",
     "release-pypi-private",
     "release-pypi-test",
     "release-pypi-public",

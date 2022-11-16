@@ -1,0 +1,64 @@
+name: "Documentation deploy to specific repository"
+description: "Deploy documentation to a specific documentation repository"
+
+inputs:
+  cname:
+    description: 'The canonical name of the documentation website'
+    required: true
+    type: string
+  repository:
+    description: "Repository for documentation deployment"
+    required: true
+    type: string
+  bot-id:
+    description: "Required application ID for documentation deployment"
+    default: ${{ secrets.BOT_APPLICATION_ID }}
+    required: false
+    type: string
+  bot-token:
+    description: "Required application token for documentation deployment"
+    default: ${{ secrets.BOT_APPLICATION_PRIVATE_KEY }}
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Checkout project in the GitHub Pages branch"
+      uses: actions/checkout@v3
+
+    - name: "Download the HTML documentation artifact"
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation-html
+        path: documentation-html
+
+    - name: "Display structure of downloaded files"
+      shell: bash
+      run: |
+        ls -R
+  
+    - name: "Include CNAME and nojekyll files expected by GitHub pages"
+      shell: bash
+      run: |
+        touch documentation-html/CNAME documentation-html/.nojekyll
+        echo ${{ inputs.cname }} > documentation-html/CNAME
+
+    - name: "Get Bot Application Token"
+      id: get-workflow-token
+      uses: peter-murray/workflow-application-token-action@v2
+      with:
+        application_id: ${{ inputs.bot-id }}
+        application_private_key: ${{ inputs.bot-token }}
+
+    - name: "Deploy documentation"
+      uses: JamesIves/github-pages-deploy-action@v4.4.0
+      with:
+        repository-name: ${{ inputs.repository }}
+        token: ${{ steps.get-workflow-token.outputs.token }}
+        branch: gh-pages
+        folder: documentation-html
+        clean: true
+        clean-exclude: release
+        single-commit: true 
