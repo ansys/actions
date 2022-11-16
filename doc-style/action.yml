@@ -1,14 +1,14 @@
-name: "Documentation style"
-description: "Check documentation style using Vale"
+name: "Documentation style."
+description: "Check documentation style using Vale."
 
 inputs:
   vale-config:
-    description: "Path to the Vale configuration file"
+    description: "Path to the Vale configuration file."
     default: "doc/.vale.ini"
     required: false
     type: string
   token:
-    description: "Required token for Vale commenter"
+    description: "Required token for Vale commenter."
     required: true
 
 runs:

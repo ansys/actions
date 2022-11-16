@@ -1,9 +1,9 @@
-name: "Release to GitHub"
-description: "Release library artifacts to GitHub release page"
+name: "Release to GitHub."
+description: "Release library artifacts to GitHub release page."
 
 inputs:
   library-name:
-    description: 'Name of the Python library'
+    description: 'Name of the Python library.'
     required: true
     type: string
 

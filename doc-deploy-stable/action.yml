@@ -1,19 +1,22 @@
+name: "Documentation deploy stable version."
+description: "Deploy stable documentation to GitHub pages."
+
 inputs:
   cname:
-    description: 'The canonical name of the documentation website'
+    description: 'The canonical name of the documentation website.'
     required: true
     type: string
   version-config:
-    description: 'Name of the JSON file specifying version configuration'
+    description: 'Name of the JSON file specifying version configuration.'
     default: 'versions.json'
     required: false
     type: string
   token:
-    description: "Required token for documentation deployment"
+    description: "Required token for documentation deployment."
     required: true
     type: string
   python-version:
-    description: 'Desired Python version'
+    description: 'Desired Python version.'
     default: '3.10'
     required: false
     type: string

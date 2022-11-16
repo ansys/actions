@@ -1,13 +1,13 @@
-name: "Build a Python library"
-description: "Build a Python library by generating wheels and sdist artifacts"
+name: "Build a Python library."
+description: "Build a Python library by generating wheels and sdist artifacts."
 
 inputs:
   library-name:
-    description: 'Name of the Python library'
+    description: 'Name of the Python library.'
     required: true
     type: string
   python-version:
-    description: 'Desired Python version for build'
+    description: 'Desired Python version for build.'
     default: '3.10'
     required: false
     type: string

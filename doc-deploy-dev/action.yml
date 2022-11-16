@@ -1,13 +1,13 @@
-name: "Documentation deploy development version"
-description: "Deploy development documentation to GitHub pages"
+name: "Documentation deploy development version."
+description: "Deploy development documentation to GitHub pages."
 
 inputs:
   cname:
-    description: 'The canonical name of the documentation website'
+    description: 'The canonical name of the documentation website.'
     required: true
     type: string
   token:
-    description: "Required token for documentation deployment"
+    description: "Required token for documentation deployment."
     required: true
     type: string
 

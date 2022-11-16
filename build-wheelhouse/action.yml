@@ -1,21 +1,21 @@
-name: "Build the wheelhouse of a Python library"
-description: "Generate ZIP artifacts for the wheelhouse of a Python library"
+name: "Build the wheelhouse of a Python library."
+description: "Generate ZIP artifacts for the wheelhouse of a Python library."
 
 inputs:
   library-name:
-    description: 'Name of the Python library'
+    description: 'Name of the Python library.'
     required: true
     type: string
   library-namespace:
-    description: 'Namespace of the Python library'
+    description: 'Namespace of the Python library.'
     required: true
     type: string
   operating-system:
-    description: 'Name of the operating system'
+    description: 'Name of the operating system.'
     required: true
     type: string
   python-version:
-    description: 'Desired Python version for build'
+    description: 'Desired Python version for build.'
     required: true
     type: string
   use-python-cache:
