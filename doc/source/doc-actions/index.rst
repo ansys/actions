@@ -140,7 +140,7 @@ at the optional arguments for this action.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+Here is a code sample for using this action within PyAnsys repositories:
 
 .. code-block:: yaml
 
@@ -152,5 +152,7 @@ Here is a code sample for using this action:
         - name: "Deploy documentation"
           uses: pyansys/actions/doc-deploy-to-repo@main
           with:
-              cname: "<library>.docs.pyansys.com"
-              repository: "<owner>/<repository-name>"
+            cname: "<library>.docs.pyansys.com"
+            repository: "<owner>/<repository-name>"
+            bot-id: ${{ secrets.BOT_APPLICATION_ID }}
+            bot-token: ${{ secrets.BOT_APPLICATION_PRIVATE_KEY }}
