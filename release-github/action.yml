@@ -65,4 +65,4 @@ runs:
           ${{ inputs.library-name }}/*.tar.gz
           documentation-html.zip
           documentation-pdf.zip
-          other-artifacts/**/*-wheelhouse-*.whl
+          other-artifacts/**/*-wheelhouse-*.zip
