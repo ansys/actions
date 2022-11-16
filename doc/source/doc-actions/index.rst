@@ -116,3 +116,41 @@ Here is a code sample for using this action:
           with:
               cname: "<library>.docs.pyansys.com"
               token: ${{ secrets.GITHUB_TOKEN }}
+
+Doc deploy action to other repositories
+---------------------------------------
+This action deploys ``HTML`` documentation into the ``gh-pages`` branch of a different
+repository. It is expected to be used after the :ref:`Doc build action` because it looks
+for an artifact named ``documentation-html``.
+
+Following the needs of the different PyAnsys libraries, it may occur that the repository
+for which the documentation is being build is not public yet. For those cases, the
+multi-version mechanism (which the previous actions assume) is not allowed.
+
+The way PyAnsys libraries handle documentation deployment while being private/internal is
+by releasing its documentation to dedicated repositories: one for the dev documetation, and
+a different one for the stable (or internally released) documentation. This action intends
+to allow users to specify which repository they intend to release their docs to.
+
+The PyAnsys CI bot should be allowed to access the targeted documentation repository in order
+to be able to publish your documentation. If for any reason a different bot is used, please look
+at the optional arguments for this action.
+
+.. jinja:: doc-deploy-to-repo
+
+    {{ inputs_table }}
+
+Here is a code sample for using this action:
+
+.. code-block:: yaml
+
+    doc-deploy:
+      name: "Deploy documentation to a different repo"
+      runs-on: ubuntu-latest
+      needs: doc-build
+      steps:
+        - name: "Deploy documentation"
+          uses: pyansys/actions/doc-deploy-to-repo@main
+          with:
+              cname: "<library>.docs.pyansys.com"
+              repository: "<owner>/<repository-name>"
