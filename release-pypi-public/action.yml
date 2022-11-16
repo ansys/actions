@@ -1,5 +1,5 @@
-name: "Release to public PyPI index"
-description: "Release library artifacts to public PyPI index"
+name: "Release to public PyPI index."
+description: "Release library artifacts to public PyPI index."
 
 inputs:
   library-name:

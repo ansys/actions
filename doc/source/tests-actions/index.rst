@@ -31,4 +31,4 @@ Here is a code sample for using this action:
           uses: pyansys/actions/tests-pytest@main
           with:
             pytest-markers: "-k 'mocked'"
-            pytest-options: "--cov"
+            pytest-extra-args: "--cov=ansys.<library> --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html"
