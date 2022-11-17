@@ -21,7 +21,7 @@ Here is a code sample for using this action:
 
     tests:
       name: "Test library"
-      runs-on: ubuntu-latest
+      runs-on: ${{ matrix.os }}
       strategy:
          matrix:
              os: [ubuntu-latest, windows-latest]
