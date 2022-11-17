@@ -22,11 +22,6 @@ inputs:
     description: 'Desired Python version for using twine'
     required: true
     type: string
-  use-python-cache:
-    description: 'Whether to use Python chache or not. Requires a pyproject.toml file.'
-    default: true
-    required: false
-    type: boolean
 
 runs:
   using: "composite"
@@ -36,7 +31,7 @@ runs:
       uses: pyansys/actions/_setup-python@v1
       with:
         python-version: ${{ inputs.python-version }}
-        use-cache: ${{ inputs.use-python-cache }}
+        use-cache: false
 
     - name: "Install twine"
       shell: bash
