@@ -188,7 +188,6 @@ jobs:
             cname: ${{ env.CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
             python-version: ${{ env.MAIN_PYTHON_VERSION }}
-            use-python-cache: false
 
   tests-build:
     name: "Test library build"
@@ -238,7 +237,6 @@ jobs:
         twine-username: "__token__"
         twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
-        use-python-cache: false
 
   release-gitub:
     name: "Release to GitHub"
