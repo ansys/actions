@@ -24,7 +24,7 @@ runs:
         path: documentation-html
 
     - name: "Zip HTML documentation"
-      uses: vimtor/action-zip@v1
+      uses: vimtor/action-zip@v1.1
       with:
         files: documentation-html
         dest: documentation-html.zip
@@ -36,7 +36,7 @@ runs:
         path: documentation-pdf
 
     - name: "Zip PDF documentation"
-      uses: vimtor/action-zip@v1
+      uses: vimtor/action-zip@v1.1
       with:
         files: documentation-pdf
         dest: documentation-pdf.zip
