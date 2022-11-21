@@ -51,6 +51,7 @@ runs:
       shell: bash
       run: |
         echo "install_target=$(( ${{ inputs.target }} == '' ? '.' : '.[${{ inputs.target }}]'))" >> $GITHUB_ENV
+        echo "wheelhouse_target=$(( ${{ inputs.target }} == '' ? 'wheelhouse' : '${{ inputs.target }}-wheelhouse'))" >> $GITHUB_ENV
 
     - name: "Install the library"
       shell: bash
@@ -69,11 +70,11 @@ runs:
       uses: vimtor/action-zip@v1.1
       with:
         files: wheelhouse
-        dest: ${{ inputs.library-name }}-v${{ env.library_version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        dest: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: "Upload wheelhouse"
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.library-name }}-v${{ env.library_version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}
+        name: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: '*.zip'
         retention-days: 7
