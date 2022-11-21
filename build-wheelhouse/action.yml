@@ -56,7 +56,7 @@ runs:
       run: python -m pip wheel . -w wheelhouse
 
     - name: "Zip wheelhouse"
-      uses: vimtor/action-zip@v1
+      uses: vimtor/action-zip@v1.1
       with:
         files: wheelhouse
         dest: ${{ inputs.library-name }}-v${{ env.library_version }}-wheelhouse-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
