@@ -33,7 +33,7 @@ runs:
       uses: pyansys/actions/_release-pypi@v1
       with:
         library-name: ${{ inputs.library-name }}
-        index-name: "https://upload.pypi.org"
+        index-name: "https://upload.pypi.org/legacy/"
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}
         python-version: ${{ inputs.python-version }}
