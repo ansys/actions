@@ -23,7 +23,7 @@ Here is a code sample for using this action:
       runs-on: ubuntu-latest
       steps:
         - name: "Build library source and wheel artifacts"
-          uses: pyansys/actions/build-library@v1
+          uses: pyansys/actions/build-library@main
           with:
             library-name: "ansys-<product>-<library>"
 
@@ -52,7 +52,7 @@ Here is a code sample for using this action:
              python-version: ['3.7', '3.8', '3.9', '3.10']
       steps:
         - name: "Build a wheelhouse of the Python library"
-          uses: pyansys/actions/build-wheelhouse@v1
+          uses: pyansys/actions/build-wheelhouse@main
           with:
             library-name: "<ansys-product-library>"
             library-namespace: "<ansys.product.libray>"
@@ -80,5 +80,5 @@ C-extension.
              os: [ubuntu-latest, windows-latest, macos-11]
       steps:
         - name: "Build a C-extension library wheel artifacts"
-          uses: pyansys/actions/build-ci-library@v1
+          uses: pyansys/actions/build-ci-library@main
 

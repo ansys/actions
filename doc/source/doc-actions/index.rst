@@ -35,7 +35,7 @@ Here is a code sample for using this action:
       needs: doc-style
       steps:
         - name: "Run Ansys documentation building action"
-          uses: pyansys/actions/doc-build@v1
+          uses: pyansys/actions/doc-build@main
 
 
 Doc deploy dev action
@@ -59,7 +59,7 @@ Here is a code sample for using this action:
       if: github.event_name == 'push'
       steps:
         - name: "Deploy the latest documentation"
-          uses: pyansys/actions/doc-deploy-dev@v1
+          uses: pyansys/actions/doc-deploy-dev@main
           with:
               cname: "<library>.docs.pyansys.com"
               token: ${{ secrets.GITHUB_TOKEN }}
@@ -112,7 +112,7 @@ Here is a code sample for using this action:
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Deploy the stable documentation"
-          uses: pyansys/actions/doc-deploy-stable@v1
+          uses: pyansys/actions/doc-deploy-stable@main
           with:
               cname: "<library>.docs.pyansys.com"
               token: ${{ secrets.GITHUB_TOKEN }}
@@ -150,7 +150,7 @@ Here is a code sample for using this action within PyAnsys repositories:
       needs: doc-build
       steps:
         - name: "Deploy documentation"
-          uses: pyansys/actions/doc-deploy-to-repo@v1
+          uses: pyansys/actions/doc-deploy-to-repo@main
           with:
             cname: "<library>.docs.pyansys.com"
             repository: "<owner>/<repository-name>"

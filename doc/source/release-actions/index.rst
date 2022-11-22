@@ -32,7 +32,7 @@ Here is a code sample for using this action:
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Release to the private PyPI repository"
-          uses: pyansys/actions/release-pypi-private@v1
+          uses: pyansys/actions/release-pypi-private@main
           with:
             library-name: "ansys-<product>-<library"
             twine-username: "__token__"
@@ -61,7 +61,7 @@ Here is a code sample for using this action:
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Release to the test PyPI repository"
-          uses: pyansys/actions/release-pypi-test@v1
+          uses: pyansys/actions/release-pypi-test@main
           with:
             library-name: "ansys-<product>-<library"
             twine-username: "__token__"
@@ -90,7 +90,7 @@ Here is a code sample for using this action:
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Release to the public PyPI repository"
-          uses: pyansys/actions/release-pypi-public@v1
+          uses: pyansys/actions/release-pypi-public@main
           with:
             library-name: "ansys-<product>-<library"
             twine-username: "__token__"
@@ -119,7 +119,7 @@ Here is a code sample for using this action:
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Release to GitHub"
-          uses: pyansys/actions/release-github@v1
+          uses: pyansys/actions/release-github@main
           with:
             library-name: "ansys-<product>-<library"
 
