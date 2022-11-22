@@ -29,9 +29,9 @@ Here is a code sample for using this action:
       name: "Release to private PyPI"
       runs-on: ubuntu-latest
       needs: [build-library]
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Release to the private PyPI repository"
-          if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
           uses: pyansys/actions/release-pypi-private@main
           with:
             library-name: "ansys-<product>-<library"
@@ -58,9 +58,9 @@ Here is a code sample for using this action:
       name: "Release to test PyPI"
       runs-on: ubuntu-latest
       needs: [build-library]
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Release to the test PyPI repository"
-          if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
           uses: pyansys/actions/release-pypi-test@main
           with:
             library-name: "ansys-<product>-<library"
@@ -87,9 +87,9 @@ Here is a code sample for using this action:
       name: "Release to public PyPI"
       runs-on: ubuntu-latest
       needs: [build-library]
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Release to the public PyPI repository"
-          if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
           uses: pyansys/actions/release-pypi-public@main
           with:
             library-name: "ansys-<product>-<library"
@@ -116,9 +116,9 @@ Here is a code sample for using this action:
       name: "Release to GitHub"
       runs-on: ubuntu-latest
       needs: [build-library]
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Release to GitHub"
-          if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
           uses: pyansys/actions/release-github@main
           with:
             library-name: "ansys-<product>-<library"

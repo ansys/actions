@@ -56,9 +56,9 @@ Here is a code sample for using this action:
       name: "Deploy developers documentation"
       runs-on: ubuntu-latest
       needs: doc-build
+      if: github.event_name == 'push'
       steps:
         - name: "Deploy the latest documentation"
-          if: github.event_name == 'push'
           uses: pyansys/actions/doc-deploy-dev@main
           with:
               cname: "<library>.docs.pyansys.com"
@@ -109,9 +109,9 @@ Here is a code sample for using this action:
       name: "Deploy stable documentation"
       runs-on: ubuntu-latest
       needs: doc-build
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       steps:
         - name: "Deploy the stable documentation"
-          if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
           uses: pyansys/actions/doc-deploy-stable@main
           with:
               cname: "<library>.docs.pyansys.com"
