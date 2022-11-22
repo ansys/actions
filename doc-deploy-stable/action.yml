@@ -34,16 +34,31 @@ runs:
       shell: bash
       run: ls -R
 
-    - name: "Prepare destination folder"
+    - name: "Check adequate version tagging"
       shell: bash
       run: |
         # Remove the 'v' or the 'release/' at the beginning of the tag
         ref_name="${{ github.ref_name }}"
         version=${ref_name##*v}
         version=${version##*release/}
+        # Check that the version is of the accepted format
+        echo "ACCEPTED_FORMAT=$([[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")" >> $GITHUB_ENV
+        echo "PRELIMINARY_VERSION=$version" >> $GITHUB_ENV
+
+    - name: "Ignoring deployment... invalid version format!"
+      if: env.ACCEPTED_FORMAT == 'false'
+      shell: bash
+      run: |
+        echo "INVALID VERSION FORMAT - $PRELIMINARY_VERSION"
+        echo "Should be of type X.Y.Z... Ignoring documentation deployment"
+
+    - name: "Prepare destination folder"
+      if: env.ACCEPTED_FORMAT == 'true'
+      shell: bash
+      run: |
         # Filter out the major and minor version numbers
-        major=$(echo $version | cut -d. -f1)
-        minor=$(echo $version | cut -d. -f2)
+        major=$(echo $PRELIMINARY_VERSION | cut -d. -f1)
+        minor=$(echo $PRELIMINARY_VERSION | cut -d. -f2)
         folder=release/$major.$minor
         echo "Folder was found to be $folder"
         # Create a new folder for the version (remove existing one if required)
@@ -53,29 +68,34 @@ runs:
         echo "VERSION=$major.$minor" >> $GITHUB_ENV
 
     - name: "Download the HTML documentation artifact in release/${{ github.ref_name }}"
+      if: env.ACCEPTED_FORMAT == 'true'
       uses: actions/download-artifact@v3
       with:
         name: documentation-html
         path: release/${{ env.VERSION }}
   
     - name: "Set up Python ${{ inputs.python-version }}"
+      if: env.ACCEPTED_FORMAT == 'true'
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
 
     - name: "Install system dependencies for updating version table"
+      if: env.ACCEPTED_FORMAT == 'true'
       shell: bash
       run: |
         sudo apt-get install curl
         python -m pip install -U pip
 
     - name: "Get the version_mapper.py utility"
+      if: env.ACCEPTED_FORMAT == 'true'
       shell: bash
       run: |
         curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/version_mapper.py -o version_mapper.py
 
     - name: "Update the version JSON file"
+      if: env.ACCEPTED_FORMAT == 'true'
       shell: bash
       run: | 
         python version_mapper.py \
@@ -83,10 +103,11 @@ runs:
           --json_filename ${{ inputs.version-config }} \
           --new_version ${{ env.VERSION }} \
           --render_last 3
-        # Remove the scrip to avoid Git tracking it
+        # Remove the script to avoid Git tracking it
         rm -rf version_mapper.py
 
     - name: "Commit new changes (if required)"
+      if: env.ACCEPTED_FORMAT == 'true'
       shell: bash
       run: |
           if [[ ! -z $(git status -s) ]];
