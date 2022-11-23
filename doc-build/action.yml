@@ -39,7 +39,19 @@ runs:
   
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-  
+
+    - name: "Check if X Virtual Frame Buffer is needed"
+      shell: bash
+      if: inputs.requires-xvfb == 'true'
+      run: |
+        echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }} xvfb')" >> $GITHUB_ENV
+
+    - name: "Cache apt packages needed"
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: ${{ env.NEEDED_DEPS }} texlive-latex-extra latexmk
+        version: 1.0
+
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
       with:
@@ -49,23 +61,6 @@ runs:
     - name: "Update pip"
       shell: bash
       run: python -m pip install -U pip
-  
-    - name: "Install system dependencies"
-      shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get install ${{ inputs.dependencies }}
-
-    - name: "Install LaTeX"
-      shell: bash
-      run: |
-        sudo apt-get install texlive-latex-extra latexmk
-
-    - name: "Install X Virtual Frame Buffer"
-      shell: bash
-      if: inputs.requires-xvfb == 'true'
-      run: |
-        sudo apt-get install xvfb
 
     - name: "Install Python library"
       shell: bash
