@@ -54,7 +54,7 @@ runs:
 
     - name: "Trial to make PDFLaTeX work"
       shell: bash
-      run: sudo texconfig rehash
+      run: sudo fmtutil-sys --all
 
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
