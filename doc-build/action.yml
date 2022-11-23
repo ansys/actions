@@ -52,6 +52,10 @@ runs:
         packages: ${{ env.NEEDED_DEPS }} texlive-latex-extra latexmk
         version: 1.0
 
+    - name: "Trial to make PDFLaTeX work"
+      shell: bash
+      run: sudo texconfig rehash
+
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
       with:
