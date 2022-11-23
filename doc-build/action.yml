@@ -49,14 +49,13 @@ runs:
     - name: "Cache apt packages needed"
       uses: awalsh128/cache-apt-pkgs-action@v1
       with:
-        packages: ${{ env.NEEDED_DEPS }} texlive-latex-extra latexmk
+        packages: ${{ env.NEEDED_DEPS }}
         version: 1.0
 
-    - name: "Trial to make PDFLaTeX work"
+    - name: "Install LaTeX"
       shell: bash
       run: |
-        sudo fmtutil-sys --all
-        sudo texconfig rehash
+        sudo apt-get install texlive-latex-extra latexmk
 
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
