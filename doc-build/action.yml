@@ -47,7 +47,7 @@ runs:
         echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }} xvfb')" >> $GITHUB_ENV
 
     - name: "Cache apt packages needed"
-      uses: awalsh128/cache-apt-pkgs-action@latest
+      uses: awalsh128/cache-apt-pkgs-action@v1
       with:
         packages: ${{ env.NEEDED_DEPS }} texlive-latex-extra latexmk
         version: 1.0
