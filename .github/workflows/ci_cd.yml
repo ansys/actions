@@ -1,6 +1,7 @@
 name: GitHub CI
 on:
   pull_request:
+  workflow_dispatch:
   push:
     tags:
       - "*"
