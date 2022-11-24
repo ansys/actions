@@ -4,9 +4,9 @@ description: "Check if package licenses in the current environment are among the
 inputs:
   accepted-licenses:
     description: "List of accepted licenses"
-    default: ["MIT", "BSD"]
+    default: "MIT"
     required: false
-    type: list
+    type: string
 
 runs:
   using: "composite"
