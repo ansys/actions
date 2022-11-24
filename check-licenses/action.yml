@@ -16,6 +16,8 @@ runs:
       shell: bash
       run: |
         pip install pip-licenses
-        licenses="$(pip-licenses --summary)"
-        python check-licenses/check_licenses.py -l=licenses
+        licenses=$(pip-licenses --summary)
+        echo This is licences before entering to py script
+        echo $licenses
+        python check-licenses/check_licenses.py -l=$licenses
         pip uninstall -y pip-licenses
