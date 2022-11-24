@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 
@@ -93,20 +94,18 @@ def update_switch_version_file(
         json.dump(new_content, switcher_file, indent=4)
 
     # Use the latest stable verion for formatting the announcement
-    with open(annoucement_filename, "r") as announcement_file:
+    with open(f"release/{annoucement_filename}", "r") as announcement_file:
         content = announcement_file.read()
         announcement_content = content.format(version=latest_stable_version)
 
     # Include the announcement in all available release folders. Note that
     # these are still accessible even if they are not included in the dropdown.
-    release_folders = [path for path in Path("./").iterdir() if path.is_dir()]
-    for release_folder in release_folders:
-        # Skip the latest stable version
-        if str(release_folder) == latest_stable_version:
-            continue
-
+    old_release_folders = [
+        path for path in Path("./").iterdir() if re.match("^[0-9]+.[0-9]+$", path.name)
+    ]
+    for release_folder in old_release_folders:
         # Create an 'announcement.html' file within each one of the old versions
-        with open(f"{str(release_folder)}/announcement.html", "w") as file:
+        with open(f"release/{release_folder.name}/announcement.html", "w") as file:
             file.write(announcement_content)
 
 
