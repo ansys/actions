@@ -14,8 +14,10 @@ def check_licenses():
     print(os.environ)
     print("Printing licenses:")
     print(os.environ.get("LICENSES"))
-    dummy_list = ["random lib", "more libs"]
-    raise (LicenseError(ERROR_MESSAGE.format(invalid_licenses=dummy_list)))
+    invalid_licenses = []
+
+    if invalid_licenses:
+        raise (LicenseError(ERROR_MESSAGE.format(invalid_licenses=invalid_licenses)))
 
 
 if __name__ == "__main__":
