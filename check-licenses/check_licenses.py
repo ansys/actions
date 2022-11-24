@@ -1,7 +1,6 @@
 
 def check_licenses():
-    print("Hi!")
-    return 0
+    raise(ValueError)
 
 
 if __name__ == '__main__':
