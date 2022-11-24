@@ -11,15 +11,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: "List all the content of current directory"
-      shell: bash
-      run: ls
 
     - name: "Check licences of packages"
       shell: bash
       run: |
         pip install pip-licenses
         echo "LICENSES=$(echo 'pip-licenses --summary')" >> $GITHUB_ENV
-        echo ${{ env.LICENSES }}
+        echo $env.LICENSES
+        echo $LICENSES
         python check-licenses/check_licenses.py
         pip uninstall -y pip-licenses
