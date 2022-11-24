@@ -31,10 +31,11 @@ def test_update_switch_version_file(new_version, render_last, cname):
 
     # Execute the logic behind the version update script
     update_switch_version_file(
-        filename="versions.json",
+        json_filename="versions.json",
         new_version=new_version,
         cname=cname,
         render_last=render_last,
+        annoucement_filename="announcement.html",
     )
 
     with open("release/versions.json", "r") as switcher_file:
