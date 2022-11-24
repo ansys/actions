@@ -1,0 +1,19 @@
+name: "Check licenses"
+description: "Check if package licenses in the current environment are among the accepted ones"
+
+inputs:
+  accepted-licenses:
+    description: "List of accepted licenses"
+    default: ["MIT", "BSD"]
+    required: false
+    type: list
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Check licences of packages"
+      shell: bash
+      run: |
+        pip install pip-licenses
+        python check_licenses.py
+        pip uninstall -y pip-licenses
