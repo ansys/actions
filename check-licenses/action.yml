@@ -11,6 +11,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: "List all the content of current directory"
+      run: ls
+
     - name: "Check licences of packages"
       shell: bash
       run: |
