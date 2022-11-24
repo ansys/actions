@@ -19,5 +19,6 @@ runs:
       shell: bash
       run: |
         pip install pip-licenses
+        LICENSES="$(pip-licenses --summary)"
         python check-licenses/check_licenses.py
         pip uninstall -y pip-licenses
