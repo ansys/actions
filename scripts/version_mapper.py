@@ -2,6 +2,8 @@
 
 import argparse
 import json
+import re
+from pathlib import Path
 
 
 def sort_versions_descending(versions_list):
@@ -17,12 +19,14 @@ def sort_versions_descending(versions_list):
     return versions_list[::-1]
 
 
-def update_switch_version_file(filename, new_version, cname, render_last):
+def update_switch_version_file(
+    json_filename, new_version, cname, render_last, announcement_filename
+):
     """Add new version number and associated URL to JSON file.
 
     Parameters
     ----------
-    filename : str
+    json_filename : str
         File name of the version switcher JSON file.
     new_version : str
         The new version to be added to the version switcher JSON file.
@@ -30,9 +34,11 @@ def update_switch_version_file(filename, new_version, cname, render_last):
         The canonical name of the project's documentation website.
     render_last : int
         The number of stable releases to be shown in the version switcher.
+    announcement_file : str
+        Name of the HTML file controlling the outdated version announcement.
 
     """
-    with open(f"release/{filename}", "r") as switcher_file:
+    with open(f"release/{json_filename}", "r") as switcher_file:
         # Load the content of the
         current_content = json.load(switcher_file)
 
@@ -63,6 +69,9 @@ def update_switch_version_file(filename, new_version, cname, render_last):
         else:
             new_versions_list = current_versions_list
 
+        # Get the latest stable version
+        latest_stable_version = new_versions_list[0]
+
         # Force the HTTPS in front of the CNAME
         cname = f"https://{cname}" if not cname.startswith("https://") else cname
 
@@ -80,14 +89,36 @@ def update_switch_version_file(filename, new_version, cname, render_last):
 
     # Override the whole content of the version switches JSON file with the new
     # generated version data
-    with open(f"release/{filename}", "w") as switcher_file:
+    with open(f"release/{json_filename}", "w") as switcher_file:
         # Update JSON file with the new content
         json.dump(new_content, switcher_file, indent=4)
+
+    # Use the latest stable verion for formatting the announcement
+    with open(f"release/{announcement_filename}", "r") as announcement_file:
+        content = announcement_file.read()
+        announcement_content = content.format(version=latest_stable_version)
+
+    # Include the announcement in all available release folders. Note that
+    # these are still accessible even if they are not included in the dropdown.
+    old_release_folders = [
+        path for path in Path("./").iterdir() if re.match("^[0-9]+.[0-9]+$", path.name)
+    ]
+    for release_folder in old_release_folders:
+        # Create an 'announcement.html' file within each one of the old versions
+        with open(f"release/{release_folder.name}/announcement.html", "w") as file:
+            file.write(announcement_content)
 
 
 def parse_cli_arguments():
     """Parse all command line arguments."""
     parser = argparse.ArgumentParser(description="Version switcher JSON file updater.")
+    parser.add_argument(
+        "-a",
+        "--announcement_filename",
+        type=str,
+        default="announcement.html",
+        help="Name of the HTML file controlling the outdated version announcement.",
+    )
     parser.add_argument(
         "-c", "--cname", type=str, help="Canonical name of the project's documentation."
     )
@@ -121,7 +152,11 @@ def main():
 
     # Update the version swithcher JSON file with desired information
     update_switch_version_file(
-        args.json_filename, args.new_version, args.cname, args.render_last
+        args.json_filename,
+        args.new_version,
+        args.cname,
+        args.render_last,
+        args.announcement_file,
     )
 
 
