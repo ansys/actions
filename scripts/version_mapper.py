@@ -20,7 +20,7 @@ def sort_versions_descending(versions_list):
 
 
 def update_switch_version_file(
-    json_filename, new_version, cname, render_last, annoucement_filename
+    json_filename, new_version, cname, render_last, announcement_filename
 ):
     """Add new version number and associated URL to JSON file.
 
@@ -34,7 +34,7 @@ def update_switch_version_file(
         The canonical name of the project's documentation website.
     render_last : int
         The number of stable releases to be shown in the version switcher.
-    announcement_filename : str
+    announcement_file : str
         Name of the HTML file controlling the outdated version announcement.
 
     """
@@ -94,7 +94,7 @@ def update_switch_version_file(
         json.dump(new_content, switcher_file, indent=4)
 
     # Use the latest stable verion for formatting the announcement
-    with open(f"release/{annoucement_filename}", "r") as announcement_file:
+    with open(f"release/{announcement_filename}", "r") as announcement_file:
         content = announcement_file.read()
         announcement_content = content.format(version=latest_stable_version)
 

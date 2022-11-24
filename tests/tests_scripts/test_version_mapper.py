@@ -35,7 +35,7 @@ def test_update_switch_version_file(new_version, render_last, cname):
         new_version=new_version,
         cname=cname,
         render_last=render_last,
-        annoucement_filename="announcement.html",
+        announcement_filename="announcement.html",
     )
 
     with open("release/versions.json", "r") as switcher_file:
