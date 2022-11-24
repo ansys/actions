@@ -12,6 +12,7 @@ runs:
   using: "composite"
   steps:
     - name: "List all the content of current directory"
+      shell: bash
       run: ls
 
     - name: "Check licences of packages"
