@@ -19,6 +19,7 @@ runs:
       shell: bash
       run: |
         pip install pip-licenses
-        LICENSES="$(pip-licenses --summary)"
+        echo "LICENSES=$(echo 'pip-licenses --summary')" >> $GITHUB_ENV
+        echo ${{ env.LICENSES }}
         python check-licenses/check_licenses.py
         pip uninstall -y pip-licenses
