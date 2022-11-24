@@ -1,4 +1,4 @@
-import os
+import argparse
 
 ERROR_MESSAGE = """
 At least one license is not accepted. The list of invalid \
@@ -9,11 +9,9 @@ class LicenseError(Exception):
     pass
 
 
-def check_licenses():
-    print("Printing all env variables:")
-    print(os.environ)
-    print("Printing licenses:")
-    print(os.environ.get("LICENSES"))
+def check_licenses(args):
+    print("Print argument received from yml file:")
+    print(args.licenses)
     invalid_licenses = []
 
     if invalid_licenses:
@@ -21,4 +19,9 @@ def check_licenses():
 
 
 if __name__ == "__main__":
-    check_licenses()
+    parser = argparse.ArgumentParser(
+        description="check that all licenses used are valid"
+    )
+    parser.add_argument("--licenses", "-l")
+    args = parser.parse_args()
+    check_licenses(args)
