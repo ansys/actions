@@ -33,4 +33,4 @@ jobs:
           use-cache: false
 
       - name: "Debug check_licenses action"
-        uses: pyansys/actions/check_licenses@feat/check_licenses
+        uses: pyansys/actions/check_licenses@main
