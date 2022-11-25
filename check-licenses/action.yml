@@ -19,8 +19,9 @@ runs:
         python -m pip install matplotlib numpy
         python -m pip install pip-licenses
         mapfile licenses_from_txt < check-licenses/accepted-licenses.txt
+        echo "Accept licences if they contain:"
         accepted_licenses=''
-        for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\|"; done
+        for license in ${licenses_from_txt[*]}; do echo $license && accepted_licenses+="$license\|"; done
         accepted_licenses=${accepted_licenses::-2}
         echo $accepted_licenses
         pip-licenses
