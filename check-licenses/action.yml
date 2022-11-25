@@ -34,7 +34,8 @@ runs:
         if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2) ]]; then
           echo "All licenses are valid"
         else
-          echo "Invalid licenses found. Failing action."
+          echo "Invalid licenses found. Failing action. The invalid license and its associated packages are:"
+          pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses
           exit 1
         fi
         pip uninstall -y pip-licenses
