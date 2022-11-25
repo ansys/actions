@@ -22,5 +22,12 @@ runs:
         echo $accepted_licenses
         accepted_licenses=${accepted_licenses::-2}
         echo $accepted_licenses
+        echo pip-licenses
+        pip-licenses
+        echo "pip-licenses --summary"
+        pip-licenses --summary
+        echo $(pip-licenses --summary)
+        echo "$(pip-licenses --summary)"
         echo "$(pip-licenses --summary | grep -v $accepted_licenses)"
+        pip-licenses --summary | grep -v $accepted_licenses
         pip uninstall -y pip-licenses
