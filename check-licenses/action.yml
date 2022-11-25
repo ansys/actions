@@ -31,12 +31,10 @@ runs:
         echo $ignored_packages
         pip-licenses
         pip-licenses --summary
-        echo "DBG: show result from command"
-        pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2
         if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2) ]]; then
           echo "All licenses are valid"
         else
           echo "Invalid licenses found. Failing action."
-          exit
+          exit 1
         fi
         pip uninstall -y pip-licenses
