@@ -46,6 +46,7 @@ runs:
       shell: bash
       run: |
         python -m pip install pip-licenses
+        ls
         mapfile licenses_from_txt < check-licenses/accepted-licenses.txt
         echo "Accept licences if they contain:"
         accepted_licenses=''
