@@ -23,10 +23,17 @@ runs:
         accepted_licenses=''
         for license in ${licenses_from_txt[*]}; do echo $license && accepted_licenses+="$license\|"; done
         accepted_licenses=${accepted_licenses::-2}
-        echo $accepted_licenses
+        mapfile ignored_packages_from_txt < check-licenses/ignored-packages.txt
+        echo "Ignored (trusted) packages are:"
+        ignored_packages=''
+        for pckg in ${ignored_packages_from_txt[*]}; do echo $pckg && ignored_packages+="$pckg "; done
+        ignored_packages_from_txt=${ignored_packages_from_txt::-1}
+        echo $ignored_packages
         pip-licenses
         pip-licenses --summary
-        if [[ -z $(pip-licenses --summary --ignore-packages matplotlib | grep -v $accepted_licenses | tail -n+2) ]]; then
+        echo "DBG: show result from command"
+        pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2
+        if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2) ]]; then
           echo "All licenses are valid"
         else
           echo "Invalid licenses found. Failing action."
