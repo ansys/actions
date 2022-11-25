@@ -2,15 +2,45 @@ name: "Check licenses"
 description: "Check if package licenses in the current environment are among the accepted ones"
 
 inputs:
-  accepted-licenses:
-    description: "List of accepted licenses"
-    default: "MIT BSD Apache PSF HPND"
+  python-version:
+    description: 'Desired Python version.'
+    default: '3.10'
     required: false
     type: string
+  use-python-cache:
+    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    required: false
+    default: true
+    type: boolean
+  skip-install:
+    description: 'Skip project installation.'
+    default: false
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
   steps:
+    - name: "Install Git and clone project"
+      if: inputs.skip-install == 'false'
+      uses: actions/checkout@v3
+
+    - name: "Set up Python"
+      if: inputs.skip-install == 'false'
+      uses: pyansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+
+    - name: "Update pip"
+      if: inputs.skip-install == 'false'
+      shell: bash
+      run: python -m pip install -U pip
+
+    - name: "Install Python library"
+      if: inputs.skip-install == 'false'
+      shell: bash
+      run: python -m pip install .
 
     - name: "Check licences of packages"
       shell: bash

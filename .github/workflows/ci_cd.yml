@@ -36,3 +36,6 @@ jobs:
 
       - name: "Debug check_licenses action"
         uses: pyansys/actions/check-licenses@feat/check-licenses
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          skip-install: true
