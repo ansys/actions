@@ -16,8 +16,11 @@ runs:
       shell: bash
       run: |
         pip install pip-licenses
-        licenses=$(pip-licenses --summary)
-        echo This is licences before entering to py script
-        echo $licenses
-        python check-licenses/check_licenses.py -l=$licenses
+        input=('MIT' 'BSD' 'Apache' 'PSF' 'HPND')
+        accepted_licenses=''
+        for license in ${input[*]}; do accepted_licenses+="$license\|"; done
+        echo $accepted_licenses
+        accepted_licenses=${accepted_licenses::-2}
+        echo $accepted_licenses
+        echo "$(pip-licenses --summary | grep -v $accepted_licenses)"
         pip uninstall -y pip-licenses
