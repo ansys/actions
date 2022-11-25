@@ -3,3 +3,6 @@ BSD
 Apache
 PSF
 HPND
+Ansys
+MPL
+ISC

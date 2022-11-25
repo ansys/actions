@@ -1,1 +1,2 @@
-dummyPackage
+matplotlib
+pypiwin32
