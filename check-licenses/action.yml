@@ -17,7 +17,7 @@ runs:
       run: |
         echo ${{ inputs.accepted-licenses }}
         python -m pip install pip-licenses
-        input=${{ inputs.accepted-licenses }}
+        input=("MIT" "BSD" "Apache" "PSF" "HPND")
         accepted_licenses=''
         for license in ${input[*]}; do accepted_licenses+="$license\|"; done
         echo $accepted_licenses
