@@ -16,6 +16,7 @@ runs:
       shell: bash
       run: |
         echo ${{ inputs.accepted-licenses }}
+        python -m pip install matplotlib numpy
         python -m pip install pip-licenses
         input=("MIT" "BSD" "Apache" "PSF" "HPND")
         accepted_licenses=''
