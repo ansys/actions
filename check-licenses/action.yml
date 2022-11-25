@@ -21,10 +21,8 @@ runs:
         input=("MIT" "BSD" "Apache" "PSF" "HPND")
         accepted_licenses=''
         for license in ${input[*]}; do accepted_licenses+="$license\|"; done
-        echo $accepted_licenses
         accepted_licenses=${accepted_licenses::-2}
-        echo $accepted_licenses
         pip-licenses
         pip-licenses --summary
-        pip-licenses --summary | grep -v $accepted_licenses
+        pip-licenses --summary --ignore-packages matplotlib | grep -v $accepted_licenses
         pip uninstall -y pip-licenses
