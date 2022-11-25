@@ -4,7 +4,7 @@ description: "Check if package licenses in the current environment are among the
 inputs:
   accepted-licenses:
     description: "List of accepted licenses"
-    default: "MIT"
+    default: "MIT BSD Apache PSF HPND"
     required: false
     type: string
 
@@ -15,8 +15,9 @@ runs:
     - name: "Check licences of packages"
       shell: bash
       run: |
+        echo ${{ inputs.accepted-licenses }}
         pip install pip-licenses
-        input=('MIT' 'BSD' 'Apache' 'PSF' 'HPND')
+        input=${{ inputs.accepted-licenses }}
         accepted_licenses=''
         for license in ${input[*]}; do accepted_licenses+="$license\|"; done
         echo $accepted_licenses
