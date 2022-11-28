@@ -1,10 +1,10 @@
-MIT
-BSD
-Apache
-PSF
-HPND
 Ansys
-MPL
-ISC
+Apache
+BSD
 GNU
+HPND
+ISC
+MIT
+MPL
+PSF
 
