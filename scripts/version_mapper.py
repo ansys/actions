@@ -94,9 +94,13 @@ def update_switch_version_file(
         json.dump(new_content, switcher_file, indent=4)
 
     # Use the latest stable verion for formatting the announcement
-    with open(f"release/{announcement_filename}", "r") as announcement_file:
-        content = announcement_file.read()
-        announcement_content = content.format(version=latest_stable_version)
+    try:
+        with open(f"release/{announcement_filename}", "r") as announcement_file:
+            content = announcement_file.read()
+            announcement_content = content.format(version=latest_stable_version)
+    except FileNotFoundError:
+        # If no announcement file has been found, terminate this script
+        return
 
     # Include the announcement in all available release folders. Note that
     # these are still accessible even if they are not included in the dropdown.
