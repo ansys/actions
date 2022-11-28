@@ -52,11 +52,11 @@ runs:
       shell: bash
       run: pip install ${{ env.install_target }}
 
-    - name: "Download txt files so they are found from other repos"
-      shell: bash
-      run: |
-        wget https://raw.githubusercontent.com/pyansys/actions/feat/check-licenses/check-licenses/accepted-licenses.txt
-        wget https://raw.githubusercontent.com/pyansys/actions/feat/check-licenses/check-licenses/ignored-packages.txt
+    - name: "Checkout TXT files"
+      uses: Bhacaz/checkout-files@v2
+      with:
+        files: check-licenses/accepted-licenses.txt check-licenses/ignored-packages.txt
+        branch: feat/check-licenses
 
     - name: "Check licences of packages"
       shell: bash
