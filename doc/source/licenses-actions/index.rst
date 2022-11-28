@@ -13,7 +13,7 @@ The valid licenses are defined in the ``accepted-licenses.txt``. Moreover, an ad
 file ``ignored-packages.txt`` contains a list of packages that are trusted but may not have a
 valid license associated.
 
-This acction accepts the following inputs.
+This action accepts the following inputs.
 
 .. jinja:: check-licenses
 
@@ -34,7 +34,7 @@ Here is a code sample for using this action:
 
 .. note::
 
-  If a certain repository requires a different license or packages
+  If a certain repository requires a different license or package
   that is not included in the original list, a PR can be proposed at ``pyansys/actions`` to
   modify these TXT files as needed. When doing that, two considerations have to be taken into account:
 
