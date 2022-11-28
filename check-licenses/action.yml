@@ -62,26 +62,27 @@ runs:
       shell: bash
       run: |
         python -m pip install pip-licenses
-# Load accepted licenses
-mapfile licenses_from_txt < accepted-licenses.txt
-accepted_licenses=''
-for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\|"; done
-accepted_licenses=${accepted_licenses::-2}
-echo "Accepted licenses: $accepted_licenses"
+        
+        # Load accepted licenses
+        mapfile licenses_from_txt < accepted-licenses.txt
+        accepted_licenses=''
+        for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\|"; done
+        accepted_licenses=${accepted_licenses::-2}
+        echo "Accepted licenses: $accepted_licenses"
 
-# Load accepted packages
-mapfile ignored_packages_from_txt < ignored-packages.txt
-ignored_packages=''
-for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg "; done
-ignored_packages_from_txt=${ignored_packages_from_txt::-1}
-echo "Ignored packages: $ignored_packages"
+        # Load accepted packages
+        mapfile ignored_packages_from_txt < ignored-packages.txt
+        ignored_packages=''
+        for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg "; done
+        ignored_packages_from_txt=${ignored_packages_from_txt::-1}
+        echo "Ignored packages: $ignored_packages"
 
-# Verify if the Python environment contains invalid licenses
-if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2) ]]; then
-  echo "All licenses are valid."
-else
-  echo -e "\nInvalid licenses found:\n"
-  pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses | awk 'NR>1 {print $1 " " $2 " has " $3 " license"}'
-  exit 1
-fi
+        # Verify if the Python environment contains invalid licenses
+        if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2) ]]; then
+          echo "All licenses are valid."
+        else
+          echo -e "\nInvalid licenses found:\n"
+          pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses | awk 'NR>1 {print $1 " " $2 " has " $3 " license"}'
+          exit 1
+        fi
         pip uninstall -y pip-licenses
