@@ -98,6 +98,7 @@ def update_switch_version_file(
         with open(f"release/{announcement_filename}", "r") as announcement_file:
             content = announcement_file.read()
             announcement_content = content.format(version=latest_stable_version)
+            print(f"Announcement content is:\n{announcement_content}")
     except FileNotFoundError:
         # If no announcement file has been found, terminate this script
         return
@@ -109,7 +110,9 @@ def update_switch_version_file(
     ]
     for release_folder in old_release_folders:
         # Create an 'announcement.html' file within each one of the old versions
-        with open(f"release/{release_folder.name}/announcement.html", "w") as file:
+        filename = f"release/{release_folder.name}/announcement.html"
+        with open(filename, "w") as file:
+            print(f"Writing {filename}")
             file.write(announcement_content)
 
 
