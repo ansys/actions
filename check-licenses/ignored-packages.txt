@@ -1,2 +1,4 @@
 matplotlib
 pypiwin32
+defusedxml
+
