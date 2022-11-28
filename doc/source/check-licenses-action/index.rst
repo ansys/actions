@@ -40,5 +40,4 @@ modify these txt files as needed. When doing that, two considerations have to be
 
 - Changes must only include additions to the files, so they contain the complete list of licenses used
   across the entire PyAnsys ecosystem.
-- The file must end with a blank line.
 - The content of both files has to be alphabetically sorted.
