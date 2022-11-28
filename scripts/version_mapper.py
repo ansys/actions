@@ -156,7 +156,7 @@ def main():
         args.new_version,
         args.cname,
         args.render_last,
-        args.announcement_file,
+        args.announcement_filename,
     )
 
 
