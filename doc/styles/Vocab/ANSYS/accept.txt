@@ -2,4 +2,4 @@ dev
 GitHub
 pytest
 PyPI
-txt
+TXT
