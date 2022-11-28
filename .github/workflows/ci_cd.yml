@@ -100,15 +100,6 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
 
-  check-licenses:
-    name: "Check dependencies' licenses"
-    runs-on: ubuntu-latest
-    steps:
-      - name: "PyAnsys check-licenses action"
-        uses: pyansys/actions/check-licenses@feat/check-licenses
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
   tests:
     name: "Tests"
     runs-on: ubuntu-latest
