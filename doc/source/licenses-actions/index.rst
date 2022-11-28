@@ -4,7 +4,7 @@ Licenses actions
 Description of actions related with the licenses of the projects' dependencies.
 
 Check licenses action
---------------------------------
+---------------------
 
 The ``pyansys/check-licenses`` action allows to verify that the project's dependencies
 only contain valid licenses.
@@ -35,7 +35,7 @@ Here is a code sample for using this action:
 .. note::
 
   If a certain repository requires a different license or packages
-  that is not included in the original list, a PR can be proposed to ``pyansys/actions`` in order to
+  that is not included in the original list, a PR can be proposed at ``pyansys/actions`` to
   modify these TXT files as needed. When doing that, two considerations have to be taken into account:
 
   - Changes must only include additions to the files, so they contain the complete list of licenses used
