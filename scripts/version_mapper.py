@@ -34,7 +34,7 @@ def update_switch_version_file(
         The canonical name of the project's documentation website.
     render_last : int
         The number of stable releases to be shown in the version switcher.
-    announcement_file : str
+    announcement_filename : str
         Name of the HTML file controlling the outdated version announcement.
 
     """
