@@ -55,8 +55,8 @@ runs:
     - name: "Download txt files so they are found from other repos"
       shell: bash
       run: |
-        wget https://raw.githubusercontent.com/pyansys/actions/f06b839725de78136d4f797b95d5c6458c689cd3/check-licenses/accepted-licenses.txt
-        wget https://raw.githubusercontent.com/pyansys/actions/f06b839725de78136d4f797b95d5c6458c689cd3/check-licenses/ignored-packages.txt
+        wget https://raw.githubusercontent.com/pyansys/actions/feat/check-licenses/check-licenses/accepted-licenses.txt
+        wget https://raw.githubusercontent.com/pyansys/actions/feat/check-licenses/check-licenses/ignored-packages.txt
 
     - name: "Check licences of packages"
       shell: bash
