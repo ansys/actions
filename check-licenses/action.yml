@@ -29,6 +29,8 @@ runs:
     - name: "Install Git and clone project"
       if: inputs.skip-install == 'false'
       uses: actions/checkout@v3
+      with:
+          ref: feat/check-licenses
 
     - name: "Set up Python"
       if: inputs.skip-install == 'false'

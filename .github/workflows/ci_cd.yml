@@ -89,7 +89,6 @@ jobs:
           - [maintenance](https://github.com/pyansys/actions/pulls?q=label%3Amaintenance+)
           - [release](https://github.com/pyansys/actions/pulls?q=label%3Arelease+)
 
-
   code-style:
     name: "Code style"
     runs-on: ubuntu-latest
@@ -105,22 +104,10 @@ jobs:
     name: "Check dependencies' licenses"
     runs-on: ubuntu-latest
     steps:
-      - name: "Install Git and clone project"
-        uses: actions/checkout@v3
-        with:
-          ref: feat/check-licenses
-
-      - name: "Set up Python"
-        uses: pyansys/actions/_setup-python@main
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-cache: false
-
-      - name: "PyAnsys check_licenses action"
+      - name: "PyAnsys check-licenses action"
         uses: pyansys/actions/check-licenses@feat/check-licenses
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          skip-install: true
 
   tests:
     name: "Tests"
