@@ -1,5 +1,5 @@
 Licenses actions
-=====================
+================
 
 The ``pyansys/check-licenses`` action allows to verify that the project's dependencies
 only contain valid licenses.
