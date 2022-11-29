@@ -105,7 +105,8 @@ def update_switch_version_file(
     # Include the announcement in all available release folders. Note that
     # these are still accessible even if they are not included in the dropdown.
     old_release_folders = []
-    for path in Path("release").glob(f"**/[!{latest_stable_version}]*"):
+    release_path = Path("release")
+    for path in release_path.glob(f"**/[!{latest_stable_version}]*"):
 
         # Skip the path if it not a directory
         if not path.is_dir():
@@ -113,7 +114,7 @@ def update_switch_version_file(
 
         # Append the folder unless it is contained within a private directory
         add_path = True
-        for dirname in str(path.absolute()).split("/"):
+        for dirname in str(path.relative_to(release_path)).split("/"):
             if dirname.startswith("_"):
                 add_path = False
                 break
