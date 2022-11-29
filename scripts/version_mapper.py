@@ -19,7 +19,10 @@ def sort_versions_descending(versions_list):
 
 
 def update_switch_version_file(
-    json_filename, new_version, cname, render_last, announcement_filename
+    json_filename,
+    new_version,
+    cname,
+    render_last,
 ):
     """Add new version number and associated URL to JSON file.
 
@@ -33,8 +36,6 @@ def update_switch_version_file(
         The canonical name of the project's documentation website.
     render_last : int
         The number of stable releases to be shown in the version switcher.
-    announcement_filename : str
-        Name of the HTML file controlling the outdated version announcement.
 
     """
     with open(f"release/{json_filename}", "r") as switcher_file:
@@ -93,14 +94,8 @@ def update_switch_version_file(
         json.dump(new_content, switcher_file, indent=4)
 
     # Use the latest stable verion for formatting the announcement
-    try:
-        with open(f"release/{announcement_filename}", "r") as announcement_file:
-            content = announcement_file.read()
-            announcement_content = content.format(version=latest_stable_version)
-            print(f"Announcement rendered content is:\n{announcement_content}")
-    except FileNotFoundError:
-        # If no announcement file has been found, terminate this script
-        return
+    announcement_link = f"<a href='{cname}/release/{version}'>{version}</a>"
+    announcement_content = f"<p>You are not viewing the most recent version of this documentation. The latest stable release is {announcement_link}.</p>"
 
     # Include the announcement in all available release folders. Note that
     # these are still accessible even if they are not included in the dropdown.
@@ -138,13 +133,6 @@ def parse_cli_arguments():
     """Parse all command line arguments."""
     parser = argparse.ArgumentParser(description="Version switcher JSON file updater.")
     parser.add_argument(
-        "-a",
-        "--announcement_filename",
-        type=str,
-        default="announcement.html",
-        help="Name of the HTML file controlling the outdated version announcement.",
-    )
-    parser.add_argument(
         "-c", "--cname", type=str, help="Canonical name of the project's documentation."
     )
     parser.add_argument(
@@ -181,7 +169,6 @@ def main():
         args.new_version,
         args.cname,
         args.render_last,
-        args.announcement_filename,
     )
 
 
