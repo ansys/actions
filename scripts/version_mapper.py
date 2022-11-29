@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import re
 from pathlib import Path
 
 
@@ -34,12 +33,12 @@ def update_switch_version_file(
         The canonical name of the project's documentation website.
     render_last : int
         The number of stable releases to be shown in the version switcher.
-    announcement_file : str
+    announcement_filename : str
         Name of the HTML file controlling the outdated version announcement.
 
     """
     with open(f"release/{json_filename}", "r") as switcher_file:
-        # Load the content of the
+        # Load the content of the json switcher file
         current_content = json.load(switcher_file)
 
         # Collect all the version numbers in the JSON file
@@ -55,7 +54,7 @@ def update_switch_version_file(
             else:
                 current_versions_list.append(version)
 
-        # Verify if new version is alerady registered in the JSON file
+        # Verify if new version is already registered in the JSON file
         new_version_exists = new_version in current_versions_list
         if not new_version_exists:
             current_versions_list.append(new_version)
@@ -94,18 +93,27 @@ def update_switch_version_file(
         json.dump(new_content, switcher_file, indent=4)
 
     # Use the latest stable verion for formatting the announcement
-    with open(f"release/{announcement_filename}", "r") as announcement_file:
-        content = announcement_file.read()
-        announcement_content = content.format(version=latest_stable_version)
+    try:
+        with open(f"release/{announcement_filename}", "r") as announcement_file:
+            content = announcement_file.read()
+            announcement_content = content.format(version=latest_stable_version)
+            print(f"Announcement rendered content is:\n{announcement_content}")
+    except FileNotFoundError:
+        # If no announcement file has been found, terminate this script
+        return
 
     # Include the announcement in all available release folders. Note that
     # these are still accessible even if they are not included in the dropdown.
-    old_release_folders = [
-        path for path in Path("./").iterdir() if re.match("^[0-9]+.[0-9]+$", path.name)
-    ]
+    old_release_folders = []
+    for path in Path("release").iterdir():
+        if path.is_dir() and path.name != latest_stable_version:
+            old_release_folders.append(path)
+
     for release_folder in old_release_folders:
         # Create an 'announcement.html' file within each one of the old versions
-        with open(f"release/{release_folder.name}/announcement.html", "w") as file:
+        announcement_file = release_folder / "announcement.html"
+        with open(announcement_file, "w") as file:
+            print(f"Writing content to {announcement_file}.")
             file.write(announcement_content)
 
 
