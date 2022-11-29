@@ -104,29 +104,34 @@ def update_switch_version_file(
 
     # Include the announcement in all available release folders. Note that
     # these are still accessible even if they are not included in the dropdown.
-    old_release_folders = []
     release_path = Path("release")
-    for path in release_path.glob(f"**/[!{latest_stable_version}]*"):
+    version_folders = [
+        folder
+        for folder in release_path.iterdir()
+        if folder.is_dir() and folder.name != latest_stable_version
+    ]
 
-        # Skip the path if it not a directory
-        if not path.is_dir():
-            continue
+    # Iterate over outdated version directory
+    for version_folder in version_folders:
+        for path in version_folder.rglob(""):
 
-        # Append the folder unless it is contained within a private directory
-        add_path = True
-        for dirname in str(path.relative_to(release_path)).split("/"):
-            if dirname.startswith("_"):
-                add_path = False
-                break
-        if add_path:
-            old_release_folders.append(path)
+            # Skip the path if it not a directory
+            if not path.is_dir():
+                continue
 
-    # Create an 'announcement.html' file within each one of the old versions
-    for folder in old_release_folders:
-        announcement_file = folder / "announcement.html"
-        with open(announcement_file, "w") as file:
-            print(f"Writing content to {announcement_file}.")
-            file.write(announcement_content)
+            # Ignore private directories
+            requires_announcement = True
+            for dirname in str(path.relative_to(release_path)).split("/"):
+                if dirname.startswith("_"):
+                    requires_announcement = False
+                    break
+
+            # Generate the announcement if required
+            if requires_announcement:
+                announcement_file = path / "announcement.html"
+                with open(announcement_file, "w") as file:
+                    print(f"Writing content to {announcement_file}.")
+                    file.write(announcement_content)
 
 
 def parse_cli_arguments():
