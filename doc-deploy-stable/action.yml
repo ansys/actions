@@ -47,7 +47,7 @@ runs:
         version=${ref_name##*v}
         version=${version##*release/}
         # Check that the version is of the accepted format
-        echo "ACCEPTED_FORMAT=$([[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")" >> $GITHUB_ENV
+        echo "ACCEPTED_FORMAT=$([[ "$version" =~ ^[0-9]+\.[0-9]+$|^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")" >> $GITHUB_ENV
         echo "PRELIMINARY_VERSION=$version" >> $GITHUB_ENV
 
     - name: "Ignoring deployment... invalid version format!"
@@ -55,7 +55,7 @@ runs:
       shell: bash
       run: |
         echo "INVALID VERSION FORMAT - $PRELIMINARY_VERSION"
-        echo "Should be of type X.Y.Z... Ignoring documentation deployment"
+        echo "Should be of type X.Y or X.Y.Z... Ignoring documentation deployment."
 
     - name: "Prepare destination folder"
       if: env.ACCEPTED_FORMAT == 'true'
