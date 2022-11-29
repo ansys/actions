@@ -7,5 +7,6 @@
    style-actions/index
    tests-actions/index
    doc-actions/index
+   licenses-actions/index
    build-actions/index
    release-actions/index

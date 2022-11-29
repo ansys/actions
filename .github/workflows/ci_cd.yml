@@ -45,7 +45,7 @@ jobs:
 
     - uses: actions-ecosystem/action-add-labels@v1
       if: |
-        startsWith(github.event.pull_request.head.ref, 'doc') || 
+        startsWith(github.event.pull_request.head.ref, 'doc') ||
         startsWith(github.event.pull_request.head.ref, 'docs')
       with:
         labels: documentation
@@ -89,7 +89,6 @@ jobs:
           - [maintenance](https://github.com/pyansys/actions/pulls?q=label%3Amaintenance+)
           - [release](https://github.com/pyansys/actions/pulls?q=label%3Arelease+)
 
-
   code-style:
     name: "Code style"
     runs-on: ubuntu-latest
@@ -114,7 +113,7 @@ jobs:
 
       - name: "List all the content of the tests/ dir"
         run: ls -R tests
-  
+
       - name: "Set up Python"
         uses: pyansys/actions/_setup-python@main
         with:
@@ -198,7 +197,7 @@ jobs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-  
+
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
       with:

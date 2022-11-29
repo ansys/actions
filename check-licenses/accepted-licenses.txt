@@ -1,0 +1,9 @@
+Ansys
+Apache
+BSD
+GNU
+HPND
+ISC
+MIT
+MPL
+PSF

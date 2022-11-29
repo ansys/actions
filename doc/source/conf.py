@@ -118,6 +118,7 @@ ACTIONS_NAMES = [
     "release-pypi-public",
     "release-github",
     "tests-pytest",
+    "check-licenses",
 ]
 jinja_contexts = {
     action_name: {"inputs_table": action_file_inputs_to_rst_table(action_name)}
