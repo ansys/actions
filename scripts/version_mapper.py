@@ -94,7 +94,9 @@ def update_switch_version_file(
         json.dump(new_content, switcher_file, indent=4)
 
     # Use the latest stable verion for formatting the announcement
-    announcement_link = f"<a href='{cname}/release/{version}'>{version}</a>"
+    announcement_link = (
+        f"<a href='{cname}/release/{latest_stable_version}'>{latest_stable_version}</a>"
+    )
     announcement_content = f"<p>You are not viewing the most recent version of this documentation. The latest stable release is {announcement_link}.</p>"
 
     # Include the announcement in all available release folders. Note that
