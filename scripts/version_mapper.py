@@ -106,10 +106,10 @@ def update_switch_version_file(
     # these are still accessible even if they are not included in the dropdown.
     old_release_folders = []
     for path in Path("release").glob("**/*"):
-        has_invalid_name = path.name == latest_stable_version and path.name.startswith(
-            "_"
+        path_has_valid_name = (
+            path.name != latest_stable_version and not path.name.startswith("_")
         )
-        if path.is_dir() and not has_invalid_name:
+        if path.is_dir() and path_has_valid_name:
             old_release_folders.append(path)
 
     for folder in old_release_folders:
