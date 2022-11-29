@@ -111,7 +111,7 @@ def update_switch_version_file(
         if folder.is_dir() and folder.name != latest_stable_version
     ]
 
-    # Iterate over outdated version directory
+    # Inspect all the directories within each outdated version folder
     for version_folder in version_folders:
         for path in version_folder.rglob(""):
 
