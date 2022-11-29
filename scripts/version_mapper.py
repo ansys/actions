@@ -105,15 +105,23 @@ def update_switch_version_file(
     # Include the announcement in all available release folders. Note that
     # these are still accessible even if they are not included in the dropdown.
     old_release_folders = []
-    for path in Path("release").glob("**/*"):
-        path_has_valid_name = (
-            path.name != latest_stable_version and not path.name.startswith("_")
-        )
-        if path.is_dir() and path_has_valid_name:
+    for path in Path("release").glob(f"**/[!{latest_stable_version}]*"):
+
+        # Skip the path if it not a directory
+        if not path.is_dir():
+            continue
+
+        # Append the folder unless it is contained within a private directory
+        add_path = True
+        for dirname in str(path.absolute()).split("/"):
+            if dirname.startswith("_"):
+                add_path = False
+                break
+        if add_path:
             old_release_folders.append(path)
 
+    # Create an 'announcement.html' file within each one of the old versions
     for folder in old_release_folders:
-        # Create an 'announcement.html' file within each one of the old versions
         announcement_file = folder / "announcement.html"
         with open(announcement_file, "w") as file:
             print(f"Writing content to {announcement_file}.")
