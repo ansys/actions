@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import re
 from pathlib import Path
 
 
@@ -34,12 +33,12 @@ def update_switch_version_file(
         The canonical name of the project's documentation website.
     render_last : int
         The number of stable releases to be shown in the version switcher.
-    announcement_file : str
+    announcement_filename : str
         Name of the HTML file controlling the outdated version announcement.
 
     """
     with open(f"release/{json_filename}", "r") as switcher_file:
-        # Load the content of the
+        # Load the content of the json switcher file
         current_content = json.load(switcher_file)
 
         # Collect all the version numbers in the JSON file
@@ -55,7 +54,7 @@ def update_switch_version_file(
             else:
                 current_versions_list.append(version)
 
-        # Verify if new version is alerady registered in the JSON file
+        # Verify if new version is already registered in the JSON file
         new_version_exists = new_version in current_versions_list
         if not new_version_exists:
             current_versions_list.append(new_version)
