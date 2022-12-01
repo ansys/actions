@@ -1,0 +1,32 @@
+tests:
+  name: "Test library"
+  runs-on: ${{ matrix.os }}
+  strategy:
+     matrix:
+         os: [ubuntu-latest, windows-latest]
+         cfg:
+           - {python-version: '3.7', markers: '-m fast', extra-args: ''}
+           - {python-version: '3.8', markers: '-m plotting', extra-args: ''}
+           - {python-version: '3.9', markers: '', extra-args: '--doctest-modules src'}
+           - {python-version: '3.10', markers: '', extra-args: '--cov=ansys.<library> --cov-report=term --cov-report=html:.cov/html'}
+     fail-fast: false
+  steps:
+
+    - name: "Login into the GitHub container registry"
+      uses: docker/login-action@v2.1.0
+      with:
+        registry: ghcr.io
+        username: ${{ secrets.GH_USERNAME }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: "Pull, launch and verify desired Ansys service"
+      run: ...
+      env:
+        LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
+
+    - name: "Run pytest with desired markers and extra arguments"
+      uses: pyansys/actions/tests-pytest@main
+      with:
+        requires-xvfb: true
+        pytest-markers: ${{ matrix.cfg.markers }}
+        pytest-extra-args: ${{ matrix.cfg.extra-args }}

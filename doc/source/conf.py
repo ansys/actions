@@ -114,3 +114,5 @@ jinja_contexts = {
     action_name: {"inputs_table": action_file_inputs_to_rst_table(action_name)}
     for action_name in ACTIONS_NAMES
 }
+
+# Generate examples based on real YML files and guarantee input parameters
