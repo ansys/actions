@@ -18,12 +18,13 @@ test session.
 Examples
 ++++++++
 
-.. dropdown:: Testing library with different operating-systems and Python versions
+.. jinja:: tests-pytest
 
-    .. literalinclude:: examples/tests-pytest-basic.yml
-       :language: yaml
+     {% for filename, title in examples %}
+     .. dropdown:: {{ title }}
+        :animate: fade-in
 
-.. dropdown:: Optimized testing library with different markers and arguments
+         .. literalinclude:: examples/{{ filename }}
+            :language: yaml
 
-    .. literalinclude:: examples/tests-pytest-optimized.yml
-       :language: yaml
+     {% endfor %}

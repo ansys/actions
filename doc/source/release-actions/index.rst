@@ -21,22 +21,18 @@ this action.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    release-pypi-private:
-      name: "Release to private PyPI"
-      runs-on: ubuntu-latest
-      needs: [build-library]
-      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-      steps:
-        - name: "Release to the private PyPI repository"
-          uses: pyansys/actions/release-pypi-private@main
-          with:
-            library-name: "ansys-<product>-<library"
-            twine-username: "__token__"
-            twine-token: ${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
+
 
 Release PyPI test action
 ------------------------
@@ -50,22 +46,17 @@ this action.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    release-pypi-test:
-      name: "Release to test PyPI"
-      runs-on: ubuntu-latest
-      needs: [build-library]
-      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-      steps:
-        - name: "Release to the test PyPI repository"
-          uses: pyansys/actions/release-pypi-test@main
-          with:
-            library-name: "ansys-<product>-<library"
-            twine-username: "__token__"
-            twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
 
 Release PyPI public action
 --------------------------
@@ -79,22 +70,17 @@ Similarly to :ref:`Release PYPI private action`, the ``PYPI_TOKEN`` is required.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    release-pypi-public:
-      name: "Release to public PyPI"
-      runs-on: ubuntu-latest
-      needs: [build-library]
-      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-      steps:
-        - name: "Release to the public PyPI repository"
-          uses: pyansys/actions/release-pypi-public@main
-          with:
-            library-name: "ansys-<product>-<library"
-            twine-username: "__token__"
-            twine-token: ${{ secrets.PYPI_TOKEN }}
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
 
 
 Release GitHub action
@@ -108,18 +94,16 @@ of a repository.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    release-gitub:
-      name: "Release to GitHub"
-      runs-on: ubuntu-latest
-      needs: [build-library]
-      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-      steps:
-        - name: "Release to GitHub"
-          uses: pyansys/actions/release-github@main
-          with:
-            library-name: "ansys-<product>-<library"
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
+
 

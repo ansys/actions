@@ -1,6 +1,6 @@
 tests:
-  name: "Test library"
-  runs-on: ${{ matrix.os }}
+  name: "Testing library with different operating systems and Python versions"
+  runs-on: ${{ '{{ matrix.os }}' }}
   strategy:
      matrix:
          os: [ubuntu-latest, windows-latest]
@@ -8,7 +8,7 @@ tests:
      fail-fast: false
   steps:
     - name: "Run pytest"
-      uses: pyansys/actions/tests-pytest@main
+      uses: pyansys/actions/tests-pytest@{{ branch }}
       with:
         pytest-markers: "-k 'mocked'"
         pytest-extra-args: "--cov=ansys.<library> --cov-report=term --cov-report=html:.cov/html"

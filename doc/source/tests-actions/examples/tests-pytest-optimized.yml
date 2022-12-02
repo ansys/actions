@@ -1,6 +1,6 @@
 tests:
-  name: "Test library"
-  runs-on: ${{ matrix.os }}
+  name: "Optimized testing with different operating systems and Python versions"
+  runs-on: ${{ '{{ matrix.os }}' }}
   strategy:
      matrix:
          os: [ubuntu-latest, windows-latest]
@@ -16,17 +16,17 @@ tests:
       uses: docker/login-action@v2.1.0
       with:
         registry: ghcr.io
-        username: ${{ secrets.GH_USERNAME }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        username: ${{ '{{ secrets.GH_USERNAME }}' }}
+        password: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
 
     - name: "Pull, launch and verify desired Ansys service"
       run: ...
       env:
-        LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
+        LICENSE_SERVER: ${{ '{{ secrets.LICENSE_SERVER }}' }}
 
     - name: "Run pytest with desired markers and extra arguments"
-      uses: pyansys/actions/tests-pytest@main
+      uses: pyansys/actions/tests-pytest@{{ branch }}
       with:
         requires-xvfb: true
-        pytest-markers: ${{ matrix.cfg.markers }}
-        pytest-extra-args: ${{ matrix.cfg.extra-args }}
+        pytest-markers: ${{ '{{ matrix.cfg.markers }}' }}
+        pytest-extra-args: ${{ '{{ matrix.cfg.extra-args }}' }}

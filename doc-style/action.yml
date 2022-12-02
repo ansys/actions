@@ -10,6 +10,7 @@ inputs:
   token:
     description: "Required token for Vale commenter."
     required: true
+    type: string
 
 runs:
   using: "composite"

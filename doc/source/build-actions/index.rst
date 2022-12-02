@@ -13,22 +13,18 @@ This action builds source and wheel artifacts for a Python library.
 
     {{ inputs_table }}
 
+    Examples
+    ++++++++
 
-Here is a code sample for using this action:
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-.. code-block:: yaml
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
 
-    build-library:
-      name: Build library
-      runs-on: ubuntu-latest
-      steps:
-        - name: "Build library source and wheel artifacts"
-          uses: pyansys/actions/build-library@main
-          with:
-            library-name: "ansys-<product>-<library>"
+    {% endfor %}
 
-
-here is a code for using this action
 
 Build wheelhouse action
 -----------------------
@@ -39,25 +35,17 @@ artifacts.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    build-wheelhouse:
-      name: Build the wheelhouse of the Python library
-      runs-on: ${{ matrix.os }}
-      strategy:
-         matrix:
-             os: [ubuntu-latest, windows-latest]
-             python-version: ['3.7', '3.8', '3.9', '3.10']
-      steps:
-        - name: "Build a wheelhouse of the Python library"
-          uses: pyansys/actions/build-wheelhouse@main
-          with:
-            library-name: "<ansys-product-library>"
-            library-namespace: "<ansys.product.library>"
-            operating-system: ${{ matrix.os }}
-            python-version: ${{ matrix.python-version }}
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
 
 
 Build C-extension library action
@@ -69,16 +57,15 @@ C-extension.
 
     {{ inputs_table }}
 
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    build-c-extension:
-      name: Build a C-extension library
-      runs-on: ${{ matrix.os }}
-      strategy:
-         matrix:
-             os: [ubuntu-latest, windows-latest, macos-11]
-      steps:
-        - name: "Build a C-extension library wheel artifacts"
-          uses: pyansys/actions/build-ci-library@main
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
 

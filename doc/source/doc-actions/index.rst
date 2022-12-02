@@ -25,17 +25,17 @@ artifacts:
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    doc-build:
-      name: "Building documentation"
-      runs-on: ubuntu-latest
-      needs: doc-style
-      steps:
-        - name: "Run Ansys documentation building action"
-          uses: pyansys/actions/doc-build@main
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
 
 
 Doc deploy dev action
@@ -48,21 +48,17 @@ artifact named ``documentation-html``.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    doc-deploy-dev:
-      name: "Deploy developers documentation"
-      runs-on: ubuntu-latest
-      needs: doc-build
-      if: github.event_name == 'push'
-      steps:
-        - name: "Deploy the latest documentation"
-          uses: pyansys/actions/doc-deploy-dev@main
-          with:
-              cname: "<library>.docs.pyansys.com"
-              token: ${{ secrets.GITHUB_TOKEN }}
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
 
 
 Doc deploy stable action
@@ -86,10 +82,13 @@ values inside the ``html_theme_options`` element:
 
 .. code-block:: python
 
+    import ansys_sphinx_theme
+
+
     html_theme_options = {
         "switcher": {
-            "json_url": "https://raw.githubusercontent.com/<owner>/<repository>/gh-pages/release/version_mapper.json",
-            "version_match": "dev" if version.endswith("dev0") else version,
+            "json_url": f"https://{cname}/release/versions.json",
+            "version_match": ansys_sphinx_theme.get_version_match(__version__),
         },
         ...
     }
@@ -101,21 +100,18 @@ a PyAnsys project.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    doc-deploy-stable:
-      name: "Deploy stable documentation"
-      runs-on: ubuntu-latest
-      needs: doc-build
-      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-      steps:
-        - name: "Deploy the stable documentation"
-          uses: pyansys/actions/doc-deploy-stable@main
-          with:
-              cname: "<library>.docs.pyansys.com"
-              token: ${{ secrets.GITHUB_TOKEN }}
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
+
 
 Doc deploy action to other repositories
 ---------------------------------------
@@ -140,19 +136,16 @@ at the optional arguments for this action.
 
     {{ inputs_table }}
 
-Here is a code sample for using this action within PyAnsys repositories:
+    Examples
+    ++++++++
 
-.. code-block:: yaml
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-    doc-deploy:
-      name: "Deploy documentation to a different repo"
-      runs-on: ubuntu-latest
-      needs: doc-build
-      steps:
-        - name: "Deploy documentation"
-          uses: pyansys/actions/doc-deploy-to-repo@main
-          with:
-            cname: "<library>.docs.pyansys.com"
-            repository: "<owner>/<repository-name>"
-            bot-id: ${{ secrets.BOT_APPLICATION_ID }}
-            bot-token: ${{ secrets.BOT_APPLICATION_PRIVATE_KEY }}
+        .. literalinclude:: examples/{{ filename }}
+           :language: yaml
+
+    {% endfor %}
+
+
