@@ -93,7 +93,7 @@ def update_switch_version_file(
         # Update JSON file with the new content
         json.dump(new_content, switcher_file, indent=4)
 
-    # Use the latest stable verion for formatting the announcement
+    # Use the latest stable version for formatting the announcement
     announcement_link = (
         f"<a href='{cname}/release/{latest_stable_version}'>{latest_stable_version}</a>"
     )

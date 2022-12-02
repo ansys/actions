@@ -55,7 +55,7 @@ Here is a code sample for using this action:
           uses: pyansys/actions/build-wheelhouse@main
           with:
             library-name: "<ansys-product-library>"
-            library-namespace: "<ansys.product.libray>"
+            library-namespace: "<ansys.product.library>"
             operating-system: ${{ matrix.os }}
             python-version: ${{ matrix.python-version }}
 
