@@ -18,7 +18,7 @@ see each card below:
        :link: tests-actions/index
        :link-type: doc
 
-        The tests actions allow to run the test suite.
+        Tests actions allow to run the test suite.
 
     .. grid-item-card:: :octicon:`book` Docs actions
        :link: doc-actions/index
@@ -30,14 +30,14 @@ see each card below:
        :link: licenses-actions/index
        :link-type: doc
 
-        Description of actions related with the licenses.
+        Licence action sallows to verify that the project’s dependencies only contain valid licenses.
 
 
     .. grid-item-card:: :octicon:`package` Build actions
        :link: build-actions/index
        :link-type: doc
 
-        The build actions allow for building artifacts.
+        Build actions allow for building artifacts.
 
     .. grid-item-card:: :octicon:`eye` Release actions
        :link: release-actions/index

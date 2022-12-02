@@ -16,7 +16,4 @@ A repository containing a collection of `GitHub Workflows
 reused by projects in the PyAnsys ecosystem.
 
 .. readme_common_ends
-
-Documentation
-^^^^^^^^^^^^^
 For more information on available actions and how to use them, see `actions.docs.pyansys.com <https://actions.docs.pyansys.com>`_ .
