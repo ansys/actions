@@ -1,3 +1,4 @@
+.. readme_common_begins
 PyAnsys Actions
 ===============
 |pyansys| |MIT|
@@ -14,4 +15,5 @@ A repository containing a collection of `GitHub Workflows
 <https://docs.github.com/en/actions/using-workflows/about-workflows>`_ to be
 reused by projects in the PyAnsys ecosystem.
 
+.. readme_common_ends
 For more information on available actions and how to use them, see `actions.docs.pyansys.com <https://actions.docs.pyansys.com>`_ .

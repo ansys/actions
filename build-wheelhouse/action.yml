@@ -57,7 +57,7 @@ runs:
       shell: bash
       run: pip install ${{ env.install_target }}
 
-    - name: "Verify libray is properly installed and get its version number"
+    - name: "Verify library is properly installed and get its version number"
       shell: bash
       run: |
         echo "library_version=$(python -c "from ${{ inputs.library-namespace }} import __version__; print(__version__)")" >> $GITHUB_ENV

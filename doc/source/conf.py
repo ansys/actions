@@ -42,6 +42,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "sphinx_copybutton",
     "sphinx_jinja",
+    "sphinx_design",
 ]
 
 # Specify the static path

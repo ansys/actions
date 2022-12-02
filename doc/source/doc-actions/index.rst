@@ -128,7 +128,7 @@ for which the documentation is being build is not public yet. For those cases, t
 multi-version mechanism (which the previous actions assume) is not allowed.
 
 The way PyAnsys libraries handle documentation deployment while being private/internal is
-by releasing its documentation to dedicated repositories: one for the dev documetation, and
+by releasing its documentation to dedicated repositories: one for the dev documentation, and
 a different one for the stable (or internally released) documentation. This action intends
 to allow users to specify which repository they intend to release their docs to.
 
