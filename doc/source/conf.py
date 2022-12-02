@@ -1,15 +1,17 @@
 """Sphinx documentation configuration file."""
 
+import os
 import pathlib
 
 import yaml
-from ansys_sphinx_theme import ansys_favicon, ansys_logo_black
+from ansys_sphinx_theme import ansys_favicon, ansys_logo_black, get_version_match
 from tabulate import tabulate as Table
 
 # Project information
 project = "PyAnsys Actions"
 copyright = "(c) 2022 ANSYS, Inc. All rights reserved"
 author = "ANSYS, Inc."
+cname = os.getenv("DOCUMENTATION_CNAME", "nocname.com")
 
 # Read version from VERSION file in base root directory
 source_dir = pathlib.Path(__file__).parent.resolve().absolute()
@@ -18,29 +20,16 @@ with open(str(version_file), "r") as file:
     __version__ = file.read().splitlines()[0]
 release = version = __version__
 
-
-def get_version_match(semver):
-    """Evaluate the version match for the multi-documentation."""
-    if semver.endswith("dev0"):
-        return "dev"
-    major, minor, _ = semver.split(".")
-    return ".".join([major, minor])
-
-
 # Use the default pyansys logo
 html_logo = ansys_logo_black
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 
 # Specify the location of your GitHub repo
-version_mapper = (
-    "https://raw.githubusercontent.com/pyansys/actions/gh-pages/release/versions.json"
-)
 html_theme_options = {
     "github_url": "https://github.com/pyansys/actions",
-    "show_prev_next": False,
     "switcher": {
-        "json_url": version_mapper,
+        "json_url": f"https://{cname}/release/versions.json",
         "version_match": get_version_match(__version__),
     },
     "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
