@@ -19,11 +19,6 @@ inputs:
     required: false
     default: '3.10'
     type: string
-  use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
-    default: true
-    required: false
-    type: boolean
 
 runs:
   using: "composite"
@@ -37,4 +32,3 @@ runs:
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}
         python-version: ${{ inputs.python-version }}
-        use-python-cache: ${{ inputs.use-python-cache }}
