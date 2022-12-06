@@ -97,7 +97,7 @@ runs:
       if: env.ACCEPTED_FORMAT == 'true'
       shell: bash
       run: |
-        curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/version_mapper.py -o version_mapper.py
+        curl https://raw.githubusercontent.com/pyansys/actions/release/${{ env.VERSION }}/scripts/version_mapper.py -o version_mapper.py
 
     - name: "Update the version JSON file"
       if: env.ACCEPTED_FORMAT == 'true'
