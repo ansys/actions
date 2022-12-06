@@ -162,5 +162,5 @@ cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
-# Ignore baked output cookies from debugging
-output/
+# Ignore rendered examples
+*-rendered-example.yml

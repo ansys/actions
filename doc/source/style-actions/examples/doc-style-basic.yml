@@ -1,0 +1,8 @@
+doc-style:
+  name: "Running documentation style checks"
+  runs-on: ubuntu-latest
+  steps:
+    - name: "Running documentation style checks"
+      uses: pyansys/actions/doc-style@{{ branch }}
+      with:
+        token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}

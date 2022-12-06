@@ -1,0 +1,8 @@
+build-library:
+  name: "Build library basic example"
+  runs-on: ubuntu-latest
+  steps:
+    - name: "Build library source and wheel artifacts"
+      uses: pyansys/actions/build-library@{{ branch }}
+      with:
+        library-name: "ansys-<product>-<library>"

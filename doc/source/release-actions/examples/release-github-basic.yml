@@ -1,0 +1,10 @@
+release-gitub:
+  name: "Release to GitHub"
+  runs-on: ubuntu-latest
+  needs: [build-library]
+  if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+  steps:
+    - name: "Release to GitHub"
+      uses: pyansys/actions/release-github@{{ branch }}
+      with:
+        library-name: "ansys-<product>-<library"

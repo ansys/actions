@@ -1,0 +1,6 @@
+code-style:
+  name: "Running code style checks"
+  runs-on: ubuntu-latest
+  steps:
+    - name: "Run PyAnsys code style checks"
+      uses: pyansys/actions/code-style@{{ branch }}

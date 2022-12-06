@@ -15,20 +15,16 @@ test session.
     {{ inputs_table }}
 
 
-Here is a code sample for using this action:
+Examples
+++++++++
 
-.. code-block:: yaml
+.. jinja:: tests-pytest
 
-    tests:
-      name: "Test library"
-      runs-on: ${{ matrix.os }}
-      strategy:
-         matrix:
-             os: [ubuntu-latest, windows-latest]
-             python-version: ['3.7', '3.8', '3.9', '3.10']
-      steps:
-        - name: "Run pytest"
-          uses: pyansys/actions/tests-pytest@main
-          with:
-            pytest-markers: "-k 'mocked'"
-            pytest-extra-args: "--cov=ansys.<library> --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html"
+     {% for filename, title in examples %}
+     .. dropdown:: {{ title }}
+        :animate: fade-in
+
+         .. literalinclude:: examples/{{ filename }}
+            :language: yaml
+
+     {% endfor %}

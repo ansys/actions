@@ -1,0 +1,8 @@
+check-licenses:
+  name: "Check library dependencies ship with valid licenses"
+  runs-on: ubuntu-latest
+  steps:
+    - name: "Validate third party licenses"
+      uses: pyansys/actions/check-licenses@{{ branch }}
+      with:
+        python-version: ${{ '{{ env.MAIN_PYTHON_VERSION }}' }}
