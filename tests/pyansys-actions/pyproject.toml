@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
 name = "ansys-actions-core"
-version = "1.0.8"
+version = "1.0.9"
 description = "A demo library for testing pyansys actions"
 readme = "README.rst"
 requires-python = ">=3.7"
