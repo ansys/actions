@@ -79,7 +79,7 @@ def update_switch_version_file(
         new_content = []
 
         # The first data for the new content is always the development version
-        new_content.append(dict(version="dev", url=cname))
+        new_content.append(dict(version="dev", url=f"{cname}/dev"))
 
         # Append the information for the new content
         for ith_version, version in enumerate(new_versions_list):
