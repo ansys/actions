@@ -2,6 +2,11 @@ name: "Documentation deploy development version."
 description: "Deploy development documentation to GitHub pages."
 
 inputs:
+  doc-artifact-name:
+    description: "Name of the HTML documentation artifact."
+    required: false
+    default: 'documentation-html'
+    type: string
   cname:
     description: 'The canonical name of the documentation website.'
     required: true
@@ -15,34 +20,68 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Install system dependencies"
+      shell: bash
+      run: |
+        sudo apt-get install curl
+
     - name: "Checkout project in the GitHub Pages branch"
       uses: actions/checkout@v3
+      with:
+        ref: 'gh-pages'
+
+    - name: "Create a fresh development folder"
+      shell: bash
+      run: rm -rf dev/ && mkdir dev/
 
     - name: "Download the HTML documentation artifact"
       uses: actions/download-artifact@v3
       with:
-        name: documentation-html
-        path: documentation-html
+        name: ${{ inputs.doc-artifact-name }}
+        path: dev
 
     - name: "Display structure of downloaded files"
       shell: bash
       run: |
         ls -R
-  
+
     - name: "Include CNAME and nojekyll files expected by GitHub pages"
       shell: bash
       run: |
-        touch documentation-html/CNAME documentation-html/.nojekyll
-        echo ${{ inputs.cname }} > documentation-html/CNAME
+        touch CNAME .nojekyll
+        echo ${{ inputs.cname }} > CNAME
 
-    # TODO
+    - name: "Generate the redirection URL"
+      shell: bash
+      run: |
+        # Verify if there is any stable release in release/versions.json
+        grep -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" release/versions.json
+        if [ $? -eq 0 ]; 
+        then 
+          # Generate the URL pointing to the latest stable version
+          line=$(grep -n -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" release/versions.json)
+          version=$(echo $line | grep -o -h -E "[0-9]+.[0-9]+"))
+          echo "URL=https://${{ inputs.cname }}/release/$stable_version" >> $GITHUB_ENV
+        else 
+          # Generate the URL pointing to the development version if no stable releases
+          echo "URL=https://${{ inputs.cname }}/dev/index.html" >> $GITHUB_ENV
+        fi
 
-    - name: "Deploy devevelopment documentation"
-      uses: JamesIves/github-pages-deploy-action@v4.4.0                       
-      with:                                                                   
-        token: ${{ inputs.token }}                                    
-        branch: gh-pages                                                      
-        folder: documentation-html
-        clean: true                                                           
-        clean-exclude: release                                                
-        single-commit: true 
+    - name: "Update the redirection link"
+      shell: bash
+      run: |
+        curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/redirect.html -o index.html
+        sed -i "s/{{ url }}/$version/g" index.html
+
+    - name: "Commit new changes (if required)"
+      if: env.ACCEPTED_FORMAT == 'true'
+      shell: bash
+      run: |
+        if [[ ! -z $(git status -s) ]];
+        then
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "DOC: add development documentation"
+          git push
+        fi
