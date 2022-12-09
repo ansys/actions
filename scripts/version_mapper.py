@@ -79,7 +79,7 @@ def update_switch_version_file(
         new_content = []
 
         # The first data for the new content is always the development version
-        new_content.append(dict(version="dev", url=cname))
+        new_content.append(dict(version="dev", url=f"{cname}/dev"))
 
         # Append the information for the new content
         for ith_version, version in enumerate(new_versions_list):
@@ -129,6 +129,13 @@ def update_switch_version_file(
                 with open(announcement_file, "w") as file:
                     print(f"Writing content to {announcement_file}.")
                     file.write(announcement_content)
+
+    # Make the redirec page to point to the latest stable
+    with open("index.html", "r") as redirection_file:
+        content = redirection_file.read()
+    content.replace("var-url", f"{cname}/release/{latest_stable_version}")
+    with open("index.html", "w") as redirection_file:
+        redirection_file.write(content)
 
 
 def parse_cli_arguments():
