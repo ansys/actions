@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Style actions &#8212; PyAnsys Actions 2.0.5 documentation</title>
+    <title>Style actions &#8212; PyAnsys Actions 3.0.dev0 documentation</title>
     
 <script>
   document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
@@ -141,7 +141,7 @@
       <div class="navbar-end-item">
         <div class="dropdown" id="version_switcher">
     <button type="button" class="btn btn-sm navbar-btn dropdown-toggle" id="version_switcher_button" data-toggle="dropdown">
-        2.0  <!-- this text may get changed later by javascript -->
+        dev  <!-- this text may get changed later by javascript -->
         <span class="caret"></span>
     </button>
     <div id="version_switcher_menu" class="dropdown-menu list-group-flush py-0" aria-labelledby="version_switcher_button">
@@ -151,7 +151,7 @@
 
 <!-- NOTE: this JS must live here (not in our global JS file) because it relies
      on being processed by Jinja before it is run (specifically for replacing
-     variables style-actions/index and {'json_url': 'https://actions.docs.pyansys.com/release/versions.json', 'version_match': '2.0'}.
+     variables style-actions/index and {'json_url': 'https://actions.docs.pyansys.com/release/versions.json', 'version_match': 'dev'}.
 -->
 
 <script type="text/javascript">
@@ -206,10 +206,10 @@ function checkPageExistsAndRedirect(event) {
 
             $("#version_switcher_menu").append(node);
             // replace dropdown button text with the preferred display name of
-            // this version, rather than using sphinx's 2.0.5 variable.
+            // this version, rather than using sphinx's 3.0.dev0 variable.
             // also highlight the dropdown entry for the currently-viewed
             // version's entry
-            if (entry.version == "2.0") {
+            if (entry.version == "dev") {
                 node.classList.add("active");
                 btn.innerText = btn.dataset["activeVersionName"] = entry.name;
                 btn.dataset["activeVersion"] = entry.version;
@@ -242,20 +242,6 @@ function checkPageExistsAndRedirect(event) {
 </div>
     </nav>
     
-     
-<div id="announcement_msg"></div>
-<script>
-  fetch("announcement.html")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-      return response.text();
-    })
-    .then(text => document.getElementById("announcement_msg").innerHTML = text)
-    .catch((error) => console.error(`Fetch problem: ${error.message}`));
-</script>
-
     
         <div class="container-xl">
     <div class="row">
@@ -276,7 +262,7 @@ function checkPageExistsAndRedirect(event) {
              accesskey="P">previous</a> |</li>
     
     
-        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 2.0.5 documentation</a> » </li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 3.0.dev0 documentation</a> » </li>
     
 
         <li class="nav-item nav-item-this"><a href="">Style actions</a></li> 
@@ -415,7 +401,7 @@ Running code style checks<div class="sd-summary-down docutils">
 <span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span><span class="w"></span>
 <span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">PyAnsys</span><span class="nv"> </span><span class="s">code</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/code-style@v2</span><span class="w"></span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/code-style@main</span><span class="w"></span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -468,7 +454,7 @@ Running documentation style checks<div class="sd-summary-down docutils">
 <span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span><span class="w"></span>
 <span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Running</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/doc-style@v2</span><span class="w"></span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/doc-style@main</span><span class="w"></span>
 <span class="w">      </span><span class="nt">with</span><span class="p">:</span><span class="w"></span>
 <span class="w">        </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span><span class="w"></span>
 </pre></div>

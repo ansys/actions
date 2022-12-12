@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; PyAnsys Actions 2.0.5 documentation</title>
+    <title>Index &#8212; PyAnsys Actions 3.0.dev0 documentation</title>
     
 <script>
   document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
@@ -138,7 +138,7 @@
       <div class="navbar-end-item">
         <div class="dropdown" id="version_switcher">
     <button type="button" class="btn btn-sm navbar-btn dropdown-toggle" id="version_switcher_button" data-toggle="dropdown">
-        2.0  <!-- this text may get changed later by javascript -->
+        dev  <!-- this text may get changed later by javascript -->
         <span class="caret"></span>
     </button>
     <div id="version_switcher_menu" class="dropdown-menu list-group-flush py-0" aria-labelledby="version_switcher_button">
@@ -148,7 +148,7 @@
 
 <!-- NOTE: this JS must live here (not in our global JS file) because it relies
      on being processed by Jinja before it is run (specifically for replacing
-     variables genindex and {'json_url': 'https://actions.docs.pyansys.com/release/versions.json', 'version_match': '2.0'}.
+     variables genindex and {'json_url': 'https://actions.docs.pyansys.com/release/versions.json', 'version_match': 'dev'}.
 -->
 
 <script type="text/javascript">
@@ -203,10 +203,10 @@ function checkPageExistsAndRedirect(event) {
 
             $("#version_switcher_menu").append(node);
             // replace dropdown button text with the preferred display name of
-            // this version, rather than using sphinx's 2.0.5 variable.
+            // this version, rather than using sphinx's 3.0.dev0 variable.
             // also highlight the dropdown entry for the currently-viewed
             // version's entry
-            if (entry.version == "2.0") {
+            if (entry.version == "dev") {
                 node.classList.add("active");
                 btn.innerText = btn.dataset["activeVersionName"] = entry.name;
                 btn.dataset["activeVersion"] = entry.version;
@@ -239,20 +239,6 @@ function checkPageExistsAndRedirect(event) {
 </div>
     </nav>
     
-     
-<div id="announcement_msg"></div>
-<script>
-  fetch("announcement.html")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-      return response.text();
-    })
-    .then(text => document.getElementById("announcement_msg").innerHTML = text)
-    .catch((error) => console.error(`Fetch problem: ${error.message}`));
-</script>
-
     
         <div class="container-xl">
     <div class="row">
@@ -267,7 +253,7 @@ function checkPageExistsAndRedirect(event) {
              accesskey="I">index</a></li>
     
     
-        <li class="nav-item nav-item-0"><a href="index.html">PyAnsys Actions 2.0.5 documentation</a> » </li>
+        <li class="nav-item nav-item-0"><a href="index.html">PyAnsys Actions 3.0.dev0 documentation</a> » </li>
     
 
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
