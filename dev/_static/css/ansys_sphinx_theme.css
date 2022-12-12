@@ -111,7 +111,8 @@ html[data-theme="dark"] {
   --pst-color-on-background: rgb(0, 0, 0);
   --pst-color-surface: rgb(41, 41, 41);
   --pst-color-on-surface: rgb(55, 55, 55);
-  --pst-color-info: var(--pst-color-link);
+  --pst-color-info: var(--pst-color-secondary);
+
 
   /*****************************************************************************
   * extensions
@@ -665,8 +666,8 @@ Navigation column (according to side column)
 .col-lg-9 {
   flex: 0 0 80%;
   max-width: 80%;
-  padding-right: 25px;
-  padding-left: 40px;
+  padding-right: 5px;
+  padding-left: 20px;
 }
 
 /*
@@ -798,7 +799,6 @@ html[data-theme="dark"] .highlight pre {
   background-color: var(--pst-color-background);
 }
 
-
 .editthispage a {
   color: var(--pst-color-text-base);
 }
@@ -813,6 +813,7 @@ html[data-theme="dark"] .highlight pre {
   z-index: 2;
   color: var(--pst-color-text-base)!important;
 }
+
 table.dataframe {
   table-layout: auto !important;
 }
