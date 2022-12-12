@@ -80,6 +80,13 @@ runs:
         sed -i "s|var-url|$url|g" index.html
         cat index.html
 
+    - name: "Clear unnecessary gh-pages files and directories"
+      shell: bash
+      run: |
+        shopt -s extglob
+        rm -rf -v !("index.html"|"release"|"dev"|"CNAME"|".nojekyll")
+        ls -R
+
     - name: "Commit new changes (if required)"
       shell: bash
       run: |
