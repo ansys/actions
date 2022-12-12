@@ -115,7 +115,7 @@ runs:
           --new_version ${{ env.VERSION }} \
           --render_last ${{ inputs.render-last }}
         # Remove the script to avoid Git tracking it
-        rm -rf version_mapper.py index.html
+        rm -rf version_mapper.py
 
     - name: "Clear unnecessary gh-pages files and directories"
       shell: bash
