@@ -117,6 +117,13 @@ runs:
         # Remove the script to avoid Git tracking it
         rm -rf version_mapper.py index.html
 
+    - name: "Clear unnecessary gh-pages files and directories"
+      shell: bash
+      run: |
+        shopt -s extglob
+        rm -rf -v !("index.html"|"release"|"dev"|"CNAME"|".nojekyll")
+        ls -R
+
     - name: "Commit new changes (if required)"
       if: env.ACCEPTED_FORMAT == 'true'
       shell: bash
