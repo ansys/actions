@@ -55,8 +55,7 @@ runs:
       shell: bash
       run: |
         # Verify if there is any stable release in release/versions.json
-        grep -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" release/versions.json
-        if [ $? -eq 0 ]; 
+        if grep -q -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" release/versions.json;
         then 
           # Generate the URL pointing to the latest stable version
           echo "Found stable release. Generating stable redirection URL..."
