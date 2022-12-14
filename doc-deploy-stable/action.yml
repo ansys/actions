@@ -51,6 +51,8 @@ runs:
         ref_name="${{ github.ref_name }}"
         version=${ref_name##*v}
         version=${version##*release/}
+        # HACK: pydfp uses release-X.Y.Z
+        version=${version##*release-}
         # Check that the version is of the accepted format
         echo "ACCEPTED_FORMAT=$([[ "$version" =~ ^[0-9]+\.[0-9]+$|^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")" >> $GITHUB_ENV
         echo "PRELIMINARY_VERSION=$version" >> $GITHUB_ENV
