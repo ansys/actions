@@ -15,6 +15,11 @@ inputs:
     description: "Required token for documentation deployment."
     required: true
     type: string
+  use-downloaded-artifact:
+    description: "Skip downloading the artifact."
+    required: false
+    type: bool
+    default: false
 
 runs:
   using: "composite"
@@ -36,9 +41,15 @@ runs:
 
     - name: "Download the HTML documentation artifact"
       uses: actions/download-artifact@v3
+      if: ${{ github.event.inputs.use-downloaded-artifact == false }}
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: dev
+
+    - name: "Move artifact to dev folder"
+      if: ${{ github.event.inputs.use-downloaded-artifact == true }}
+      run: |
+        mv ${{ inputs.doc-artifact-name }} dev
 
     - name: "Display structure of downloaded files"
       shell: bash
