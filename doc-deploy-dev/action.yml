@@ -16,7 +16,7 @@ inputs:
     required: true
     type: string
   use-downloaded-artifact:
-    description: "Skip downloading the artifact."
+    description: "Skip downloading the artifact. Uses the file <doc-artifact-name> at the working directory."
     required: false
     type: bool
     default: false
