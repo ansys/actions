@@ -49,7 +49,7 @@ runs:
     - name: "Move artifact to dev folder"
       if: ${{ github.event.inputs.use-downloaded-artifact == true }}
       run: |
-        mv ${{ inputs.doc-artifact-name }} dev
+        unzip ${{ inputs.doc-artifact-name }}.zip ./dev/* -r
 
     - name: "Display structure of downloaded files"
       shell: bash
