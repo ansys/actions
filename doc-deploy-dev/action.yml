@@ -20,6 +20,34 @@ inputs:
     required: false
     default: ""
     type: string
+  repo:
+    description: Repository name with owner (like actions/checkout)
+    required: false
+    default: ${{ github.repository }}
+  pr:
+    description: Pull request number
+    required: false
+  commit:
+    description: Commit hash
+    required: false
+  branch:
+    description: Branch name
+    required: false
+  event:
+    description: Event type
+    required: false
+  run_id:
+    description: Workflow run id
+    required: false
+  run_number:
+    description: Workflow run number
+    required: false
+  name:
+    description: Artifact name (download all artifacts if not specified)
+    required: false
+  dry_run:
+    description: Check the existence of artifact(s) without downloading
+    required: false
 
 runs:
   using: "composite"
@@ -46,15 +74,22 @@ runs:
         name: ${{ inputs.doc-artifact-name }}
         path: dev
 
-    - name: "Download the HTML documentation artifact from other workflow"
+    - name: "Download the HTML documentation artifact"
       if: ${{ inputs.workflow != "" }}
       uses: dawidd6/action-download-artifact@v2
       with:
+        branch: ${{ inputs.branch }}
+        commit: ${{ inputs.commit }}
+        dry_run: ${{ inputs.dry_run }}
+        event: ${{ inputs.event }}
         github_token: ${{ inputs.token }}
         name: ${{ inputs.doc-artifact-name }}
-        workflow: ${{ inputs.workflow }}
-        commit: ${{ github.event.pull.before }}
         path: dev
+        pr: ${{ inputs.pr }}
+        repo: ${{ inputs.repo }}
+        run_id: ${{ inputs.run_id }}
+        run_number: ${{ inputs.run_number }}
+        workflow: ${{ inputs.workflow }}
 
     - name: "Display structure of downloaded files"
       shell: bash
