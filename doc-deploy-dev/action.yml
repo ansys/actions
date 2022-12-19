@@ -15,6 +15,11 @@ inputs:
     description: "Required token for documentation deployment."
     required: true
     type: string
+  workflow:
+    description: "Workflow name from where the artifacts are downloaded. By default, the same running workflow"
+    required: false
+    default: ""
+    type: string
 
 runs:
   using: "composite"
@@ -34,10 +39,21 @@ runs:
       shell: bash
       run: rm -rf dev/ && mkdir dev/
 
-    - name: "Download the HTML documentation artifact"
+    - name: "Download the HTML documentation artifact from the same workflow"
       uses: actions/download-artifact@v3
+      if: ${{ inputs.workflow == "" }}
       with:
         name: ${{ inputs.doc-artifact-name }}
+        path: dev
+
+    - name: "Download the HTML documentation artifact from other workflow"
+      if: ${{ inputs.workflow != "" }}
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{ inputs.token }}
+        name: ${{ inputs.doc-artifact-name }}
+        workflow: ${{ inputs.workflow }}
+        commit: ${{ github.event.pull.before }}
         path: dev
 
     - name: "Display structure of downloaded files"
