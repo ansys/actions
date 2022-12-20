@@ -16,38 +16,47 @@ inputs:
     required: true
     type: string
   workflow:
-    description: "Workflow name from where the artifacts are downloaded. By default, the same running workflow"
+    description: 'Workflow name from where the artifacts are downloaded. By default, the same running workflow'
     required: false
     default: ""
     type: string
   repo:
-    description: Repository name with owner (like actions/checkout)
+    description: 'Repository name with owner (like actions/checkout)'
     required: false
     default: ${{ github.repository }}
+    type: string
   pr:
-    description: Pull request number
+    description: 'Pull request number'
     required: false
+    type: string
   commit:
-    description: Commit hash
+    description: 'Commit hash'
     required: false
+    type: string
   branch:
-    description: Branch name
+    description: 'Branch name'
     required: false
+    type: string
   event:
-    description: Event type
+    description: 'Event type'
     required: false
+    type: string
   run_id:
-    description: Workflow run id
+    description: 'Workflow run id'
     required: false
+    type: string
   run_number:
-    description: Workflow run number
+    description: 'Workflow run number'
     required: false
+    type: string
   name:
-    description: Artifact name (download all artifacts if not specified)
+    description: 'Artifact name (download all artifacts if not specified)'
     required: false
+    type: string
   dry_run:
-    description: Check the existence of artifact(s) without downloading
+    description: 'Check the existence of artifact(s) without downloading'
     required: false
+    type: string
 
 runs:
   using: "composite"
