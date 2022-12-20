@@ -76,15 +76,7 @@ runs:
       shell: bash
       run: rm -rf dev/ && mkdir dev/
 
-    - name: "Download the HTML documentation artifact from the same workflow"
-      uses: actions/download-artifact@v3
-      if: ${{ inputs.workflow == "" }}
-      with:
-        name: ${{ inputs.doc-artifact-name }}
-        path: dev
-
     - name: "Download the HTML documentation artifact"
-      if: ${{ inputs.workflow != "" }}
       uses: dawidd6/action-download-artifact@v2
       with:
         branch: ${{ inputs.branch }}
