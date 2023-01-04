@@ -27,7 +27,7 @@ runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
-      if: inputs.skip-install == 'false'
+      if: ${{ (inputs.skip-install == 'false') && (input.checkout == 'true') }}
       uses: actions/checkout@v3
 
     - name: "Set up Python"
