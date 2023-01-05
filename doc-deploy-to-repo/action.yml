@@ -19,7 +19,8 @@ inputs:
     required: true
     type: string
   checkout:
-      description: 'Whether checkout the repository or not'
+      description: 'Whether to checkout the repository or not'
+
       default: true
       required: false
       type: boolean
