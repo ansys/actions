@@ -11,6 +11,11 @@ inputs:
     description: "Required token for Vale commenter."
     required: true
     type: string
+  checkout:
+      description: 'Whether to checkout the repository or not'
+      default: true
+      required: false
+      type: boolean
 
 runs:
   using: "composite"
@@ -18,6 +23,7 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
+      if: ${{ input.checkout == 'true' }}
 
     - name: "Run Vale"
       uses: errata-ai/vale-action@reviewdog
