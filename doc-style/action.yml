@@ -23,7 +23,7 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      if: ${{ input.checkout == 'true' }}
+      if: ${{ inputs.checkout == 'true' }}
 
     - name: "Run Vale"
       uses: errata-ai/vale-action@reviewdog
