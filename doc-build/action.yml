@@ -44,7 +44,7 @@ runs:
   
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      if: ${{ inputs.skip-install == 'false' && inputs.checkout == 'true' }}
+      if: ${{ inputs.checkout == 'true' }}
 
     - name: "Check if X Virtual Frame Buffer is needed"
       shell: bash
