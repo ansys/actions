@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Build actions &#8212; PyAnsys Actions 2.0.8 documentation</title>
+    <title>Build actions &#8212; PyAnsys Actions 2.0.9 documentation</title>
     
 <script>
   document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
@@ -206,7 +206,7 @@ function checkPageExistsAndRedirect(event) {
 
             $("#version_switcher_menu").append(node);
             // replace dropdown button text with the preferred display name of
-            // this version, rather than using sphinx's 2.0.8 variable.
+            // this version, rather than using sphinx's 2.0.9 variable.
             // also highlight the dropdown entry for the currently-viewed
             // version's entry
             if (entry.version == "2.0") {
@@ -276,7 +276,7 @@ function checkPageExistsAndRedirect(event) {
              accesskey="P">previous</a> |</li>
     
     
-        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 2.0.8 documentation</a> » </li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 2.0.9 documentation</a> » </li>
     
 
         <li class="nav-item nav-item-this"><a href="">Build actions</a></li> 
@@ -412,6 +412,12 @@ artifacts include both source distribution files and wheels.</p>
 <td><p>boolean</p></td>
 <td><p>1</p></td>
 </tr>
+<tr class="row-odd"><td><p>checkout</p></td>
+<td><p>Whether to checkout the repository or not</p></td>
+<td><p>False</p></td>
+<td><p>boolean</p></td>
+<td><p>1</p></td>
+</tr>
 </tbody>
 </table>
 <section id="examples">
@@ -424,14 +430,14 @@ Build library basic example<div class="sd-summary-down docutils">
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
-<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build-library</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">basic</span><span class="nv"> </span><span class="s">example&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span><span class="w"></span>
-<span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">source</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">wheel</span><span class="nv"> </span><span class="s">artifacts&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/build-library@v2</span><span class="w"></span>
-<span class="w">      </span><span class="nt">with</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">library-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ansys-&lt;product&gt;-&lt;library&gt;&quot;</span><span class="w"></span>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build-library</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">basic</span><span class="nv"> </span><span class="s">example&quot;</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">source</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">wheel</span><span class="nv"> </span><span class="s">artifacts&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/build-library@v2</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">library-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ansys-&lt;product&gt;-&lt;library&gt;&quot;</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -488,6 +494,12 @@ artifacts.</p>
 <td><p>string</p></td>
 <td></td>
 </tr>
+<tr class="row-even"><td><p>checkout</p></td>
+<td><p>Whether to checkout the repository or not</p></td>
+<td><p>False</p></td>
+<td><p>boolean</p></td>
+<td><p>True</p></td>
+</tr>
 </tbody>
 </table>
 <section id="id1">
@@ -500,21 +512,21 @@ Build wheelhouse for latest Python versions<div class="sd-summary-down docutils"
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
-<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build-wheelhouse</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">wheelhouse</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">latest</span><span class="nv"> </span><span class="s">Python</span><span class="nv"> </span><span class="s">versions&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"></span>
-<span class="w">     </span><span class="nt">matrix</span><span class="p">:</span><span class="w"></span>
-<span class="w">         </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">         </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;3.7&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.8&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.9&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.10&#39;</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">wheelhouse</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">Python</span><span class="nv"> </span><span class="s">library&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/build-wheelhouse@v2</span><span class="w"></span>
-<span class="w">      </span><span class="nt">with</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">library-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;ansys-product-library&gt;&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">library-namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;ansys.product.library&gt;&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">operating-system</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span><span class="w"></span>
-<span class="w">        </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.python-version }}</span><span class="w"></span>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build-wheelhouse</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">wheelhouse</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">latest</span><span class="nv"> </span><span class="s">Python</span><span class="nv"> </span><span class="s">versions&quot;</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">matrix</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span>
+<span class="w">         </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;3.7&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.8&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.9&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.10&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">wheelhouse</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">Python</span><span class="nv"> </span><span class="s">library&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/build-wheelhouse@v2</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">library-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;ansys-product-library&gt;&quot;</span>
+<span class="w">        </span><span class="nt">library-namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;ansys.product.library&gt;&quot;</span>
+<span class="w">        </span><span class="nt">operating-system</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span>
+<span class="w">        </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.python-version }}</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -571,6 +583,12 @@ C-extension.</p>
 <td><p>boolean</p></td>
 <td><p>False</p></td>
 </tr>
+<tr class="row-even"><td><p>checkout</p></td>
+<td><p>Whether to checkout the repository or not</p></td>
+<td><p>False</p></td>
+<td><p>boolean</p></td>
+<td><p>True</p></td>
+</tr>
 </tbody>
 </table>
 <section id="id2">
@@ -583,15 +601,15 @@ Build a C-extension library<div class="sd-summary-down docutils">
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
-<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build-c-extension</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">C-extension</span><span class="nv"> </span><span class="s">library&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"></span>
-<span class="w">     </span><span class="nt">matrix</span><span class="p">:</span><span class="w"></span>
-<span class="w">         </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">macos-11</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">C-extension</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">wheel</span><span class="nv"> </span><span class="s">artifacts&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/build-ci-library@v2</span><span class="w"></span>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build-c-extension</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">C-extension</span><span class="nv"> </span><span class="s">library&quot;</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">matrix</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">macos-11</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">C-extension</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">wheel</span><span class="nv"> </span><span class="s">artifacts&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/build-ci-library@v2</span>
 </pre></div>
 </div>
 </div></blockquote>

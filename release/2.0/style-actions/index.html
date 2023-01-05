@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Style actions &#8212; PyAnsys Actions 2.0.8 documentation</title>
+    <title>Style actions &#8212; PyAnsys Actions 2.0.9 documentation</title>
     
 <script>
   document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
@@ -206,7 +206,7 @@ function checkPageExistsAndRedirect(event) {
 
             $("#version_switcher_menu").append(node);
             // replace dropdown button text with the preferred display name of
-            // this version, rather than using sphinx's 2.0.8 variable.
+            // this version, rather than using sphinx's 2.0.9 variable.
             // also highlight the dropdown entry for the currently-viewed
             // version's entry
             if (entry.version == "2.0") {
@@ -276,7 +276,7 @@ function checkPageExistsAndRedirect(event) {
              accesskey="P">previous</a> |</li>
     
     
-        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 2.0.8 documentation</a> » </li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 2.0.9 documentation</a> » </li>
     
 
         <li class="nav-item nav-item-this"><a href="">Style actions</a></li> 
@@ -398,6 +398,12 @@ the root directory.</p>
 <td><p>boolean</p></td>
 <td><p>1</p></td>
 </tr>
+<tr class="row-even"><td><p>checkout</p></td>
+<td><p>Whether to checkout the repository or not</p></td>
+<td><p>False</p></td>
+<td><p>boolean</p></td>
+<td><p>1</p></td>
+</tr>
 </tbody>
 </table>
 <section id="examples">
@@ -410,12 +416,12 @@ Running code style checks<div class="sd-summary-down docutils">
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
-<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">code-style</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Running</span><span class="nv"> </span><span class="s">code</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span><span class="w"></span>
-<span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">PyAnsys</span><span class="nv"> </span><span class="s">code</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/code-style@v2</span><span class="w"></span>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">code-style</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Running</span><span class="nv"> </span><span class="s">code</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">PyAnsys</span><span class="nv"> </span><span class="s">code</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/code-style@v2</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -451,6 +457,12 @@ errors by making comments. This token can be the <code class="docutils literal n
 <td><p>string</p></td>
 <td></td>
 </tr>
+<tr class="row-even"><td><p>checkout</p></td>
+<td><p>Whether to checkout the repository or not</p></td>
+<td><p>False</p></td>
+<td><p>boolean</p></td>
+<td><p>True</p></td>
+</tr>
 </tbody>
 </table>
 <section id="id1">
@@ -463,14 +475,14 @@ Running documentation style checks<div class="sd-summary-down docutils">
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
-<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">doc-style</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Running</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span><span class="w"></span>
-<span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Running</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/doc-style@v2</span><span class="w"></span>
-<span class="w">      </span><span class="nt">with</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span><span class="w"></span>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">doc-style</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Running</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Running</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">style</span><span class="nv"> </span><span class="s">checks&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/doc-style@v2</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span>
 </pre></div>
 </div>
 </div></blockquote>

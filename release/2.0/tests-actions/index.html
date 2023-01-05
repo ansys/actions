@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Tests actions &#8212; PyAnsys Actions 2.0.8 documentation</title>
+    <title>Tests actions &#8212; PyAnsys Actions 2.0.9 documentation</title>
     
 <script>
   document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
@@ -206,7 +206,7 @@ function checkPageExistsAndRedirect(event) {
 
             $("#version_switcher_menu").append(node);
             // replace dropdown button text with the preferred display name of
-            // this version, rather than using sphinx's 2.0.8 variable.
+            // this version, rather than using sphinx's 2.0.9 variable.
             // also highlight the dropdown entry for the currently-viewed
             // version's entry
             if (entry.version == "2.0") {
@@ -276,7 +276,7 @@ function checkPageExistsAndRedirect(event) {
              accesskey="P">previous</a> |</li>
     
     
-        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 2.0.8 documentation</a> » </li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 2.0.9 documentation</a> » </li>
     
 
         <li class="nav-item nav-item-this"><a href="">Tests actions</a></li> 
@@ -407,6 +407,12 @@ test session.</p>
 <td><p>boolean</p></td>
 <td><p>False</p></td>
 </tr>
+<tr class="row-even"><td><p>checkout</p></td>
+<td><p>Whether to checkout the repository or not</p></td>
+<td><p>False</p></td>
+<td><p>boolean</p></td>
+<td><p>True</p></td>
+</tr>
 </tbody>
 </table>
 <section id="examples">
@@ -419,20 +425,20 @@ Testing library with different operating systems and Python versions<div class="
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
-<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tests</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Testing</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">different</span><span class="nv"> </span><span class="s">operating</span><span class="nv"> </span><span class="s">systems</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Python</span><span class="nv"> </span><span class="s">versions&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"></span>
-<span class="w">     </span><span class="nt">matrix</span><span class="p">:</span><span class="w"></span>
-<span class="w">         </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">         </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;3.7&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.8&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.9&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.10&#39;</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">     </span><span class="nt">fail-fast</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">pytest&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/tests-pytest@v2</span><span class="w"></span>
-<span class="w">      </span><span class="nt">with</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">pytest-markers</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;-k</span><span class="nv"> </span><span class="s">&#39;mocked&#39;&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">pytest-extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--cov=ansys.&lt;library&gt;</span><span class="nv"> </span><span class="s">--cov-report=term</span><span class="nv"> </span><span class="s">--cov-report=html:.cov/html&quot;</span><span class="w"></span>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tests</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Testing</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">different</span><span class="nv"> </span><span class="s">operating</span><span class="nv"> </span><span class="s">systems</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Python</span><span class="nv"> </span><span class="s">versions&quot;</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">matrix</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span>
+<span class="w">         </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;3.7&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.8&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.9&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.10&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">     </span><span class="nt">fail-fast</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">pytest&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/tests-pytest@v2</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">pytest-markers</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;-k</span><span class="nv"> </span><span class="s">&#39;mocked&#39;&quot;</span>
+<span class="w">        </span><span class="nt">pytest-extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--cov=ansys.&lt;library&gt;</span><span class="nv"> </span><span class="s">--cov-report=term</span><span class="nv"> </span><span class="s">--cov-report=html:.cov/html&quot;</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -445,38 +451,38 @@ Optimized testing with different operating systems and Python versions<div class
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
-<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tests</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Optimized</span><span class="nv"> </span><span class="s">testing</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">different</span><span class="nv"> </span><span class="s">operating</span><span class="nv"> </span><span class="s">systems</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Python</span><span class="nv"> </span><span class="s">versions&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"></span>
-<span class="w">     </span><span class="nt">matrix</span><span class="p">:</span><span class="w"></span>
-<span class="w">         </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">         </span><span class="nt">cfg</span><span class="p">:</span><span class="w"></span>
-<span class="w">           </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.7&#39;</span><span class="p p-Indicator">,</span><span class="nt"> markers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-m</span><span class="nv"> </span><span class="s">fast&#39;</span><span class="p p-Indicator">,</span><span class="nt"> extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="p p-Indicator">}</span><span class="w"></span>
-<span class="w">           </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.8&#39;</span><span class="p p-Indicator">,</span><span class="nt"> markers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-m</span><span class="nv"> </span><span class="s">plotting&#39;</span><span class="p p-Indicator">,</span><span class="nt"> extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="p p-Indicator">}</span><span class="w"></span>
-<span class="w">           </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.9&#39;</span><span class="p p-Indicator">,</span><span class="nt"> markers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="p p-Indicator">,</span><span class="nt"> extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;--doctest-modules</span><span class="nv"> </span><span class="s">src&#39;</span><span class="p p-Indicator">}</span><span class="w"></span>
-<span class="w">           </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.10&#39;</span><span class="p p-Indicator">,</span><span class="nt"> markers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="p p-Indicator">,</span><span class="nt"> extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;--cov=ansys.&lt;library&gt;</span><span class="nv"> </span><span class="s">--cov-report=term</span><span class="nv"> </span><span class="s">--cov-report=html:.cov/html&#39;</span><span class="p p-Indicator">}</span><span class="w"></span>
-<span class="w">     </span><span class="nt">fail-fast</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="nt">steps</span><span class="p">:</span><span class="w"></span>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tests</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Optimized</span><span class="nv"> </span><span class="s">testing</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">different</span><span class="nv"> </span><span class="s">operating</span><span class="nv"> </span><span class="s">systems</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Python</span><span class="nv"> </span><span class="s">versions&quot;</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">matrix</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span>
+<span class="w">         </span><span class="nt">cfg</span><span class="p">:</span>
+<span class="w">           </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.7&#39;</span><span class="p p-Indicator">,</span><span class="nt"> markers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-m</span><span class="nv"> </span><span class="s">fast&#39;</span><span class="p p-Indicator">,</span><span class="nt"> extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="p p-Indicator">}</span>
+<span class="w">           </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.8&#39;</span><span class="p p-Indicator">,</span><span class="nt"> markers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-m</span><span class="nv"> </span><span class="s">plotting&#39;</span><span class="p p-Indicator">,</span><span class="nt"> extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="p p-Indicator">}</span>
+<span class="w">           </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.9&#39;</span><span class="p p-Indicator">,</span><span class="nt"> markers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="p p-Indicator">,</span><span class="nt"> extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;--doctest-modules</span><span class="nv"> </span><span class="s">src&#39;</span><span class="p p-Indicator">}</span>
+<span class="w">           </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.10&#39;</span><span class="p p-Indicator">,</span><span class="nt"> markers</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="p p-Indicator">,</span><span class="nt"> extra-args</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;--cov=ansys.&lt;library&gt;</span><span class="nv"> </span><span class="s">--cov-report=term</span><span class="nv"> </span><span class="s">--cov-report=html:.cov/html&#39;</span><span class="p p-Indicator">}</span>
+<span class="w">     </span><span class="nt">fail-fast</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
 
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Login</span><span class="nv"> </span><span class="s">into</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">GitHub</span><span class="nv"> </span><span class="s">container</span><span class="nv"> </span><span class="s">registry&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker/login-action@v2.1.0</span><span class="w"></span>
-<span class="w">      </span><span class="nt">with</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io</span><span class="w"></span>
-<span class="w">        </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GH_USERNAME }}</span><span class="w"></span>
-<span class="w">        </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Login</span><span class="nv"> </span><span class="s">into</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">GitHub</span><span class="nv"> </span><span class="s">container</span><span class="nv"> </span><span class="s">registry&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker/login-action@v2.1.0</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io</span>
+<span class="w">        </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GH_USERNAME }}</span>
+<span class="w">        </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span>
 
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Pull,</span><span class="nv"> </span><span class="s">launch</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">verify</span><span class="nv"> </span><span class="s">desired</span><span class="nv"> </span><span class="s">Ansys</span><span class="nv"> </span><span class="s">service&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
-<span class="w">      </span><span class="nt">env</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">LICENSE_SERVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.LICENSE_SERVER }}</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Pull,</span><span class="nv"> </span><span class="s">launch</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">verify</span><span class="nv"> </span><span class="s">desired</span><span class="nv"> </span><span class="s">Ansys</span><span class="nv"> </span><span class="s">service&quot;</span>
+<span class="w">      </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">      </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">LICENSE_SERVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.LICENSE_SERVER }}</span>
 
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">pytest</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">desired</span><span class="nv"> </span><span class="s">markers</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">extra</span><span class="nv"> </span><span class="s">arguments&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/tests-pytest@v2</span><span class="w"></span>
-<span class="w">      </span><span class="nt">with</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">requires-xvfb</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">        </span><span class="nt">pytest-markers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.cfg.markers }}</span><span class="w"></span>
-<span class="w">        </span><span class="nt">pytest-extra-args</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.cfg.extra-args }}</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">pytest</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">desired</span><span class="nv"> </span><span class="s">markers</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">extra</span><span class="nv"> </span><span class="s">arguments&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/tests-pytest@v2</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">requires-xvfb</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">pytest-markers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.cfg.markers }}</span>
+<span class="w">        </span><span class="nt">pytest-extra-args</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.cfg.extra-args }}</span>
 </pre></div>
 </div>
 </div></blockquote>
