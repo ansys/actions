@@ -18,6 +18,12 @@ inputs:
     description: "Required application token for documentation deployment."
     required: true
     type: string
+  checkout:
+      description: 'Whether to checkout the repository or not'
+
+      default: true
+      required: false
+      type: boolean
 
 runs:
   using: "composite"
@@ -25,6 +31,7 @@ runs:
 
     - name: "Checkout project in the GitHub Pages branch"
       uses: actions/checkout@v3
+      if: ${{ input.checkout == 'true' }}
 
     - name: "Download the HTML documentation artifact"
       uses: actions/download-artifact@v3

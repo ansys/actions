@@ -12,6 +12,11 @@ inputs:
     required: false
     default: true
     type: boolean
+  checkout:
+      description: 'Whether to checkout the repository or not'
+      default: true
+      required: false
+      type: boolean
 
 runs:
   using: "composite"
@@ -19,6 +24,7 @@ runs:
   
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
+      if: ${{ input.checkout == 'true' }}
   
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
