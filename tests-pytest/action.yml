@@ -44,7 +44,7 @@ runs:
   
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      if: ${{ input.checkout == 'true' }}
+      if: ${{ inputs.checkout == 'true' }}
   
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
