@@ -16,7 +16,7 @@ inputs:
     required: true
     type: string
   workflow:
-    description: 'Workflow name from where the artifacts are downloaded. By default, the same running workflow.'
+    description: 'Workflow name from where the artifacts are downloaded. By default, the current running workflow.'
     required: false
     type: string
   repo:
