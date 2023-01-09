@@ -18,12 +18,10 @@ inputs:
   workflow:
     description: 'Workflow name from where the artifacts are downloaded. By default, the same running workflow.'
     required: false
-    default: ""
     type: string
   repo:
     description: 'Repository name with owner (like actions/checkout)'
     required: false
-    default: ${{ github.repository }}
     type: string
   pr:
     description: 'Pull request number'
