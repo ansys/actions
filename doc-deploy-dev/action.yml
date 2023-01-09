@@ -16,48 +16,9 @@ inputs:
     required: true
     type: string
   workflow:
-    description: 'Workflow name from where the artifacts are downloaded. By default, the same running workflow.'
-    required: false
-    default: ""
-    type: string
-  repo:
-    description: 'Repository name with owner (like actions/checkout)'
-    required: false
-    default: ${{ github.repository }}
-    type: string
-  pr:
-    description: 'Pull request number'
+    description: 'Workflow name from where the artifacts are downloaded. By default, the current running workflow.'
     required: false
     type: string
-  commit:
-    description: 'Commit hash'
-    required: false
-    type: string
-  branch:
-    description: 'Branch name'
-    required: false
-    type: string
-  event:
-    description: 'Event type'
-    required: false
-    type: string
-  run_id:
-    description: 'Workflow run id'
-    required: false
-    type: string
-  run_number:
-    description: 'Workflow run number'
-    required: false
-    type: string
-  dry_run:
-    description: 'Check the existence of artifact(s) without downloading'
-    required: false
-    type: string
-  checkout:
-      description: 'Whether to checkout the repository or not'
-      default: true
-      required: false
-      type: boolean
 
 runs:
   using: "composite"
@@ -81,17 +42,9 @@ runs:
     - name: "Download the HTML documentation artifact"
       uses: dawidd6/action-download-artifact@v2
       with:
-        branch: ${{ inputs.branch }}
-        commit: ${{ inputs.commit }}
-        dry_run: ${{ inputs.dry_run }}
-        event: ${{ inputs.event }}
         github_token: ${{ inputs.token }}
         name: ${{ inputs.doc-artifact-name }}
         path: dev
-        pr: ${{ inputs.pr }}
-        repo: ${{ inputs.repo }}
-        run_id: ${{ inputs.run_id }}
-        run_number: ${{ inputs.run_number }}
         workflow: ${{ inputs.workflow }}
 
     - name: "Display structure of downloaded files"
