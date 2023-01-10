@@ -19,6 +19,11 @@ inputs:
     description: 'Workflow name from where the artifacts are downloaded. By default, the current running workflow.'
     required: false
     type: string
+  checkout:
+    description: 'If ``True``, the project is checkout in the ``gh-pages``. If ``False``, users are the ones in charge of performing the checkout step.'
+    required: false
+    default: true
+    type: string
 
 runs:
   using: "composite"
@@ -31,7 +36,7 @@ runs:
 
     - name: "Checkout project in the GitHub Pages branch"
       uses: actions/checkout@v3
-      if: ${{ inputs.checkout == 'true' }}
+      if: inputs.checkout == 'true'
       with:
         ref: 'gh-pages'
 
