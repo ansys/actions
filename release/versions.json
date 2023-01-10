@@ -4,7 +4,11 @@
         "url": "https://actions.docs.pyansys.com/dev"
     },
     {
-        "version": "2.0 (stable)",
+        "version": "3.0 (stable)",
+        "url": "https://actions.docs.pyansys.com/release/3.0"
+    },
+    {
+        "version": "2.0",
         "url": "https://actions.docs.pyansys.com/release/2.0"
     },
     {
