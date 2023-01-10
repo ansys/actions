@@ -20,7 +20,7 @@ inputs:
     required: false
     type: string
   checkout:
-    description: 'If ``True``, the project is checkout in the ``gh-pages``. If ``False``, users are the ones in charge of performing the checkout step.'
+    description: 'If ``True``, the project is checked out in the ``gh-pages`` branch. If ``False``, users are the ones in charge of performing the checkout step.'
     required: false
     default: true
     type: string
