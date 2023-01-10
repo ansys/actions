@@ -546,63 +546,15 @@ artifact named <code class="docutils literal notranslate"><span class="pre">docu
 <td></td>
 </tr>
 <tr class="row-odd"><td><p>workflow</p></td>
-<td><p>Workflow name from where the artifacts are downloaded. By default, the same running workflow.</p></td>
-<td><p>False</p></td>
-<td><p>string</p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p>repo</p></td>
-<td><p>Repository name with owner (like actions/checkout)</p></td>
-<td><p>False</p></td>
-<td><p>string</p></td>
-<td><p>${{ github.repository }}</p></td>
-</tr>
-<tr class="row-odd"><td><p>pr</p></td>
-<td><p>Pull request number</p></td>
-<td><p>False</p></td>
-<td><p>string</p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p>commit</p></td>
-<td><p>Commit hash</p></td>
-<td><p>False</p></td>
-<td><p>string</p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p>branch</p></td>
-<td><p>Branch name</p></td>
-<td><p>False</p></td>
-<td><p>string</p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p>event</p></td>
-<td><p>Event type</p></td>
-<td><p>False</p></td>
-<td><p>string</p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p>run_id</p></td>
-<td><p>Workflow run id</p></td>
-<td><p>False</p></td>
-<td><p>string</p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p>run_number</p></td>
-<td><p>Workflow run number</p></td>
-<td><p>False</p></td>
-<td><p>string</p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p>dry_run</p></td>
-<td><p>Check the existence of artifact(s) without downloading</p></td>
+<td><p>Workflow name from where the artifacts are downloaded. By default, the current running workflow.</p></td>
 <td><p>False</p></td>
 <td><p>string</p></td>
 <td></td>
 </tr>
 <tr class="row-even"><td><p>checkout</p></td>
-<td><p>Whether to checkout the repository or not</p></td>
+<td><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the project is checked out in the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, users are the ones in charge of performing the checkout step.</p></td>
 <td><p>False</p></td>
-<td><p>boolean</p></td>
+<td><p>string</p></td>
 <td><p>True</p></td>
 </tr>
 </tbody>
