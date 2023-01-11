@@ -83,7 +83,7 @@ runs:
     - name: "Update the redirection link"
       shell: bash
       run: |
-        curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/redirect.html -o index.html
+        curl https://raw.githubusercontent.com/pyansys/actions/release/3.0/scripts/redirect.html -o index.html
         # HACK: if the GitHub actions variable is dereferenced inside the `sed` command a syntax error is raised.
         # The URL Github actions environmental variable is loaded inside a shell one to avoid this conflict.
         url=${{ env.URL }}
