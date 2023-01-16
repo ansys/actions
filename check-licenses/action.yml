@@ -17,6 +17,11 @@ inputs:
     default: false
     required: false
     type: boolean
+  setup-python:
+    description: 'Whether install python or not.'
+    required: false
+    type: bool
+    default: true
   target:
     description: 'Optional target to be passed for the build process.'
     required: false
@@ -36,7 +41,7 @@ runs:
       uses: actions/checkout@v3
 
     - name: "Set up Python"
-      if: inputs.skip-install == 'false'
+      if: ${{ inputs.skip-install == 'false' && inputs.setup-python == 'true' }}
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}

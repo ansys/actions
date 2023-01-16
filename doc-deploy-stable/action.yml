@@ -35,6 +35,16 @@ inputs:
       default: true
       required: false
       type: boolean
+  setup-python:
+    description: 'Whether install python or not.'
+    required: false
+    type: bool
+    default: true
+  download-artifacts:
+    description: 'Whether or not download the artifacts.'
+    required: false
+    type: bool
+    default: true
 
 runs:
   using: "composite"
@@ -86,14 +96,14 @@ runs:
         echo "VERSION=$major.$minor" >> $GITHUB_ENV
 
     - name: "Download the HTML documentation artifact in release/${{ github.ref_name }}"
-      if: env.ACCEPTED_FORMAT == 'true'
-      uses: actions/download-artifact@v3
+      if: ${{ env.ACCEPTED_FORMAT == 'true' && inputs.download-artifacts }}
+      uses: actions/download-artifact@v3 
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: release/${{ env.VERSION }}
   
     - name: "Set up Python ${{ inputs.python-version }}"
-      if: env.ACCEPTED_FORMAT == 'true'
+      if: ${{ env.ACCEPTED_FORMAT == 'true' && inputs.setup-python == 'true' }}
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}

@@ -20,10 +20,15 @@ inputs:
     type: string
   checkout:
       description: 'Whether to checkout the repository or not'
-
       default: true
       required: false
       type: boolean
+  download-artifacts:
+    description: 'Whether or not download the artifacts. By default download an artifact named "documentation-html"'
+    required: false
+    type: bool
+    default: true
+
 
 runs:
   using: "composite"
@@ -34,6 +39,7 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Download the HTML documentation artifact"
+      if: inputs.download-artifacts == 'true'
       uses: actions/download-artifact@v3
       with:
         name: documentation-html

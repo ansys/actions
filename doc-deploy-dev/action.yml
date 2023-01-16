@@ -24,6 +24,11 @@ inputs:
     required: false
     default: true
     type: string
+  download-artifacts:
+    description: 'Whether or not download the artifacts.'
+    required: false
+    type: bool
+    default: true
 
 runs:
   using: "composite"
@@ -45,6 +50,7 @@ runs:
       run: rm -rf dev/ && mkdir dev/
 
     - name: "Download the HTML documentation artifact"
+      if: inputs.download-artifacts == 'true'
       uses: dawidd6/action-download-artifact@v2
       with:
         github_token: ${{ inputs.token }}

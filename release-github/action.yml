@@ -6,6 +6,12 @@ inputs:
     description: 'Name of the Python library.'
     required: true
     type: string
+  download-artifacts:
+    description: 'Whether or not download the artifacts.'
+    required: false
+    type: bool
+    default: true
+
 
 runs:
   using: "composite"
@@ -18,6 +24,7 @@ runs:
         path: ${{ inputs.library-name }}-artifacts
 
     - name: "Download {{ inputs.library-name }} HTML documentation"
+      if: inputs.download-artifacts == 'true'
       uses: actions/download-artifact@v3
       with:
         name: documentation-html
@@ -30,6 +37,7 @@ runs:
         dest: documentation-html.zip
 
     - name: "Download {{ inputs.library-name }} PDF documentation"
+      if: inputs.download-artifacts == 'true'
       uses: actions/download-artifact@v3
       with:
         name: documentation-pdf
@@ -42,6 +50,7 @@ runs:
         dest: documentation-pdf.zip
 
     - name: "Download other artifacts (wheelhouse, cibuildwheel...)"
+      if: inputs.download-artifacts == 'true'
       uses: actions/download-artifact@v3
       with:
         path: other-artifacts

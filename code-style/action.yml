@@ -17,6 +17,12 @@ inputs:
       default: true
       required: false
       type: boolean
+  setup-python:
+    description: 'Whether install python or not.'
+    required: false
+    type: bool
+    default: true
+
 
 runs:
   using: "composite"
@@ -28,6 +34,7 @@ runs:
   
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
+      if: inputs.setup-python == 'true'
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

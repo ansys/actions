@@ -21,6 +21,11 @@ inputs:
       default: true
       required: false
       type: boolean
+  setup-python:
+    description: 'Whether install python or not.'
+    required: false
+    type: bool
+    default: true
 
 runs:
   using: "composite"
@@ -31,6 +36,7 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
   
     - name: "Set up Python"
+      if: inputs.setup-python == 'true'
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
