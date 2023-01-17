@@ -24,9 +24,8 @@ inputs:
     type: string
   download-artifacts:
     description: 'Whether or not download the artifacts. By default download an artifact named "``library-name``-artifacts"'
-    required: false
+    required: true
     type: bool
-    default: true
 
 
 runs:

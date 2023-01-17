@@ -38,7 +38,6 @@ inputs:
       required: false
       type: boolean
 
-
 runs:
   using: "composite"
   steps:
