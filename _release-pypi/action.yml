@@ -22,11 +22,6 @@ inputs:
     description: 'Desired Python version for using twine'
     required: true
     type: string
-  setup-python:
-    description: 'Whether install python or not.'
-    required: false
-    type: bool
-    default: true
   download-artifacts:
     description: 'Whether or not download the artifacts. By default download an artifact named "``library-name``-artifacts"'
     required: false
@@ -39,7 +34,6 @@ runs:
   steps:
   
     - name: "Set up Python"
-      if: inputs.setup-python == 'true'
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}

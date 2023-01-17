@@ -35,11 +35,6 @@ inputs:
       default: true
       required: false
       type: boolean
-  setup-python:
-    description: 'Whether install python or not.'
-    required: false
-    type: bool
-    default: true
   download-artifacts:
     description: 'Whether or not download the artifacts.'
     required: false
@@ -103,7 +98,7 @@ runs:
         path: release/${{ env.VERSION }}
   
     - name: "Set up Python ${{ inputs.python-version }}"
-      if: ${{ env.ACCEPTED_FORMAT == 'true' && inputs.setup-python == 'true' }}
+      if: env.ACCEPTED_FORMAT == 'true'
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}

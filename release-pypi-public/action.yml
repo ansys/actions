@@ -19,11 +19,6 @@ inputs:
     required: false
     default: '3.10'
     type: string
-  setup-python:
-    description: 'Whether install python or not.'
-    required: false
-    type: bool
-    default: true
   download-artifacts:
     description: 'Whether or not download the artifacts. By default download a "``library-name``-artifacts"'
     required: false
@@ -42,5 +37,4 @@ runs:
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}
         python-version: ${{ inputs.python-version }}
-        setup-python: ${{ inputs.setup-python }}
         download-artifacts: ${{ inputs.download-artifacts }}
