@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Documentation actions &#8212; PyAnsys Actions 3.0.1 documentation</title>
+    <title>Documentation actions &#8212; PyAnsys Actions 3.0.2 documentation</title>
     
 <script>
   document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
@@ -206,7 +206,7 @@ function checkPageExistsAndRedirect(event) {
 
             $("#version_switcher_menu").append(node);
             // replace dropdown button text with the preferred display name of
-            // this version, rather than using sphinx's 3.0.1 variable.
+            // this version, rather than using sphinx's 3.0.2 variable.
             // also highlight the dropdown entry for the currently-viewed
             // version's entry
             if (entry.version == "3.0") {
@@ -262,7 +262,7 @@ function checkPageExistsAndRedirect(event) {
              accesskey="P">previous</a> |</li>
     
     
-        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 3.0.1 documentation</a> » </li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 3.0.2 documentation</a> » </li>
     
 
         <li class="nav-item nav-item-this"><a href="">Documentation actions</a></li> 
@@ -533,25 +533,31 @@ artifact named <code class="docutils literal notranslate"><span class="pre">docu
 <td><p>string</p></td>
 <td><p>documentation-html</p></td>
 </tr>
-<tr class="row-odd"><td><p>cname</p></td>
+<tr class="row-odd"><td><p>decompress_artifact</p></td>
+<td><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the documentation artifact name is decompressed. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, content is assumed to be a collection of HTML files.</p></td>
+<td><p>False</p></td>
+<td><p>string</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-even"><td><p>cname</p></td>
 <td><p>The canonical name of the documentation website.</p></td>
 <td><p>True</p></td>
 <td><p>string</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>token</p></td>
+<tr class="row-odd"><td><p>token</p></td>
 <td><p>Required token for documentation deployment.</p></td>
 <td><p>True</p></td>
 <td><p>string</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>workflow</p></td>
+<tr class="row-even"><td><p>workflow</p></td>
 <td><p>Workflow name from where the artifacts are downloaded. By default, the current running workflow.</p></td>
 <td><p>False</p></td>
 <td><p>string</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>checkout</p></td>
+<tr class="row-odd"><td><p>checkout</p></td>
 <td><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the project is checked out in the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, users are the ones in charge of performing the checkout step.</p></td>
 <td><p>False</p></td>
 <td><p>string</p></td>
@@ -628,37 +634,43 @@ a PyAnsys project.</p>
 <td><p>string</p></td>
 <td><p>documentation-html</p></td>
 </tr>
-<tr class="row-odd"><td><p>cname</p></td>
+<tr class="row-odd"><td><p>decompress_artifact</p></td>
+<td><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the documentation artifact name is decompressed. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, content is assumed to be a collection of HTML files.</p></td>
+<td><p>False</p></td>
+<td><p>string</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-even"><td><p>cname</p></td>
 <td><p>The canonical name of the documentation website.</p></td>
 <td><p>True</p></td>
 <td><p>string</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>version-config</p></td>
+<tr class="row-odd"><td><p>version-config</p></td>
 <td><p>Name of the JSON file specifying version configuration.</p></td>
 <td><p>False</p></td>
 <td><p>string</p></td>
 <td><p>versions.json</p></td>
 </tr>
-<tr class="row-odd"><td><p>token</p></td>
+<tr class="row-even"><td><p>token</p></td>
 <td><p>Required token for documentation deployment.</p></td>
 <td><p>True</p></td>
 <td><p>string</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>python-version</p></td>
+<tr class="row-odd"><td><p>python-version</p></td>
 <td><p>Desired Python version.</p></td>
 <td><p>False</p></td>
 <td><p>string</p></td>
 <td><p>3.10</p></td>
 </tr>
-<tr class="row-odd"><td><p>render-last</p></td>
+<tr class="row-even"><td><p>render-last</p></td>
 <td><p>Number of last versions to be rendered in multi-doc.</p></td>
 <td><p>False</p></td>
 <td><p>string</p></td>
 <td><p>3</p></td>
 </tr>
-<tr class="row-even"><td><p>checkout</p></td>
+<tr class="row-odd"><td><p>checkout</p></td>
 <td><p>Whether to checkout the repository or not</p></td>
 <td><p>False</p></td>
 <td><p>boolean</p></td>
