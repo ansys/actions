@@ -7,6 +7,11 @@ inputs:
     required: false
     default: 'documentation-html'
     type: string
+  decompress_artifact:
+    description: "If ``True``, the documentation artifact name is decompressed. If ``False``, content is assumed to be a collection of HTML files."
+    required: false
+    default: false
+    type: string
   cname:
     description: 'The canonical name of the documentation website.'
     required: true
@@ -48,7 +53,8 @@ runs:
 
     - name: "List gh-pages content"
       shell: bash
-      run: ls -R
+      run: |
+        ls -R
 
     - name: "Check adequate version tagging"
       shell: bash
@@ -91,6 +97,15 @@ runs:
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: release/${{ env.VERSION }}
+
+    - name: "Decompress artifact content if required"
+      shell: bash
+      working-directory: release/${{ env.VERSION }}
+      if: inputs.decompress_artifact == 'true'
+      run: |
+        sudo apt-get install unzip
+        unzip ${{ inputs.doc-artifact-name }}.zip
+        rm ${{ inputs.doc-artifact-name }}.zip
   
     - name: "Set up Python ${{ inputs.python-version }}"
       if: env.ACCEPTED_FORMAT == 'true'

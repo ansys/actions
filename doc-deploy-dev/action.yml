@@ -7,6 +7,11 @@ inputs:
     required: false
     default: 'documentation-html'
     type: string
+  decompress_artifact:
+    description: "If ``True``, the documentation artifact name is decompressed. If ``False``, content is assumed to be a collection of HTML files."
+    required: false
+    default: false
+    type: string
   cname:
     description: 'The canonical name of the documentation website.'
     required: true
@@ -32,7 +37,7 @@ runs:
     - name: "Install system dependencies"
       shell: bash
       run: |
-        sudo apt-get install curl
+        sudo apt-get install curl unzip
 
     - name: "Checkout project in the GitHub Pages branch"
       uses: actions/checkout@v3
@@ -42,7 +47,8 @@ runs:
 
     - name: "Create a fresh development folder"
       shell: bash
-      run: rm -rf dev/ && mkdir dev/
+      run: |
+        rm -rf dev/ && mkdir dev/
 
     - name: "Download the HTML documentation artifact"
       uses: dawidd6/action-download-artifact@v2
@@ -51,6 +57,14 @@ runs:
         name: ${{ inputs.doc-artifact-name }}
         path: dev
         workflow: ${{ inputs.workflow }}
+
+    - name: "Decompress artifact content if required"
+      shell: bash
+      if: inputs.decompress_artifact == 'true'
+      working-directory: dev
+      run: |
+        unzip ${{ inputs.doc-artifact-name }}.zip
+        rm ${{ inputs.doc-artifact-name }}.zip
 
     - name: "Display structure of downloaded files"
       shell: bash
