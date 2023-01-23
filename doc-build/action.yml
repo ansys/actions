@@ -103,36 +103,28 @@ runs:
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'false'
       run: python -m pip install .[doc]
-    
-    - name: "Build HTML and PDF documentation"
-      if: ${{ inputs.requires-xvfb == 'false' && skip-json-build == 'true' }}
-      shell: bash
-      run: |
-        make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        make -C doc pdf
-
-    - name: "Build HTML and PDF documentation using xvfb"
-      if: ${{ inputs.requires-xvfb == 'true' && skip-json-build == 'true' }}
-      shell: bash
-      run: |
-        xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run make -C doc pdf
 
     - name: "Build HTML, PDF, and JSON documentation"
-      if: ${{ inputs.requires-xvfb == 'false' && skip-json-build == 'false' }}
+      if:  inputs.requires-xvfb == 'false'
       shell: bash
       run: |
         make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         make -C doc pdf
-        make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        if [[ ${{ skip-json-build == 'false' }} ]];
+        then
+          make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        fi
 
     - name: "Build HTML, PDF, and JSON documentation using xvfb"
-      if: ${{ inputs.requires-xvfb == 'true' && skip-json-build == 'false' }}
+      if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         xvfb-run make -C doc pdf
-        xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        if [[ ${{ skip-json-build == 'false' }} ]];
+        then
+          xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        fi
 
     - name: "Upload HTML documentation artifact"
       uses: actions/upload-artifact@v3
