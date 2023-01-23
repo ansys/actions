@@ -38,7 +38,7 @@ inputs:
       required: false
       type: boolean
   skip-json-build:
-      description: 'Whether to build json files or not'
+      description: 'Whether to build json files or not.'
       default: true
       required: false
       type: boolean
