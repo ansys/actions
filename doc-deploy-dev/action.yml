@@ -37,7 +37,8 @@ runs:
     - name: "Install system dependencies"
       shell: bash
       run: |
-        sudo apt-get install curl unzip
+        sudo apt-get install cargo curl
+        cargo install ouch && ouch --version
 
     - name: "Checkout project in the GitHub Pages branch"
       uses: actions/checkout@v3
@@ -63,8 +64,9 @@ runs:
       if: inputs.decompress_artifact == 'true'
       working-directory: dev
       run: |
-        unzip ${{ inputs.doc-artifact-name }}.zip
-        rm ${{ inputs.doc-artifact-name }}.zip
+        compressed_artifact=$(ls .)
+        ouch decompress $compressed_artifact
+        rm $compressed_artifact
 
     - name: "Display structure of downloaded files"
       shell: bash

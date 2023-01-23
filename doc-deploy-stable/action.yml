@@ -103,9 +103,12 @@ runs:
       working-directory: release/${{ env.VERSION }}
       if: inputs.decompress_artifact == 'true'
       run: |
-        sudo apt-get install unzip
-        unzip ${{ inputs.doc-artifact-name }}.zip
-        rm ${{ inputs.doc-artifact-name }}.zip
+        sudo apt-get install cargo
+        cargo install ouch && ouch --version
+
+        compressed_artifact=$(ls .)
+        ouch decompress $compressed_artifact
+        rm $compressed_artifact
   
     - name: "Set up Python ${{ inputs.python-version }}"
       if: env.ACCEPTED_FORMAT == 'true'
