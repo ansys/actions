@@ -33,7 +33,7 @@ inputs:
       required: false
       type: boolean
   checkout:
-      description: 'Whether to checkout the repository or not'
+      description: 'Whether to checkout the repository or not.'
       default: true
       required: false
       type: boolean
