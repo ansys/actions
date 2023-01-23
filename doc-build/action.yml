@@ -142,6 +142,7 @@ runs:
 
     - name: "Upload JSON documentation artifact"
       uses: actions/upload-artifact@v3
+      if: inputs.skip-json-build == 'false'
       with:
         name: documentation-json
         path: doc/_build/json
