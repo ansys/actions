@@ -33,7 +33,12 @@ inputs:
       required: false
       type: boolean
   checkout:
-      description: 'Whether to checkout the repository or not'
+      description: 'Whether to checkout the repository or not.'
+      default: true
+      required: false
+      type: boolean
+  skip-json-build:
+      description: 'Whether to build json files or not.'
       default: true
       required: false
       type: boolean
@@ -98,22 +103,28 @@ runs:
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'false'
       run: python -m pip install .[doc]
-    
+
     - name: "Build HTML, PDF, and JSON documentation"
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
         make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         make -C doc pdf
-        make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        if [[ ${{ inputs.skip-json-build == 'false' }} ]];
+        then
+          make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        fi
 
-    - name: "Build HTML and JSON documentation using xvfb"
+    - name: "Build HTML, PDF, and JSON documentation using xvfb"
       if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         xvfb-run make -C doc pdf
-        xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        if [[ ${{ inputs.skip-json-build == 'false' }} ]];
+        then
+          xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        fi
 
     - name: "Upload HTML documentation artifact"
       uses: actions/upload-artifact@v3
@@ -131,6 +142,7 @@ runs:
 
     - name: "Upload JSON documentation artifact"
       uses: actions/upload-artifact@v3
+      if: inputs.skip-json-build == 'false'
       with:
         name: documentation-json
         path: doc/_build/json
