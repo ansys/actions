@@ -110,7 +110,7 @@ runs:
       run: |
         make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         make -C doc pdf
-        if [[ ${{ inputs.skip-json-build == 'false' }} ]];
+        if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
           make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
@@ -121,7 +121,7 @@ runs:
       run: |
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         xvfb-run make -C doc pdf
-        if [[ ${{ inputs.skip-json-build == 'false' }} ]];
+        if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
           xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
