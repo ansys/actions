@@ -440,7 +440,13 @@ artifacts:</p>
 <td><p>False</p></td>
 </tr>
 <tr class="row-even"><td><p>checkout</p></td>
-<td><p>Whether to checkout the repository or not</p></td>
+<td><p>Whether to checkout the repository or not.</p></td>
+<td><p>False</p></td>
+<td><p>boolean</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-odd"><td><p>skip-json-build</p></td>
+<td><p>Whether to build json files or not.</p></td>
 <td><p>False</p></td>
 <td><p>boolean</p></td>
 <td><p>True</p></td>
@@ -451,19 +457,21 @@ artifacts:</p>
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h3>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 sd-fade-in">
 <summary class="sd-summary-title sd-card-header">
-Building library documentation<div class="sd-summary-down docutils">
+Building library documentation that using XVFB<div class="sd-summary-down docutils">
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
 <div class="sd-summary-up docutils">
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
 <div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">doc-build</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Building</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">documentation&quot;</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Building</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">that</span><span class="nv"> </span><span class="s">using</span><span class="nv"> </span><span class="s">XVFB&quot;</span>
 <span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
 <span class="w">  </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">doc-style</span>
 <span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">Ansys</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">building</span><span class="nv"> </span><span class="s">action&quot;</span>
 <span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/doc-build@main</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">requires-xvfb</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -491,21 +499,19 @@ Installing additional system dependencies for building documentation<div class="
 </div>
 </details><details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 sd-fade-in">
 <summary class="sd-summary-title sd-card-header">
-Building library documentation that using XVFB<div class="sd-summary-down docutils">
+Building library documentation<div class="sd-summary-down docutils">
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
 <div class="sd-summary-up docutils">
 <svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
 </summary><div class="sd-summary-content sd-card-body docutils">
 <blockquote>
 <div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">doc-build</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Building</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">that</span><span class="nv"> </span><span class="s">using</span><span class="nv"> </span><span class="s">XVFB&quot;</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Building</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">documentation&quot;</span>
 <span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
 <span class="w">  </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">doc-style</span>
 <span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Run</span><span class="nv"> </span><span class="s">Ansys</span><span class="nv"> </span><span class="s">documentation</span><span class="nv"> </span><span class="s">building</span><span class="nv"> </span><span class="s">action&quot;</span>
 <span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/doc-build@main</span>
-<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">requires-xvfb</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -671,7 +677,7 @@ a PyAnsys project.</p>
 <td><p>3</p></td>
 </tr>
 <tr class="row-odd"><td><p>checkout</p></td>
-<td><p>Whether to checkout the repository or not</p></td>
+<td><p>Whether to checkout the repository or not.</p></td>
 <td><p>False</p></td>
 <td><p>boolean</p></td>
 <td><p>True</p></td>
@@ -755,7 +761,7 @@ at the optional arguments for this action.</p>
 <td></td>
 </tr>
 <tr class="row-even"><td><p>checkout</p></td>
-<td><p>Whether to checkout the repository or not</p></td>
+<td><p>Whether to checkout the repository or not.</p></td>
 <td><p>False</p></td>
 <td><p>boolean</p></td>
 <td><p>True</p></td>
