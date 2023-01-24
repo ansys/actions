@@ -23,6 +23,7 @@ inputs:
   workflow:
     description: 'Workflow name from where the artifacts are downloaded. By default, the current running workflow.'
     required: false
+    default: ''
     type: string
   checkout:
     description: 'If ``True``, the project is checked out in the ``gh-pages`` branch. If ``False``, users are the ones in charge of performing the checkout step.'
@@ -51,13 +52,22 @@ runs:
       run: |
         rm -rf dev/ && mkdir dev/
 
-    - name: "Download the HTML documentation artifact"
+    - name: "Download the HTML documentation artifact from desired workflow"
       uses: dawidd6/action-download-artifact@v2
+      if: inputs.workflow != ''
       with:
         github_token: ${{ inputs.token }}
         name: ${{ inputs.doc-artifact-name }}
         path: dev
         workflow: ${{ inputs.workflow }}
+
+    - name: "Download the HTML documentation artifact from current workflow"
+      uses: dawidd6/action-download-artifact@v2
+      if: inputs.workflow != ''
+      with:
+        github_token: ${{ inputs.token }}
+        name: ${{ inputs.doc-artifact-name }}
+        path: dev
 
     - name: "Decompress artifact content if required"
       shell: bash
