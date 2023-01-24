@@ -133,7 +133,7 @@ def update_switch_version_file(
     # Make the redirect page to point to the latest stable
     with open("index.html", "r") as redirection_file:
         content = redirection_file.read()
-    new_content = content.replace("var-url", f"{cname}/release/{latest_stable_version}")
+    new_content = content.replace("var-url", f"{cname}/release/{latest_stable_version}/")
     with open("index.html", "w") as redirection_file:
         redirection_file.write(new_content)
 
