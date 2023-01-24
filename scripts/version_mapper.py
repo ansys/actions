@@ -79,12 +79,12 @@ def update_switch_version_file(
         new_content = []
 
         # The first data for the new content is always the development version
-        new_content.append(dict(version="dev", url=f"{cname}/dev"))
+        new_content.append(dict(version="dev", url=f"{cname}/dev/"))
 
         # Append the information for the new content
         for ith_version, version in enumerate(new_versions_list):
             version_name = f"{version} (stable)" if ith_version == 0 else version
-            new_data = dict(version=version_name, url=f"{cname}/release/{version}")
+            new_data = dict(version=version_name, url=f"{cname}/release/{version}/")
             new_content.append(new_data)
 
     # Override the whole content of the version switches JSON file with the new
@@ -130,10 +130,12 @@ def update_switch_version_file(
                     print(f"Writing content to {announcement_file}.")
                     file.write(announcement_content)
 
-    # Make the redirec page to point to the latest stable
+    # Make the redirect page to point to the latest stable
     with open("index.html", "r") as redirection_file:
         content = redirection_file.read()
-    new_content = content.replace("var-url", f"{cname}/release/{latest_stable_version}")
+    new_content = content.replace(
+        "var-url", f"{cname}/release/{latest_stable_version}/"
+    )
     with open("index.html", "w") as redirection_file:
         redirection_file.write(new_content)
 

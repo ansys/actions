@@ -14,7 +14,7 @@ def test_update_switch_version_file(new_version, render_last, cname):
     # The content for the file shouldn't change since the version already exists
     # and the number of shown versions is the available one
     expected_content = []
-    expected_content.append(dict(version="dev", url=f"https://{cname}/dev"))
+    expected_content.append(dict(version="dev", url=f"https://{cname}/dev/"))
     minor_version = int(new_version[-1])
     lower_bound, upper_bound = minor_version + 1 - render_last, minor_version + 1
     for ith_version, minor_version in enumerate(
@@ -25,7 +25,7 @@ def test_update_switch_version_file(new_version, render_last, cname):
         expected_content.append(
             dict(
                 version=version_name,
-                url=f"https://{cname}/release/0.{minor_version}",
+                url=f"https://{cname}/release/0.{minor_version}/",
             )
         )
 
