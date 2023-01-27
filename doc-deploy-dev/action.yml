@@ -29,6 +29,11 @@ inputs:
     required: false
     default: true
     type: string
+  workflow_conclusion:
+    description: 'Workflow conclusion (options: "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required") or status (options: "completed", "in_progress", "queued") to search for. Use the empty string ("") to ignore status or conclusion in the search.'
+    required: false
+    default: ''
+    type: string
 
 runs:
   using: "composite"
@@ -58,6 +63,7 @@ runs:
         name: ${{ inputs.doc-artifact-name }}
         path: dev
         workflow: ${{ inputs.workflow }}
+        workflow_conclusion: ${{ inputs.workflow_conclusion }}
 
     - name: "Decompress artifact content if required"
       shell: bash
