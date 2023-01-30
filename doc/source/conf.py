@@ -5,7 +5,7 @@ import pathlib
 
 import jinja2
 import yaml
-from ansys_sphinx_theme import ansys_favicon, ansys_logo_black, get_version_match
+from ansys_sphinx_theme import ansys_favicon, pyansys_logo_black, get_version_match
 from tabulate import tabulate as Table
 
 # Constants used for generating documentation
@@ -33,7 +33,7 @@ release = version = __version__
 branch_name = "main" if __version__.endswith("dev0") else f"v{__version__[0]}"
 
 # Use the default pyansys logo
-html_logo = ansys_logo_black
+html_logo = pyansys_logo_black
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 
