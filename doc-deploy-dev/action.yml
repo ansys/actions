@@ -25,6 +25,11 @@ inputs:
     required: false
     default: ''
     type: string
+  workflow-conclusion:
+    description: 'Workflow conclusion (options: "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required") or status (options: "completed", "in_progress", "queued") to search for. Use the empty string ("") to ignore status or conclusion in the search.'
+    required: false
+    default: ''
+    type: string
   checkout:
     description: 'If ``True``, the project is checked out in the ``gh-pages`` branch. If ``False``, users are the ones in charge of performing the checkout step.'
     required: false
@@ -60,6 +65,7 @@ runs:
         name: ${{ inputs.doc-artifact-name }}
         path: dev
         workflow: ${{ inputs.workflow }}
+        workflow_conclusion: ${{ inputs.workflow-conclusion }}
 
     - name: "Download the HTML documentation artifact from current workflow"
       uses: dawidd6/action-download-artifact@v2
