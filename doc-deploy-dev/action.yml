@@ -63,7 +63,7 @@ runs:
 
     - name: "Download the HTML documentation artifact from current workflow"
       uses: dawidd6/action-download-artifact@v2
-      if: inputs.workflow != ''
+      if: inputs.workflow == ''
       with:
         github_token: ${{ inputs.token }}
         name: ${{ inputs.doc-artifact-name }}
