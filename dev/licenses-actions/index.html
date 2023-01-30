@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Licenses actions &#8212; PyAnsys Actions 3.0.5 documentation</title>
+    <title>Licenses actions &#8212; PyAnsys Actions 4.0.dev0 documentation</title>
     
 <script>
   document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
@@ -141,7 +141,7 @@
       <div class="navbar-end-item">
         <div class="dropdown" id="version_switcher">
     <button type="button" class="btn btn-sm navbar-btn dropdown-toggle" id="version_switcher_button" data-toggle="dropdown">
-        3.0  <!-- this text may get changed later by javascript -->
+        dev  <!-- this text may get changed later by javascript -->
         <span class="caret"></span>
     </button>
     <div id="version_switcher_menu" class="dropdown-menu list-group-flush py-0" aria-labelledby="version_switcher_button">
@@ -151,7 +151,7 @@
 
 <!-- NOTE: this JS must live here (not in our global JS file) because it relies
      on being processed by Jinja before it is run (specifically for replacing
-     variables licenses-actions/index and {'json_url': 'https://actions.docs.pyansys.com/release/versions.json', 'version_match': '3.0'}.
+     variables licenses-actions/index and {'json_url': 'https://actions.docs.pyansys.com/release/versions.json', 'version_match': 'dev'}.
 -->
 
 <script type="text/javascript">
@@ -206,10 +206,10 @@ function checkPageExistsAndRedirect(event) {
 
             $("#version_switcher_menu").append(node);
             // replace dropdown button text with the preferred display name of
-            // this version, rather than using sphinx's 3.0.5 variable.
+            // this version, rather than using sphinx's 4.0.dev0 variable.
             // also highlight the dropdown entry for the currently-viewed
             // version's entry
-            if (entry.version == "3.0") {
+            if (entry.version == "dev") {
                 node.classList.add("active");
                 btn.innerText = btn.dataset["activeVersionName"] = entry.name;
                 btn.dataset["activeVersion"] = entry.version;
@@ -262,7 +262,7 @@ function checkPageExistsAndRedirect(event) {
              accesskey="P">previous</a> |</li>
     
     
-        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 3.0.5 documentation</a> » </li>
+        <li class="nav-item nav-item-0"><a href="../index.html">PyAnsys Actions 4.0.dev0 documentation</a> » </li>
     
 
         <li class="nav-item nav-item-this"><a href="">Licenses actions</a></li> 
@@ -447,7 +447,7 @@ Check library dependencies ship with valid licenses<div class="sd-summary-down d
 <span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
 <span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Validate</span><span class="nv"> </span><span class="s">third</span><span class="nv"> </span><span class="s">party</span><span class="nv"> </span><span class="s">licenses&quot;</span>
-<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/check-licenses@v3</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyansys/actions/check-licenses@main</span>
 <span class="w">      </span><span class="nt">with</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ env.MAIN_PYTHON_VERSION }}</span>
 </pre></div>
