@@ -5,7 +5,7 @@ import pathlib
 
 import jinja2
 import yaml
-from ansys_sphinx_theme import ansys_favicon, pyansys_logo_black, get_version_match
+from ansys_sphinx_theme import ansys_favicon, get_version_match, pyansys_logo_black
 from tabulate import tabulate as Table
 
 # Constants used for generating documentation
