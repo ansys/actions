@@ -68,10 +68,9 @@ runs:
         workflow_conclusion: ${{ inputs.workflow-conclusion }}
 
     - name: "Download the HTML documentation artifact from current workflow"
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v3
       if: inputs.workflow == ''
       with:
-        github_token: ${{ inputs.token }}
         name: ${{ inputs.doc-artifact-name }}
         path: dev
 
