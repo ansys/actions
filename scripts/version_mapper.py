@@ -38,7 +38,7 @@ def update_switch_version_file(
         The number of stable releases to be shown in the version switcher.
 
     """
-    with open(f"release/{json_filename}", "r") as switcher_file:
+    with open(json_filename, "r") as switcher_file:
         # Load the content of the json switcher file
         current_content = json.load(switcher_file)
 
@@ -79,32 +79,32 @@ def update_switch_version_file(
         new_content = []
 
         # The first data for the new content is always the development version
-        new_content.append(dict(version="dev", url=f"{cname}/dev/"))
+        new_content.append(dict(version="dev", url=f"{cname}/version/dev/"))
 
         # Append the information for the new content
         for ith_version, version in enumerate(new_versions_list):
             version_name = f"{version} (stable)" if ith_version == 0 else version
-            new_data = dict(version=version_name, url=f"{cname}/release/{version}/")
+            new_data = dict(version=version_name, url=f"{cname}/version/{version}/")
             new_content.append(new_data)
 
     # Override the whole content of the version switches JSON file with the new
     # generated version data
-    with open(f"release/{json_filename}", "w") as switcher_file:
+    with open(json_filename, "w") as switcher_file:
         # Update JSON file with the new content
         json.dump(new_content, switcher_file, indent=4)
 
     # Use the latest stable version for formatting the announcement
     announcement_link = (
-        f"<a href='{cname}/release/{latest_stable_version}'>{latest_stable_version}</a>"
+        f"<a href='{cname}/version/{latest_stable_version}'>{latest_stable_version}</a>"
     )
     announcement_content = f"<p>You are not viewing the most recent version of this documentation. The latest stable release is {announcement_link}.</p>"
 
-    # Include the announcement in all available release folders. Note that
+    # Include the announcement in all available versions folders. Note that
     # these are still accessible even if they are not included in the dropdown.
-    release_path = Path("release")
+    version_path = Path("version")
     version_folders = [
         folder
-        for folder in release_path.iterdir()
+        for folder in version_path.iterdir()
         if folder.is_dir() and folder.name != latest_stable_version
     ]
 
@@ -118,7 +118,7 @@ def update_switch_version_file(
 
             # Ignore private directories
             requires_announcement = True
-            for dirname in str(path.relative_to(release_path)).split("/"):
+            for dirname in str(path.relative_to(version_path)).split("/"):
                 if dirname.startswith("_"):
                     requires_announcement = False
                     break
@@ -134,7 +134,7 @@ def update_switch_version_file(
     with open("index.html", "r") as redirection_file:
         content = redirection_file.read()
     new_content = content.replace(
-        "var-url", f"{cname}/release/{latest_stable_version}/"
+        "var-url", f"{cname}/version/{latest_stable_version}/"
     )
     with open("index.html", "w") as redirection_file:
         redirection_file.write(new_content)
