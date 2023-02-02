@@ -55,7 +55,7 @@ runs:
     - name: "Create a fresh development folder"
       shell: bash
       run: |
-        rm -rf dev/ && mkdir dev/
+        rm -rf version/dev/ && mkdir version/dev/
 
     - name: "Download the HTML documentation artifact from desired workflow"
       uses: dawidd6/action-download-artifact@v2
@@ -63,7 +63,7 @@ runs:
       with:
         github_token: ${{ inputs.token }}
         name: ${{ inputs.doc-artifact-name }}
-        path: dev
+        path: version/dev
         workflow: ${{ inputs.workflow }}
         workflow_conclusion: ${{ inputs.workflow-conclusion }}
 
@@ -72,12 +72,12 @@ runs:
       if: inputs.workflow == ''
       with:
         name: ${{ inputs.doc-artifact-name }}
-        path: dev
+        path: version/dev
 
     - name: "Decompress artifact content if required"
       shell: bash
       if: inputs.decompress_artifact == 'true'
-      working-directory: dev
+      working-directory: version/dev
       run: |
         compressed_artifact=$(ls .)
         ouch decompress $compressed_artifact
@@ -98,17 +98,15 @@ runs:
       shell: bash
       run: |
         # Verify if there is any stable release in release/versions.json
-        if grep -q -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" release/versions.json;
+        if grep -q -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" versions.json;
         then 
           # Generate the URL pointing to the latest stable version
           echo "Found stable release. Generating stable redirection URL..."
-          line=$(grep -n -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" release/versions.json)
-          version=$(echo $line | grep -o -h -E "[0-9]+.[0-9]+")
-          echo "URL=https://${{ inputs.cname }}/release/$version" >> $GITHUB_ENV
+          echo "URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
         else 
           # Generate the URL pointing to the development version if no stable releases
           echo "Stable release not found. Generating development redirection URL..."
-          echo "URL=https://${{ inputs.cname }}/dev" >> $GITHUB_ENV
+          echo "URL=https://${{ inputs.cname }}/version/dev/" >> $GITHUB_ENV
         fi
 
     - name: "Update the redirection link"
@@ -121,13 +119,6 @@ runs:
         echo "Value for url: $url"
         sed -i "s|var-url|$url|g" index.html
         cat index.html
-
-    - name: "Clear unnecessary gh-pages files and directories"
-      shell: bash
-      run: |
-        shopt -s extglob
-        rm -rf -v !("index.html"|"release"|"dev"|"CNAME"|".nojekyll")
-        ls -R
 
     - name: "Commit new changes (if required)"
       shell: bash

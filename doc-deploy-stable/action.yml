@@ -83,7 +83,7 @@ runs:
         # Filter out the major and minor version numbers
         major=$(echo $PRELIMINARY_VERSION | cut -d. -f1)
         minor=$(echo $PRELIMINARY_VERSION | cut -d. -f2)
-        folder=release/$major.$minor
+        folder=version/$major.$minor
         echo "Folder was found to be $folder"
         # Create a new folder for the version (remove existing one if required)
         if [[ -d $folder ]]; then rm -rf $folder; fi 
@@ -91,16 +91,16 @@ runs:
         # Output the version
         echo "VERSION=$major.$minor" >> $GITHUB_ENV
 
-    - name: "Download the HTML documentation artifact in release/${{ github.ref_name }}"
+    - name: "Download the HTML documentation artifact in version/${{ github.ref_name }}"
       if: env.ACCEPTED_FORMAT == 'true'
       uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.doc-artifact-name }}
-        path: release/${{ env.VERSION }}
+        path: version/${{ env.VERSION }}
 
     - name: "Decompress artifact content if required"
       shell: bash
-      working-directory: release/${{ env.VERSION }}
+      working-directory: version/${{ env.VERSION }}
       if: inputs.decompress_artifact == 'true'
       run: |
         sudo apt-get install cargo
@@ -109,6 +109,11 @@ runs:
         compressed_artifact=$(ls .)
         ouch decompress $compressed_artifact
         rm $compressed_artifact
+
+    - name: "Override the content of the version/stable/ folder"
+      shell: bash
+      run:
+        rm -rf version/stable && mkdir -p version/stable
   
     - name: "Set up Python ${{ inputs.python-version }}"
       if: env.ACCEPTED_FORMAT == 'true'
@@ -142,13 +147,6 @@ runs:
           --render_last ${{ inputs.render-last }}
         # Remove the script to avoid Git tracking it
         rm -rf version_mapper.py
-
-    - name: "Clear unnecessary gh-pages files and directories"
-      shell: bash
-      run: |
-        shopt -s extglob
-        rm -rf -v !("index.html"|"release"|"dev"|"CNAME"|".nojekyll")
-        ls -R
 
     - name: "Commit new changes (if required)"
       if: env.ACCEPTED_FORMAT == 'true'
