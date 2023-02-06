@@ -4,13 +4,18 @@
         "url": "https://test.domain.com/version/dev/"
     },
     {
-        "version": "0.6 (stable)",
-        "url": "https://test.domain.com/version/0.6/"
-    },
-    {
-        "version": "0.5",
+        "version": "0.5 (stable)",
         "url": "https://test.domain.com/version/0.5/"
     },
+    {
+        "version": "12.12",
+        "url": "https://test.domain.com/version/12.12/"
+    },
+    {
+        "version": "12.13",
+        "url": "https://test.domain.com/version/12.13/"
+    },
+    {
     {
         "version": "0.4",
         "url": "https://test.domain.com/version/0.4/"

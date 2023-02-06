@@ -1,8 +1,8 @@
 name: "Documentation deploy stable version."
-description: "Deploy stable documentation to GitHub pages."
+description: "Deploy stable documentation artifacts to desired repository branch."
 
 inputs:
-  doc-artifact-name:
+  doc_artifact_name:
     description: "Name of the HTML documentation artifact."
     required: false
     default: 'documentation-html'
@@ -12,151 +12,159 @@ inputs:
     required: false
     default: false
     type: string
+  repository:
+    description: "Name of the repository in the form of ``username/repository`` used to deploy the documentation. If not specified, current repository is used."
+    required: false
+    default: 'current'
+    type: string
+  branch:
+    description: "Desired deployment branch name. If not specified, ``gh-pages`` is used."
+    required: false
+    default: 'gh-pages'
+    type: string
   cname:
     description: 'The canonical name of the documentation website.'
     required: true
-    type: string
-  version-config:
-    description: 'Name of the JSON file specifying version configuration.'
-    default: 'versions.json'
-    required: false
     type: string
   token:
     description: "Required token for documentation deployment."
     required: true
     type: string
-  python-version:
-    description: 'Desired Python version.'
-    default: '3.10'
+  commit_message:
+    description: "Commit message used when deploying the documentation"
     required: false
+    default: 'DOC: update development documentation'
     type: string
-  render-last:
+  render_last:
     description: 'Number of last versions to be rendered in multi-doc.'
     default: '3'
     required: false
     type: string
-  checkout:
-      description: 'Whether to checkout the repository or not.'
-      default: true
-      required: false
-      type: boolean
 
 runs:
   using: "composite"
   steps:
 
-    - name: "Checkout project in the GitHub Pages branch"
+    # Verify that a tag event triggered the workflow. This is a strong requirement to
+    # guarantee that any stable documentation deployment is linked to a tag.
+    # If a tag is detected, verify that it is compliant with semantic version syntax.
+
+    # Tags starting with a 'v*' followed by a semantic version of the following 
+    # the syntax <MAJOR.MINOR.PATCH> are valid.
+
+    - name: "Check documentation deployment was triggered by a tag"
+      shell: bash
+      if: github.ref_type != 'tag'
+      run: |
+        echo "[PYANSYS ACTIONS ERROR]"
+        echo "Stable documentation deployment can only be triggered by a tag."
+        echo "Consider adding the following conditional when using the pyansys/actions/doc-deploy-stable:"
+        echo ""
+        echo "if: github.event_name == 'push' && contains(github.ref, 'refs/tags')"
+        echo ""
+        exit 1
+
+    - name: "Check tag is compliant with semantic versioning: (v)<MAJOR.MINOR.PATCH>"
+      shell: bash
+      run: |
+        tag = ${{ github.ref_name }}
+        version = ${tag##*v}
+
+        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+          echo "VERSION_MAJOR=$(echo $version | cut -d . -f1)" >> $GITHUB_ENV
+          echo "VERSION_MINOR=$(echo $version | cut -d . -f2)" >> $GITHUB_ENV
+          echo "VERSION=${{ env.VERSION_MAJOR }}${{ env.VERSION_MINOR }}" >> $GITHUB_ENV
+        else
+          echo "[PYANSYS ACTIONS ERROR]"
+          echo "Version $version is not a valid stable semantic version."
+          echo "Only <MAJOR.MINOR.PATCH> formats are supported."
+          exit 1
+        fi
+
+    # Checkout the repository branch for deploying the documentation. If this
+    # step fails, then it means that the provided token is not valid.
+
+    - name: "Get the name of the repository"
+      shell: bash
+      run: |
+        if [[ "${{ inputs.repository }}" == "current" ]]; then
+          echo "REPOSITORY=${{ github.repository }}" >> GITHUB_ENV
+        else;
+          echo "REPOSITORY=${{ inputs.repository }}" >> GITHUB_ENV
+        fi
+
+    - name: "Checkout ${{ env.REPOSITORY }} repository"
       uses: actions/checkout@v3
-      if: ${{ inputs.checkout == 'true' }}
       with:
-        ref: 'gh-pages'
+        repository: ${{ env.REPOSITORY }}
+        ref: ${{ inputs.branch }}
+        token: ${{ inputs.token }}
 
-    - name: "List gh-pages content"
-      shell: bash
-      run: |
-        ls -R
+    # Download the stable documentation artifact in a folder that has the same
+    # name as the version number. Decompress artifact if required. Finally,
+    # display the structure of the directory to verify that it has the right
+    # layout.
 
-    - name: "Check adequate version tagging"
-      shell: bash
-      run: |
-        # Remove the 'v' or the 'release/' at the beginning of the tag
-        ref_name="${{ github.ref_name }}"
-        version=${ref_name##*v}
-        version=${version##*release/}
-        # HACK: pydfp uses release-X.Y.Z
-        version=${version##*release-}
-        # Check that the version is of the accepted format
-        echo "ACCEPTED_FORMAT=$([[ "$version" =~ ^[0-9]+\.[0-9]+$|^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")" >> $GITHUB_ENV
-        echo "PRELIMINARY_VERSION=$version" >> $GITHUB_ENV
-
-    - name: "Ignoring deployment... invalid version format!"
-      if: env.ACCEPTED_FORMAT == 'false'
-      shell: bash
-      run: |
-        echo "INVALID VERSION FORMAT - $PRELIMINARY_VERSION"
-        echo "Should be of type X.Y or X.Y.Z... Ignoring documentation deployment."
-
-    - name: "Prepare destination folder"
-      if: env.ACCEPTED_FORMAT == 'true'
-      shell: bash
-      run: |
-        # Filter out the major and minor version numbers
-        major=$(echo $PRELIMINARY_VERSION | cut -d. -f1)
-        minor=$(echo $PRELIMINARY_VERSION | cut -d. -f2)
-        folder=version/$major.$minor
-        echo "Folder was found to be $folder"
-        # Create a new folder for the version (remove existing one if required)
-        if [[ -d $folder ]]; then rm -rf $folder; fi 
-        mkdir -p $folder
-        # Output the version
-        echo "VERSION=$major.$minor" >> $GITHUB_ENV
-
-    - name: "Download the HTML documentation artifact in version/${{ github.ref_name }}"
-      if: env.ACCEPTED_FORMAT == 'true'
+    - name: "Download the stable documentation artifact"
       uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/${{ env.VERSION }}
 
-    - name: "Decompress artifact content if required"
+    - name: "Decompress artifact content"
       shell: bash
-      working-directory: version/${{ env.VERSION }}
       if: inputs.decompress_artifact == 'true'
       run: |
-        sudo apt-get install cargo
-        cargo install ouch && ouch --version
+        sudo apt-get install cargo && cargo install ouch && ouch --version
+        cd version/${{ env.VERSION }} && compressed_artifact=$(ls .)
+        ouch decompress $compressed_artifact && rm $compressed_artifact
 
-        compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact
-        rm $compressed_artifact
-
-    - name: "Override the content of the version/stable/ folder"
-      shell: bash
-      run:
-        rm -rf version/stable && mkdir -p version/stable
-  
-    - name: "Set up Python ${{ inputs.python-version }}"
-      if: env.ACCEPTED_FORMAT == 'true'
-      uses: pyansys/actions/_setup-python@main
-      with:
-        python-version: ${{ inputs.python-version }}
-        use-cache: false
-
-    - name: "Install system dependencies for updating version table"
-      if: env.ACCEPTED_FORMAT == 'true'
+    - name: "Display structure of version/dev"
       shell: bash
       run: |
-        sudo apt-get install curl
-        python -m pip install -U pip
+        ls -R version/${{ env.VERSION }}
 
-    - name: "Get the version_mapper.py utility"
-      if: env.ACCEPTED_FORMAT == 'true'
+    # Generate the URL for deploying the documentation. Check if this URL
+    # exists in the versions file. If not, it gets added and the whole 
+    
+    - name: "Generate URL for the desired version"
       shell: bash
       run: |
-        curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/version_mapper.py -o version_mapper.py
-        curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/redirect.html -o index.html
+        echo "URL_VERSION=https://${{ inputs.cname }}/version/${{ env.VERSION }}/" >> $GITHUB_ENV
+
+    - name: "Check if URL exists in the ${{ inputs.versions_file }} file" 
+      shell: bash
+      run: |
+        if grep -q -E "" versions.json;
+
+
+
+    - name: "Install jq for manipulating ${{ inputs.versions_file }} file"
+      shell: bash
+      run: |
+        sudo apt-get install jq
+
+    # Verify if 
+    - name: "Install jq for manipulating ${{ inputs.versions_file }} file"
+      shell: bash
+      run: |
+        sudo apt-get install jq
+
+
+
 
     - name: "Update the version JSON file"
-      if: env.ACCEPTED_FORMAT == 'true'
       shell: bash
       run: | 
-        python version_mapper.py \
+        python version_updater.py \
           --cname ${{ inputs.cname }} \
-          --json_filename ${{ inputs.version-config }} \
+          --json_filename ${{ inputs.versions_file }} \
           --new_version ${{ env.VERSION }} \
-          --render_last ${{ inputs.render-last }}
+          --render_last ${{ inputs.render_last }}
         # Remove the script to avoid Git tracking it
         rm -rf version_mapper.py
 
-    - name: "Commit new changes (if required)"
-      if: env.ACCEPTED_FORMAT == 'true'
-      shell: bash
-      run: |
-          if [[ ! -z $(git status -s) ]];
-          then
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git add .
-            git commit -m "DOC: add documentation for ${{ github.ref_name }}"
-            git push
-          fi
+
+
+
+
