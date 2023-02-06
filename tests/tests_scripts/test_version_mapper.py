@@ -37,7 +37,7 @@ def test_update_switch_version_file(new_version, render_last, cname):
         render_last=render_last,
     )
 
-    with open("version/versions.json", "r") as switcher_file:
+    with open("versions.json", "r") as switcher_file:
         # Load the content of the version file
         current_content = json.load(switcher_file)
 

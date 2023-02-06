@@ -97,7 +97,7 @@ runs:
     - name: "Generate the redirection URL"
       shell: bash
       run: |
-        # Verify if there is any stable release in release/versions.json
+        # Verify if there is any stable release in versions.json
         if grep -q -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" versions.json;
         then 
           # Generate the URL pointing to the latest stable version
