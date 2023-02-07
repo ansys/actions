@@ -12,7 +12,7 @@ from tabulate import tabulate as Table
 DOC_SOURCE_DIR = pathlib.Path(__file__).parent.parent
 DOC_DIR = DOC_SOURCE_DIR.parent
 BASE_DIR = DOC_SOURCE_DIR.parent
-ACTIONS_PREFIXES = ("build-", "check-", "doc-", "release-", "tests-", "package-")
+ACTIONS_PREFIXES = ("build-", "check-", "doc-", "release-", "tests-", "hk-")
 ACTIONS_SUFFIXES = "-style"
 ACTIONS_INPUTS_FIELDS = ("description", "required", "type", "default")
 ACCEPTED_LICENSES = BASE_DIR / "check-licenses" / "accepted-licenses.txt"
