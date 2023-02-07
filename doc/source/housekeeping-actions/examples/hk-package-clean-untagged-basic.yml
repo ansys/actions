@@ -17,4 +17,4 @@ jobs:
         uses: pyansys/actions/hk-package-clean-untagged@{{ branch }}
         with:
           package-name: 'mypackage'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
