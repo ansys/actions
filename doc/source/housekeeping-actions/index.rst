@@ -15,7 +15,7 @@ Requirements for running this action:
 * The package to be dealt with should belong to the repository where this action is
   being used.
 
-.. jinja:: package-clean-untagged
+.. jinja:: hk-package-clean-untagged
 
     {{ inputs_table }}
 
@@ -45,7 +45,7 @@ Requirements for running this action:
 * The package to be dealt with should belong to the repository where this action is
   being used.
 
-.. jinja:: package-clean-except
+.. jinja:: hk-package-clean-except
 
     {{ inputs_table }}
 

@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Perform untagged versions cleanup"
-        uses: pyansys/actions/package-clean-untagged@{{ branch }}
+        uses: pyansys/actions/hk-package-clean-untagged@{{ branch }}
         with:
           package-name: 'mypackage'
           token: ${{ secrets.GITHUB_TOKEN }}
