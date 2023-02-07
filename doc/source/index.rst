@@ -30,7 +30,7 @@ see each card below:
        :link: licenses-actions/index
        :link-type: doc
 
-        Licence actions sallows to verify that the project’s dependencies only contain valid licenses.
+        Licence actions sallows to verify that the project's dependencies only contain valid licenses.
 
 
     .. grid-item-card:: :octicon:`package` Build actions
@@ -44,6 +44,12 @@ see each card below:
        :link-type: doc
 
         Release actions provide for releasing the various artifacts.
+
+    .. grid-item-card:: :octicon:`archive` Housekeeping actions
+       :link: release-actions/index
+       :link-type: doc
+
+        Housekeeping actions provide for general repository operations such as package cleanup.
 
 
 .. toctree::

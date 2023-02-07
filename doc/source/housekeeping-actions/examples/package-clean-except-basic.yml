@@ -1,0 +1,21 @@
+name: Scheduled package cleanup - except certain tags
+on:
+  workflow_dispatch:
+  schedule: # UTC at 0200
+    - cron: "0 2 * * *"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  cleanup:
+    name: "Perform versions cleanup - except certain tags"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Perform versions cleanup - except certain tags"
+        uses: pyansys/actions/package-clean-except@{{ branch }}
+        with:
+          package-name: 'mypackage'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tags: 'latest, latest-unstable'

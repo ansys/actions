@@ -1,0 +1,20 @@
+name: Scheduled package cleanup for untagged versions
+on:
+  workflow_dispatch:
+  schedule: # UTC at 0200
+    - cron: "0 2 * * *"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  cleanup:
+    name: "Perform untagged versions cleanup"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Perform untagged versions cleanup"
+        uses: pyansys/actions/package-clean-untagged@{{ branch }}
+        with:
+          package-name: 'mypackage'
+          token: ${{ secrets.GITHUB_TOKEN }}

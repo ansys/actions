@@ -1,0 +1,94 @@
+name: "Clean all package versions except certain tags."
+description: "Action cleaning up all package versions published at ghcr.io except for certain tags."
+
+inputs:
+  package-name: 
+    description: "Package name."
+    required: true
+    type: string
+  token:
+    description: "Token with package deletion permissions."
+    required: true
+    type: string
+  tags-kept:
+    description: "Tags to be kept. Pass them as a list: e.g. 'latest, latest-unstable'."
+    required: true
+    type: string
+  package-org:
+    description: "Organization at which packages are published."
+    required: false
+    default: 'pyansys'
+    type: string
+  python-version:
+    description: 'Desired Python version.'
+    default: '3.10'
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: pyansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: false
+
+    - name: "Install ghapi"
+      run: |
+        python -m pip install --upgrade pip
+        pip install ghapi
+
+    - name: "Clone script"
+      run: |
+        echo ''                                                                            >> clean-except.py
+        echo 'import os'                                                                   >> clean-except.py
+        echo ''                                                                            >> clean-except.py
+        echo 'from ghapi.all import GhApi'                                                 >> clean-except.py
+        echo 'from ghapi.core import print_summary'                                        >> clean-except.py
+        echo 'from ghapi.page import paged'                                                >> clean-except.py
+        echo ''                                                                            >> clean-except.py
+        echo 'org_str = "${{ inputs.package-org }}"'                                       >> clean-except.py
+        echo 'pck_str = "${{ inputs.package-name }}"'                                      >> clean-except.py
+        echo 'valid_tags_str = "${{ inputs.tags-kept }}"'                                  >> clean-except.py
+        echo 'valid_tags = [x.strip() for x in valid_tags_str.split(",")]'                 >> clean-except.py
+        echo ''                                                                            >> clean-except.py
+        echo 'api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))' >> clean-except.py
+        echo ''                                                                            >> clean-except.py
+        echo 'paged_packages = paged('                                                     >> clean-except.py
+        echo '    api.packages.get_all_package_versions_for_package_owned_by_org,'         >> clean-except.py
+        echo '    org=org_str,'                                                            >> clean-except.py
+        echo '    package_name=pck_str,'                                                   >> clean-except.py
+        echo '    package_type="container",'                                               >> clean-except.py
+        echo '    state="active",'                                                         >> clean-except.py
+        echo '    per_page=100,'                                                           >> clean-except.py
+        echo ')'                                                                           >> clean-except.py
+        echo ''                                                                            >> clean-except.py
+        echo '# Loop over all pages'                                                       >> clean-except.py
+        echo 'for page in paged_packages:'                                                 >> clean-except.py
+        echo '    for package in page:'                                                    >> clean-except.py
+        echo '        # Check if the given package has no tags'                            >> clean-except.py
+        echo '        package_tags = package.metadata.container.tags'                      >> clean-except.py
+        echo '        delete = True'                                                       >> clean-except.py
+        echo '        for tag in package_tags:'                                            >> clean-except.py
+        echo '            if tag in valid_tags:'                                           >> clean-except.py
+        echo '                delete = False'                                              >> clean-except.py
+        echo '                break'                                                       >> clean-except.py
+        echo ''                                                                            >> clean-except.py
+        echo '        # In case it should, delete it'                                      >> clean-except.py
+        echo '        if delete:'                                                          >> clean-except.py
+        echo '            print("Deleting:\n" + str(package))'                             >> clean-except.py
+        echo '            api.packages.delete_package_version_for_org('                    >> clean-except.py
+        echo '                org=org_str,'                                                >> clean-except.py
+        echo '                package_name=pck_str,'                                       >> clean-except.py
+        echo '                package_type="container",'                                   >> clean-except.py
+        echo '                package_version_id=package["id"],'                           >> clean-except.py
+        echo '            )'                                                               >> clean-except.py
+        echo ''                                                                            >> clean-except.py
+
+    - name: "Run package cleanup"
+      env:
+        PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
+      run: |
+        python clean-except.py
