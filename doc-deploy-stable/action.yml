@@ -64,7 +64,7 @@ runs:
         echo ""
         exit 1
 
-    - name: "Check tag is compliant with semantic versioning: (v)<MAJOR.MINOR.PATCH>"
+    - name: "Check tag is ${{ github.ref_name }} matches: (v)<MAJOR.MINOR.PATCH>"
       shell: bash
       run: |
         tag = ${{ github.ref_name }}
@@ -77,7 +77,7 @@ runs:
         else
           echo "[PYANSYS ACTIONS ERROR]"
           echo "Version $version is not a valid stable semantic version."
-          echo "Only <MAJOR.MINOR.PATCH> formats are supported."
+          echo "Only (v)<MAJOR.MINOR.PATCH> formats are supported."
           exit 1
         fi
 
@@ -129,47 +129,38 @@ runs:
       run: |
         ls -R version/${{ env.VERSION }}
 
-    # Generate the URL for deploying the documentation. Check if this URL
-    # exists in the versions file. If not, it gets added and the whole 
-    
-    - name: "Generate URL for the desired version"
-      shell: bash
-      run: |
-        echo "URL_VERSION=https://${{ inputs.cname }}/version/${{ env.VERSION }}/" >> $GITHUB_ENV
+    # Install the 'jq' CLI tool for manipulating the JSON file. Assert if
+    # current version matches the latest stable one.
 
-    - name: "Check if URL exists in the ${{ inputs.versions_file }} file" 
-      shell: bash
-      run: |
-        if grep -q -E "" versions.json;
-
-
-
-    - name: "Install jq for manipulating ${{ inputs.versions_file }} file"
+    - name: "Install 'jq' for manipulating ${{ inputs.versions_file }} file"
       shell: bash
       run: |
         sudo apt-get install jq
 
-    # Verify if 
-    - name: "Install jq for manipulating ${{ inputs.versions_file }} file"
-      shell: bash
-      run: |
-        sudo apt-get install jq
+    # TO BE COMPLETED...
 
+    # For deploying the documentation, a GitHub token or a deployment token is
+    # required. The GitHub token is used when deploying to the current
+    # repository while the deployment token is used to deploy to an external
+    # repository.
 
+    - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
+      if: inputs.repository == 'current'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_dir: .
+        github_token: ${{ inputs.token }}
+        commit_message: ${{ inputs.commit_message }}
+        keep_files: true
+        force_orphan: true
 
-
-    - name: "Update the version JSON file"
-      shell: bash
-      run: | 
-        python version_updater.py \
-          --cname ${{ inputs.cname }} \
-          --json_filename ${{ inputs.versions_file }} \
-          --new_version ${{ env.VERSION }} \
-          --render_last ${{ inputs.render_last }}
-        # Remove the script to avoid Git tracking it
-        rm -rf version_mapper.py
-
-
-
-
-
+    - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
+      if: inputs.repository != 'current'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_dir: .
+        deploy_key: ${{ inputs.token }}
+        external_repository: ${{ inputs.repository }}
+        commit_message: ${{ inputs.commit_message }}
+        keep_files: true
+        force_orphan: true
