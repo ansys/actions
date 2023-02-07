@@ -66,6 +66,11 @@ runs:
     # of the 'version/dev' directory at the end of the process to verify the
     # layout of the folder is the right one.
 
+    - name: "Clean destination folder"
+      shell: bash
+      run:
+        rm -rf version/dev && mkdir -p version/dev
+
     - name: "Download the development documentation artifact"
       uses: actions/download-artifact@v3
       with:

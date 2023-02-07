@@ -105,6 +105,11 @@ runs:
     # display the structure of the directory to verify that it has the right
     # layout.
 
+    - name: "Clean destination folder"
+      shell: bash
+      run:
+        rm -rf version/${{ env.VERSION }} && mkdir -p version/${{ env.VERSION }}
+
     - name: "Download the stable documentation artifact"
       uses: actions/download-artifact@v3
       with:
