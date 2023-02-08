@@ -68,7 +68,8 @@ runs:
         echo '# Loop over all pages'                                                       >> clean-except.py
         echo 'for page in paged_packages:'                                                 >> clean-except.py
         echo '    for package in page:'                                                    >> clean-except.py
-        echo '        # Check if the given package has no tags'                            >> clean-except.py
+        echo '        # Check if the given package has valid tags'                         >> clean-except.py
+
         echo '        package_tags = package.metadata.container.tags'                      >> clean-except.py
         echo '        delete = True'                                                       >> clean-except.py
         echo '        for tag in package_tags:'                                            >> clean-except.py

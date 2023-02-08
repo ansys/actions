@@ -30,7 +30,7 @@ see each card below:
        :link: licenses-actions/index
        :link-type: doc
 
-        Licence actions sallows to verify that the project's dependencies only contain valid licenses.
+        License actions allows to verify that the project's dependencies only contain valid licenses.
 
 
     .. grid-item-card:: :octicon:`package` Build actions
