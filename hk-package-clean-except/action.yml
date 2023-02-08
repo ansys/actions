@@ -36,12 +36,16 @@ runs:
         use-cache: false
 
     - name: "Install ghapi"
+      shell: bash
       run: |
+
         python -m pip install --upgrade pip
         pip install ghapi
 
-    - name: "Clone script"
+    - name: "Declare Python script"
+      shell: bash
       run: |
+
         cat > clean-except.py << 'EOF'
         
         import os
@@ -80,7 +84,8 @@ runs:
                 
                 # In case it should, delete it
                 if delete:
-                    print("Deleting:\n" + str(package))
+                    print(f"Deleting package: {package})
+
                     api.packages.delete_package_version_for_org(
                         org=org_str,
                         package_name=pck_str,
@@ -92,7 +97,9 @@ runs:
         cat clean-except.py
 
     - name: "Run package cleanup"
+      shell: bash
       env:
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
       run: |
         python clean-except.py
+
