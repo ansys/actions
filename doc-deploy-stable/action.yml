@@ -64,7 +64,7 @@ runs:
         echo ""
         exit 1
 
-    - name: "Check tag is ${{ github.ref_name }} matches: (v)<MAJOR.MINOR.PATCH>"
+    - name: "Check tag ${{ github.ref_name }} matches: (v)<MAJOR.MINOR.PATCH>"
       shell: bash
       run: |
         tag = ${{ github.ref_name }}
@@ -89,7 +89,7 @@ runs:
       run: |
         if [[ "${{ inputs.repository }}" == "current" ]]; then
           echo "REPOSITORY=${{ github.repository }}" >> GITHUB_ENV
-        else;
+        else
           echo "REPOSITORY=${{ inputs.repository }}" >> GITHUB_ENV
         fi
 
@@ -105,10 +105,16 @@ runs:
     # display the structure of the directory to verify that it has the right
     # layout.
 
-    - name: "Clean destination folder"
+    - name: "Check if version already exists"
       shell: bash
-      run:
-        rm -rf version/${{ env.VERSION }} && mkdir -p version/${{ env.VERSION }}
+      run: |
+        if [ -d version/${{ env.VERSION }} ]; then
+          echo "VERSION_EXISTS=true" >> GITHUB_ENV
+          rm -rf version/${{ env.VERSION }}
+        else
+          echo "VERSION_EXISTS=false" >> GITHUB_ENV
+          mkdir -p version/${{ env.VERSION }}
+        fi
 
     - name: "Download the stable documentation artifact"
       uses: actions/download-artifact@v3
@@ -129,15 +135,83 @@ runs:
       run: |
         ls -R version/${{ env.VERSION }}
 
-    # Install the 'jq' CLI tool for manipulating the JSON file. Assert if
-    # current version matches the latest stable one.
+    # Collect all stable releases (X.Y). Crop until matching the desired number
+    # to be displayed in the switcher. Generate the 'versions.json' file including
+    # development and latest stable links.
 
-    - name: "Install 'jq' for manipulating ${{ inputs.versions_file }} file"
+    - name: "Install 'sponge' and 'jq' for manipulating JSON files"
       shell: bash
       run: |
-        sudo apt-get install jq
+        sudo apt-get install moreutils jq
 
-    # TO BE COMPLETED...
+    - name: "Create a clean 'versions.json' file"
+      shell: bash
+      run: |
+        rm -rf versions.json && touch versions.json && echo '[]' > versions.json
+
+    - name: "Add the development version to the 'versions.json' file"
+      shell: bash
+      run: |
+        url_dev="https://${{ inputs.cname }}/version/dev/"
+        jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
+
+    - name: "Populate the 'verisons.json' file with the desired amount of versions"
+      shell: bash
+      run: |
+        for version in $( ls . | \
+                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$" | \
+                          sort -r --version-sort | \
+                          head -${{ inputs.render_last }}; do
+          url="${{ inputs.cname }}/version/$version/"
+          jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < $versions_file | sponge $versions_file
+
+    - name: "Convert the first stable version into the 'stable' one"
+      shell: bash
+      run: |
+        jq '.[1].name += " (stable)"' versions.json | sponge versions.json
+        jq '.[1].url |= (sub("version/.*$";"version\/stable/")) ' versions.json | sponge version.json
+
+    - name: "Find the latest stable version"
+      shell: bash
+      run: |
+        stable_version=$(jq '.[1].version' versions/versions.json | grep -o '".*"' | sed 's/"//g')
+        echo "LATEST_STABLE_VERSION=$stable_version" >> GITHUB_ENV
+
+    - name: "Update the content for the 'version/stable' folder"
+      shell: bash
+      run: |
+        rm -rf version/stable && cp -r version/${{ env.LATEST_STABLE_VERSION }} version/stable
+
+    # Generate the announcement file and 
+
+    - name: "Generate the redirection URL"
+      shell: bash
+      run: |
+        echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
+
+        for version in $( ls . | \
+                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$" | \
+                          grep -v "${{ env.LATEST_STABLE_VERSION }}" | \
+                          sort -r --version-sort ); do
+
+
+    # Generate the redirection link. Since this is the stable documentation
+    # deployment action, there is always a 'version/stable' folder. Hence,
+    # redirection link always points to this folder.
+
+    - name: "Generate the redirection URL"
+      shell: bash
+      run: |
+        echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
+
+    - name: "Create the 'index.html' redirection file"
+      shell: bash
+      run: |
+        echo "<!DOCTYPE html>" > index.html
+        echo "<meta charset=\"utf-8\">" >> index.html
+        echo "<title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
+        echo "<meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
+        echo "<link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
 
     # For deploying the documentation, a GitHub token or a deployment token is
     # required. The GitHub token is used when deploying to the current
