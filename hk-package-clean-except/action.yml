@@ -42,51 +42,54 @@ runs:
 
     - name: "Clone script"
       run: |
-        echo ''                                                                            >> clean-except.py
-        echo 'import os'                                                                   >> clean-except.py
-        echo ''                                                                            >> clean-except.py
-        echo 'from ghapi.all import GhApi'                                                 >> clean-except.py
-        echo 'from ghapi.core import print_summary'                                        >> clean-except.py
-        echo 'from ghapi.page import paged'                                                >> clean-except.py
-        echo ''                                                                            >> clean-except.py
-        echo 'org_str = "${{ inputs.package-org }}"'                                       >> clean-except.py
-        echo 'pck_str = "${{ inputs.package-name }}"'                                      >> clean-except.py
-        echo 'valid_tags_str = "${{ inputs.tags-kept }}"'                                  >> clean-except.py
-        echo 'valid_tags = [x.strip() for x in valid_tags_str.split(",")]'                 >> clean-except.py
-        echo ''                                                                            >> clean-except.py
-        echo 'api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))' >> clean-except.py
-        echo ''                                                                            >> clean-except.py
-        echo 'paged_packages = paged('                                                     >> clean-except.py
-        echo '    api.packages.get_all_package_versions_for_package_owned_by_org,'         >> clean-except.py
-        echo '    org=org_str,'                                                            >> clean-except.py
-        echo '    package_name=pck_str,'                                                   >> clean-except.py
-        echo '    package_type="container",'                                               >> clean-except.py
-        echo '    state="active",'                                                         >> clean-except.py
-        echo '    per_page=100,'                                                           >> clean-except.py
-        echo ')'                                                                           >> clean-except.py
-        echo ''                                                                            >> clean-except.py
-        echo '# Loop over all pages'                                                       >> clean-except.py
-        echo 'for page in paged_packages:'                                                 >> clean-except.py
-        echo '    for package in page:'                                                    >> clean-except.py
-        echo '        # Check if the given package has valid tags'                         >> clean-except.py
-
-        echo '        package_tags = package.metadata.container.tags'                      >> clean-except.py
-        echo '        delete = True'                                                       >> clean-except.py
-        echo '        for tag in package_tags:'                                            >> clean-except.py
-        echo '            if tag in valid_tags:'                                           >> clean-except.py
-        echo '                delete = False'                                              >> clean-except.py
-        echo '                break'                                                       >> clean-except.py
-        echo ''                                                                            >> clean-except.py
-        echo '        # In case it should, delete it'                                      >> clean-except.py
-        echo '        if delete:'                                                          >> clean-except.py
-        echo '            print("Deleting:\n" + str(package))'                             >> clean-except.py
-        echo '            api.packages.delete_package_version_for_org('                    >> clean-except.py
-        echo '                org=org_str,'                                                >> clean-except.py
-        echo '                package_name=pck_str,'                                       >> clean-except.py
-        echo '                package_type="container",'                                   >> clean-except.py
-        echo '                package_version_id=package["id"],'                           >> clean-except.py
-        echo '            )'                                                               >> clean-except.py
-        echo ''                                                                            >> clean-except.py
+        cat > clean-except.py << 'EOF'
+        
+        import os
+        
+        from ghapi.all import GhApi
+        from ghapi.core import print_summary
+        from ghapi.page import paged
+        
+        org_str = "${{ inputs.package-org }}"
+        pck_str = "${{ inputs.package-name }}"
+        valid_tags_str = "${{ inputs.tags-kept }}"
+        valid_tags = [x.strip() for x in valid_tags_str.split(",")]
+        
+        api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
+        
+        paged_packages = paged(
+            api.packages.get_all_package_versions_for_package_owned_by_org,
+            org=org_str,
+            package_name=pck_str,
+            package_type="container",
+            state="active",
+            per_page=100,
+        )
+        
+        # Loop over all pages
+        for page in paged_packages:
+            for package in page:
+                # Check if the given package has valid tags
+                
+                package_tags = package.metadata.container.tags
+                delete = True
+                for tag in package_tags:
+                    if tag in valid_tags:
+                        delete = False
+                        break
+                
+                # In case it should, delete it
+                if delete:
+                    print("Deleting:\n" + str(package))
+                    api.packages.delete_package_version_for_org(
+                        org=org_str,
+                        package_name=pck_str,
+                        package_type="container",
+                        package_version_id=package["id"],
+                    )
+        
+        EOF
+        cat clean-except.py
 
     - name: "Run package cleanup"
       env:

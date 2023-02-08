@@ -38,43 +38,46 @@ runs:
 
     - name: "Clone script"
       run: |
-        echo ''                                                                            >> clean-untagged.py
-        echo 'import os'                                                                   >> clean-untagged.py
-        echo ''                                                                            >> clean-untagged.py
-        echo 'from ghapi.all import GhApi'                                                 >> clean-untagged.py
-        echo 'from ghapi.core import print_summary'                                        >> clean-untagged.py
-        echo 'from ghapi.page import paged'                                                >> clean-untagged.py
-        echo ''                                                                            >> clean-untagged.py
-        echo 'org_str = "${{ inputs.package-org }}"'                                       >> clean-untagged.py
-        echo 'pck_str = "${{ inputs.package-name }}"'                                      >> clean-untagged.py
-        echo ''                                                                            >> clean-untagged.py
-        echo 'api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))' >> clean-untagged.py
-        echo ''                                                                            >> clean-untagged.py
-        echo 'paged_packages = paged('                                                     >> clean-untagged.py
-        echo '    api.packages.get_all_package_versions_for_package_owned_by_org,'         >> clean-untagged.py
-        echo '    org=org_str,'                                                            >> clean-untagged.py
-        echo '    package_name=pck_str,'                                                   >> clean-untagged.py
-        echo '    package_type="container",'                                               >> clean-untagged.py
-        echo '    state="active",'                                                         >> clean-untagged.py
-        echo '    per_page=100,'                                                           >> clean-untagged.py
-        echo ')'                                                                           >> clean-untagged.py
-        echo ''                                                                            >> clean-untagged.py
-        echo '# Loop over all pages'                                                       >> clean-untagged.py
-        echo 'for page in paged_packages:'                                                 >> clean-untagged.py
-        echo '    for package in page:'                                                    >> clean-untagged.py
-        echo '        # Check if the given package has no tags'                            >> clean-untagged.py
-        echo '        package_tags = package.metadata.container.tags'                      >> clean-untagged.py
-        echo ''                                                                            >> clean-untagged.py
-        echo '        # If no tags were found... delete it!'                               >> clean-untagged.py
-        echo '        if not package_tags:'                                                >> clean-untagged.py
-        echo '            print("Deleting:\n" + str(package))'                             >> clean-untagged.py
-        echo '            api.packages.delete_package_version_for_org('                    >> clean-untagged.py
-        echo '                org=org_str,'                                                >> clean-untagged.py
-        echo '                package_name=pck_str,'                                       >> clean-untagged.py
-        echo '                package_type="container",'                                   >> clean-untagged.py
-        echo '                package_version_id=package["id"],'                           >> clean-untagged.py
-        echo '            )'                                                               >> clean-untagged.py
-        echo ''                                                                            >> clean-untagged.py
+        cat > clean-untagged.py << 'EOF'
+        
+        import os
+        
+        from ghapi.all import GhApi
+        from ghapi.core import print_summary
+        from ghapi.page import paged
+        
+        org_str = "${{ inputs.package-org }}"
+        pck_str = "${{ inputs.package-name }}"
+        
+        api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
+        
+        paged_packages = paged(
+            api.packages.get_all_package_versions_for_package_owned_by_org,
+            org=org_str,
+            package_name=pck_str,
+            package_type="container",
+            state="active",
+            per_page=100,
+        )
+        
+        # Loop over all pages
+        for page in paged_packages:
+            for package in page:
+                # Check if the given package has no tags
+                package_tags = package.metadata.container.tags
+                
+                # If no tags were found... delete it!
+                if not package_tags:
+                    print("Deleting:\n" + str(package))
+                    api.packages.delete_package_version_for_org(
+                        org=org_str,
+                        package_name=pck_str,
+                        package_type="container",
+                        package_version_id=package["id"],
+                    )
+        
+        EOF
+        cat clean-untagged.py
 
     - name: "Run package cleanup"
       env:
