@@ -2,12 +2,12 @@ name: "Documentation deploy development version."
 description: "Deploy development documentation artifacts to desired repository branch."
 
 inputs:
-  doc_artifact_name:
+  doc-artifact-name:
     description: "Name of the HTML documentation artifact."
     required: false
     default: 'documentation-html'
     type: string
-  decompress_artifact:
+  decompress-artifact:
     description: "If ``True``, the documentation artifact name is decompressed. If ``False``, content is assumed to be a collection of HTML files."
     required: false
     default: false
@@ -30,7 +30,7 @@ inputs:
     description: "Required token for documentation deployment."
     required: true
     type: string
-  commit_message:
+  commit-message:
     description: "Commit message used when deploying the documentation"
     required: false
     default: 'DOC: update development documentation'
@@ -74,12 +74,12 @@ runs:
     - name: "Download the development documentation artifact"
       uses: actions/download-artifact@v3
       with:
-        name: ${{ inputs.doc_artifact_name }}
+        name: ${{ inputs.doc-artifact-name }}
         path: version/dev
 
     - name: "Decompress artifact content"
       shell: bash
-      if: inputs.decompress_artifact == 'true'
+      if: inputs.decompress-artifact == 'true'
       run: |
         sudo apt-get install cargo && cargo install ouch && ouch --version
         cd version/dev && compressed_artifact=$(ls .)
@@ -126,7 +126,7 @@ runs:
       with:
         publish_dir: .
         github_token: ${{ inputs.token }}
-        commit_message: ${{ inputs.commit_message }}
+        commit_message: ${{ inputs.commit-message }}
         keep_files: true
         force_orphan: true
 
@@ -137,6 +137,6 @@ runs:
         publish_dir: .
         deploy_key: ${{ inputs.token }}
         external_repository: ${{ inputs.repository }}
-        commit_message: ${{ inputs.commit_message }}
+        commit_message: ${{ inputs.commit-message }}
         keep_files: true
         force_orphan: true
