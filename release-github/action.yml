@@ -61,8 +61,8 @@ runs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ${{ inputs.library-name }}/*.whl
-          ${{ inputs.library-name }}/*.tar.gz
+          ${{ inputs.library-name }}-artifacts/*.whl
+          ${{ inputs.library-name }}-artifacts/*.tar.gz
           documentation-html.zip
           documentation-pdf.zip
           other-artifacts/**/*-wheelhouse-*.zip
