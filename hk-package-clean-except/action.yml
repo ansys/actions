@@ -45,7 +45,6 @@ runs:
     - name: "Declare Python script"
       shell: bash
       run: |
-
         cat > clean-except.py << 'EOF'
         
         import os
