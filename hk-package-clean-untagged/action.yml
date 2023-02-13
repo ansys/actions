@@ -41,7 +41,6 @@ runs:
     - name: "Clone script"
       shell: bash
       run: |
-
         cat > clean-untagged.py << 'EOF'
         
         import os
