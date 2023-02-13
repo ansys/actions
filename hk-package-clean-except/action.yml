@@ -1,0 +1,105 @@
+name: "Clean all package versions except certain tags."
+description: "Action cleaning up all package versions published at ghcr.io except for certain tags."
+
+inputs:
+  package-name: 
+    description: "Package name."
+    required: true
+    type: string
+  token:
+    description: "Token with package deletion permissions."
+    required: true
+    type: string
+  tags-kept:
+    description: "Tags to be kept. Pass them as a list: e.g. 'latest, latest-unstable'."
+    required: true
+    type: string
+  package-org:
+    description: "Organization at which packages are published."
+    required: false
+    default: 'pyansys'
+    type: string
+  python-version:
+    description: 'Desired Python version.'
+    default: '3.10'
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: pyansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: false
+
+    - name: "Install ghapi"
+      shell: bash
+      run: |
+
+        python -m pip install --upgrade pip
+        pip install ghapi
+
+    - name: "Declare Python script"
+      shell: bash
+      run: |
+
+        cat > clean-except.py << 'EOF'
+        
+        import os
+        
+        from ghapi.all import GhApi
+        from ghapi.core import print_summary
+        from ghapi.page import paged
+        
+        org_str = "${{ inputs.package-org }}"
+        pck_str = "${{ inputs.package-name }}"
+        valid_tags_str = "${{ inputs.tags-kept }}"
+        valid_tags = [x.strip() for x in valid_tags_str.split(",")]
+        
+        api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
+        
+        paged_packages = paged(
+            api.packages.get_all_package_versions_for_package_owned_by_org,
+            org=org_str,
+            package_name=pck_str,
+            package_type="container",
+            state="active",
+            per_page=100,
+        )
+        
+        # Loop over all pages
+        for page in paged_packages:
+            for package in page:
+                # Check if the given package has valid tags
+                
+                package_tags = package.metadata.container.tags
+                delete = True
+                for tag in package_tags:
+                    if tag in valid_tags:
+                        delete = False
+                        break
+                
+                # In case it should, delete it
+                if delete:
+                    print(f"Deleting package: {package})
+
+                    api.packages.delete_package_version_for_org(
+                        org=org_str,
+                        package_name=pck_str,
+                        package_type="container",
+                        package_version_id=package["id"],
+                    )
+        
+        EOF
+        cat clean-except.py
+
+    - name: "Run package cleanup"
+      shell: bash
+      env:
+        PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
+      run: |
+        python clean-except.py
+
