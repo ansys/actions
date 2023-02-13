@@ -83,7 +83,7 @@ runs:
                 
                 # In case it should, delete it
                 if delete:
-                    print(f"Deleting package: {package})
+                    print(f"Deleting package: {package}")
 
                     api.packages.delete_package_version_for_org(
                         org=org_str,
