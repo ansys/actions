@@ -7,4 +7,4 @@ hk-package-clean-except:
       with:
         package-name: 'mypackage'
         token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
-        tags: 'latest, latest-unstable'
+        tags-kept: 'latest, latest-unstable'
