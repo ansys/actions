@@ -89,5 +89,5 @@ runs:
       env:
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
       run: |
-
         python clean-untagged.py
+   
