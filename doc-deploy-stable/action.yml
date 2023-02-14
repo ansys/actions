@@ -73,13 +73,17 @@ runs:
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
           echo "VERSION_MAJOR=$(echo $version | cut -d . -f1)" >> $GITHUB_ENV
           echo "VERSION_MINOR=$(echo $version | cut -d . -f2)" >> $GITHUB_ENV
-          echo "VERSION=${{ env.VERSION_MAJOR }}${{ env.VERSION_MINOR }}" >> $GITHUB_ENV
         else
           echo "[PYANSYS ACTIONS ERROR]"
           echo "Version $version is not a valid stable semantic version."
           echo "Only (v)<MAJOR.MINOR.PATCH> formats are supported."
           exit 1
         fi
+
+    - name: "Assemble the version number using the major and minor numbers"
+      shell: bash
+      run: |
+          echo "VERSION=${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}" >> $GITHUB_ENV
 
     # Checkout the repository branch for deploying the documentation. If this
     # step fails, then it means that the provided token is not valid.
@@ -162,8 +166,9 @@ runs:
 
         if [ -z $previous_stable_releases ]; then
           echo "No prior stable releases were found."
+          version=${{ env.VERSION }}
           url="${{ inputs.cname }}/version/${{ env.VERSION }}/"
-          jq --arg version ${{ env.VERSION }} --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < $versions_file | sponge $versions_file
+          jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < $versions_file | sponge $versions_file
         else
           echo "Found previous releases: $previous_stable_releases"
           for version in $( echo $previous_stable_releases | \
