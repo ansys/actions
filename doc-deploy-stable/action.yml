@@ -92,9 +92,9 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.repository }}" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> GITHUB_ENV
+          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
         else
-          echo "REPOSITORY=${{ inputs.repository }}" >> GITHUB_ENV
+          echo "REPOSITORY=${{ inputs.repository }}" >> $GITHUB_ENV
         fi
 
     - name: "Checkout ${{ env.REPOSITORY }} repository"
@@ -109,16 +109,15 @@ runs:
     # display the structure of the directory to verify that it has the right
     # layout.
 
-    - name: "Check if version already exists"
+    - name: "Clean version content"
       shell: bash
       run: |
         if [ -d version/${{ env.VERSION }} ]; then
-          echo "VERSION_EXISTS=true" >> GITHUB_ENV
-          rm -rf version/${{ env.VERSION }}
+          echo "VERSION_EXISTS=true" >> $GITHUB_ENV
         else
-          echo "VERSION_EXISTS=false" >> GITHUB_ENV
-          mkdir -p version/${{ env.VERSION }}
+          echo "VERSION_EXISTS=false" >> $GITHUB_ENV
         fi
+        rm -rf version${{ env.VERSION }} && mkdir -p version/${{ env.VERSION }}
 
     - name: "Download the stable documentation artifact"
       uses: actions/download-artifact@v3
@@ -163,22 +162,13 @@ runs:
     - name: "Populate the 'verisons.json' file with the desired amount of versions"
       shell: bash
       run: |
-        previous_stable_releases=($(ls version | grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$"))
-
-        if [[ -z ${previous_stable_releases} ]]; then
-          echo "No prior stable releases were found."
-          version=${{ env.VERSION }}
-          url="https://${{ inputs.cname }}/version/${{ env.VERSION }}/"
-          jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json| sponge versions.json
-        else
-          echo "Found previous releases: $previous_stable_releases"
-          for version in $( echo $previous_stable_releases | \
-                            sort -r --version-sort | \
-                            head -${{ inputs.render-last }}); do
-            url="https://${{ inputs.cname }}/version/$version/"
-            jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json | sponge versions.json
-          done
-        fi
+        for version in $( ls version | \
+                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$" | \
+                          sort -r --version-sort | \
+                          head -${{ inputs.render-last }}); do
+          url="https://${{ inputs.cname }}/version/$version/"
+          jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json | sponge versions.json
+        done
 
         cat versions.json
 
