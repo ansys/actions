@@ -158,6 +158,7 @@ runs:
       run: |
         url_dev="https://${{ inputs.cname }}/version/dev/"
         jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
+        cat versions.json
 
     - name: "Populate the 'verisons.json' file with the desired amount of versions"
       shell: bash
@@ -168,22 +169,24 @@ runs:
           echo "No prior stable releases were found."
           version=${{ env.VERSION }}
           url="${{ inputs.cname }}/version/${{ env.VERSION }}/"
-          jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < $versions_file | sponge $versions_file
+          jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json| sponge versions.json
         else
           echo "Found previous releases: $previous_stable_releases"
           for version in $( echo $previous_stable_releases | \
                             sort -r --version-sort | \
                             head -${{ inputs.render-last }}); do
             url="${{ inputs.cname }}/version/$version/"
-            jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < $versions_file | sponge $versions_file
+            jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json | sponge versions.json
           done
         fi
+
+        cat versions.json
 
     - name: "Convert the first stable version into the 'stable' one"
       shell: bash
       run: |
         jq '.[1].name += " (stable)"' versions.json | sponge versions.json
-        jq '.[1].url |= (sub("version/.*$";"version\/stable/")) ' versions.json | sponge version.json
+        jq '.[1].url |= (sub("version/.*$";"version\/stable/")) ' versions.json | sponge versions.json
 
     - name: "Find the latest stable version"
       shell: bash
