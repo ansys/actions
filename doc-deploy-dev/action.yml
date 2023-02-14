@@ -114,6 +114,11 @@ runs:
         echo "<title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
         echo "<meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
         echo "<link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
+
+    - name: "Show the contents of the 'index.html' redirection file"
+      shell: bash
+      run: |
+          cat index.html
       
     # For deploying the documentation, a GitHub token or a deployment token is
     # required. The GitHub token is used when deploying to the current
