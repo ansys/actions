@@ -163,9 +163,9 @@ runs:
     - name: "Populate the 'verisons.json' file with the desired amount of versions"
       shell: bash
       run: |
-        previous_stable_releases=$(ls version | grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+        previous_stable_releases=($(ls version | grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$"))
 
-        if [ -z $previous_stable_releases ]; then
+        if [[ -z ${previous_stable_releases} ]]; then
           echo "No prior stable releases were found."
           version=${{ env.VERSION }}
           url="https://${{ inputs.cname }}/version/${{ env.VERSION }}/"
@@ -187,12 +187,13 @@ runs:
       run: |
         jq '.[1].name += " (stable)"' versions.json | sponge versions.json
         jq '.[1].url |= (sub("version/.*$";"version\/stable/")) ' versions.json | sponge versions.json
+        cat versions.json
 
     - name: "Find the latest stable version"
       shell: bash
       run: |
         stable_version=$(jq '.[1].version' versions.json | grep -o '".*"' | sed 's/"//g')
-        echo "LATEST_STABLE_VERSION=$stable_version" >> GITHUB_ENV
+        echo "LATEST_STABLE_VERSION=$stable_version" >> $GITHUB_ENV
 
     - name: "Update the content for the 'version/stable' folder"
       shell: bash
