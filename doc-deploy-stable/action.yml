@@ -264,7 +264,7 @@ runs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         publish_dir: .
-        deploy_key: ${{ inputs.token }}
+        personal_token: ${{ inputs.token }}
         external_repository: ${{ inputs.repository }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
