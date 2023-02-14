@@ -49,9 +49,9 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.repository }}" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> GITHUB_ENV
+          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
         else
-          echo "REPOSITORY=${{ inputs.repository }}" >> GITHUB_ENV
+          echo "REPOSITORY=${{ inputs.repository }}" >> $GITHUB_ENV
         fi
 
     - name: "Checkout ${{ env.REPOSITORY }} repository"
