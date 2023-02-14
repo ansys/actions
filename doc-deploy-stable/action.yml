@@ -199,7 +199,7 @@ runs:
         cat > announcement.html <<'EOF'  
           <p>
             You are not viewing the most recent version of this documentation.
-            The latest stable release is <a href='https://templates.ansys.com/release/stable'>LATEST_STABLE_VERSION }}</a>
+            The latest stable release is <a href="STABLE_URL">LATEST_STABLE_VERSION</a>
           </p>
         EOF
 
@@ -207,7 +207,9 @@ runs:
       shell: bash
       run: |
         latest_stable_version=${{ env.LATEST_STABLE_VERSION}}
-        sed -i "s|LATEST_STABLE_VERSION|$latest_stable_version|g" index.html
+        stable_url="https://${{ inputs.cname }}/version/stable/"
+        sed -i "s|LATEST_STABLE_VERSION|$latest_stable_version|g" announcement.html
+        sed -i "s|STABLE_URL|$stable_url|g" announcement.html
 
     - name: "Place the 'announcement.html' file in every public folder of all the outdated versions"
       shell: bash
