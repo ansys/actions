@@ -97,7 +97,7 @@ runs:
     - name: "Generate the redirection URL"
       shell: bash
       run: |
-        if grep -q -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" versions.json;
+        if $(grep -q "(stable)" versions.json)
         then 
           echo "Redirecting to the latest stable version..."
           echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
