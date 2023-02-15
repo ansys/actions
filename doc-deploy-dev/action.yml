@@ -119,6 +119,14 @@ runs:
       shell: bash
       run: |
           cat index.html
+
+    # Create the '.nojekyll' and 'CNAME' file with the desired values
+
+    - name: "Create '.nojekyll' and 'CNAME' files"
+      shell: bash
+      run: |
+          touch .nojekyll CNAME
+          echo "${{ inputs.cname }}" > CNAME
       
     # For deploying the documentation, a GitHub token or a deployment token is
     # required. The GitHub token is used when deploying to the current
