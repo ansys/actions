@@ -254,6 +254,7 @@ runs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         publish_dir: .
+        publish_branch: ${{ inputs.branch }}
         github_token: ${{ inputs.token }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
@@ -264,6 +265,7 @@ runs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         publish_dir: .
+        publish_branch: ${{ inputs.branch }}
         personal_token: ${{ inputs.token }}
         external_repository: ${{ inputs.repository }}
         commit_message: ${{ inputs.commit-message }}
