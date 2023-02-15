@@ -61,7 +61,7 @@ runs:
         ref: ${{ inputs.branch }}
         token: ${{ inputs.token }}
 
-    # Downlaod the documentation artifact from the current workflow. If the
+    # Download the documentation artifact from the current workflow. If the
     # artifact contains a compressed file, decompress it. Display the structure
     # of the 'version/dev' directory at the end of the process to verify the
     # layout of the folder is the right one.
@@ -107,7 +107,7 @@ runs:
         fi
         cat versions.json
 
-    # Generate a 'index.html' use to redirect to the latest stable version of
+    # Generate an 'index.html' for redirection to the latest stable version of
     # the documentation. If no stable version has been release, a redirection
     # to the development documentation is generated.
 

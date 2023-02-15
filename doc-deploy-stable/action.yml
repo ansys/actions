@@ -159,7 +159,7 @@ runs:
         jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
         cat versions.json
 
-    - name: "Populate the 'verisons.json' file with the desired amount of versions"
+    - name: "Populate the 'versions.json' file with the desired amount of versions"
       shell: bash
       run: |
         for version in $( ls version | \
