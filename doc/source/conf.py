@@ -2,6 +2,7 @@
 
 import os
 import pathlib
+from datetime import datetime
 
 import jinja2
 import yaml
@@ -20,7 +21,7 @@ IGNORED_PACKAGES = BASE_DIR / "check-licenses" / "ignored-packages.txt"
 
 # Project information
 project = "PyAnsys Actions"
-copyright = "(c) 2022 ANSYS, Inc. All rights reserved"
+copyright = f"(c) 2022-{datetime.today().year} ANSYS, Inc. and/or its affiliates."
 author = "ANSYS, Inc."
 cname = os.getenv("DOCUMENTATION_CNAME", "nocname.com")
 
