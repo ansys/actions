@@ -45,45 +45,45 @@ runs:
   using: "composite"
   steps:
 
-    # Verify that a tag event triggered the workflow. This is a strong requirement to
-    # guarantee that any stable documentation deployment is linked to a tag.
-    # If a tag is detected, verify that it is compliant with semantic version syntax.
+    # Collect the version number from the tag or the branch name according to
+    # the reference type. Tags names are expected to follow 'v<MAJOR>.<MINOR>'
+    # or 'v<MAJOR>.<MINOR>.<PATCH>'. Braches must follow
+    # 'release/<MAJOR>.<MINOR>'.
 
-    # Tags starting with a 'v*' followed by a semantic version of the following 
-    # the syntax <MAJOR.MINOR.PATCH> are valid.
-
-    - name: "Check documentation deployment was triggered by a tag"
+    - name: "Collect version number from the tag"
       shell: bash
-      if: github.ref_type != 'tag'
+      if: github.ref_type == 'tag'
       run: |
-        echo "[PYANSYS ACTIONS ERROR]"
-        echo "Stable documentation deployment can only be triggered by a tag."
-        echo "Consider adding the following conditional when using the pyansys/actions/doc-deploy-stable:"
-        echo ""
-        echo "if: github.event_name == 'push' && contains(github.ref, 'refs/tags')"
-        echo ""
-        exit 1
-
-    - name: "Check tag ${{ github.ref_name }} matches: (v)<MAJOR.MINOR.PATCH>"
-      shell: bash
-      run: |
-        tag=${{ github.ref_name }}
-        version=${tag##*v}
+        version=$( echo $tag | cut -d 'v' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-          echo "VERSION_MAJOR=$(echo $version | cut -d . -f1)" >> $GITHUB_ENV
-          echo "VERSION_MINOR=$(echo $version | cut -d . -f2)" >> $GITHUB_ENV
+          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_ENV
         else
           echo "[PYANSYS ACTIONS ERROR]"
-          echo "Version $version is not a valid stable semantic version."
-          echo "Only (v)<MAJOR.MINOR.PATCH> formats are supported."
+          echo "Tag names must follow 'v<MAJOR>.<MINOR>.<PATCH> name convention.'"
           exit 1
         fi
 
-    - name: "Assemble the version number using the major and minor numbers"
+    - name: "Collect version number from the release branch"
+      shell: bash
+      if: github.ref_type == 'branch'
+      run: |
+        version=$( echo $tag | cut -d 'release/' -f 2)
+
+        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_ENV
+        else
+          echo "[PYANSYS ACTIONS ERROR]"
+          echo "Branch names must follow 'release/<MAJOR>.<MINOR>' name convention."
+          exit 1
+        fi
+
+    - name: "Assemble the version number using the collected major and minor numbers"
       shell: bash
       run: |
-          echo "VERSION=${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}" >> $GITHUB_ENV
+          major=$(echo $version | cut -d . -f 1)
+          minor=$(echo $version | cut -d . -f 2)
+          echo "VERSION=$major.$minor" >> $GITHUB_ENV
 
     # Checkout the repository branch for deploying the documentation. If this
     # step fails, then it means that the provided token is not valid.
