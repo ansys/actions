@@ -54,6 +54,7 @@ runs:
       shell: bash
       if: github.ref_type == 'tag'
       run: |
+        tag=${{ github.ref_name }}
         version=$( echo $tag | cut -d 'v' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
@@ -68,6 +69,7 @@ runs:
       shell: bash
       if: github.ref_type == 'branch'
       run: |
+        tag=${{ github.ref_name }}
         version=$( echo $tag | cut -d 'release/' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
@@ -81,8 +83,8 @@ runs:
     - name: "Assemble the version number using the collected major and minor numbers"
       shell: bash
       run: |
-          major=$(echo $version | cut -d . -f 1)
-          minor=$(echo $version | cut -d . -f 2)
+          major=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 1)
+          minor=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 2)
           echo "VERSION=$major.$minor" >> $GITHUB_ENV
 
     # Checkout the repository branch for deploying the documentation. If this
