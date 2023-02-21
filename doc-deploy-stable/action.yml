@@ -178,7 +178,8 @@ runs:
       shell: bash
       run: |
         jq '.[1].name += " (stable)"' versions.json | sponge versions.json
-        jq '.[1].url |= (sub("version/.*$";"version\/stable/")) ' versions.json | sponge versions.json
+        url_stable="https://${{ inputs.cname }}/version/stable/"
+        jq --arg url $url_stable '.[1].url = $url' versions.json | sponge versions.json
         cat versions.json
 
     - name: "Find the latest stable version"
