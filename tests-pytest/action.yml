@@ -1,38 +1,59 @@
-name: "Run a test suite using the pytest framework."
-description: "Run a test suite using the pytest framework."
+name: >
+  Tests pytest action
+
+description: >
+  Run a test suite using `the pytest framework
+  <https://docs.pytest.org/en/stable/>`_.
 
 inputs:
   python-version:
-    description: 'Desired Python version for pytest.'
+    description: >
+      Python version used for installing and running ``pytest``.
     default: '3.10'
     required: false
     type: string
   use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: >
+        If ``true``, uses Python cache to install previously downloaded
+        libraries. When set to ``false``, all the required libraries are
+        downloaded from the `PyPI <https://pypi.org>`_ index. To use this
+        variable, your project needs to be installed using `the pyproject.toml
+        file <https://dev.docs.pyansys.com/dev/packaging/structure.html#the-pyproject-toml-file>`_.
     required: false
     default: true
     type: boolean
   pytest-markers:
-    description: 'Set of markers to filter out tests.'
+    description: >
+      Set of `pytest markers
+      <https://docs.pytest.org/en/stable/example/markers.html>`_ in the form of
+      a string. These markers are used to discretize tests when running the test
+      session.
     default: ''
     required: false
     type: string
   pytest-extra-args:
-    description: 'Set of options to pass to pytest.'
+    description: >
+      Set of additional pytest arguments in the form of a string.
     default: ''
     required: false
   pytest-postargs:
-    description: 'Directory of the test suite and the level of verbosity.'
+    description: >
+      Directory of the test suite and the level of verbosity.
     default: 'tests -vv'
     required: false
     type: string
   requires-xvfb:
-      description: 'Requires the usage of X Virtual Frame Buffer.'
+      description: >
+        If ``true``, installs `X Virtual Frame Buffer (XVFB)
+        <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
+        runs the whole test session using XVFB. Default value is ``false``.
       default: false
       required: false
       type: boolean
   checkout:
-      description: 'Whether to checkout the repository or not.'
+      description: >
+        If ``true``, clones the repository in the CI/CD machine. Use ``false``
+        when not using this action as complete job need to.
       default: true
       required: false
       type: boolean
