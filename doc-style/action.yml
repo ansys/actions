@@ -7,17 +7,17 @@ description: >
     <https://github.com/errata-ai/vale-action>`_.
 
 inputs:
-  vale-config:
-    description: >
-      Path to the Vale configuration file.
-    default: "doc/.vale.ini"
-    required: false
-    type: string
   token:
     description: >
       The token value used to authorize Vale to add comments and suggestions in
       the file section.
     required: true
+    type: string
+  vale-config:
+    description: >
+      Path to the Vale configuration file.
+    default: "doc/.vale.ini"
+    required: false
     type: string
   checkout:
       description: >

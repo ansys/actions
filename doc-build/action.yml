@@ -9,46 +9,68 @@ description: >
   documentation is contained in the ``doc/`` directory of a project.
   Documentation dependencies need to be declared in a
   ``requirements/requirements_doc.txt`` file or in the ``[doc]`` section of the
-  additional dependencies in the ``pyproject.toml`` file.
+  additional dependencies in the ``pyproject.toml`` file. The action locales the
+  ``doc/Makefile`` and runs the ``make html``, ``make pdf``, and ``make json``
+  (this last one only if not avoided).
 
 inputs:
   python-version:
-    description: 'Desired Python version for sphinx-build.'
+    description: >
+        Python version used for installing and running ``Sphinx``.
     default: '3.10'
     required: false
     type: string
   use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: >
+        If ``true``, uses Python cache to install previously downloaded
+        libraries. When set to ``false``, all the required libraries are
+        downloaded from the `PyPI <https://pypi.org>`_ index. To use this
+        variable, your project needs to be installed using `the pyproject.toml
+        file <https://dev.docs.pyansys.com/dev/packaging/structure.html#the-pyproject-toml-file>`_.
     required: false
     default: true
     type: boolean
   sphinxopts:
-    description: 'Set of options to pass to the Sphinx builder.'
+    description: >
+      Set of options to pass to the ``Sphinx`` builder. Default options include
+      uxing the maximum number of cores in the CPU of the machine and traiting
+      warnings as errors.
     default: '-j auto -W --keep-going'
     required: false
     type: string
   dependencies:
-    description: 'Set of system dependencies.'
+    description: >
+      String of system dependencies to be installed before building the
+      documentation of the project.
     default: ''
     required: false
     type: string
   requires-xvfb:
-      description: 'Requires the usage of X Virtual Frame Buffer.'
+      description: >
+        If ``true``, installs `X Virtual Frame Buffer (XVFB)
+        <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
+        runs the whole test session using XVFB. Default value is ``false``.
       default: false
       required: false
       type: boolean
   skip-install:
-      description: 'Whether to skip the installation of the Python library.'
+      description: >
+        If ``true``, the action skips the installation of the project. Pure
+        documentation projects require to use ``false``, as there is no Python
+        library associated with the project.
       default: false
       required: false
       type: boolean
   checkout:
-      description: 'Whether to checkout the repository or not.'
+      description: >
+        If ``true``, clones the repository in the CI/CD machine. Use ``false``
+        when not using this action as complete job need to.
       default: true
       required: false
       type: boolean
   skip-json-build:
-      description: 'Whether to build json files or not.'
+      description: >
+        If ``true``, generates documentation artifacts for the JSON builder.
       default: true
       required: false
       type: boolean
