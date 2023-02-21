@@ -1,5 +1,5 @@
 name: "Documentation deploy development version."
-description: "Deploy development documentation to GitHub pages."
+description: "Deploy development documentation artifacts to desired repository branch."
 
 inputs:
   doc-artifact-name:
@@ -7,10 +7,20 @@ inputs:
     required: false
     default: 'documentation-html'
     type: string
-  decompress_artifact:
+  decompress-artifact:
     description: "If ``True``, the documentation artifact name is decompressed. If ``False``, content is assumed to be a collection of HTML files."
     required: false
     default: false
+    type: string
+  repository:
+    description: "Name of the repository in the form of ``username/repository`` used to deploy the documentation. If not specified, current repository is used."
+    required: false
+    default: 'current'
+    type: string
+  branch:
+    description: "Desired deployment branch name. If not specified, ``gh-pages`` is used."
+    required: false
+    default: 'gh-pages'
     type: string
   cname:
     description: 'The canonical name of the documentation website.'
@@ -20,123 +30,145 @@ inputs:
     description: "Required token for documentation deployment."
     required: true
     type: string
-  workflow:
-    description: 'Workflow name from where the artifacts are downloaded. By default, the current running workflow.'
+  commit-message:
+    description: "Commit message used when deploying the documentation"
     required: false
-    default: ''
+    default: 'DOC: update development documentation'
     type: string
-  workflow-conclusion:
-    description: 'Workflow conclusion (options: "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required") or status (options: "completed", "in_progress", "queued") to search for. Use the empty string ("") to ignore status or conclusion in the search.'
-    required: false
-    default: ''
-    type: string
-  checkout:
-    description: 'If ``True``, the project is checked out in the ``gh-pages`` branch. If ``False``, users are the ones in charge of performing the checkout step.'
-    required: false
-    default: true
-    type: string
+
+
 
 runs:
   using: "composite"
   steps:
 
-    - name: "Install system dependencies"
+    # Checkout the repository branch for deploying the documentation. If this
+    # step fails, then it means that the provided token is not valid.
+
+    - name: "Get the name of the repository"
       shell: bash
       run: |
-        sudo apt-get install cargo curl
-        cargo install ouch && ouch --version
+        if [[ "${{ inputs.repository }}" == "current" ]]; then
+          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
+        else
+          echo "REPOSITORY=${{ inputs.repository }}" >> $GITHUB_ENV
+        fi
 
-    - name: "Checkout project in the GitHub Pages branch"
+    - name: "Checkout ${{ env.REPOSITORY }} repository"
       uses: actions/checkout@v3
-      if: inputs.checkout == 'true'
       with:
-        ref: 'gh-pages'
+        repository: ${{ env.REPOSITORY }}
+        ref: ${{ inputs.branch }}
+        token: ${{ inputs.token }}
 
-    - name: "Create a fresh development folder"
+    # Download the documentation artifact from the current workflow. If the
+    # artifact contains a compressed file, decompress it. Display the structure
+    # of the 'version/dev' directory at the end of the process to verify the
+    # layout of the folder is the right one.
+
+    - name: "Clean destination folder"
       shell: bash
-      run: |
-        rm -rf dev/ && mkdir dev/
+      run:
+        rm -rf version/dev && mkdir -p version/dev
 
-    - name: "Download the HTML documentation artifact from desired workflow"
-      uses: dawidd6/action-download-artifact@v2
-      if: inputs.workflow != ''
-      with:
-        github_token: ${{ inputs.token }}
-        name: ${{ inputs.doc-artifact-name }}
-        path: dev
-        workflow: ${{ inputs.workflow }}
-        workflow_conclusion: ${{ inputs.workflow-conclusion }}
-
-    - name: "Download the HTML documentation artifact from current workflow"
+    - name: "Download the development documentation artifact"
       uses: actions/download-artifact@v3
-      if: inputs.workflow == ''
       with:
         name: ${{ inputs.doc-artifact-name }}
-        path: dev
+        path: version/dev
 
-    - name: "Decompress artifact content if required"
+    - name: "Decompress artifact content"
       shell: bash
-      if: inputs.decompress_artifact == 'true'
-      working-directory: dev
+      if: inputs.decompress-artifact == 'true'
       run: |
-        compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact
-        rm $compressed_artifact
+        sudo apt-get install cargo && cargo install ouch && ouch --version
+        cd version/dev && compressed_artifact=$(ls .)
+        ouch decompress $compressed_artifact && rm $compressed_artifact
 
-    - name: "Display structure of downloaded files"
-      shell: bash
-      run: |
-        ls -R
-
-    - name: "Include CNAME and nojekyll files expected by GitHub pages"
+    - name: "Display structure of version/dev"
       shell: bash
       run: |
-        touch CNAME .nojekyll
-        echo ${{ inputs.cname }} > CNAME
+        ls -R version/dev
+
+    # Create the 'versions.json' file if it does not exist. Note that this step
+    # is not required in the 'doc-deploy-stable' action. The reason is that
+    # stable releases are born after a development version exists. This forces
+    # users to use this action before using the stable deploy one.
+
+    - name: "Create the 'versions.json' file if not present"
+      shell: bash
+      run: |
+        if ! [[ -f "versions.json" ]];
+        then
+            sudo apt-get install moreutils jq
+            echo '[]' > versions.json
+            url_dev="https://${{ inputs.cname }}/version/dev/"
+            jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
+        fi
+        cat versions.json
+
+    # Generate an 'index.html' for redirection to the latest stable version of
+    # the documentation. If no stable version has been release, a redirection
+    # to the development documentation is generated.
 
     - name: "Generate the redirection URL"
       shell: bash
       run: |
-        # Verify if there is any stable release in release/versions.json
-        if grep -q -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" release/versions.json;
+        if $(grep -q "(stable)" versions.json)
         then 
-          # Generate the URL pointing to the latest stable version
-          echo "Found stable release. Generating stable redirection URL..."
-          line=$(grep -n -E "\"version\": \"[0-9]+.[0-9]+ \(stable\)\"" release/versions.json)
-          version=$(echo $line | grep -o -h -E "[0-9]+.[0-9]+")
-          echo "URL=https://${{ inputs.cname }}/release/$version" >> $GITHUB_ENV
+          echo "Redirecting to the latest stable version..."
+          echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
         else 
-          # Generate the URL pointing to the development version if no stable releases
-          echo "Stable release not found. Generating development redirection URL..."
-          echo "URL=https://${{ inputs.cname }}/dev" >> $GITHUB_ENV
+          echo "Redirecting to the latest development version..."
+          echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/dev/" >> $GITHUB_ENV
         fi
 
-    - name: "Update the redirection link"
+    - name: "Create the 'index.html' redirection file"
       shell: bash
       run: |
-        curl https://raw.githubusercontent.com/pyansys/actions/main/scripts/redirect.html -o index.html
-        # HACK: if the GitHub actions variable is dereferenced inside the `sed` command a syntax error is raised.
-        # The URL Github actions environmental variable is loaded inside a shell one to avoid this conflict.
-        url=${{ env.URL }}
-        echo "Value for url: $url"
-        sed -i "s|var-url|$url|g" index.html
-        cat index.html
+        echo "<!DOCTYPE html>" > index.html
+        echo "<meta charset=\"utf-8\">" >> index.html
+        echo "<title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
+        echo "<meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
+        echo "<link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
 
-    - name: "Clear unnecessary gh-pages files and directories"
+    - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
       run: |
-        shopt -s extglob
-        rm -rf -v !("index.html"|"release"|"dev"|"CNAME"|".nojekyll")
-        ls -R
+          cat index.html
 
-    - name: "Commit new changes (if required)"
+    # Create the '.nojekyll' and 'CNAME' file with the desired values
+
+    - name: "Create '.nojekyll' and 'CNAME' files"
       shell: bash
       run: |
-        if [[ ! -z $(git status -s) ]];
-        then
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "DOC: add development documentation"
-          git push
-        fi
+          touch .nojekyll CNAME
+          echo "${{ inputs.cname }}" > CNAME
+      
+    # For deploying the documentation, a GitHub token or a deployment token is
+    # required. The GitHub token is used when deploying to the current
+    # repository while the deployment token is used to deploy to an external
+    # repository.
+
+    - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
+      if: inputs.repository == 'current'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_dir: .
+        publish_branch: ${{ inputs.branch }}
+        github_token: ${{ inputs.token }}
+        commit_message: ${{ inputs.commit-message }}
+        keep_files: true
+        force_orphan: true
+
+    - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
+      if: inputs.repository != 'current'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_dir: .
+        publish_branch: ${{ inputs.branch }}
+        personal_token: ${{ inputs.token }}
+        external_repository: ${{ inputs.repository }}
+        commit_message: ${{ inputs.commit-message }}
+        keep_files: true
+        force_orphan: true
