@@ -3,7 +3,7 @@ name: >
 
 description: >
   Release library artifacts to the PyAnsys private index. Use the
-  ``PYANSYS_PRIVATE_PYPI_TOKEN`` as token. Artifacts get downloaded from the
+  ``PYANSYS_PRIVATE_PYPI_TOKEN`` as the token. Artifacts get downloaded from the
   CI/CD pipeline and are assumed to be named ``<library-name>-artifacts``. This
   file is expected to contain a wheel and a source distribution file for the
   desired library.

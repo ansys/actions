@@ -3,9 +3,9 @@ name: >
 
 description: >
     Release library artifacts to the GitHub release section. Some minimum
-    artifacts are requried before running this action. These artifacts include
-    ``documentation-html``, ``documentation-pdf`` and
-    ``<library-name>-artifacts``. This last file must contain the wheels and
+    artifacts are required before running this action. These artifacts include
+    ``documentation-html``, ``documentation-pdf``, and
+    ``<library-name>-artifacts`` files. This last file must contain the wheels and
     source distribution files of the library.
 
 inputs:

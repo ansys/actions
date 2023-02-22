@@ -9,7 +9,7 @@ description: >
   documentation is contained in the ``doc/`` directory of a project.
   Documentation dependencies need to be declared in a
   ``requirements/requirements_doc.txt`` file or in the ``[doc]`` section of the
-  additional dependencies in the ``pyproject.toml`` file. The action locales the
+  additional dependencies in the ``pyproject.toml`` file. The action locates the
   ``doc/Makefile`` and runs the ``make html``, ``make pdf``, and ``make json``
   (this last one only if not avoided).
 
@@ -38,7 +38,7 @@ inputs:
   sphinxopts:
     description: >
       Set of options to pass to the ``Sphinx`` builder. Default options include
-      uxing the maximum number of cores in the CPU of the machine and traiting
+      uxing the maximum number of cores in the CPU of the machine and treating
       warnings as errors.
     default: '-j auto -W --keep-going'
     required: false

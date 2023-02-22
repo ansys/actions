@@ -2,7 +2,7 @@ name: >
   Build library action
 
 description: >
-  Verifies if a Python library builds properly. As a result of a successfull
+  Verifies if a Python library builds properly. As a result of a successful
   building process, wheel and source distribution artifacts are generated. This
   action is expected to be used as an independent job.
 

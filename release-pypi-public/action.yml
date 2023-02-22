@@ -3,7 +3,7 @@ name: >
 
 description: >
   Release library artifacts to the PyPI public index. Use the ``PYPI_TOKEN`` as
-  token. Artifacts get downloaded from the CI/CD pipeline and are assumed to be
+  the token. Artifacts get downloaded from the CI/CD pipeline and are assumed to be
   named ``<library-name>-artifacts``. This file is expected to contain a wheel
   and a source distribution file for the desired library.
 
@@ -19,7 +19,7 @@ inputs:
 
   twine-username:
     description: >
-      User named used when uploading to the public PyPI index.
+      User name used when uploading to the public PyPI index.
     required: true
     type: string
 

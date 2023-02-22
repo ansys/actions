@@ -4,7 +4,7 @@ name: >
 description: >
   Build wheels for a Python library. This action is expected to be used within a
   matrix job. Its goal is to generate wheel files for every combination of
-  operating system, build system and Python version.
+  operating system, build system, and Python version.
 
 inputs:
 
@@ -27,14 +27,14 @@ inputs:
 
   cibw-skip:
     description: >
-      Desired conditions to skip when buildin the wheels.
+      Desired conditions to skip when building the wheels.
     default: "*-musllinux*"
     required: false
     type: string
 
   cibw-archs:
     description: >
-      Desired build arhitecture.
+      Desired build architecture.
     default: "auto"
     required: false
     type: string

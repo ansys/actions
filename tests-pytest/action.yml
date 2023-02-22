@@ -38,7 +38,7 @@ inputs:
 
   pytest-extra-args:
     description: >
-      Set of additional pytest arguments in the form of a string.
+      Set of additional ``pytest`` arguments in the form of a string.
     default: ''
     required: false
 
@@ -53,7 +53,7 @@ inputs:
     description: >
       If ``true``, installs `X Virtual Frame Buffer (XVFB)
       <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
-      runs the whole test session using XVFB. Default value is ``false``.
+      runs the whole test session using XVFB. The default is ``false``.
     default: false
     required: false
     type: boolean

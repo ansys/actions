@@ -4,7 +4,7 @@ name: >
 description: 
   Verifies if the licenses of the dependencies installed in the current
   environment are compliant with PyAnsys guidelines. This action is assumed to
-  used in its own job step. It clones the project and installs the project with
+  be used in its own job step. It clones the project and installs the project with
   its runtime dependencies.
 
 inputs:

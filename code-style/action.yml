@@ -5,7 +5,7 @@ description: >
   This action evaluates the code quality of your project by using `pre-commit
   <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
   ``pre-commit``. It is assumed that your project contains a
-  .pre-commit-config.yaml file in the root directory.
+  ``.pre-commit-config.yaml`` file in the root directory.
 
 inputs:
 
