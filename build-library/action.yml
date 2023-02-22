@@ -13,7 +13,8 @@ inputs:
   library-name:
     description: >
       Name of the Python library. This is the name used when uploading the wheel
-      and source distribution as artifacts.
+      and source distribution as artifacts. The name should be the same one used
+      in the PyPI index.
     required: true
     type: string
 
