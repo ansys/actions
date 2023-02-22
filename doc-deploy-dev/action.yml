@@ -2,9 +2,9 @@ name: >
   Doc deploy dev action
 
 description: >
-  This action deploys the desired HTML documentation artifact to the specified
-  branch of a repository. By default, the ``gh-pages`` branch of the current
-  repository is assumed.
+  This action deploys the desired HTML documentation artifact containing the
+  development version of a library to the specified branch of a repository. By
+  default, the ``gh-pages`` branch of the current repository is assumed.
 
 inputs:
 
