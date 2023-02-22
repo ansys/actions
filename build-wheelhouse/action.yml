@@ -43,11 +43,9 @@ inputs:
 
   use-python-cache:
     description: >
-      If ``true``, uses Python cache to install previously downloaded
-      libraries. When set to ``false``, all the required libraries are
-      downloaded from the `PyPI <https://pypi.org>`_ index. To use this
-      variable, your project needs to be installed using `the pyproject.toml
-      file <https://dev.docs.pyansys.com/dev/packaging/structure.html#the-pyproject-toml-file>`_.
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed form the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
     required: false
     default: true
     type: boolean
