@@ -46,7 +46,7 @@ see each card below:
         Release actions provide for releasing the various artifacts.
 
     .. grid-item-card:: :octicon:`archive` Housekeeping actions
-       :link: release-actions/index
+       :link: housekeeping-actions/index
        :link-type: doc
 
         Housekeeping actions provide for general repository operations such as package cleanup.
