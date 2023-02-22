@@ -51,41 +51,42 @@ inputs:
     type: string
 
   requires-xvfb:
-      description: >
-        Whether to install X Virtual Frame Buffer (XVFB)
-        <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>_ and run
-        the whole test session using XVFB. The default value is false.
+    description: >
+      Whether to install X Virtual Frame Buffer (XVFB)
+      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>_ and run
+      the whole test session using XVFB. The default value is false.
 
-        If ``true``, installs `X Virtual Frame Buffer (XVFB)
-        <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
-        runs the whole test session using XVFB. Default value is ``false``.
-      default: false
-      required: false
-      type: boolean
+      If ``true``, installs `X Virtual Frame Buffer (XVFB)
+      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
+      runs the whole test session using XVFB. Default value is ``false``.
+    default: false
+    required: false
+    type: boolean
 
   skip-install:
-      description: >
-        If ``true``, the action skips the installation of the project. Pure
-        documentation projects require to use ``false``, as there is no Python
-        library associated with the project.
-      default: false
-      required: false
-      type: boolean
+    description: >
+      Whether to skip the installation of the project. The default is ``false``.
+      Pure documentation projects require that this action be set to ``false``
+      because there is no Python library associated with the project.
+    default: false
+    required: false
+    type: boolean
 
   checkout:
-      description: >
-        If ``true``, clones the repository in the CI/CD machine. Use ``false``
-        when not using this action as complete job need to.
-      default: true
-      required: false
-      type: boolean
+    description: >
+      Wether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
 
   skip-json-build:
-      description: >
-        If ``true``, generates documentation artifacts for the JSON builder.
-      default: true
-      required: false
-      type: boolean
+    description: >
+      Whether to skip the generation of JSON documentation. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
