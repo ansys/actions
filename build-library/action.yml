@@ -1,26 +1,41 @@
-name: "Build a Python library."
-description: "Build a Python library by generating wheels and sdist artifacts."
+name: >
+  Build library action
+
+description: >
+  Verifies if a Python library builds properly. As a result of a successfull
+  building process, wheel and source distribution artifacts are generated. This
+  action is expected to be used as an independent job.
 
 inputs:
+
+  # Required inputs
+
   library-name:
-    description: 'Name of the Python library.'
+    description: >
+      Name of the Python library. This is the name used when uploading the wheel
+      and source distribution as artifacts.
     required: true
     type: string
+
+  # Optional inputs
+
   python-version:
-    description: 'Desired Python version for build.'
+    description: >
+      Python version used for installing and running ``pre-commit``.
     default: '3.10'
     required: false
     type: string
+
   use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: >
+      If ``true``, uses Python cache to install previously downloaded
+      libraries. When set to ``false``, all the required libraries are
+      downloaded from the `PyPI <https://pypi.org>`_ index. To use this
+      variable, your project needs to be installed using `the pyproject.toml
+      file <https://dev.docs.pyansys.com/dev/packaging/structure.html#the-pyproject-toml-file>`_.
     required: false
     default: true
     type: boolean
-  checkout:
-      description: 'Whether to checkout the repository or not.'
-      default: true
-      required: false
-      type: boolean
 
 runs:
   using: "composite"
@@ -28,7 +43,6 @@ runs:
   
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      if: ${{ inputs.checkout == 'true' }}
   
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main

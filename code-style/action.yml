@@ -29,21 +29,12 @@ inputs:
     default: true
     type: boolean
 
-  checkout:
-    description: >
-      If ``true``, clones the repository in the CI/CD machine. Use ``false``
-      when not using this action as complete job need to.
-    default: true
-    required: false
-    type: boolean
-
 runs:
   using: "composite"
   steps:
   
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      if: ${{ inputs.checkout == 'true' }}
   
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
