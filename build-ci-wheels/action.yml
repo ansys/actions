@@ -12,7 +12,7 @@ inputs:
 
   python-version:
     description: >
-        Python version used for building the wheels.
+      Python version used for building the wheels.
     required: true
     type: string
 
