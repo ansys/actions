@@ -1,21 +1,40 @@
-name: "Release to public PyPI index."
-description: "Release library artifacts to public PyPI index."
+name: >
+  Release to PyPI public index action
+
+description: >
+  Release library artifacts to the PyPI public index. Use the ``PYPI_TOKEN`` as
+  token. Artifacts get downloaded from the CI/CD pipeline and are assumed to be
+  named ``<library-name>-artifacts``. This file is expected to contain a wheel
+  and a source distribution file for the desired library.
 
 inputs:
+
+  # Required inputs
+
   library-name:
-    description: 'Name of the Python library'
+    description: >
+      Name of the Python library to be published.
     required: true
     type: string
+
   twine-username:
-    description: 'Desired twine user name'
+    description: >
+      User named used when uploading to the public PyPI index.
     required: true
     type: string
+
   twine-token:
-    description: 'Password to be used when uploading to public PyPI'
+    description: >
+      Password used when uploading to the public PyPI index.
     required: true
     type: string
+
+  # Optional inputs
+
   python-version:
-    description: 'Desired Python version for using twine'
+    description: >
+      Python version for installing and using `twine
+      <https://twine.readthedocs.io/en/stable/>`_.
     required: false
     default: '3.10'
     type: string
@@ -24,7 +43,7 @@ runs:
   using: "composite"
   steps:
   
-    - name: "Release to public PyPI index"
+    - name: "Release to the public PyPI index"
       uses: pyansys/actions/_release-pypi@main
       with:
         library-name: ${{ inputs.library-name }}
