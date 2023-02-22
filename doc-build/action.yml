@@ -10,8 +10,9 @@ description: >
   Documentation dependencies need to be declared in a
   ``requirements/requirements_doc.txt`` file or in the ``[doc]`` section of the
   additional dependencies in the ``pyproject.toml`` file. The action locates the
-  ``doc/Makefile`` and runs the ``make html``, ``make pdf``, and ``make json``
-  (this last one only if not avoided).
+  ``doc/Makefile`` file and runs the ``make html`` and ``make pdf`` commands. If
+  desired, the ``make json`` command can also be executed to generate JSON
+  documentation.
 
 inputs:
 

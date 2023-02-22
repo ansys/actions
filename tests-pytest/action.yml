@@ -2,8 +2,7 @@ name: >
   Tests pytest action
 
 description: >
-  Run a test suite using `the pytest framework
-  <https://docs.pytest.org/en/stable/>`_.
+  Run a test suite using `pytest <https://docs.pytest.org/en/stable/>`_.
 
 inputs:
 
