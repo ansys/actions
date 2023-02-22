@@ -1,63 +1,53 @@
-name: "Check licenses"
-description: "Check if package licenses in the current environment are among the accepted ones"
+name: >
+  Check licenses action
+
+description: 
+  Verifies if the licenses of the dependencies installed in the current
+  environment are compliant with PyAnsys guidelines. This action is assumed to
+  used in its own job step. It clones the project and installs the project with
+  its runtime dependencies.
 
 inputs:
+
+  # Optional inputs
+
   python-version:
-    description: 'Desired Python version.'
+    description: >
+      Python version used for installing and running ``pre-commit``.
     default: '3.10'
     required: false
     type: string
+
   use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: >
+      If ``true``, uses Python cache to install previously downloaded
+      libraries. When set to ``false``, all the required libraries are
+      downloaded from the `PyPI <https://pypi.org>`_ index. To use this
+      variable, your project needs to be installed using `the pyproject.toml
+      file <https://dev.docs.pyansys.com/dev/packaging/structure.html#the-pyproject-toml-file>`_.
     required: false
     default: true
     type: boolean
-  skip-install:
-    description: 'Skip project installation.'
-    default: false
-    required: false
-    type: boolean
-  target:
-    description: 'Optional target to be passed for the build process.'
-    required: false
-    default: ''
-    type: string
-  checkout:
-      description: 'Whether to checkout the repository or not.'
-      default: true
-      required: false
-      type: boolean
 
 runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
-      if: ${{ inputs.skip-install == 'false' && inputs.checkout == 'true' }}
       uses: actions/checkout@v3
 
     - name: "Set up Python"
-      if: inputs.skip-install == 'false'
       uses: pyansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
-    - name: "Update pip"
-      if: inputs.skip-install == 'false'
-      shell: bash
-      run: python -m pip install -U pip
-
-    - name: "Check if specific target is requested"
+    - name: "Update pip, pip-licenses and install the project"
       shell: bash
       run: |
-        echo "install_target=$( [[ '${{ inputs.target }}' == '' ]] && echo '.' || echo '.[${{ inputs.target }}]')" >> $GITHUB_ENV
+        python -m pip install -U pip pip-licenses
+        python -m pip install .
 
-    - name: "Install Python library"
-      if: inputs.skip-install == 'false'
-      shell: bash
-      run: pip install ${{ env.install_target }}
-
-    - name: "Download txt files so they are found from other repos"
+    - name: "Download the list of accepted and ignored packages"
       shell: bash
       run: |
         wget https://raw.githubusercontent.com/pyansys/actions/main/check-licenses/accepted-licenses.txt
@@ -66,20 +56,18 @@ runs:
     - name: "Check licences of packages"
       shell: bash
       run: |
-        python -m pip install pip-licenses
-
         # Load accepted licenses
         mapfile licenses_from_txt < accepted-licenses.txt
         accepted_licenses=''
         for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\|"; done
-        accepted_licenses=${accepted_licenses::-2}
+          accepted_licenses=${accepted_licenses::-2}
         echo "Accepted licenses: $accepted_licenses"
 
         # Load accepted packages
         mapfile ignored_packages_from_txt < ignored-packages.txt
         ignored_packages=''
         for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg "; done
-        ignored_packages_from_txt=${ignored_packages_from_txt::-1}
+          ignored_packages_from_txt=${ignored_packages_from_txt::-1}
         echo "Ignored packages: $ignored_packages"
 
         # Verify if the Python environment contains invalid licenses
@@ -90,4 +78,3 @@ runs:
           pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses | awk 'NR>1 {print $1 " " $2 " has " $3 " license"}'
           exit 1
         fi
-        pip uninstall -y pip-licenses

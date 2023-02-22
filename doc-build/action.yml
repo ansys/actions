@@ -14,12 +14,16 @@ description: >
   (this last one only if not avoided).
 
 inputs:
+
+  # Optional inputs
+
   python-version:
     description: >
         Python version used for installing and running ``Sphinx``.
     default: '3.10'
     required: false
     type: string
+
   use-python-cache:
     description: >
         If ``true``, uses Python cache to install previously downloaded
@@ -30,6 +34,7 @@ inputs:
     required: false
     default: true
     type: boolean
+
   sphinxopts:
     description: >
       Set of options to pass to the ``Sphinx`` builder. Default options include
@@ -38,6 +43,7 @@ inputs:
     default: '-j auto -W --keep-going'
     required: false
     type: string
+
   dependencies:
     description: >
       String of system dependencies to be installed before building the
@@ -45,6 +51,7 @@ inputs:
     default: ''
     required: false
     type: string
+
   requires-xvfb:
       description: >
         If ``true``, installs `X Virtual Frame Buffer (XVFB)
@@ -53,6 +60,7 @@ inputs:
       default: false
       required: false
       type: boolean
+
   skip-install:
       description: >
         If ``true``, the action skips the installation of the project. Pure
@@ -61,6 +69,7 @@ inputs:
       default: false
       required: false
       type: boolean
+
   checkout:
       description: >
         If ``true``, clones the repository in the CI/CD machine. Use ``false``
@@ -68,6 +77,7 @@ inputs:
       default: true
       required: false
       type: boolean
+
   skip-json-build:
       description: >
         If ``true``, generates documentation artifacts for the JSON builder.
