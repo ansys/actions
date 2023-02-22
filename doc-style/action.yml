@@ -28,8 +28,8 @@ inputs:
 
   checkout:
       description: >
-        If ``true``, clones the repository in the CI/CD machine. Use ``false``
-        when not using this action as complete job need to.
+        Wether to clone the repository in the CI/CD machine. Default value is
+        ``true``.
       default: true
       required: false
       type: boolean

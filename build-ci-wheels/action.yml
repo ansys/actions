@@ -41,8 +41,9 @@ inputs:
 
   requires-pypy:
       description: > 
-        If ``true``, wheels for `PyPy <https://www.pypy.org/>`_ are generated in
-        addition to the ones for CPython.
+        Whether to generate wheels for wheel files for `PyPy
+        <https://www.pypy.org/>`_ in addition to the wheel files for CPython.
+        Default value is ``false``.
       default: false
       required: false
       type: boolean

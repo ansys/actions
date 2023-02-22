@@ -30,7 +30,7 @@ inputs:
   use-python-cache:
     description: >
       Whether to use the Python cache for installing previously downloaded
-      libraries. If ``true``, previously downloaded libraries are installed form the
+      libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
 
     required: false

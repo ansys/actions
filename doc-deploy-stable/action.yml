@@ -37,8 +37,9 @@ inputs:
 
   decompress-artifact:
     description: >
-      If ``true``, decompress the artifact. By default, its value is ``false``.
-      Uses `ouch <https://github.com/ouch-org/ouch>`_ as decompression tool.
+      Whether to decompress the ``doc-artifact-name`` file using `ouch
+      <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
+      is ``false``.
     required: false
     default: false
     type: string

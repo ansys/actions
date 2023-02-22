@@ -18,7 +18,7 @@ inputs:
   use-python-cache:
     description: >
       Whether to use the Python cache for installing previously downloaded
-      libraries. If ``true``, previously downloaded libraries are installed form the
+      libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
     required: false
     default: true
@@ -49,17 +49,17 @@ inputs:
 
   requires-xvfb:
     description: >
-      If ``true``, installs `X Virtual Frame Buffer (XVFB)
-      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
-      runs the whole test session using XVFB. The default is ``false``.
+      Whether to install X Virtual Frame Buffer (XVFB)
+      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>_ and run
+      the whole test session using XVFB. The default value is ``false``.
     default: false
     required: false
     type: boolean
 
   checkout:
     description: >
-      If ``true``, clones the repository in the CI/CD machine. Use ``false``
-      when not using this action as complete job need to.
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
     default: true
     required: false
     type: boolean
