@@ -8,29 +8,34 @@ description: >
   .pre-commit-config.yaml file in the root directory.
 
 inputs:
+
+  # Optional inputs
+
   python-version:
     description: >
-        Python version used for installing and running ``pre-commit``.
+      Python version used for installing and running ``pre-commit``.
     default: '3.10'
     required: false
     type: string
+
   use-python-cache:
     description: >
-        If ``true``, uses Python cache to install previously downloaded
-        libraries. When set to ``false``, all the required libraries are
-        downloaded from the `PyPI <https://pypi.org>`_ index. To use this
-        variable, your project needs to be installed using `the pyproject.toml
-        file <https://dev.docs.pyansys.com/dev/packaging/structure.html#the-pyproject-toml-file>`_.
+      If ``true``, uses Python cache to install previously downloaded
+      libraries. When set to ``false``, all the required libraries are
+      downloaded from the `PyPI <https://pypi.org>`_ index. To use this
+      variable, your project needs to be installed using `the pyproject.toml
+      file <https://dev.docs.pyansys.com/dev/packaging/structure.html#the-pyproject-toml-file>`_.
     required: false
     default: true
     type: boolean
+
   checkout:
-      description: >
-        If ``true``, clones the repository in the CI/CD machine. Use ``false``
-        when not using this action as complete job need to.
-      default: true
-      required: false
-      type: boolean
+    description: >
+      If ``true``, clones the repository in the CI/CD machine. Use ``false``
+      when not using this action as complete job need to.
+    default: true
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
