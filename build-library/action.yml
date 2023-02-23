@@ -1,10 +1,16 @@
 name: >
   Build library action
 
-description: >
+description: |
   Verifies if a Python library builds properly. As a result of a successful
   building process, wheel and source distribution artifacts are generated. This
   action is expected to be used as an independent job.
+
+  .. note::
+
+      Use this action instead of the `build-ci-wheels
+      <https://actions.docs.pyansys.com/stable/doc-actions/index.html#build-ci-wheels-action>`_
+      if your library is a pure Python project with no source code to be compiled.
 
 inputs:
 
