@@ -2,9 +2,11 @@ name: >
   Build CI wheels
 
 description: |
-  Build wheels for a Python library. This action is expected to be used within a
-  matrix job. Its goal is to generate wheel files for every combination of
-  operating system, build system, and Python version.
+  Build wheels for a Python library containing compiled source code. This action
+  is expected to be used within a matrix job. Its goal is to generate wheel
+  files for every combination of operating system, build system, and Python
+  version. The action uses the `cibuildwheel
+  <https://github.com/pypa/cibuildwheel>`_ behind the scenes.
 
   .. note:: 
 
