@@ -100,11 +100,28 @@ runs:
           Create a dist/wheelhouse directory and move all wheelhouse artifacts
           inside this folder.
 
-    - name: "Move documentation artifacts to dist/documentation directory"
+    - name: "Move wheelhouse artifacts to dist/wheelhouse directory"
       shell: bash
       run: |
         mkdir -p dist/wheelhouse
         mv /tmp/artifacts/**/*-wheelhouse-*.zip dist/wheelhouse/
+
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Create a dist/extra directory and move all the desired additional
+          artifacts inside this directory.
+
+    - name: "Move additional artifacts to dist/wheelhouse directory"
+      shell: bash
+      run: |
+        mkdir -p dist/extra
+        for artifact in (${${{ inputs.additional-artifacts }}}); do
+          mv /tmp/artifacts/$artifact dist/extra/$artifact
+        done
 
     # ------------------------------------------------------------------------
 
