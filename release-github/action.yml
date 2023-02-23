@@ -18,6 +18,16 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
+  additional-artifacts:
+    description: >
+        String containing a list of additional artifacts to be included in the
+        GitHub release.
+    required: false
+    default: ''
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -52,14 +62,21 @@ runs:
         files: documentation-pdf
         dest: documentation-pdf.zip
 
-    - name: "Download other artifacts (wheelhouse, cibuildwheel...)"
+    - name: "Download all artifacts that got generated in the CI/CD"
       uses: actions/download-artifact@v3
       with:
-        path: other-artifacts
+        path: all-artifacts
 
-    - name: "Remove duplicated artifacts"
+    - name: "Isolate wheelhouse artifacts"
       shell: bash
       run: |
+        mkdir -p wheelhouse
+        mv all-artifacts/**/*-wheelhouse-*.zip wheelhouse/
+
+    - name: "Remove undesired artifacts"
+      shell: bash
+      run: |
+        mkdir 
         rm -rf other-artifacts/documentation-html
         rm -rf other-artifacts/documentation-pdf
         rm -rf other-artifacts/${{ inputs.library-name }}-artifacts
@@ -76,4 +93,3 @@ runs:
           ${{ inputs.library-name }}-artifacts/*.tar.gz
           documentation-html.zip
           documentation-pdf.zip
-          other-artifacts/**/*-wheelhouse-*.zip
