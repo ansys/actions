@@ -1,25 +1,45 @@
-name: "Release to desired PyPI index"
-description: "Release library artifacts to PyPI desired index"
+name: >
+  Release PyPI action
+
+description: >
+  Release library artifacts to the desired PyPI index. If a private index is
+  used, a ``token`` is required to publish the artifacts. Artifacts are
+  downloaded from the CI/CD pipeline and are assumed to be named
+  ``<library-name>-artifacts``. This file is expected to contain a wheel and a
+  source distribution file for the desired library.
 
 inputs:
+
+  # Required inputs
+
   library-name:
-    description: 'Name of the Python library'
+    description: >
+      Name of the Python library to be published.
     required: true
     type: string
+
   index-name:
-    description: 'Name of the Python library'
+    description: >
+      The name of the index endpoint used for uploading the artifacts.
     required: true
     type: string
+
   twine-username:
-    description: 'Desired twine user name'
+    description: >
+      User name used when uploading the artifacts to the desired PyPI index.
     required: true
     type: string
+
   twine-token:
-    description: 'Password to be used when uploading to private PyPI'
+    description: >
+      Password used when uploading the artifacts to the desired PyPI index.
     required: true
     type: string
+
   python-version:
-    description: 'Desired Python version for using twine'
+    description: >
+      Python version for installing and using `twine
+      <https://twine.readthedocs.io/en/stable/>`_.
     required: true
     type: string
 
@@ -36,8 +56,7 @@ runs:
     - name: "Install twine"
       shell: bash
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install twine
+        python -m pip install --upgrade pip twine
 
     - name: "Download the library artifacts from build-library step"
       uses: actions/download-artifact@v3

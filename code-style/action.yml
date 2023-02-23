@@ -1,22 +1,31 @@
-name: "Code style."
-description: "Check code style using pre-commit."
+name: >
+  Code style
+
+description: >
+  This action evaluates the code quality of your project by using `pre-commit
+  <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
+  ``pre-commit``. It is assumed that your project contains a
+  ``.pre-commit-config.yaml`` file in the root directory.
 
 inputs:
+
+  # Optional inputs
+
   python-version:
-    description: 'Desired Python version for pre-commit.'
+    description: >
+      Python version used for installing and running ``pre-commit``.
     default: '3.10'
     required: false
     type: string
+
   use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
     required: false
     default: true
     type: boolean
-  checkout:
-      description: 'Whether to checkout the repository or not.'
-      default: true
-      required: false
-      type: boolean
 
 runs:
   using: "composite"
@@ -24,7 +33,6 @@ runs:
   
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      if: ${{ inputs.checkout == 'true' }}
   
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main

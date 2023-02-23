@@ -1,40 +1,57 @@
-name: "Build wheels for a C-extension Python library."
-description: "Build wheels for a C-extension Python library."
+name: >
+  Build CI wheels
+
+description: |
+  Build wheels for a Python library containing compiled source code. This action
+  is expected to be used within a matrix job. Its goal is to generate wheel
+  files for every combination of operating system, build system, and Python
+  version. The action uses the `cibuildwheel
+  <https://github.com/pypa/cibuildwheel>`_ behind the scenes.
+
+  .. note:: 
+
+      This actions should only be used by libraries including source code that
+      needs to be compiled.
 
 inputs:
+
+  # Required inputs
+
   python-version:
-    description: 'Desired Python version.'
-    default: '3.10'
-    required: false
+    description: >
+      Python version used for building the wheels.
+    required: true
     type: string
-  use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
-    required: false
-    default: true
-    type: boolean
+
+  # Optional inputs
+
   cibw-build:
-    description: 'Desired build wheel CPython version.'
+    description: >
+      Desired build wheel CPython version.
     default: 'cp310-*'
     required: false
     type: string
+
   cibw-skip:
-    description: 'Desired build wheel for skipping.'
+    description: >
+      Desired conditions to skip when building the wheels.
     default: "*-musllinux*"
     required: false
     type: string
+
   cibw-archs:
-    description: 'Desired build arhitecture.'
+    description: >
+      Desired build architecture.
     default: "auto"
     required: false
     type: string
+
   requires-pypy:
-      description: 'Whether requires build wheel for PyPy.'
+      description: > 
+        Whether to generate wheels for wheel files for `PyPy
+        <https://www.pypy.org/>`_ in addition to the wheel files for CPython.
+        Default value is ``false``.
       default: false
-      required: false
-      type: boolean
-  checkout:
-      description: 'Whether to checkout the repository or not.'
-      default: true
       required: false
       type: boolean
 
@@ -44,14 +61,7 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      if: ${{ inputs.checkout == 'true' }}
     
-    - name: "Set up Python ${{ inputs.python-version }}"
-      uses: pyansys/actions/_setup-python@main
-      with:
-        python-version: ${{ inputs.python-version }}
-        use-cache: ${{ inputs.use-python-cache }}
-   
     - name: "Set up QEMU"
       if: ${{ inputs.cibw-archs == 'aarch64' }}
       uses: docker/setup-qemu-action@v2

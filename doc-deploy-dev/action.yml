@@ -1,41 +1,74 @@
-name: "Documentation deploy development version."
-description: "Deploy development documentation artifacts to desired repository branch."
+name: >
+  Doc deploy dev action
+
+description: >
+  This action deploys the desired HTML documentation artifact containing the
+  development version of a library to the specified branch of a repository. By
+  default, the ``gh-pages`` branch of the current repository is assumed.
 
 inputs:
+
+  # Required inputs
+
+  cname:
+    description: >
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
+
+  token:
+    description: >
+      Required password, key or token with the correct credentials for deploying the
+      documentation. If deploying to the current repository, the ``${{ secrets.GITHUB_TOKEN }}`` token is
+      is enough. For workflows deploying to other repositories, `generate and
+      use a token with writing access
+      <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
+      to that repository.
+    required: true
+    type: string
+
+  # Optional inputs
+
   doc-artifact-name:
-    description: "Name of the HTML documentation artifact."
+    description: >
+        Name of the HTML documentation artifact. This artifact is expected to
+        contain all the HTML and static files. If it contains a compressed file,
+        make sure you enable the ``decompress-artifact`` option.
     required: false
     default: 'documentation-html'
     type: string
+
   decompress-artifact:
-    description: "If ``True``, the documentation artifact name is decompressed. If ``False``, content is assumed to be a collection of HTML files."
+    description: >
+      Wether to decompress the artifact using using `ouch
+      <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
+      is ``false``.
     required: false
     default: false
     type: string
+
   repository:
-    description: "Name of the repository in the form of ``username/repository`` used to deploy the documentation. If not specified, current repository is used."
+    description: >
+      Repository name in the form of ``username/repository`` to be used for
+      deploying the documentation. The current repository is assumed by default.
     required: false
     default: 'current'
     type: string
+
   branch:
-    description: "Desired deployment branch name. If not specified, ``gh-pages`` is used."
+    description: >
+      Branch name for deploying the documentation. The ``gh-pages`` branch is
+      used by default.
     required: false
     default: 'gh-pages'
     type: string
-  cname:
-    description: 'The canonical name of the documentation website.'
-    required: true
-    type: string
-  token:
-    description: "Required token for documentation deployment."
-    required: true
-    type: string
+
   commit-message:
-    description: "Commit message used when deploying the documentation"
+    description: >
+      Commit message used when deploying the documentation.
     required: false
     default: 'DOC: update development documentation'
     type: string
-
 
 
 runs:

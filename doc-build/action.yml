@@ -1,47 +1,93 @@
-name: "Documentation build."
-description: "Build library documentation using Sphinx."
+name: >
+  Documentation build action
+
+description: >
+  Build library documentation using `Sphinx
+  <https://www.sphinx-doc.org/en/master/>`_. The action installs and uses
+  `sphinx-build <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_
+  to generate documentation from the source. It requires that all the
+  documentation is contained in the ``doc/`` directory of a project.
+  Documentation dependencies need to be declared in a
+  ``requirements/requirements_doc.txt`` file or in the ``[doc]`` section of the
+  additional dependencies in the ``pyproject.toml`` file. The action locates the
+  ``doc/Makefile`` file and runs the ``make html`` and ``make pdf`` commands. If
+  desired, the ``make json`` command can also be executed to generate JSON
+  documentation.
 
 inputs:
+
+  # Optional inputs
+
   python-version:
-    description: 'Desired Python version for sphinx-build.'
+    description: >
+        Python version used for installing and running ``Sphinx``.
     default: '3.10'
     required: false
     type: string
+
   use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
     required: false
     default: true
     type: boolean
+
   sphinxopts:
-    description: 'Set of options to pass to the Sphinx builder.'
+    description: >
+      Set of options to pass to the ``Sphinx`` builder. Default options include
+      using the maximum number of cores in the CPU of the machine and treating
+      warnings as errors.
     default: '-j auto -W --keep-going'
     required: false
     type: string
+
   dependencies:
-    description: 'Set of system dependencies.'
+    description: >
+      String of system dependencies to be installed before building the
+      documentation of the project.
     default: ''
     required: false
     type: string
+
   requires-xvfb:
-      description: 'Requires the usage of X Virtual Frame Buffer.'
-      default: false
-      required: false
-      type: boolean
+    description: >
+      Whether to install X Virtual Frame Buffer (XVFB)
+      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>_ and run
+      the whole test session using XVFB. The default value is ``false``.
+
+      If ``true``, installs `X Virtual Frame Buffer (XVFB)
+      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
+      runs the whole test session using XVFB. Default value is ``false``.
+    default: false
+    required: false
+    type: boolean
+
   skip-install:
-      description: 'Whether to skip the installation of the Python library.'
-      default: false
-      required: false
-      type: boolean
+    description: >
+      Whether to skip the installation of the project. The default is ``false``.
+      Pure documentation projects require that this action be set to ``false``
+      because there is no Python library associated with the project.
+    default: false
+    required: false
+    type: boolean
+
   checkout:
-      description: 'Whether to checkout the repository or not.'
-      default: true
-      required: false
-      type: boolean
+    description: >
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
+
   skip-json-build:
-      description: 'Whether to build json files or not.'
-      default: true
-      required: false
-      type: boolean
+    description: >
+      Whether to skip the generation of JSON documentation. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
 
 runs:
   using: "composite"

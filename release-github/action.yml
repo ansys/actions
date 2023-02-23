@@ -1,9 +1,20 @@
-name: "Release to GitHub."
-description: "Release library artifacts to GitHub release page."
+name: >
+  Release to GitHub action
+
+description: >
+    Release library artifacts to the GitHub release section. Some minimum
+    artifacts are required before running this action. These artifacts include
+    ``documentation-html``, ``documentation-pdf``, and
+    ``<library-name>-artifacts`` files. This last file must contain the wheels and
+    source distribution files of the library.
 
 inputs:
+
+  # Required inputs
+
   library-name:
-    description: 'Name of the Python library.'
+    description: >
+     Name of the Python library to be published.
     required: true
     type: string
 

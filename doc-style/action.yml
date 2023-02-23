@@ -1,18 +1,35 @@
-name: "Documentation style."
-description: "Check documentation style using Vale."
+name: >
+  Documentation style
+
+description: >
+    Check documentation style using `Vale <https://vale.sh/>`_. This action is a
+    wrapper on top of the `errata-ai/vale-action
+    <https://github.com/errata-ai/vale-action>`_.
 
 inputs:
-  vale-config:
-    description: "Path to the Vale configuration file."
-    default: "doc/.vale.ini"
-    required: false
-    type: string
+
+  # Required inputs
+
   token:
-    description: "Required token for Vale commenter."
+    description: >
+      The token value used to authorize Vale to add comments and suggestions in
+      the file section.
     required: true
     type: string
+
+  # Optional inputs
+
+  vale-config:
+    description: >
+      Path to the Vale configuration file.
+    default: 'doc/.vale.ini'
+    required: false
+    type: string
+
   checkout:
-      description: 'Whether to checkout the repository or not.'
+      description: >
+        Whether to clone the repository in the CI/CD machine. Default value is
+        ``true``.
       default: true
       required: false
       type: boolean

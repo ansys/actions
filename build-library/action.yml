@@ -1,26 +1,47 @@
-name: "Build a Python library."
-description: "Build a Python library by generating wheels and sdist artifacts."
+name: >
+  Build library action
+
+description: |
+  Verifies if a Python library builds properly. As a result of a successful
+  building process, wheel and source distribution artifacts are generated. This
+  action is expected to be used as an independent job.
+
+  .. note::
+
+      Use this action instead of the `build-ci-wheels
+      <https://actions.docs.pyansys.com/stable/doc-actions/index.html#build-ci-wheels-action>`_
+      if your library is a pure Python project with no source code to be compiled.
 
 inputs:
+
+  # Required inputs
+
   library-name:
-    description: 'Name of the Python library.'
+    description: >
+      Name of the Python library. This is the name used when uploading the wheel
+      and source distribution as artifacts. The name should be the same one used
+      in the PyPI index.
     required: true
     type: string
+
+  # Optional inputs
+
   python-version:
-    description: 'Desired Python version for build.'
+    description: >
+      Python version used for installing and running ``pre-commit``.
     default: '3.10'
     required: false
     type: string
+
   use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+
     required: false
     default: true
     type: boolean
-  checkout:
-      description: 'Whether to checkout the repository or not.'
-      default: true
-      required: false
-      type: boolean
 
 runs:
   using: "composite"
@@ -28,7 +49,6 @@ runs:
   
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      if: ${{ inputs.checkout == 'true' }}
   
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main

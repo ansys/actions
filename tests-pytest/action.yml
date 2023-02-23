@@ -1,41 +1,67 @@
-name: "Run a test suite using the pytest framework."
-description: "Run a test suite using the pytest framework."
+name: >
+  Tests pytest action
+
+description: >
+  Run a test suite using `pytest <https://docs.pytest.org/en/stable/>`_.
 
 inputs:
+
+  # Optional inputs
   python-version:
-    description: 'Desired Python version for pytest.'
+    description: >
+      Python version used for installing and running ``pytest``.
     default: '3.10'
     required: false
     type: string
+
   use-python-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
     required: false
     default: true
     type: boolean
+
   pytest-markers:
-    description: 'Set of markers to filter out tests.'
+    description: >
+      Set of `pytest markers
+      <https://docs.pytest.org/en/stable/example/markers.html>`_ in the form of
+      a string. These markers are used to discretize tests when running the test
+      session.
     default: ''
     required: false
     type: string
+
   pytest-extra-args:
-    description: 'Set of options to pass to pytest.'
+    description: >
+      Set of additional ``pytest`` arguments in the form of a string.
     default: ''
     required: false
+
   pytest-postargs:
-    description: 'Directory of the test suite and the level of verbosity.'
+    description: >
+      Directory of the test suite and the level of verbosity.
     default: 'tests -vv'
     required: false
     type: string
+
   requires-xvfb:
-      description: 'Requires the usage of X Virtual Frame Buffer.'
-      default: false
-      required: false
-      type: boolean
+    description: >
+      Whether to install X Virtual Frame Buffer (XVFB)
+      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>_ and run
+      the whole test session using XVFB. The default value is ``false``.
+    default: false
+    required: false
+    type: boolean
+
   checkout:
-      description: 'Whether to checkout the repository or not.'
-      default: true
-      required: false
-      type: boolean
+    description: >
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
 
 
 runs:
