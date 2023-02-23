@@ -57,7 +57,7 @@ inputs:
 
   checkout:
     description: >
-      Wether to clone the repository in the CI/CD machine. Default value is
+      Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true
     required: false

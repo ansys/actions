@@ -37,7 +37,7 @@ inputs:
   sphinxopts:
     description: >
       Set of options to pass to the ``Sphinx`` builder. Default options include
-      uxing the maximum number of cores in the CPU of the machine and treating
+      using the maximum number of cores in the CPU of the machine and treating
       warnings as errors.
     default: '-j auto -W --keep-going'
     required: false
@@ -55,7 +55,7 @@ inputs:
     description: >
       Whether to install X Virtual Frame Buffer (XVFB)
       <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>_ and run
-      the whole test session using XVFB. The default value is false.
+      the whole test session using XVFB. The default value is ``false``.
 
       If ``true``, installs `X Virtual Frame Buffer (XVFB)
       <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
@@ -75,7 +75,7 @@ inputs:
 
   checkout:
     description: >
-      Wether to clone the repository in the CI/CD machine. Default value is
+      Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true
     required: false
