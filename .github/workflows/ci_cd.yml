@@ -90,6 +90,14 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
 
+      - name: "Verify private actions are not pointing to the 'main' branch"
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+        run: |
+          if $(grep -q --exclude-dir={.git,.github,doc} "pyansys\/actions\/.*\@main" -r .); then
+            echo -e "\033[1;91m[ERROR]: Found private actions pointing to the 'main' branch.\033[0m"
+            grep -q --exclude-dir={.git,.github,doc} "pyansys\/actions\/.*\@main" -r .
+          fi
+
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
