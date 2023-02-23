@@ -82,10 +82,16 @@ runs:
   using: "composite"
   steps:
 
-    # Collect the version number from the tag or the branch name according to
-    # the reference type. Tags names are expected to follow 'v<MAJOR>.<MINOR>'
-    # or 'v<MAJOR>.<MINOR>.<PATCH>'. Braches must follow
-    # 'release/<MAJOR>.<MINOR>'.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Collect the version number from the tag or the branch name according
+          to the reference type. Tags names are expected to follow
+          'v<MAJOR>.<MINOR>' or 'v<MAJOR>.<MINOR>.<PATCH>'. Braches must follow
+          'release/<MAJOR>.<MINOR>'.
 
     - name: "Collect version number from the tag"
       shell: bash
@@ -97,8 +103,7 @@ runs:
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
           echo "VERSION_RAW=$(echo $version)" >> $GITHUB_ENV
         else
-          echo "[PYANSYS ACTIONS ERROR]"
-          echo "Tag names must follow 'v<MAJOR>.<MINOR>.<PATCH> name convention.'"
+          echo -e "\033[1;91m[ERROR]: Tag names must follow 'v<MAJOR>.<MINOR>.<PATCH> name convention.'\033[0m"
           exit 1
         fi
 
@@ -112,8 +117,7 @@ runs:
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
           echo "VERSION_RAW=$(echo $version)" >> $GITHUB_ENV
         else
-          echo "[PYANSYS ACTIONS ERROR]"
-          echo "Branch names must follow 'release/<MAJOR>.<MINOR>' name convention."
+          echo -e "\033[1;91m[ERROR]: Branch names must follow 'release/<MAJOR>.<MINOR>' name convention.\033[0m"
           exit 1
         fi
 
@@ -124,8 +128,14 @@ runs:
           minor=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 2)
           echo "VERSION=$major.$minor" >> $GITHUB_ENV
 
-    # Checkout the repository branch for deploying the documentation. If this
-    # step fails, then it means that the provided token is not valid.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Checkout the repository branch for deploying the documentation. If this
+          step fails, then it means that the provided token is not valid.
 
     - name: "Get the name of the repository"
       shell: bash
@@ -143,10 +153,16 @@ runs:
         ref: ${{ inputs.branch }}
         token: ${{ inputs.token }}
 
-    # Download the stable documentation artifact in a folder that has the same
-    # name as the version number. Decompress artifact if required. Finally,
-    # display the structure of the directory to verify that it has the right
-    # layout.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Download the stable documentation artifact in a folder that has the same
+          name as the version number. Decompress artifact if required. Finally,
+          display the structure of the directory to verify that it has the right
+          layout.
 
     - name: "Clean version content"
       shell: bash
@@ -177,9 +193,15 @@ runs:
       run: |
         ls -R version/${{ env.VERSION }}
 
-    # Collect all stable releases (X.Y). Crop until matching the desired number
-    # to be displayed in the switcher. Generate the 'versions.json' file including
-    # development and latest stable links.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Collect all stable releases (X.Y). Crop until matching the desired
+          number to be displayed in the switcher. Generate the 'versions.json'
+          file including development and latest stable links.
 
     - name: "Install 'sponge' and 'jq' for manipulating JSON files"
       shell: bash
@@ -230,8 +252,14 @@ runs:
       run: |
         rm -rf version/stable && cp -r version/${{ env.LATEST_STABLE_VERSION }} version/stable
 
-    # Generate the content for the announcement file. Place a copy of this file
-    # in each one of outdated stable versions. 
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate the content for the announcement file. Place a copy of this
+          file in each one of outdated stable versions. 
 
     - name: "Generate the template content for the 'announcement.html' file"
       shell: bash
@@ -266,9 +294,15 @@ runs:
       run: |
         rm -rf announcement.html
 
-    # Generate the redirection link. Since this is the stable documentation
-    # deployment action, there is always a 'version/stable' folder. Hence,
-    # redirection link always points to this folder.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate the redirection link. Since this is the stable documentation
+          deployment action, there is always a 'version/stable' folder. Hence,
+          redirection link always points to this folder.
 
     - name: "Generate the redirection URL"
       shell: bash
@@ -289,7 +323,13 @@ runs:
       run: |
           cat index.html
 
-    # Create the '.nojekyll' and 'CNAME' file with the desired values
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Create the '.nojekyll' and 'CNAME' file with the desired values.
 
     - name: "Create '.nojekyll' and 'CNAME' files"
       shell: bash
@@ -297,10 +337,16 @@ runs:
           touch .nojekyll CNAME
           echo "${{ inputs.cname }}" > CNAME
 
-    # For deploying the documentation, a GitHub token or a deployment token is
-    # required. The GitHub token is used when deploying to the current
-    # repository while the deployment token is used to deploy to an external
-    # repository.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          For deploying the documentation, a GitHub token or a deployment token
+          is required. The GitHub token is used when deploying to the current
+          repository while the deployment token is used to deploy to an external
+          repository.
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
       if: inputs.repository == 'current'

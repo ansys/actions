@@ -75,8 +75,14 @@ runs:
   using: "composite"
   steps:
 
-    # Checkout the repository branch for deploying the documentation. If this
-    # step fails, then it means that the provided token is not valid.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Checkout the repository branch for deploying the documentation. If
+          this step fails, then it means that the provided token is not valid.
 
     - name: "Get the name of the repository"
       shell: bash
@@ -94,10 +100,16 @@ runs:
         ref: ${{ inputs.branch }}
         token: ${{ inputs.token }}
 
-    # Download the documentation artifact from the current workflow. If the
-    # artifact contains a compressed file, decompress it. Display the structure
-    # of the 'version/dev' directory at the end of the process to verify the
-    # layout of the folder is the right one.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Download the documentation artifact from the current workflow. If the
+          artifact contains a compressed file, decompress it. Display the
+          structure of the 'version/dev' directory at the end of the process to
+          verify the layout of the folder is the right one.
 
     - name: "Clean destination folder"
       shell: bash
@@ -123,10 +135,16 @@ runs:
       run: |
         ls -R version/dev
 
-    # Create the 'versions.json' file if it does not exist. Note that this step
-    # is not required in the 'doc-deploy-stable' action. The reason is that
-    # stable releases are born after a development version exists. This forces
-    # users to use this action before using the stable deploy one.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Create the 'versions.json' file if it does not exist. Note that this
+          step is not required in the 'doc-deploy-stable' action. The reason is
+          that stable releases are born after a development version exists. This
+          forces users to use this action before using the stable deploy one.
 
     - name: "Create the 'versions.json' file if not present"
       shell: bash
@@ -140,9 +158,16 @@ runs:
         fi
         cat versions.json
 
-    # Generate an 'index.html' for redirection to the latest stable version of
-    # the documentation. If no stable version has been release, a redirection
-    # to the development documentation is generated.
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate an 'index.html' for redirection to the latest stable version
+          of the documentation. If no stable version has been release, a
+          redirection to the development documentation is generated.
+
 
     - name: "Generate the redirection URL"
       shell: bash
@@ -170,18 +195,30 @@ runs:
       run: |
           cat index.html
 
-    # Create the '.nojekyll' and 'CNAME' file with the desired values
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Create the '.nojekyll' and 'CNAME' file with the desired values
 
     - name: "Create '.nojekyll' and 'CNAME' files"
       shell: bash
       run: |
           touch .nojekyll CNAME
           echo "${{ inputs.cname }}" > CNAME
-      
-    # For deploying the documentation, a GitHub token or a deployment token is
-    # required. The GitHub token is used when deploying to the current
-    # repository while the deployment token is used to deploy to an external
-    # repository.
+
+     # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          For deploying the documentation, a GitHub token or a deployment token
+          is required. The GitHub token is used when deploying to the current
+          repository while the deployment token is used to deploy to an external
+          repository.
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
       if: inputs.repository == 'current'
