@@ -28,68 +28,111 @@ inputs:
     default: ''
     type: string
 
+  dry-run:
+    description: >
+      Whether to run or not this action in testing mode. Testing mode executes
+      all the action steps except the releasing artifacts one. This allows
+      developers to verify the health of the action once integrated in their
+      CI/CD pipelines without actually publishing artifacts. Default value is
+      ``false``.
+    required: false
+    default: false
+    type: string
+
+
 runs:
   using: "composite"
   steps:
+
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Download all artifacts that got generated in the CI/CD. Create a
+          directory containing the final artifacts to be published in GitHub.
+
+    - name: "Download all artifacts that got generated in the CI/CD"
+      uses: actions/download-artifact@v3
+      with:
+        path: /tmp/artifacts
+
+    - name: "Generate a distribution folder that will contain the desired artifacts"
+      shell: bash
+      run: mkdir -p dist
   
-    - name: "Download the ${{ inputs.library-name }} artifacts from build-library step"
-      uses: actions/download-artifact@v3
-      with:
-        name: ${{ inputs.library-name }}-artifacts
-        path: ${{ inputs.library-name }}-artifacts
+    # ------------------------------------------------------------------------
 
-    - name: "Download {{ inputs.library-name }} HTML documentation"
-      uses: actions/download-artifact@v3
+    - uses: pyansys/actions/_logging@main
       with:
-        name: documentation-html
-        path: documentation-html
+        level: "INFO"
+        message: >
+          Create a dist/documentation directory and move the documentation-html
+          artifact and the documentation-pdf artifact inside this folder.
+          Finally, compress both artifacts.
 
-    - name: "Zip HTML documentation"
+    - name: "Moving documentation artifacts to dist/documentation directory"
+      shell: bash
+      run: |
+        mkdir -p dist/documentation
+        mv /tmp/artifacts/documentation-html dist/documentation/documentation-html
+        mv /tmp/artifacts/documentation-pdf dist/documentation/documentation-pdf
+
+    - name: "Compressing HTML documentation"
       uses: vimtor/action-zip@v1.1
       with:
-        files: documentation-html
-        dest: documentation-html.zip
+        files: dist/documentation/documentation-html
+        dest: dist/documentation/documentation-html.zip
 
-    - name: "Download {{ inputs.library-name }} PDF documentation"
-      uses: actions/download-artifact@v3
-      with:
-        name: documentation-pdf
-        path: documentation-pdf
-
-    - name: "Zip PDF documentation"
+    - name: "Compressing PDF documentation"
       uses: vimtor/action-zip@v1.1
       with:
         files: documentation-pdf
         dest: documentation-pdf.zip
 
-    - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@v3
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
       with:
-        path: all-artifacts
+        level: "INFO"
+        message: >
+          Create a dist/wheelhouse directory and move all wheelhouse artifacts
+          inside this folder.
 
-    - name: "Isolate wheelhouse artifacts"
+    - name: "Move documentation artifacts to dist/documentation directory"
       shell: bash
       run: |
-        mkdir -p wheelhouse
-        mv all-artifacts/**/*-wheelhouse-*.zip wheelhouse/
+        mkdir -p dist/wheelhouse
+        mv /tmp/artifacts/**/*-wheelhouse-*.zip dist/wheelhouse/
 
-    - name: "Remove undesired artifacts"
-      shell: bash
-      run: |
-        mkdir 
-        rm -rf other-artifacts/documentation-html
-        rm -rf other-artifacts/documentation-pdf
-        rm -rf other-artifacts/${{ inputs.library-name }}-artifacts
+    # ------------------------------------------------------------------------
 
-    - name: "Display the structure of downloaded files"
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Display and 
+
+    - name: "Display the structure of the artifacts folder"
       shell: bash
-      run: ls -R
+      run: ls -R dist/
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
+      if: ${{ inputs.dry-run != "false" }}
       with:
         files: |
-          ${{ inputs.library-name }}-artifacts/*.whl
-          ${{ inputs.library-name }}-artifacts/*.tar.gz
-          documentation-html.zip
-          documentation-pdf.zip
+          # Include wheel and source distribution artifacts
+          dist/${{ inputs.library-name }}-artifacts/*.whl
+          dist/${{ inputs.library-name }}-artifacts/*.tar.gz
+
+          # Include wheelhouse artifacts
+          dist/wheelhouse/**/*-wheelhouse-*.zip
+
+          # Include HTML and PDF documentation artifacts
+          dist/documentation/documentation-html.zip
+          dist/documentation/documentation-pdf.zip
+
+          # Include additional artifacts
+          dist/extra/**/*

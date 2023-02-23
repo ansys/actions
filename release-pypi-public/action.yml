@@ -4,7 +4,7 @@ name: >
 description: >
   Release library artifacts to the PyPI public index. Use the ``PYPI_TOKEN`` as
   the token. Artifacts get downloaded from the CI/CD pipeline and are assumed to be
-  named ``<library-name>-artifacts``. This file is expected to contain a wheel
+  named ``<library-name>-artifacts``. This file is expected to contain a wheel file
   and a source distribution file for the desired library.
 
 inputs:
@@ -31,6 +31,17 @@ inputs:
 
   # Optional inputs
 
+  dry-run:
+    description: >
+      Whether to run or not this action in testing mode. Testing mode executes
+      all the action steps except the releasing artifacts one. This allows
+      developers to verify the health of the action once integrated in their
+      CI/CD pipelines without actually publishing artifacts. Default value is
+      ``false``.
+    required: false
+    default: false
+    type: string
+
   python-version:
     description: >
       Python version for installing and using `twine
@@ -51,3 +62,4 @@ runs:
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}
         python-version: ${{ inputs.python-version }}
+        dry-run: ${{ inputs.dry-run }}
