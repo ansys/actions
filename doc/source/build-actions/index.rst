@@ -7,9 +7,10 @@ artifacts include both source distribution files and wheels.
 
 Build library action
 --------------------
-This action builds source and wheel artifacts for a Python library.
 
 .. jinja:: build-library
+    
+    {{ description }}
 
     {{ inputs_table }}
 
@@ -28,10 +29,10 @@ This action builds source and wheel artifacts for a Python library.
 
 Build wheelhouse action
 -----------------------
-This action builds the wheelhouse for a Python library and publishes them as
-artifacts.
 
 .. jinja:: build-wheelhouse
+
+    {{ description }}
 
     {{ inputs_table }}
 
@@ -48,12 +49,12 @@ artifacts.
     {% endfor %}
 
 
-Build C-extension library action
---------------------------------
-This action builds wheel artifacts for a Python library using
-C-extension.
+Build CI wheels action
+----------------------
 
 .. jinja:: build-ci-wheels
+
+    {{ description }}
 
     {{ inputs_table }}
 

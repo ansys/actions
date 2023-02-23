@@ -108,6 +108,25 @@ def is_valid_action_dir(path):
     return False
 
 
+def generate_description_from_action_file(action_file):
+    """Generate the description of an action from the action file.
+
+    Parameters
+    ----------
+    action_file : ~pathlib.Path
+        A ``Path`` object representing the action file.
+
+    Returns
+    -------
+    str
+        String representing description of the action.
+
+    """
+    with open(action_file, "r") as yaml_file:
+        file_content = yaml.safe_load(yaml_file)
+        return file_content["description"]
+
+
 def generate_inputs_table_from_action_file(action_file):
     """Generate the RST table containing all the input information for the action.
 
@@ -149,7 +168,8 @@ public_actions = {
 # Generate the Jinja contexts for the input tables
 jinja_contexts = {
     action_dir.name: {
-        "inputs_table": generate_inputs_table_from_action_file(action_file)
+        "description": generate_description_from_action_file(action_file),
+        "inputs_table": generate_inputs_table_from_action_file(action_file),
     }
     for action_dir, action_file in public_actions.items()
 }
