@@ -41,6 +41,13 @@ inputs:
 
   # Optional inputs
 
+  target:
+    description: >
+      Optional target used during the building process.
+    required: false
+    default: ''
+    type: string
+
   use-python-cache:
     description: >
       Whether to use the Python cache for installing previously downloaded
@@ -68,10 +75,16 @@ runs:
       run: |
         python -m pip install --upgrade pip build wheel
 
+    - name: "Check if specific target is requested"
+      shell: bash
+      run: |
+        echo "install_target=$( [[ '${{ inputs.target }}' == '' ]] && echo '.' || echo '.[${{ inputs.target }}]')" >> $GITHUB_ENV
+        echo "wheelhouse_target=$( [[ '${{ inputs.target }}' == '' ]] && echo 'wheelhouse' || echo '${{ inputs.target }}-wheelhouse')" >> $GITHUB_ENV
+
     - name: "Install the library"
       shell: bash
       run: |
-        python -m pip install .
+        python -m pip install ${{ env.install_target }}
 
     - name: "Verify library is properly installed and get its version number"
       shell: bash
