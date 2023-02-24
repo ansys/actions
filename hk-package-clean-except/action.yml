@@ -19,6 +19,11 @@ inputs:
     required: false
     default: 'pyansys'
     type: string
+  allow-last-days:
+    description: "Avoid removing the last N days image: e.g. '2'."
+    required: false
+    default: ''
+    type: string
   python-version:
     description: 'Desired Python version.'
     default: '3.10'
@@ -47,19 +52,26 @@ runs:
       run: |
         cat > clean-except.py << 'EOF'
         
+        from datetime import datetime, timedelta
         import os
-        
+
         from ghapi.all import GhApi
         from ghapi.core import print_summary
         from ghapi.page import paged
-        
+
         org_str = "${{ inputs.package-org }}"
         pck_str = "${{ inputs.package-name }}"
+        last_days_str = "${{ inputs.tags-kept }}"
         valid_tags_str = "${{ inputs.tags-kept }}"
+        
+        last_days = int(last_days_str) if last_days_str == "" else None
         valid_tags = [x.strip() for x in valid_tags_str.split(",")]
-        
+
         api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
-        
+
+        if last_days:
+            delete_before_date = datetime.now() - timedelta(days=last_days)
+
         paged_packages = paged(
             api.packages.get_all_package_versions_for_package_owned_by_org,
             org=org_str,
@@ -68,30 +80,35 @@ runs:
             state="active",
             per_page=100,
         )
-        
+
         # Loop over all pages
         for page in paged_packages:
             for package in page:
+                # If keeping last days is requested, then check
+                if (
+                    last_days
+                    and datetime.fromisoformat(package.created_at).timestamp()
+                    < delete_before_date.timestamp()
+                ):
+                    continue
+
                 # Check if the given package has valid tags
-                
                 package_tags = package.metadata.container.tags
                 delete = True
                 for tag in package_tags:
                     if tag in valid_tags:
                         delete = False
                         break
-                
+
                 # In case it should, delete it
                 if delete:
                     print(f"Deleting package: {package}")
-
                     api.packages.delete_package_version_for_org(
                         org=org_str,
                         package_name=pck_str,
                         package_type="container",
                         package_version_id=package["id"],
                     )
-        
         EOF
         cat clean-except.py
 
