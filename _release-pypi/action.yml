@@ -43,6 +43,15 @@ inputs:
     required: true
     type: string
 
+  dry-run:
+    description: >
+      Whether to run or not this action in testing mode. Testing mode executes
+      all the action steps except the releasing artifacts one. This allows
+      developers to verify the health of the action once integrated in their
+      CI/CD pipelines without actually publishing artifacts.
+    required: true
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -70,6 +79,7 @@ runs:
 
     - name: "Upload artifacts to private PyPi"
       shell: bash
+      if: ${{ inputs.dry-run != "false" }}
       run: |
         python -m twine upload --verbose --skip-existing ${{ inputs.library-name }}-artifacts/*.whl
         python -m twine upload --verbose --skip-existing ${{ inputs.library-name }}-artifacts/*.tar.gz

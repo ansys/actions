@@ -32,6 +32,17 @@ inputs:
 
   # Optional inputs
 
+  dry-run:
+    description: >
+      Whether to run or not this action in testing mode. Testing mode executes
+      all the action steps except the releasing artifacts one. This allows
+      developers to verify the health of the action once integrated in their
+      CI/CD pipelines without actually publishing artifacts. Default value is
+      ``false``.
+    required: false
+    default: false
+    type: string
+
   python-version:
     description: >
       Python version for installing and using `twine
@@ -52,3 +63,4 @@ runs:
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}
         python-version: ${{ inputs.python-version }}
+        dry-run: ${{ inputs.dry-run }}

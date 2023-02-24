@@ -1,24 +1,56 @@
-name: "Release to test PyPI index."
-description: "Release library artifacts to test PyPI index."
+name: >
+  Release to Test PyPI public index
+
+description: >
+  Release library artifacts to the Test PyPI public index. Use the
+  ``PYANSYS_PYPI_TEST_PAT`` as the token. Artifacts get downloaded from the
+  CI/CD pipeline and are assumed to be named ``<library-name>-artifacts``. This
+  file is expected to contain a wheel file and a source distribution file for
+  the desired library.
 
 inputs:
+
+  # Required inputs
+
   library-name:
-    description: 'Name of the Python library.'
+    description: >
+      Name of the Python library to be published.
     required: true
     type: string
+
   twine-username:
-    description: 'Desired twine user name.'
+    description: >
+      User name used when uploading to the public Test PyPI index.
     required: true
     type: string
+
   twine-token:
-    description: 'Password to be used when uploading to test PyPI.'
+    description: >
+      Password used when uploading to the public Test PyPI index.
     required: true
     type: string
+
+  # Optional inputs
+
+  dry-run:
+    description: >
+      Whether to run or not this action in testing mode. Testing mode executes
+      all the action steps except the releasing artifacts one. This allows
+      developers to verify the health of the action once integrated in their
+      CI/CD pipelines without actually publishing artifacts. Default value is
+      ``false``.
+    required: false
+    default: false
+    type: string
+
   python-version:
-    description: 'Desired Python version for using twine.'
+    description: >
+      Python version for installing and using `twine
+      <https://twine.readthedocs.io/en/stable/>`_.
     required: false
     default: '3.10'
     type: string
+
 
 runs:
   using: "composite"
@@ -32,3 +64,4 @@ runs:
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}
         python-version: ${{ inputs.python-version }}
+        dry-run: ${{ inputs.dry-run }}
