@@ -79,7 +79,7 @@ runs:
 
     - name: "Upload artifacts to private PyPi"
       shell: bash
-      if: ${{ inputs.dry-run != "false" }}
+      if: inputs.dry-run != "false"
       run: |
         python -m twine upload --verbose --skip-existing ${{ inputs.library-name }}-artifacts/*.whl
         python -m twine upload --verbose --skip-existing ${{ inputs.library-name }}-artifacts/*.tar.gz
