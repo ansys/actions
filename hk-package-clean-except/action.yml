@@ -20,7 +20,7 @@ inputs:
     default: 'pyansys'
     type: string
   allow-last-days:
-    description: "Avoid removing the last N days image: e.g. '2'."
+    description: "Avoid removing the last N days images: e.g. '2'."
     required: false
     default: ''
     type: string
@@ -61,7 +61,7 @@ runs:
         
         org_str = "${{ inputs.package-org }}"
         pck_str = "${{ inputs.package-name }}"
-        last_days_str = "${{ inputs.tags-kept }}"
+        last_days_str = "${{ inputs.allow-last-days }}"
         valid_tags_str = "${{ inputs.tags-kept }}"
         
         last_days = int(last_days_str) if last_days_str == "" else None
