@@ -64,7 +64,7 @@ runs:
         last_days_str = "${{ inputs.allow-last-days }}"
         valid_tags_str = "${{ inputs.tags-kept }}"
         
-        last_days = int(last_days_str) if last_days_str == "" else None
+        last_days = int(last_days_str) if last_days_str != "" else None
         valid_tags = [x.strip() for x in valid_tags_str.split(",")]
         
         api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
