@@ -59,7 +59,7 @@ runs:
         pck_str = "${{ inputs.package-name }}"
         last_days_str = "${{ inputs.allow-last-days }}"
         
-        last_days = int(last_days_str) if last_days_str == "" else None
+        last_days = int(last_days_str) if last_days_str != "" else None
         if last_days:
             delete_before_date = datetime.now() - timedelta(days=last_days)
         
