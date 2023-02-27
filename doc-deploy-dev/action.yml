@@ -47,7 +47,7 @@ inputs:
 
   decompress-artifact:
     description: >
-      Wether to decompress the artifact using using `ouch
+      Wether to decompress the artifact using `ouch
       <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
       is ``false``.
     required: false
@@ -150,7 +150,7 @@ runs:
         message: >
           Create the 'versions.json' file if it does not exist. Note that this
           step is not required in the 'doc-deploy-stable' action. The reason is
-          that stable releases are born after a development version exists. This
+          that for a stable release to be created, a development version must exist. This
           forces users to use this action before using the stable deploy one.
 
     - name: "Create the 'versions.json' file if not present"
@@ -172,7 +172,7 @@ runs:
         level: "INFO"
         message: >
           Generate an 'index.html' for redirection to the latest stable version
-          of the documentation. If no stable version has been release, a
+          of the documentation. If no stable version has been released, a
           redirection to the development documentation is generated.
 
 
