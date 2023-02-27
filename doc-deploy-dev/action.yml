@@ -11,7 +11,7 @@ description: |
       If your project is using ``pyansys/actions@v3`` or lower and you would
       like to update to this version of the actions, see the `guidelines for
       migrating to the latest multi-version documentation layout
-      <https://dev.docs.pyansys.com/how-to/documenting/multi-versio-migration-from-pyansys/actions@v3-to-pyansys/actions@v4>`_.
+      <https://dev.docs.pyansys.com/how-to/documenting/multi-version-migration-from-pyansys-actions-v3-to-pyansys-actions-v4>`_ .
 
 inputs:
 
