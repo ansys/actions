@@ -1,10 +1,17 @@
 name: >
   Doc deploy dev action
 
-description: >
+description: |
   This action deploys the desired HTML documentation artifact containing the
   development version of a library to the specified branch of a repository. By
   default, the ``gh-pages`` branch of the current repository is assumed.
+
+  .. note::
+
+      If your project is using ``pyansys/actions@v3`` or lower and you would
+      like to update to this version of the actions, see the `guidelines for
+      migrating to the latest multi-version documentaion layout
+      <https://dev.docs.pyansys.com/how-to/documenting/multi-versio-migration-from-pyansys/actions@v3-to-pyansys/actions@v4>`_.
 
 inputs:
 
