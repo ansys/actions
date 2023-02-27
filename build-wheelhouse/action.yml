@@ -65,7 +65,7 @@ runs:
       uses: actions/checkout@v3
   
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: pyansys/actions/_setup-python@main
+      uses: pyansys/actions/_setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

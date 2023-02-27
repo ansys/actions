@@ -57,7 +57,7 @@ runs:
   steps:
   
     - name: "Release to test PyPI index"
-      uses: pyansys/actions/_release-pypi@main
+      uses: pyansys/actions/_release-pypi@v4
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://test.pypi.org/legacy/"

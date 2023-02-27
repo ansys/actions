@@ -84,7 +84,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: pyansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -109,7 +109,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: pyansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -144,7 +144,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: pyansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -167,7 +167,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: pyansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -204,7 +204,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: pyansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -218,7 +218,7 @@ runs:
 
      # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: pyansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
