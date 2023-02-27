@@ -41,7 +41,7 @@ html_favicon = ansys_favicon
 html_theme_options = {
     "github_url": "https://github.com/pyansys/actions",
     "switcher": {
-        "json_url": f"https://{cname}/release/versions.json",
+        "json_url": f"https://{cname}/versions.json",
         "version_match": get_version_match(__version__),
     },
     "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
