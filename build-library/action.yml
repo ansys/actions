@@ -67,7 +67,7 @@ runs:
         python -m build && python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.library-name }}-artifacts
         path: dist/
