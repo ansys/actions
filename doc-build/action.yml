@@ -53,8 +53,8 @@ inputs:
 
   requires-xvfb:
     description: >
-      Whether to install X Virtual Frame Buffer (XVFB)
-      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>_ and run
+      Whether to install `X Virtual Frame Buffer (XVFB)
+      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and run
       the whole test session using XVFB. The default value is ``false``.
 
       If ``true``, installs `X Virtual Frame Buffer (XVFB)
