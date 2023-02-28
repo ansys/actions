@@ -81,6 +81,14 @@ inputs:
     required: false
     type: boolean
 
+  skip-pdf-build:
+    description: >
+      Whether to skip the generation of PDF documentation. Default value is
+      ``false``.
+    default: false
+    required: false
+    type: boolean
+
   skip-json-build:
     description: >
       Whether to skip the generation of JSON documentation. Default value is
@@ -111,6 +119,7 @@ runs:
 
     - name: "Install LaTeX"
       shell: bash
+      if: inputs.skip-pdf-build == 'false'
       run: |
         sudo apt-get install texlive-latex-extra latexmk
 
@@ -155,7 +164,9 @@ runs:
       shell: bash
       run: |
         make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        make -C doc pdf
+        if [[ ${{ inputs.skip-pdf-build }} == 'false' ]];
+          make -C doc pdf
+        fi
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
           make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
@@ -166,7 +177,9 @@ runs:
       shell: bash
       run: |
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run make -C doc pdf
+        if [[ ${{ inputs.skip-pdf-build }} == 'false' ]];
+          xvfb-run make -C doc pdf
+        fi
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
           xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
