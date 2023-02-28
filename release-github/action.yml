@@ -109,7 +109,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: pyansys/actions/_logging@main
-      if: inputs.additional-artifacts == ''
+      if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
         message: >
@@ -118,7 +118,7 @@ runs:
 
     - name: "Move additional artifacts to dist/wheelhouse directory"
       shell: bash
-      if: inputs.additional-artifacts == ''
+      if: inputs.additional-artifacts != ''
       run: |
         mkdir -p dist/extra
         for artifact in ${{ inputs.additional-artifacts }}; do
