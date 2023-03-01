@@ -85,6 +85,14 @@ inputs:
     required: false
     type: string
 
+  force-orphan:
+    description: >
+      Whether to force the deployment branch to be orphan or not. Default value
+      is ``true``.
+    required: false
+    default: true
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -364,7 +372,7 @@ runs:
         github_token: ${{ inputs.token }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
-        force_orphan: true
+        force_orphan: ${{ inputs.force-orphan }}
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
       if: inputs.repository != 'current'
@@ -376,4 +384,4 @@ runs:
         external_repository: ${{ inputs.repository }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
-        force_orphan: true
+        force_orphan: ${{ inputs.force-orphan }}
