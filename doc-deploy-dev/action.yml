@@ -79,7 +79,7 @@ inputs:
 
   force-orphan:
     description: >
-      Whether to force the deployment branch to be orphan or not. Default value
+      Whether to force the deployment branch to be orphan with only the latest commit or not. Default value
       is ``true``.
     required: false
     default: true
