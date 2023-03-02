@@ -97,17 +97,25 @@ runs:
       uses: actions/checkout@v3
       if: ${{ inputs.checkout == 'true' }}
 
-    - name: "Check if X Virtual Frame Buffer is needed"
+    - name: "Collect system dependencies"
       shell: bash
-      if: inputs.requires-xvfb == 'true'
       run: |
-        echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }} xvfb')" >> $GITHUB_ENV
+        if [[ ${{ inputs.requires-xvfb }} == 'true' ]]; then
+          echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }} xvfb')" >> $GITHUB_ENV
+        else
+          echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }}')" >> $GITHUB_ENV
+        fi
 
     - name: "Cache apt packages needed"
       uses: awalsh128/cache-apt-pkgs-action@v1
       with:
         packages: ${{ env.NEEDED_DEPS }}
         version: 1.0
+
+    - name: "Install system dependencies"
+      shell: bash
+      run: |
+        sudo apt-get install ${{ env.NEEDED_DEPS }}
 
     - name: "Install LaTeX"
       shell: bash
