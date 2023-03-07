@@ -3,20 +3,24 @@ description: "Action that checks if the name of the branch is following the our 
 
 runs:
   using: composite
-  steps:
-    - uses: jungwinter/split@master
-      id: split
-      with:
-        msg: ${{ env.BRANCH_NAME }}
-        separator: "/"
-        maxsplit: -1
 
+  steps:
+    - name: "Get the prefix of the branch"
+      env:
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+      if: github.ref_type == 'branch'
+      shell: bash
+      run: |
+        branch_prefix=$(echo "${{ BRANCH_NAME }}" | cut -d '/' -f 1)
+        echo "BRANCH_PREFIX=$branch_prefix" >> $GITHUB_ENV
     - name: Check branch name has slash
       shell: bash
-      if: contains('/', env.BRANCH_NAME) == false
+      env:
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+      if: contains(env.BRANCH_NAME, '/') == false
       run: echo "[ERROR] Branch name ${{ env.BRANCH_NAME }} does not contain a prefix and a backslash." && exit 1
 
     - name: Check branch prefix naming
       shell: bash
-      if: contains(fromJson('["fix", "feat", "junk", "maint", "doc", "no-ci", "testing", "release"]'), steps.split.outputs._0) == false
-      run: echo "[ERROR] Branch name ${{ env.BRANCH_NAME }} prefix is not valid." && exit 1
+      if: contains(fromJson('["fix", "feat", "junk", "maint", "doc", "no-ci", "test", "release"]'), env.BRANCH_PREFIX) == false
+      run: echo "[ERROR] Branch name ${{ env.BRANCH_PREFIX }} prefix is not valid." && exit 1
