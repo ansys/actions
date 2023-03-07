@@ -1,5 +1,5 @@
 name: "Check if the branch name follows our naming convention."
-description: "Action that checks if the name of the branch is following the our branch naming convention."
+description: "Action that checks if the name of the branch is following our branch naming convention."
 
 runs:
   using: composite
@@ -18,5 +18,5 @@ runs:
 
     - name: Check branch prefix naming
       shell: bash
-      if: contains(fromJson('["fix", "feat", "junk", "maint", "doc", "no-ci", "testing", "release"]'), steps.split.outputs._0) == false
+      if: contains(fromJson('["fix", "feat", "junk", "maint", "doc", "no-ci", "test", "release"]'), steps.split.outputs._0) == false
       run: echo "[ERROR] Branch name ${{ env.BRANCH_NAME }} prefix is not valid." && exit 1
