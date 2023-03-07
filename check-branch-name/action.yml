@@ -18,9 +18,17 @@ runs:
       env:
         BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
       if: contains(env.BRANCH_NAME, '/') == false
-      run: echo "[ERROR] Branch name ${{ env.BRANCH_NAME }} does not contain a prefix and a backslash." && exit 1
+      uses: pyansys/actions/_logging@main
+      with:
+        level: "ERROR"
+        message: >
+          "Branch name ${{ env.BRANCH_NAME }} does not contain a prefix and a backslash."
 
     - name: Check branch prefix naming
       shell: bash
       if: contains(fromJson('["fix", "feat", "junk", "maint", "doc", "no-ci", "test", "release"]'), env.BRANCH_PREFIX) == false
-      run: echo "[ERROR] Branch name ${{ env.BRANCH_PREFIX }} prefix is not valid." && exit 1
+      uses: pyansys/actions/_logging@main
+      with:
+        level: "ERROR"
+        message: >
+          "Branch name ${{ env.BRANCH_PREFIX }} prefix is not valid."
