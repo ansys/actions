@@ -1,5 +1,5 @@
 name: "Check if the branch name follows our naming convention."
-description: "Action that checks if the name of the branch is following the our branch naming convention."
+description: "Action that checks if the name of the branch is following our branch naming convention."
 
 runs:
   using: composite
