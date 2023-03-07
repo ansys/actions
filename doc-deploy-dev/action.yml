@@ -243,7 +243,7 @@ runs:
         github_token: ${{ inputs.token }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
-        force_orphan: true
+        force_orphan: ${{ inputs.force-orphan }}
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
       if: inputs.repository != 'current'
