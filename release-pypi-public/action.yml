@@ -40,7 +40,7 @@ inputs:
       ``false``.
     required: false
     default: false
-    type: string
+    type: boolean
 
   python-version:
     description: >
