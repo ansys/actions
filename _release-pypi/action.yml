@@ -50,7 +50,7 @@ inputs:
       developers to verify the health of the action once integrated in their
       CI/CD pipelines without actually publishing artifacts.
     required: true
-    type: string
+    type: boolean
 
 runs:
   using: "composite"
