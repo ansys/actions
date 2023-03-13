@@ -108,7 +108,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: pyansys/actions/_logging@main
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -139,24 +139,9 @@ runs:
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
-      if: inputs.dry-run != 'false' && inputs.additional-artifacts == ''
+      if: inputs.dry-run != 'false'
       with:
-        files: |
-          # Include wheel and source distribution artifacts
-          dist/${{ inputs.library-name }}-artifacts/*.whl
-          dist/${{ inputs.library-name }}-artifacts/*.tar.gz
-
-          # Include wheelhouse artifacts
-          dist/wheelhouse/**/*-wheelhouse-*.zip
-
-          # Include HTML and PDF documentation artifacts
-          dist/documentation/documentation-html.zip
-          dist/documentation/documentation-pdf.zip
-
-    - name: "Release to GitHub"
-      uses: softprops/action-gh-release@v1
-      if: inputs.dry-run != 'false' && inputs.additional-artifacts != ''
-      with:
+        fail_on_unmatched_files: false
         files: |
           # Include wheel and source distribution artifacts
           dist/${{ inputs.library-name }}-artifacts/*.whl
