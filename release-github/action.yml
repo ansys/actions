@@ -118,7 +118,6 @@ runs:
     - name: "Move wheel artifacts to dist/${{ inputs.library-name }}-artifacts directory"
       shell: bash
       run: |
-        mkdir -p dist/wheelhouse
         mv /tmp/artifacts/${{ inputs.library-name }}-artifacts dist/${{ inputs.library-name }}-artifacts
 
     # ------------------------------------------------------------------------
