@@ -88,8 +88,8 @@ runs:
     - name: "Compressing PDF documentation"
       uses: vimtor/action-zip@v1.1
       with:
-        files: documentation-pdf
-        dest: documentation-pdf.zip
+        files: dist/documentation/documentation-pdf
+        dest: dist/documentation/documentation-pdf.zip
 
     # ------------------------------------------------------------------------
 
@@ -105,6 +105,21 @@ runs:
       run: |
         mkdir -p dist/wheelhouse
         mv /tmp/artifacts/**/*-wheelhouse-*.zip dist/wheelhouse/
+
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Create a dist/${{ inputs.library-name }}-artifacts directory and move all wheel artifacts
+          inside this folder.
+
+    - name: "Move wheel artifacts to dist/${{ inputs.library-name }}-artifacts directory"
+      shell: bash
+      run: |
+        mkdir -p dist/wheelhouse
+        mv /tmp/artifacts/${{ inputs.library-name }}-artifacts dist/${{ inputs.library-name }}-artifacts
 
     # ------------------------------------------------------------------------
 
