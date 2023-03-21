@@ -156,6 +156,7 @@ runs:
       if: inputs.dry-run == 'false'
       with:
         fail_on_unmatched_files: false
+        generate_release_notes: true 
         files: |
           # Include wheel and source distribution artifacts
           dist/${{ inputs.library-name }}-artifacts/*.whl
