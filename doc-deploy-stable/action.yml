@@ -109,7 +109,7 @@ runs:
   
     - name: "Set up Python ${{ inputs.python-version }}"
       if: env.ACCEPTED_FORMAT == 'true'
-      uses: pyansys/actions/_setup-python@main
+      uses: pyansys/actions/_setup-python@v3
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false

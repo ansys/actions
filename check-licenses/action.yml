@@ -37,7 +37,7 @@ runs:
 
     - name: "Set up Python"
       if: inputs.skip-install == 'false'
-      uses: pyansys/actions/_setup-python@main
+      uses: pyansys/actions/_setup-python@v3
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

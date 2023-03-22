@@ -28,7 +28,7 @@ runs:
   steps:
   
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@main
+      uses: pyansys/actions/_setup-python@v3
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false

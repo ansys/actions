@@ -69,7 +69,7 @@ runs:
         sudo apt-get install texlive-latex-extra latexmk
 
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@main
+      uses: pyansys/actions/_setup-python@v3
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

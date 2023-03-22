@@ -25,7 +25,7 @@ runs:
   steps:
   
     - name: "Release to private PyPI index"
-      uses: pyansys/actions/_release-pypi@main
+      uses: pyansys/actions/_release-pypi@v3
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"
