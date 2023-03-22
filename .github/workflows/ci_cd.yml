@@ -95,7 +95,7 @@ jobs:
     needs: commenter
     steps:
       - name: "Run code style checks"
-        uses: pyansys/actions/code-style@main
+        uses: pyansys/actions/code-style@v3
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -117,7 +117,7 @@ jobs:
         run: ls -R tests
 
       - name: "Set up Python"
-        uses: pyansys/actions/_setup-python@main
+        uses: pyansys/actions/_setup-python@v3
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-cache: false
@@ -136,7 +136,7 @@ jobs:
     needs: commenter
     steps:
       - name: "Run documentation style checks"
-        uses: pyansys/actions/doc-style@main
+        uses: pyansys/actions/doc-style@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -146,7 +146,7 @@ jobs:
     needs: doc-style
     steps:
       - name: "Build documentation"
-        uses: pyansys/actions/doc-build@main
+        uses: pyansys/actions/doc-build@v3
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -162,7 +162,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@main
+      uses: pyansys/actions/_setup-python@v3
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
@@ -194,7 +194,7 @@ jobs:
     needs: tests-build
     steps:
     - name: "Release to the test PyPI repository"
-      uses: pyansys/actions/release-pypi-test@main
+      uses: pyansys/actions/release-pypi-test@v3
       with:
         library-name: ${{ env.test-library-name }}
         twine-username: "__token__"
