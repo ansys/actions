@@ -215,6 +215,32 @@ runs:
       with:
         level: "INFO"
         message: >
+          Copy the 'stable/index.html' to 'version/index.html' file. If no stable release is available, copy the 'dev/index.html' instead. Update all references to point to 'stable/_static' or 'dev/_static'.
+
+    - name: "Use the latest 'index.html' as baseline for the versions page"
+      shell: bash
+      run: |
+        if [[ -f 'version/stable/index.html' ]]; then
+          cp version/stable/index.html version/index.html
+        else
+          cp version/dev/index.html version/index.html
+
+    - name: "Update all references to point to 'stable/_static' or 'dev/_static'"
+      shell: bash
+      run: |
+        if [[ -f 'version/stable/index.html' ]]; then
+          sed -i "s|_static|stable/_static|g" version/index.html
+        else
+          sed -i "s|_static|dev/_static|g" version/index.html
+
+    TODO: replace the content of the article with the JavaScript logic. This logic reads the 'version.json' file and writes it to the '<article>' tag as an HTML table
+
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
           Create the '.nojekyll' and 'CNAME' file with the desired values
 
     - name: "Create '.nojekyll' and 'CNAME' files"
