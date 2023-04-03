@@ -1,6 +1,5 @@
-name: "Check if the branch name follows our naming convention."
-description: "Action that checks if the name of the branch is following our branch naming convention."
-inputs:
+name: "Check if the branch name follows PyAnsys naming convention."
+description: "Action that checks if the name of the branch is following PyAnsys branch naming convention."
 
 runs:
   using: composite

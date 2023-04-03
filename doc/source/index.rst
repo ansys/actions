@@ -51,6 +51,11 @@ see each card below:
 
         Housekeeping actions provide for general repository operations such as package cleanup.
 
+    .. grid-item-card:: :octicon:`archive` Other actions
+       :link: other-actions/index
+       :link-type: doc
+
+        Other actions that provide additional checks and capabilities.
 
 .. toctree::
    :hidden:
@@ -63,3 +68,4 @@ see each card below:
    build-actions/index
    release-actions/index
    housekeeping-actions/index
+   other-actions/index
