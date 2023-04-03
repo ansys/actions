@@ -1,5 +1,6 @@
 name: "Check if the pull request title follows conventional commits."
 description: "Action that checks if the title of the pull request is following the conventional commits standard."
+inputs:
 
 runs:
   using: composite
