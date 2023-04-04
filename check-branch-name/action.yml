@@ -5,6 +5,7 @@ runs:
   using: composite
 
   steps:
+
     - name: "Get the prefix of the branch"
       env:
         BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
@@ -12,7 +13,8 @@ runs:
       shell: bash
       run: |
         branch_prefix=$(echo "${{ BRANCH_NAME }}" | cut -d '/' -f 1)
-        echo "BRANCH_PREFIX=$branch_prefix" >> $GITHUB_ENV
+        echo "BRANCH_PREFIX=$branch_prefix" >> $
+        
     - name: Check branch name has slash
       shell: bash
       env:
