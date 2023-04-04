@@ -146,15 +146,16 @@ def generate_inputs_table_from_action_file(action_file):
     table_content = []
 
     with open(action_file, "r") as yaml_file:
-        file_content = yaml.safe_load(yaml_file)
-        inputs = file_content["inputs"]
-        for input_name, values in inputs.items():
-            values = [
-                values.get(field, None) for field in field_names if field != "input"
-            ]
-            table_row = [input_name]
-            table_row.extend(values)
-            table_content.append(table_row)
+        file_content: dict = yaml.safe_load(yaml_file)
+        inputs = file_content.get("inputs", None)
+        if inputs:
+            for input_name, values in inputs.items():
+                values = [
+                    values.get(field, None) for field in field_names if field != "input"
+                ]
+                table_row = [input_name]
+                table_row.extend(values)
+                table_content.append(table_row)
         return str(Table(table_content, headers=headers, tablefmt="grid"))
 
 
