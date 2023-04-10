@@ -18,12 +18,13 @@ repos:
   - id: flake8
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.3.0
+  rev: v4.4.0
   hooks:
   - id: check-merge-conflict
   - id: check-yaml
   - id: requirements-txt-fixer
   - id: trailing-whitespace
+  - id: debug-statements
 
 # Validate our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
