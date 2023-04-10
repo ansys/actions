@@ -46,10 +46,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-  
+
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
       with:

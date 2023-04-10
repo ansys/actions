@@ -187,10 +187,10 @@ runs:
       shell: bash
       run: |
         if $(grep -q "(stable)" versions.json)
-        then 
+        then
           echo "Redirecting to the latest stable version..."
           echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
-        else 
+        else
           echo "Redirecting to the latest development version..."
           echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/dev/" >> $GITHUB_ENV
         fi

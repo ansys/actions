@@ -9,7 +9,7 @@ Build library action
 --------------------
 
 .. jinja:: build-library
-    
+
     {{ description }}
 
     {{ inputs_table }}

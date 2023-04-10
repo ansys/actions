@@ -54,7 +54,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: "Release to PyAnsys private index"
       uses: pyansys/actions/_release-pypi@main
       with:
