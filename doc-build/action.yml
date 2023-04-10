@@ -92,7 +92,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
       if: ${{ inputs.checkout == 'true' }}

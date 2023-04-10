@@ -17,8 +17,8 @@ Check branch name is aligned to PyAnsys branch naming style
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 
@@ -37,8 +37,8 @@ Check pull request title follows conventional commits standard
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 

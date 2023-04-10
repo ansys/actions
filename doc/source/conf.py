@@ -37,10 +37,23 @@ branch_name = "main" if __version__.endswith("dev0") else f"v{__version__[0]}"
 html_logo = pyansys_logo_black
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
+html_short_title = html_title = project  # necessary for proper breadcrumb title
+html_context = {
+    "github_user": "pyansys",
+    "github_repo": "actions",
+    "github_version": "main",
+    "doc_path": "doc/source",
+}
+
 
 # Specify the location of your GitHub repo
 html_theme_options = {
     "github_url": "https://github.com/pyansys/actions",
+    "use_edit_page_button": True,
+    "additional_breadcrumbs": [
+        ("PyAnsys", "https://docs.pyansys.com/"),
+        ("PyAnsys Developer’s Guide", "https://dev.docs.pyansys.com/"),
+    ],
     "switcher": {
         "json_url": f"https://{cname}/versions.json",
         "version_match": get_version_match(__version__),

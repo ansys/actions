@@ -8,17 +8,17 @@ runs:
 
     - name: "Get the prefix of the branch"
       env:
-        BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       if: github.ref_type == 'branch'
       shell: bash
       run: |
         branch_prefix=$(echo "${{ BRANCH_NAME }}" | cut -d '/' -f 1)
         echo "BRANCH_PREFIX=$branch_prefix" >> $
-        
+
     - name: Check branch name has slash
       shell: bash
       env:
-        BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       if: contains(env.BRANCH_NAME, '/') == false
       uses: pyansys/actions/_logging@main
       with:

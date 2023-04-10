@@ -274,12 +274,12 @@ runs:
         level: "INFO"
         message: >
           Generate the content for the announcement file. Place a copy of this
-          file in each one of outdated stable versions. 
+          file in each one of outdated stable versions.
 
     - name: "Generate the template content for the 'announcement.html' file"
       shell: bash
       run: |
-        cat > announcement.html <<'EOF'  
+        cat > announcement.html <<'EOF'
           <p>
             You are not viewing the most recent version of this documentation.
             The latest stable release is <a href="STABLE_URL">LATEST_STABLE_VERSION</a>

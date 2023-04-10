@@ -12,50 +12,50 @@ see each card below:
        :link: style-actions/index
        :link-type: doc
 
-        Style actions verify code and documentation.
+       Style actions verify code and documentation.
 
     .. grid-item-card:: :octicon:`tools` Tests actions
        :link: tests-actions/index
        :link-type: doc
 
-        Tests actions allow to run the test suite.
+       Tests actions allow to run the test suite.
 
     .. grid-item-card:: :octicon:`book` Docs actions
        :link: doc-actions/index
        :link-type: doc
 
-        Documentation actions build and deploy the documentation.
+       Documentation actions build and deploy the documentation.
 
     .. grid-item-card:: :octicon:`key` Licence actions
        :link: licenses-actions/index
        :link-type: doc
 
-        License actions allows to verify that the project's dependencies only contain valid licenses.
+       License actions allows to verify that the project's dependencies only contain valid licenses.
 
 
     .. grid-item-card:: :octicon:`package` Build actions
        :link: build-actions/index
        :link-type: doc
 
-        Build actions allow for building artifacts.
+       Build actions allow for building artifacts.
 
     .. grid-item-card:: :octicon:`eye` Release actions
        :link: release-actions/index
        :link-type: doc
 
-        Release actions provide for releasing the various artifacts.
+       Release actions provide for releasing the various artifacts.
 
     .. grid-item-card:: :octicon:`archive` Housekeeping actions
        :link: housekeeping-actions/index
        :link-type: doc
 
-        Housekeeping actions provide for general repository operations such as package cleanup.
+       Housekeeping actions provide for general repository operations such as package cleanup.
 
     .. grid-item-card:: :octicon:`archive` Other actions
        :link: other-actions/index
        :link-type: doc
 
-        Other actions that provide additional checks and capabilities.
+       Other actions that provide additional checks and capabilities.
 
 .. toctree::
    :hidden:

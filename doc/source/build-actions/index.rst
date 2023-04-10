@@ -9,7 +9,7 @@ Build library action
 --------------------
 
 .. jinja:: build-library
-    
+
     {{ description }}
 
     {{ inputs_table }}
@@ -21,8 +21,8 @@ Build library action
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 
@@ -43,8 +43,8 @@ Build wheelhouse action
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 
@@ -65,8 +65,8 @@ Build CI wheels action
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 

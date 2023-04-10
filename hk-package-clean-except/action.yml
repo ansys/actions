@@ -2,7 +2,7 @@ name: "Clean all package versions except certain tags."
 description: "Action cleaning up all package versions published at ghcr.io except for certain tags."
 
 inputs:
-  package-name: 
+  package-name:
     description: "Package name."
     required: true
     type: string
@@ -51,29 +51,29 @@ runs:
       shell: bash
       run: |
         cat > clean-except.py << 'EOF'
-        
+
         from datetime import datetime, timedelta
         import os
-        
+
         from ghapi.all import GhApi
         from ghapi.core import print_summary
         from ghapi.page import paged
-        
+
         PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-        
+
         org_str = "${{ inputs.package-org }}"
         pck_str = "${{ inputs.package-name }}"
         last_days_str = "${{ inputs.allow-last-days }}"
         valid_tags_str = "${{ inputs.tags-kept }}"
-        
+
         last_days = int(last_days_str) if last_days_str != "" else None
         valid_tags = [x.strip() for x in valid_tags_str.split(",")]
-        
+
         api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
-        
+
         if last_days:
             delete_before_date = datetime.now() - timedelta(days=last_days)
-        
+
         paged_packages = paged(
             api.packages.get_all_package_versions_for_package_owned_by_org,
             org=org_str,
@@ -82,7 +82,7 @@ runs:
             state="active",
             per_page=100,
         )
-        
+
         # Loop over all pages
         for page in paged_packages:
             for package in page:
@@ -93,7 +93,7 @@ runs:
                     < delete_before_date.timestamp()
                 ):
                     continue
-                
+
                 # Check if the given package has valid tags
                 package_tags = package.metadata.container.tags
                 delete = True
@@ -101,7 +101,7 @@ runs:
                     if tag in valid_tags:
                         delete = False
                         break
-                
+
                 # In case it should, delete it
                 if delete:
                     print(f"Deleting package: {package}")
@@ -111,7 +111,7 @@ runs:
                         package_type="container",
                         package_version_id=package["id"],
                     )
-        
+
         EOF
         cat clean-except.py
 
