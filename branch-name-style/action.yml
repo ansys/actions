@@ -15,7 +15,7 @@ runs:
       if: github.ref_type == 'branch'
       run: |
         branch_name=${{ github.head_ref || github.ref_name }}
-        branch_prefix=$(echo "${{ branch_name }}" | cut -d '/' -f 1)
+        branch_prefix=$(echo "$branch_name" | cut -d '/' -f 1)
         echo "BRANCH_PREFIX=$branch_prefix" >> $GITHUB_ENV
 
     - name: "Check if branch has a valid prefix"
