@@ -3,3 +3,5 @@ commit-style:
   runs-on: ubuntu-latest
   steps:
     - uses: pyansys/actions/commit-style@{{ branch }}
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
