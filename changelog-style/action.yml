@@ -1,0 +1,26 @@
+name: >
+  Changelog style
+
+description: >
+    Check changelog style using `towncrier <https://github.com/twisted/towncrier>`_. 
+    This action checks if the entry for towncrier is valid.
+
+inputs:
+
+  # Required inputs
+
+  token:
+    description: >
+      The token value used to read the changelog fragment in the pull-request.
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Check if towncrier change log entry is correct"
+      uses: pllim/actions-towncrier-changelog@main
+      with:
+        env:
+          GITHUB_TOKEN: ${{ inputs.token }}
