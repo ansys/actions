@@ -7,14 +7,13 @@ description: >
 
 runs:
   using: "composite"
-
   steps:
 
     - name: "Get the prefix of the branch"
       shell: bash
       if: github.ref_type == 'branch'
       run: |
-        branch_name=${{ github.head_ref || github.ref_name }}
+        branch_name=${{ github.head_ref || github.ref }}
         branch_prefix=$(echo "$branch_name" | cut -d '/' -f 1)
         echo "BRANCH_PREFIX=$branch_prefix" >> $GITHUB_ENV
 
@@ -22,19 +21,13 @@ runs:
       shell: bash
       if: github.ref_type == 'branch'
       run: |
+        if [[ ${{ env.BRANCH_NAME }} != */* ]]; then
+          echo "\033[1;91m[ERROR]: Branch name ${{ env.BRANCH_NAME }} does not contain a prefix and a backslash." >&2
+          exit 1
+        fi
 
-        - name: "Raise and error if branch does not have a prefix"
-          uses: pyansys/actions/_logging@main
-          if: contains(env.BRANCH_NAME, '/') == false
-          with:
-            level: "ERROR"
-            message: >
-              "Branch name ${{ env.BRANCH_NAME }} does not contain a prefix and a backslash."
-
-        - name: "Check branch prefix naming"
-          uses: pyansys/actions/_logging@main
-          if: !contains(fromJson('["fix", "feat", "junk", "maint", "doc", "no-ci", "test", "release"]'), env.BRANCH_PREFIX)
-          with:
-            level: "ERROR"
-            message: >
-              "Branch name ${{ env.BRANCH_PREFIX }} prefix is not valid."
+        valid_prefixes=("fix" "feat" "junk" "maint" "doc" "no-ci" "test" "release")
+        if [[ ! " ${valid_prefixes[@]} " =~ " ${env.BRANCH_PREFIX} " ]]; then
+          echo "\033[1;91m[ERROR]: Branch name ${{ env.BRANCH_PREFIX }} prefix is not valid." >&2
+          exit 1
+        fi
