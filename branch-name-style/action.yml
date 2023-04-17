@@ -27,7 +27,7 @@ runs:
         fi
 
         valid_prefixes=("fix" "feat" "junk" "maint" "doc" "no-ci" "test" "release")
-        if [[ ! " ${valid_prefixes[@]} " =~ " ${env.BRANCH_PREFIX} " ]]; then
+        if [[ ! ${valid_prefixes[@]} =~ ${{ env.BRANCH_PREFIX }} ]]; then
           echo "\033[1;91m[ERROR]: Branch name ${{ env.BRANCH_PREFIX }} prefix is not valid." >&2
           exit 1
         fi
