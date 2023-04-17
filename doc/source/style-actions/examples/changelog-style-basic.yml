@@ -1,0 +1,5 @@
+changelog-style:
+  name: "Check valid changelog entry"
+  runs-on: ubuntu-latest
+  steps:
+      uses: pyansys/actions/changelog-style@{{ branch }}
