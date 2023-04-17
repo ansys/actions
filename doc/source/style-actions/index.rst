@@ -46,7 +46,7 @@ Doc style action
     {% endfor %}
 
 
-Commit sytle action
+Commit style action
 -------------------
 
 .. jinja:: commit-style
