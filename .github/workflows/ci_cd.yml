@@ -79,17 +79,25 @@ jobs:
             - [maintenance](https://github.com/pyansys/actions/pulls?q=label%3Amaintenance+)
             - [release](https://github.com/pyansys/actions/pulls?q=label%3Arelease+)
 
+  commit-and-branch-style:
+    name: "Commit and branch style"
+    runs-on: ubuntu-latest
+    needs: labeler
+    steps:
+      - uses: pyansys/actions/commit-style@main
+      - uses: pyansys/actions/branch-name-style@main
+
   commit-style:
     name: "Commit style"
     runs-on: ubuntu-latest
     needs: labeler
     steps:
-      - uses: pyansys/actions/check-pr-conventional-name@main
+      - uses: pyansys/actions/commit-style@main
 
   code-style:
     name: "Code style"
     runs-on: ubuntu-latest
-    needs: commit-style
+    needs: commit-and-branch-style
     steps:
       - name: "Run code style checks"
         uses: pyansys/actions/code-style@main
@@ -108,7 +116,7 @@ jobs:
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
-    needs: commit-style
+    needs: commit-and-branch-style
     steps:
       - name: "Run documentation style checks"
         uses: pyansys/actions/doc-style@main
