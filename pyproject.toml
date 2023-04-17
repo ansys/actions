@@ -1,0 +1,4 @@
+[tool.towncrier]
+    directory = "doc/source/changelog"
+    filename = "doc/source/changelog/index.rst"
+    underlines = "#=-"
