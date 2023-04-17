@@ -29,3 +29,7 @@
 - name: release
   description: Anything related to an incoming release
   color: ffffff
+
+- name: skip-changelog-checks
+  description: Skip the checks for verifying a valid entry for the changelog
+  color: e99695
