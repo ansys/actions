@@ -11,8 +11,8 @@ inputs:
 
   token:
     description: >
-      The token value used to access repository data to add comments and
-      suggestions.
+      The token value used to authorize Vale to add comments and suggestions in
+      the file section.
     required: true
     type: string
 
