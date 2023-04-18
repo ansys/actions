@@ -112,6 +112,11 @@ runs:
         packages: ${{ env.NEEDED_DEPS }}
         version: 1.0
 
+    - name: "Update apt-get"
+      shell: bash
+      run: |
+        sudo apt-get update
+
     - name: "Install system dependencies"
       shell: bash
       run: |
