@@ -195,6 +195,11 @@ runs:
         name: ${{ inputs.doc-artifact-name }}
         path: version/${{ env.VERSION }}
 
+    - name: "Update apt-get"
+      shell: bash
+      run: |
+        sudo apt-get update
+
     - name: "Decompress artifact content"
       shell: bash
       if: inputs.decompress-artifact == 'true'
