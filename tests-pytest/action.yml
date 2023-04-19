@@ -89,6 +89,7 @@ runs:
     - name: "Update apt-get"
       shell: bash
       run: |
+        apt update && apt install sudo
         sudo apt-get update
 
     - name: "Install X Virtual Frame Buffer"
