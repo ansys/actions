@@ -21,7 +21,7 @@ runs:
   steps:
 
     - name: "Check pull-request title follows conventional commits style"
-      if: ${{ github.event_name == 'pull_request_target' }} or ${{ github.event_name == 'pull_request' }}
+      if: ${{ (github.event_name == 'pull_request_target') || (github.event_name == 'pull_request') }}
       uses: amannn/action-semantic-pull-request@v5
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
