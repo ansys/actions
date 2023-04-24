@@ -4,4 +4,4 @@ commit-style:
   steps:
     - uses: pyansys/actions/commit-style@{{ branch }}
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
