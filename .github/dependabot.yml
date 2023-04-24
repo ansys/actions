@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "maint"
+      prefix: "build"
     labels:
       - "maintenance"
       - "dependencies"
@@ -15,6 +15,6 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "maint"
+      prefix: "build"
     labels:
       - "maintenance"
