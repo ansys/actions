@@ -90,6 +90,7 @@ runs:
       shell: bash
       if: inputs.requires-xvfb == 'true'
       run: |
+        sudo apt-get update
         sudo apt-get install xvfb
 
     - name: "Check if requirements.txt file exists"
