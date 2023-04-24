@@ -21,7 +21,7 @@ runs:
         fi
 
         branch_prefix=$(echo "$branch_name" | cut -d '/' -f 1)
-        valid_prefixes=("fix" "feat" "junk" "maint" "doc" "no-ci" "test" "testing" "release")
+        valid_prefixes=("fix" "feat" "junk" "maint" "doc" "no-ci" "test" "testing" "release" "dependabot")
 
         if [[ ! ${valid_prefixes[@]} =~ $branch_prefix ]]; then
           echo "\033[1;91m[ERROR]: Branch name $branch_prefix prefix is not valid." >&2
