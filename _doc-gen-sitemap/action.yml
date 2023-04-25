@@ -1,0 +1,78 @@
+name: >
+  Doc deploy dev action
+
+description: |
+  This action deploys the desired HTML documentation artifact containing the
+  development version of a library to the specified branch of a repository. By
+  default, the ``gh-pages`` branch of the current repository is assumed.
+
+  .. note::
+
+      If your project is using ``pyansys/actions@v3`` or lower and you would
+      like to update to this version of the actions, see the `guidelines for
+      migrating to the latest multi-version documentation layout
+      <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-pyansys-actions-v3-to-pyansys-actions-v4>`_ .
+
+inputs:
+
+  # Required inputs
+
+  cname:
+    description: >
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
+
+  html-directory:
+    description: >
+      Name of the directory containing the HTML files of the website.
+    required: true
+    type: string
+
+
+runs:
+  using: "composite"
+  steps:
+
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generating the XML sitemap.
+
+    - name: "Generate the sitemap.xml file"
+      shell: bash
+      run: |
+        # Declare the website name and the output file for the sitemap
+        website="https://www.${{ inputs.cname }}"
+        input_dir=${{ inputs.html-directory }}
+        output="sitemap.xml"
+
+        # Add URLs to the sitemap
+        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $output
+        echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> $output
+        
+        # Add homepage
+        echo "  <url>" >> $output
+        echo "    <loc>$website</loc>" >> $output
+        echo "    <lastmod>$(date +%Y-%m-%dT%H:%M:%S+00:00)</lastmod>" >> $output
+        echo "    <changefreq>daily</changefreq>" >> $output
+        echo "    <priority>1.0</priority>" >> $output
+        echo "  </url>" >> $output
+        
+        # Add other URLs
+        while IFS= read -r -d '' file; do
+          url=${file#$input_dir}
+          url=${url%.html}
+          echo "  <url>" >> $output
+          echo "    <loc>$website$url</loc>" >> $output
+          echo "    <lastmod>$(date +%Y-%m-%dT%H:%M:%S+00:00)</lastmod>" >> $output
+          echo "    <changefreq>weekly</changefreq>" >> $output
+          echo "    <priority>0.5</priority>" >> $output
+          echo "  </url>" >> $output
+        done < <(find "$input_dir" -type f -name "*.html" -print0)
+        
+        # Close the sitemap
+        echo "</urlset>" >> $output
