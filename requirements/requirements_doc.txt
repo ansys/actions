@@ -1,6 +1,6 @@
 ansys-sphinx-theme==0.9.8
 pyyaml==6.0.0
-Sphinx==6.2.0
+Sphinx==6.2.1
 sphinx-copybutton==0.5.2
 sphinx-jinja==2.0.2
 sphinx_design==0.4.1
