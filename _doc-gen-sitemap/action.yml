@@ -53,7 +53,7 @@ runs:
         # Add URLs to the sitemap
         echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $output
         echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> $output
-        
+
         # Add homepage
         echo "  <url>" >> $output
         echo "    <loc>$website</loc>" >> $output
@@ -61,7 +61,7 @@ runs:
         echo "    <changefreq>daily</changefreq>" >> $output
         echo "    <priority>1.0</priority>" >> $output
         echo "  </url>" >> $output
-        
+
         # Add other URLs
         while IFS= read -r -d '' file; do
           url=${file#$input_dir}
@@ -73,6 +73,6 @@ runs:
           echo "    <priority>0.5</priority>" >> $output
           echo "  </url>" >> $output
         done < <(find "$input_dir" -type f -name "*.html" -print0)
-        
+
         # Close the sitemap
         echo "</urlset>" >> $output
