@@ -363,6 +363,21 @@ runs:
       with:
         level: "INFO"
         message: >
+          Generate the site-map for the latest development or stable
+          documentation.
+
+    - name: "Generate 'sitemap.xml' file"
+      uses: pyansys/actions/_doc-gen-sitemap
+      with:
+        cname: ${{ inputs.cname }}
+        html-directory: version/stable
+
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
           For deploying the documentation, a GitHub token or a deployment token
           is required. The GitHub token is used when deploying to the current
           repository while the deployment token is used to deploy to an external

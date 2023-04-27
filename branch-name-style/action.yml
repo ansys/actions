@@ -11,7 +11,7 @@ runs:
 
     - name: "Check if branch has a valid prefix"
       shell: bash
-      if: github.ref_type == 'branch'
+      if: ${{ (github.ref != 'refs/heads/main') && (github.ref_type == 'branch') }}
       run: |
         branch_name=${{ github.head_ref || github.ref }}
 
@@ -21,7 +21,7 @@ runs:
         fi
 
         branch_prefix=$(echo "$branch_name" | cut -d '/' -f 1)
-        valid_prefixes=("fix" "feat" "junk" "maint" "doc" "no-ci" "test" "release")
+        valid_prefixes=("fix" "feat" "junk" "maint" "doc" "docs" "no-ci" "test" "testing" "release" "dependabot")
 
         if [[ ! ${valid_prefixes[@]} =~ $branch_prefix ]]; then
           echo "\033[1;91m[ERROR]: Branch name $branch_prefix prefix is not valid." >&2
