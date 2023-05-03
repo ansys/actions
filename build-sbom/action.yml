@@ -1,0 +1,89 @@
+name: >
+  Create a software bill of materials using cyclonedx
+
+description: >
+  Create a software bill of materials using cyclonedx and store it as a
+  build artifact. It is assumed that the source code is written in Python.
+
+inputs:
+  # Required inputs
+
+  name:
+    description: >
+      Name of the software bill of materials file.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  format:
+    description: >
+      Format of the software bill of materials file, either ``json`` or ``xml``.
+    required: false
+    default: "json"
+    type: string
+
+  cyclonedx-args:
+    description: >
+      Arguments to pass to the ``cyclonedx-py`` command. See https://github.com/CycloneDX/cyclonedx-python
+      for more information.
+    required: false
+    default: ""
+    type: string
+
+  checkout:
+    description: >
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
+
+  python-version:
+    description: >
+      Python version to use.
+    default: "3.10"
+    required: false
+    type: string
+
+  use-python-cache:
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v3
+      if: ${{ inputs.checkout == 'true' }}
+
+    - name: "Set up Python"
+      uses: pyansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+
+    - name: "Update pip"
+      shell: bash
+      run: python -m pip install -U pip
+
+    - name: "Install cyclonedx"
+      shell: bash
+      run: python -m pip install cyclonedx-bom
+
+    - name: "Create software bill of materials"
+      shell: bash
+      run: |
+        cyclonedx-py -o sbom --format ${{ inputs.format }} ${{ inputs.cyclonedx-args }}
+
+    - name: "Upload software bill of materials to GitHub artifacts"
+      uses: actions/upload-artifact@v3
+      with:
+        name: sbom
+        path: ${{ inputs.name }}.zip
+        retention-days: 7

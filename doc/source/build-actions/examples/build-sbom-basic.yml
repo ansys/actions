@@ -1,0 +1,9 @@
+build-sbom:
+  name: "Build a software bill of materials"
+  runs-on: ubuntu-latest
+  steps:
+    - name: "Build SBOM"
+      uses: pyansys/actions/build-sbom@{{ branch }}
+      with:
+        name: "sbom.json"
+        format: "json"
