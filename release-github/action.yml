@@ -61,7 +61,7 @@ runs:
     - name: "Generate a distribution folder that will contain the desired artifacts"
       shell: bash
       run: mkdir -p dist
-  
+
     # ------------------------------------------------------------------------
 
     - uses: pyansys/actions/_logging@main

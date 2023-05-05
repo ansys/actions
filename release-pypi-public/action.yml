@@ -53,7 +53,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: "Release to the public PyPI index"
       uses: pyansys/actions/_release-pypi@main
       with:

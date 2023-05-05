@@ -19,8 +19,8 @@ Code style action
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 
@@ -40,9 +40,47 @@ Doc style action
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 
 
+Commit style action
+-------------------
+
+.. jinja:: commit-style
+
+    {{ description }}
+
+    Examples
+    ++++++++
+
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
+
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
+
+    {% endfor %}
+
+
+Branch name style action
+------------------------
+
+.. jinja:: branch-name-style
+
+    {{ description }}
+
+    Examples
+    ++++++++
+
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
+
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
+
+    {% endfor %}

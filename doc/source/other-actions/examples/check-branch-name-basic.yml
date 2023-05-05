@@ -1,6 +1,0 @@
-check-branch-name:
-  name: "Check if branch name follows PyAnsys standards"
-  runs-on: ubuntu-latest
-  steps:
-    - name: "Check if branch name follows PyAnsys standards"
-      uses: pyansys/actions/check-branch-name@{{ branch }}

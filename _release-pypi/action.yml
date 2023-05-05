@@ -55,7 +55,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
       with:

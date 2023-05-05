@@ -67,11 +67,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
       if: ${{ inputs.checkout == 'true' }}
-  
+
     - name: "Set up Python"
       uses: pyansys/actions/_setup-python@main
       with:
@@ -81,7 +81,7 @@ runs:
     - name: "Update pip"
       shell: bash
       run: python -m pip install -U pip
-  
+
     - name: "Install Python library"
       shell: bash
       run: python -m pip install .
@@ -90,6 +90,7 @@ runs:
       shell: bash
       if: inputs.requires-xvfb == 'true'
       run: |
+        sudo apt-get update
         sudo apt-get install xvfb
 
     - name: "Check if requirements.txt file exists"
@@ -111,7 +112,7 @@ runs:
       shell: bash
       if: env.EXISTS_TESTS_REQUIREMENTS == 'false'
       run: python -m pip install .[tests]
-    
+
     - name: "Executing test suite without using xvfb"
       if: inputs.requires-xvfb == 'false'
       shell: bash

@@ -8,7 +8,7 @@ description: >
   to quickly identify those in the GitHub actions logs.
 
 inputs:
-   
+
   # Required inputs
 
   level:
@@ -27,7 +27,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: "Report error message"
       shell: bash
       if: ${{ inputs.level == 'ERROR' }}

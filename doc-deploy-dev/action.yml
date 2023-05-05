@@ -26,7 +26,7 @@ inputs:
   token:
     description: >
       Required password, key or token with the correct credentials for deploying the
-      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token is
+      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token
       is enough. For workflows deploying to other repositories, `generate and
       use a token with writing access
       <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
@@ -136,6 +136,11 @@ runs:
         name: ${{ inputs.doc-artifact-name }}
         path: version/dev
 
+    - name: "Update apt-get"
+      shell: bash
+      run: |
+        sudo apt-get update
+
     - name: "Decompress artifact content"
       shell: bash
       if: inputs.decompress-artifact == 'true'
@@ -187,10 +192,10 @@ runs:
       shell: bash
       run: |
         if $(grep -q "(stable)" versions.json)
-        then 
+        then
           echo "Redirecting to the latest stable version..."
           echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
-        else 
+        else
           echo "Redirecting to the latest development version..."
           echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/dev/" >> $GITHUB_ENV
         fi

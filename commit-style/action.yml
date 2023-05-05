@@ -1,0 +1,27 @@
+name: >
+  Commit style
+
+description: >
+  Action that checks if the title of the pull request is following the
+  conventional commits standard.
+
+inputs:
+
+  # Required inputs
+
+  token:
+    description: >
+      The token value used to authorize Vale to add comments and suggestions in
+      the file section.
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Check pull-request title follows conventional commits style"
+      if: ${{ (github.event_name == 'pull_request_target') || (github.event_name == 'pull_request') }}
+      uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
