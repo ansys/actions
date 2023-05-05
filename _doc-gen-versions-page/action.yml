@@ -1,5 +1,5 @@
 name: >
-  Doc deploy dev action
+  Documentation generator for the versions page
 
 description: |
   This action generates the ``version/index.html`` page. This page collects all
@@ -44,7 +44,7 @@ runs:
           sed -i "s|_static|dev/_static|g" version/index.html
         fi
 
-    - name: "Collect all released versions and update teh 'version/index.html' file"
+    - name: "Collect all released versions and update the 'version/index.html' file"
       shell: bash
       run: |
 
