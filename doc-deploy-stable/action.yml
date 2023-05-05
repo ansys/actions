@@ -253,6 +253,16 @@ runs:
 
         cat versions.json
 
+    - name: "Add an 'Older versions' item if required"
+      shell: bash
+      run: |
+        num_versions=$(jq length versions.json)
+
+        if [ $num_elements -gt ${{ inputs.render-last }} ]; then
+          cname=${{ inputs.cname }}
+          new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/index.html\" }"
+          jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
+
     - name: "Convert the first stable version into the 'stable' one"
       shell: bash
       run: |
@@ -342,6 +352,20 @@ runs:
       shell: bash
       run: |
           cat index.html
+
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Copy the 'version/stable/index.html' to 'version/index.html' file. If
+          no stable release is available, copy the 'dev/index.html' instead.
+          Update all references to point to 'stable/_static' or 'dev/_static'.
+
+    - uses: pyansys/actions/_doc-gen-versions-index@main
+      with:
+        cname: ${{ inputs.cname }}
 
     # ------------------------------------------------------------------------
 

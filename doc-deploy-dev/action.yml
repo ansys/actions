@@ -220,6 +220,20 @@ runs:
       with:
         level: "INFO"
         message: >
+          Copy the 'version/stable/index.html' to 'version/index.html' file. If
+          no stable release is available, copy the 'dev/index.html' instead.
+          Update all references to point to 'stable/_static' or 'dev/_static'.
+
+    - uses: pyansys/actions/_doc-gen-versions-index@main
+      with:
+        cname: ${{ inputs.cname }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: pyansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
           Create the '.nojekyll' and 'CNAME' file with the desired values
 
     - name: "Create '.nojekyll' and 'CNAME' files"
