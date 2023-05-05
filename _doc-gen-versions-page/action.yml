@@ -1,0 +1,80 @@
+name: >
+  Doc deploy dev action
+
+description: |
+  This action generates the ``version/index.html`` page. This page collects all
+  the releases available for a library. This feature allows to not overload the
+  content of the dropdown button for the multi-version.
+
+  .. warning::
+
+      This is a private action and its meant to be reused by ``doc-deploy-*``
+      actions.
+
+
+inputs:
+
+  # Required inputs
+
+  cname:
+    description: >
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Use the latest 'index.html' as baseline for the versions page"
+      shell: bash
+      run: |
+        if [[ -f 'version/stable/index.html' ]]; then
+          cp version/stable/index.html version/index.html
+        else
+          cp version/dev/index.html version/index.html
+        fi
+
+    - name: "Update all references to point to 'stable/_static' or 'dev/_static'"
+      shell: bash
+      run: |
+        if [[ -f 'version/stable/index.html' ]]; then
+          sed -i "s|_static|stable/_static|g" version/index.html
+        else
+          sed -i "s|_static|dev/_static|g" version/index.html
+        fi
+
+    - name: "Collect all released versions and update teh 'version/index.html' file"
+      shell: bash
+      run: |
+
+        # Move inside of the version folder
+        cd version
+
+        # Create an array of folder names
+        folders=(*/)
+        folders=("${folders[@]%/}")
+        
+        # Get the absolute path of the current directory
+        abs_path=$(pwd)
+        
+        # Start building the HTML table
+        table="<table class=\"table\"><thead><tr><th>Version</th><th>URL</th></tr></thead><tbody>"
+        
+        # Loop through the folder array and add each folder name and URL to the table
+        for folder in "${folders[@]}"; do
+          url="https://${{ inputs.cname }}/version/${folder}"
+          table+="<tr><td>${folder}</td><td>${url}</td></tr>"
+        done
+        
+        # Close the table
+        table+="</tbody></table>"
+        
+        # Replace the h1 element with "Versions"
+        sed -i 's/<h1>.*<\/h1>/<h1>Versions<\/h1>/' index.html
+        
+        # Add a paragraph describing the table
+        paragraph="<p>This table lists all versions released for the project:</p>"
+        
+        # Insert the paragraph and table into the HTML article after the h1 tag
+        sed -i "/<h1>/a ${paragraph}\n${table}" index.html

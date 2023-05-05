@@ -349,7 +349,13 @@ runs:
       with:
         level: "INFO"
         message: >
-          Copy the '
+          Copy the 'version/stable/index.html' to 'version/index.html' file. If
+          no stable release is available, copy the 'dev/index.html' instead.
+          Update all references to point to 'stable/_static' or 'dev/_static'.
+
+    - uses: pyansys/actions/_doc-gen-versions-index@main
+      with:
+        cname: ${{ inputs.cname }}
 
     # ------------------------------------------------------------------------
 
