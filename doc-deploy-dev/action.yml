@@ -242,115 +242,37 @@ runs:
           sed -i "s|_static|dev/_static|g" version/index.html
         fi
 
-    - name: "Declare the script to read the 'versions.json' file"
+    - name: "Collect all released versions and update teh 'version/index.html' file"
       shell: bash
       run: |
-        cat > script.html <<'EOF'  
-        <script>
 
-          /**
-           * Returns an array of directories in the specified folder path.
-           *
-           * @param {string} folderPath - The path of the folder to retrieve directories from.
-           * @returns {Array} An array of directory names.
-           * @throws {TypeError} If the folderPath parameter is not a string.
-           * @throws {Error} If there is an issue with the fetch request or parsing the response.
-           */
-          async function getDirectories(folderPath) {
-            const response = await fetch(folderPath);
-            const text = await response.text();
-            const lines = text.split('\n');
-            return lines.filter((line) => line.endsWith('/')).map((line) => line.slice(0, -1));
-          }
-
-          /**
-           * Removes the sidebar from the current page.
-           */
-          function removeSidebarFromPage() {
-            const sidebar = document.querySelector(
-              "body > div.bd-container.container-xl > div > div.bd-sidebar-secondary.d-none.d-xl-block.col-xl-2.bd-toc"
-            );
-            sidebar.parentNode.removeChild(sidebar);
-          }
-
-          /**
-           * Creates a table element with class 'table' and adds a row for each
-           * version in the specified * array of directory names. Each row has two
-           * cells: one for the version name, and one for the * URL of the page with
-           * the version name appended to the end of the current URL.
-           *
-           * @param {string[]} directories - An array of directory names to use as version names.
-           * @returns {HTMLTableElement} A table element with class 'table', containing a row for each version in the specified array.
-           */
-          function createVersionsTableFromDirectories(directories) {
-            // Create a table with the class 'table'
-            const table = document.createElement('table')
-            table.classList.add('table')
-
-            // Create a table row for the headers
-            const headerRow = table.insertRow();
-            
-            // Create the 'Version' and 'URL' headers
-            const versionHeader = document.createElement('th');
-            const urlHeader = document.createElement('th');
-
-            versionHeader.textContent = 'Version';
-            urlHeader.textContent = 'URL';
-
-            headerRow.appendChild(versionHeader);
-            headerRow.appendChild(urlHeader);
-
-            // Add data rows to the table
-            directories.forEach(version => {
-              const row = table.insertRow();
-              const versionCell = row.insertCell();
-              const urlCell = row.insertCell();
-              versionCell.textContent = version;
-
-              // Create the URL for the version
-              const rawUrl = window.location.href;
-              const parts = url.split("/");
-              parts.pop();
-              const versionUrl = parts.join("/");
-              urlCell.textContent = versionUrl;
-            });
-
-            return table;
-          }
-
-          /**
-           * Sets the content of an article element with the given title and table.
-           *
-           * @param {string} title - The title of the article to be displayed.
-           * @param {string} table - The HTML table to be included in the article.
-           *
-           * @description
-           * This function creates an HTML h1 element with the given title and a
-           * div element with the given table. * It then concatenates the two
-           * elements together and sets the innerHTML of the article element on
-           * the current page * with the concatenated content.
-           */
-          function setArticleContent(title, table) {
-              const articleTitle = <h1>${title}</h1>
-              const articleTable = <div id="versions-table">${table}</div>
-              const articleContent = articleTitle + articleTable
-              document.querySelector('article').innerHTML = articleContent
-          }
-
-          // Create an HTML table with all the version numbers and their links
-          const thisFolder = "."
-          const directories = getDirectories(thisFolder)
-          const versionsTable = createVersionsTableFromDirectories(directories)
-
-          // Update the title of the document and the content of the article
-          document.title = "Versions"
-          setArticleContent("Documentation versions", versionsTable)
-
-          // Remove the left side bar
-          removeSidebarFromPage()
-
-        </script>
-        EOF
+        # Create an array of folder names
+        folders=(*/)
+        folders=("${folders[@]%/}")
+        
+        # Get the absolute path of the current directory
+        abs_path=$(pwd)
+        
+        # Start building the HTML table
+        table="<table class=\"table\"><thead><tr><th>Version</th><th>URL</th></tr></thead><tbody>"
+        
+        # Loop through the folder array and add each folder name and URL to the table
+        for folder in "${folders[@]}"; do
+          url="https://${{ inputs.cname }}/version/${folder}"
+          table+="<tr><td>${folder}</td><td>${url}</td></tr>"
+        done
+        
+        # Close the table
+        table+="</tbody></table>"
+        
+        # Replace the h1 element with "Versions"
+        sed -i 's/<h1>.*<\/h1>/<h1>Versions<\/h1>/' index.html
+        
+        # Add a paragraph describing the table
+        paragraph="<p>This table lists all versions released for the project:</p>"
+        
+        # Insert the paragraph and table into the HTML article after the h1 tag
+        sed -i "/<h1>/a ${paragraph}\n${table}" index.html
 
     # ------------------------------------------------------------------------
 
