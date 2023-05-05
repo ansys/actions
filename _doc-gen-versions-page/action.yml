@@ -54,27 +54,27 @@ runs:
         # Create an array of folder names
         folders=(*/)
         folders=("${folders[@]%/}")
-        
+
         # Get the absolute path of the current directory
         abs_path=$(pwd)
-        
+
         # Start building the HTML table
         table="<table class=\"table\"><thead><tr><th>Version</th><th>URL</th></tr></thead><tbody>"
-        
+
         # Loop through the folder array and add each folder name and URL to the table
         for folder in "${folders[@]}"; do
           url="https://${{ inputs.cname }}/version/${folder}"
           table+="<tr><td>${folder}</td><td>${url}</td></tr>"
         done
-        
+
         # Close the table
         table+="</tbody></table>"
-        
+
         # Replace the h1 element with "Versions"
         sed -i 's/<h1>.*<\/h1>/<h1>Versions<\/h1>/' index.html
-        
+
         # Add a paragraph describing the table
         paragraph="<p>This table lists all versions released for the project:</p>"
-        
+
         # Insert the paragraph and table into the HTML article after the h1 tag
         sed -i "/<h1>/a ${paragraph}\n${table}" index.html
