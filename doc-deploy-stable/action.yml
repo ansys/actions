@@ -363,7 +363,7 @@ runs:
           no stable release is available, copy the 'dev/index.html' instead.
           Update all references to point to 'stable/_static' or 'dev/_static'.
 
-    - uses: pyansys/actions/_doc-gen-versions-index@main
+    - uses: pyansys/actions/_doc-gen-versions-page@main
       with:
         cname: ${{ inputs.cname }}
 
