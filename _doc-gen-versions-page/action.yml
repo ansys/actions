@@ -87,8 +87,7 @@ runs:
 
         # Update the content of the page with the versions
         html_tag = ${{ inputs.html-tag-content }}
-        sed -i 's/<${html_tag} .*>.*<\/${html_tag}>/<{$html_tag}><\/${html_tag}>/' $tmp_file
-        sed -i 's/<h1>.*<\/h1>/<h1>Versions<\/h1>/' index.html
+        sed -i 's#<$html_tag\b[^>]*>.*<\/$html_tag>#<$html_tag><h1>Versions</h1></$html_tag>#g' $tmp_file
         sed -i "/<h1>/a ${paragraph}\n${table}" index.html
 
         # Restore the style of the HTML file
