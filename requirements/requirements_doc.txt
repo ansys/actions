@@ -1,4 +1,4 @@
-ansys-sphinx-theme==0.9.8
+ansys-sphinx-theme==0.9.9
 pyyaml==6.0.0
 Sphinx==6.2.1 # BLOCKED BY sphinx-design - Cannot upgrade to Sphinx 7 for now
 sphinx-copybutton==0.5.2
