@@ -83,6 +83,7 @@ runs:
 
         # Convert the HTML into a temporary one-line document so 'sed' works as
         # desired
+        html_file="index.html"
         tmp_file="tmp_index.html"
         tr -d '\n\r' < $html_file > $tmp_file
 
