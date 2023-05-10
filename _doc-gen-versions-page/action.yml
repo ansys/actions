@@ -85,10 +85,14 @@ runs:
         # desired
         tr -d '\n\r' < $html_file > $tmp_file
 
+        # Retrieve the open and closing tags for the desired element
+        input_tag=${{ inputs.html-tag-content }}
+        close_tag=$(grep -o '<div\b[^>]*>' .$tmp_file | sed 's/<div\( [^>]*)\(.*\)>/\1/')
+        open_tag=$(grep -o '<$html_tag\b[^>]*>' $tmp_file)
+
         # Update the content of the page with the versions
-        html_tag = ${{ inputs.html-tag-content }}
-        sed -i 's#<$html_tag\b[^>]*>.*<\/$html_tag>#<$html_tag><h1>Versions</h1></$html_tag>#g' $tmp_file
-        sed -i "/<h1>/a ${paragraph}\n${table}" index.html
+        sed -i 's|$open_tag.*$close_tag|$open_tag<h1>Versions</h1>$close_tag|g' $tmp_file
+        sed -i "/<h1>/a ${paragraph}\n${table}" $tmp_file
 
         # Restore the style of the HTML file
         tidy -q -indent -ashtml -o $html_file $tmp_file
