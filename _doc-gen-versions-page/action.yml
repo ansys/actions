@@ -22,6 +22,14 @@ inputs:
     required: true
     type: string
 
+  html-tag-content:
+    description: >
+      Name of the unique HTML tag that comprises all the content of the article
+      or post.
+    required: true
+    type: string
+
+
 runs:
   using: "composite"
   steps:
@@ -70,11 +78,18 @@ runs:
         # Close the table
         table+="</tbody></table>"
 
-        # Replace the h1 element with "Versions"
-        sed -i 's/<h1>.*<\/h1>/<h1>Versions<\/h1>/' index.html
-
         # Add a paragraph describing the table
         paragraph="<p>This table lists all versions released for the project:</p>"
 
-        # Insert the paragraph and table into the HTML article after the h1 tag
+        # Convert the HTML into a temporary one-line document so 'sed' works as
+        # desired
+        tr -d '\n\r' < $html_file > $tmp_file
+
+        # Update the content of the page with the versions
+        html_tag = ${{ inputs.html-tag-content }}
+        sed -i 's/<${html_tag} .*>.*<\/${html_tag}>/<{$html_tag}><\/${html_tag}>/' $tmp_file
+        sed -i 's/<h1>.*<\/h1>/<h1>Versions<\/h1>/' index.html
         sed -i "/<h1>/a ${paragraph}\n${table}" index.html
+
+        # Restore the style of the HTML file
+        tidy -q -indent -ashtml -o $html_file $tmp_file

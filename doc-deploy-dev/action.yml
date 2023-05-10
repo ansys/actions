@@ -85,6 +85,15 @@ inputs:
     default: true
     type: string
 
+  html-tag-content:
+    description: >
+      Name of the unique HTML tag that comprises all the content of the article
+      or post.
+    required: false
+    default: 'article'
+    type: string
+
+
 runs:
   using: "composite"
   steps:
@@ -227,6 +236,7 @@ runs:
     - uses: pyansys/actions/_doc-gen-versions-page@main
       with:
         cname: ${{ inputs.cname }}
+        html-tag-content: ${{ inputs.html-tag-content }}
 
     # ------------------------------------------------------------------------
 
