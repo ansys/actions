@@ -83,7 +83,7 @@ runs:
                 if (
                     last_days
                     and datetime.strptime(package.created_at, PACKAGE_TIME_FORMAT).timestamp()
-                    < delete_before_date.timestamp()
+                    > delete_before_date.timestamp()
                 ):
                     continue
 
