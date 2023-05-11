@@ -59,9 +59,8 @@ runs:
         # Move inside of the version folder
         cd version
 
-        # Create an array of folder names
-        folders=(*/)
-        folders=("${folders[@]%/}")
+        # Create an array of folder names in reversed order
+        folders=($(find . -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort -r))
 
         # Get the absolute path of the current directory
         abs_path=$(pwd)
