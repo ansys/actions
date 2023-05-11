@@ -86,18 +86,15 @@ runs:
         # Declare the HTML file
         html_file="index.html"
 
-        # Create a <footer> element if it does not exist
-        sed -i '/<\/footer>/q' $html_file && sed -i '$s/<\/body>/<footer><\/footer><\/body>/' $html_file
-
         # Get the ID of the element hosting the content
         content_element_id=${{ inputs.content-element-id }}
-
+        
         # Declare the content of the script
-        script_content=$(cat <<'EOF'
+        script_content=$(cat <<"EOF"
         const element = document.getElementById("$content_element_id");
         element.innerHTML = "$content";
         EOF
         )
 
-        # Inject the versions script in the footer
-        sed -i '/<\/footer>/s/.*/&\n<script>$script_content<\/script>/' $html_file
+        # Inject the versions script in the head of the HTML page
+        sed -i '/<\/head>/s/.*/&\n<script>$script_content<\/head>/' $html_file
