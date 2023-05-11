@@ -22,9 +22,9 @@ inputs:
     required: true
     type: string
 
-  html-tag-content:
+  content-element-id:
     description: >
-      Name of the unique HTML tag that comprises all the content of the article
+      Identifier of the HTML tag that comprises all the content of the article
       or post.
     required: true
     type: string
@@ -78,24 +78,26 @@ runs:
         # Close the table
         table+="</tbody></table>"
 
-        # Add a paragraph describing the table
+        # Declare the content of the page
+        title="<h1>Versions</h1>"
         paragraph="<p>This table lists all versions released for the project:</p>"
+        content="${title}${paragraph}${table}"
 
-        # Convert the HTML into a temporary one-line document so 'sed' works as
-        # desired
+        # Declare the HTML file
         html_file="index.html"
-        tmp_file="tmp_index.html"
-        tr -d '\n\r' < $html_file > $tmp_file
 
-        # Retrieve the open and closing tags for the desired element
-        input_tag=${{ inputs.html-tag-content }}
-        close_tag=$(grep -o "<$input_tag\b[^>]*>" "$tmp_file" | sed 's/^<\([[:alnum:]]\{1,\}\)[^>]*>/<\/\1>/g')
-        open_tag=$(grep -o "<$html_tag\b[^>]*>" "$tmp_file")
+        # Create a <footer> element if it does not exist
+        sed -i '/<\/footer>/q' $html_file && sed -i '$s/<\/body>/<footer><\/footer><\/body>/' $html_file
 
-        # Update the content of the page with the versions
-        sed -i "s|$open_tag.*$close_tag|$open_tag<h1>Versions</h1>$close_tag$paragraph$table|g" "$tmp_file"
+        # Get the ID of the element hosting the content
+        content_element_id=${{ inputs.content-element-id }}
 
-        # Restore the style of the HTML file
-        sudo apt install tidy
-        tidy -q -indent -ashtml -o $html_file $tmp_file
-        rm -rf $tmp_file
+        # Declare the content of the script
+        script_content=$(cat <<'EOF'
+        const element = document.getElementById("$content_element_id");
+        element.innerHTML = "$content";
+        EOF
+        )
+
+        # Inject the versions script in the footer
+        sed -i '/<\/footer>/s/.*/&\n<script>$script_content<\/script>/' $html_file

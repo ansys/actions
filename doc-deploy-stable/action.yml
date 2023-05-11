@@ -93,12 +93,12 @@ inputs:
     default: true
     type: string
 
-  html-tag-content:
+  content-element-id:
     description: >
-      Name of the unique HTML tag that comprises all the content of the article
+      Identifier of the HTML tag that comprises all the content of the article
       or post.
     required: false
-    default: 'article'
+    default: 'main-content'
     type: string
 
 
@@ -375,7 +375,7 @@ runs:
     - uses: pyansys/actions/_doc-gen-versions-page@main
       with:
         cname: ${{ inputs.cname }}
-        html-tag-content: ${{ inputs.html-tag-content }}
+        content-element-id: ${{ inputs.content-element-id }}
 
     # ------------------------------------------------------------------------
 
