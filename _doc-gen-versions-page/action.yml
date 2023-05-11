@@ -67,12 +67,12 @@ runs:
         abs_path=$(pwd)
 
         # Start building the HTML table
-        table="<table class=\"table\"><thead><tr><th>Version</th><th>URL</th></tr></thead><tbody>"
+        table="<table class='table'><thead><tr><th>Version</th><th>URL</th></tr></thead><tbody>"
 
         # Loop through the folder array and add each folder name and URL to the table
         for folder in "${folders[@]}"; do
           url="https://${{ inputs.cname }}/version/${folder}"
-          table+="<tr><td>${folder}</td><td><a href="${url}">${url}</a></td></tr>"
+          table+="<tr><td>${folder}</td><td><a href='${url}'>${url}</a></td></tr>"
         done
 
         # Close the table
@@ -90,11 +90,12 @@ runs:
         content_element_id=${{ inputs.content-element-id }}
 
         # Declare the content of the script
-        script_content=$(cat <<"EOF"
+        script_content=$(cat <<EOF
         const element = document.getElementById("$content_element_id");
         element.innerHTML = "$content";
         EOF
         )
 
         # Inject the versions script in the head of the HTML page
-        sed -i '/<\/head>/s/.*/&\n<script>$script_content<\/head>/' $html_file
+        escaped_script_content=$(echo "$script_content" | tr '\n' ' ' | sed 's/[\/&]/\\&/g')
+        sed -i "/<\/footer>/s/.*/&\n<script>$escaped_script_content<\/script>/" "$html_file"
