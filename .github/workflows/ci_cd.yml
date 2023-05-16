@@ -10,8 +10,8 @@ on:
 
 env:
   MAIN_PYTHON_VERSION: '3.10'
-  DOCUMENTATION_CNAME: 'actions.docs.pyansys.com'
-  test-library-name: 'pyansys-actions'
+  DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
+  test-library-name: 'ansys-actions'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -72,12 +72,12 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             Please add one of the following labels to add this contribution to the Release Notes :point_down:
-            - [bug](https://github.com/pyansys/actions/pulls?q=label%3Abug+)
-            - [documentation](https://github.com/pyansys/actions/pulls?q=label%3Adocumentation+)
-            - [enhancement](https://github.com/pyansys/actions/pulls?q=label%3Aenhancement+)
-            - [good first issue](https://github.com/pyansys/actions/pulls?q=label%3Agood+first+issue)
-            - [maintenance](https://github.com/pyansys/actions/pulls?q=label%3Amaintenance+)
-            - [release](https://github.com/pyansys/actions/pulls?q=label%3Arelease+)
+            - [bug](https://github.com/ansys/actions/pulls?q=label%3Abug+)
+            - [documentation](https://github.com/ansys/actions/pulls?q=label%3Adocumentation+)
+            - [enhancement](https://github.com/ansys/actions/pulls?q=label%3Aenhancement+)
+            - [good first issue](https://github.com/ansys/actions/pulls?q=label%3Agood+first+issue)
+            - [maintenance](https://github.com/ansys/actions/pulls?q=label%3Amaintenance+)
+            - [release](https://github.com/ansys/actions/pulls?q=label%3Arelease+)
 
   commit-and-branch-style:
     name: "Commit and branch style"
@@ -85,11 +85,11 @@ jobs:
     needs: labeler
     steps:
 
-      - uses: pyansys/actions/commit-style@main
+      - uses: ansys/actions/commit-style@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: pyansys/actions/branch-name-style@main
+      - uses: ansys/actions/branch-name-style@main
 
   code-style:
     name: "Code style"
@@ -97,7 +97,7 @@ jobs:
     needs: commit-and-branch-style
     steps:
       - name: "Run code style checks"
-        uses: pyansys/actions/code-style@main
+        uses: ansys/actions/code-style@main
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -105,9 +105,9 @@ jobs:
       - name: "Verify private actions are not pointing to the 'main' branch"
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
         run: |
-          if $(grep -q --exclude-dir={.git,.github,doc} "pyansys\/actions\/.*\@main" -r .); then
+          if $(grep -q --exclude-dir={.git,.github,doc} "ansys\/actions\/.*\@main" -r .); then
             echo -e "\033[1;91m[ERROR]: Found private actions pointing to the 'main' branch.\033[0m"
-            grep -q --exclude-dir={.git,.github,doc} "pyansys\/actions\/.*\@main" -r .
+            grep -q --exclude-dir={.git,.github,doc} "ansys\/actions\/.*\@main" -r .
           fi
 
   doc-style:
@@ -116,7 +116,7 @@ jobs:
     needs: commit-and-branch-style
     steps:
       - name: "Run documentation style checks"
-        uses: pyansys/actions/doc-style@main
+        uses: ansys/actions/doc-style@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -126,7 +126,7 @@ jobs:
     needs: doc-style
     steps:
       - name: "Build documentation"
-        uses: pyansys/actions/doc-build@main
+        uses: ansys/actions/doc-build@main
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -142,7 +142,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
@@ -169,7 +169,7 @@ jobs:
         retention-days: 7
 
     - name: "Release to the test PyPI repository"
-      uses: pyansys/actions/release-pypi-test@main
+      uses: ansys/actions/release-pypi-test@main
       with:
         library-name: ${{ env.test-library-name }}
         twine-username: "__token__"
@@ -181,7 +181,7 @@ jobs:
     if: github.event_name == 'push' && !contains(github.ref, 'refs/tags')
     needs: [doc-build, tests]
     steps:
-      - uses: pyansys/actions/doc-deploy-dev@main
+      - uses: ansys/actions/doc-deploy-dev@main
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
@@ -234,7 +234,7 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: release
     steps:
-      - uses: pyansys/actions/doc-deploy-stable@main
+      - uses: ansys/actions/doc-deploy-stable@main
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
