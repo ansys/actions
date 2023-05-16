@@ -30,7 +30,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >

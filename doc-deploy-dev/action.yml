@@ -6,13 +6,6 @@ description: |
   development version of a library to the specified branch of a repository. By
   default, the ``gh-pages`` branch of the current repository is assumed.
 
-  .. note::
-
-      If your project is using ``pyansys/actions@v3`` or lower and you would
-      like to update to this version of the actions, see the `guidelines for
-      migrating to the latest multi-version documentation layout
-      <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-pyansys-actions-v3-to-pyansys-actions-v4>`_ .
-
 inputs:
 
   # Required inputs
@@ -100,7 +93,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -125,7 +118,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -165,7 +158,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -188,7 +181,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -225,7 +218,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -233,14 +226,14 @@ runs:
           no stable release is available, copy the 'dev/index.html' instead.
           Update all references to point to 'stable/_static' or 'dev/_static'.
 
-    - uses: pyansys/actions/_doc-gen-versions-page@main
+    - uses: ansys/actions/_doc-gen-versions-page@main
       with:
         cname: ${{ inputs.cname }}
         content-element-id: ${{ inputs.content-element-id }}
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -254,7 +247,7 @@ runs:
 
      # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >

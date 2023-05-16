@@ -9,7 +9,7 @@ description: |
   .. note::
 
       Use this action instead of the `build-ci-wheels
-      <https://actions.docs.pyansys.com/stable/doc-actions/index.html#build-ci-wheels-action>`_
+      <https://actions.docs.ansys.com/stable/doc-actions/index.html#build-ci-wheels-action>`_
       if your library is a pure Python project with no source code to be compiled.
 
 inputs:
@@ -51,7 +51,7 @@ runs:
       uses: actions/checkout@v3
 
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

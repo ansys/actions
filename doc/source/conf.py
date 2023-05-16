@@ -20,7 +20,7 @@ ACCEPTED_LICENSES = BASE_DIR / "check-licenses" / "accepted-licenses.txt"
 IGNORED_PACKAGES = BASE_DIR / "check-licenses" / "ignored-packages.txt"
 
 # Project information
-project = "PyAnsys Actions"
+project = "Ansys Actions"
 copyright = f"(c) 2022-{datetime.today().year} ANSYS, Inc. and/or its affiliates."
 author = "ANSYS, Inc."
 cname = os.getenv("DOCUMENTATION_CNAME", "nocname.com")
@@ -39,7 +39,7 @@ html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 html_short_title = html_title = project  # necessary for proper breadcrumb title
 html_context = {
-    "github_user": "pyansys",
+    "github_user": "ansys",
     "github_repo": "actions",
     "github_version": "main",
     "doc_path": "doc/source",
@@ -48,7 +48,7 @@ html_context = {
 
 # Specify the location of your GitHub repo
 html_theme_options = {
-    "github_url": "https://github.com/pyansys/actions",
+    "github_url": "https://github.com/ansys/actions",
     "use_edit_page_button": True,
     "additional_breadcrumbs": [
         ("PyAnsys", "https://docs.pyansys.com/"),

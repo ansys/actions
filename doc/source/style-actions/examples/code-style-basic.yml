@@ -3,4 +3,4 @@ code-style:
   runs-on: ubuntu-latest
   steps:
     - name: "Run PyAnsys code style checks"
-      uses: pyansys/actions/code-style@{{ branch }}
+      uses: ansys/actions/code-style@{{ branch }}
