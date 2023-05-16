@@ -14,7 +14,7 @@ Pyactions core
    :target: https://pypi.org/project/pyactions-core
    :alt: PyPI
 
-.. |GH-CI| image:: https://github.com/ansys/actions/actions/workflows/ci.yml/badge.svg
+.. |CI-CD| image:: https://github.com/ansys/actions/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/ansys/actions/actions/workflows/ci.yml
    :alt: CI-CD
 
