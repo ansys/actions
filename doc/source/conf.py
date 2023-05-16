@@ -39,7 +39,7 @@ html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 html_short_title = html_title = project  # necessary for proper breadcrumb title
 html_context = {
-    "github_user": "pyansys",
+    "github_user": "ansys",
     "github_repo": "actions",
     "github_version": "main",
     "doc_path": "doc/source",
