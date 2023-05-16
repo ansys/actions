@@ -10,7 +10,7 @@ on:
 
 env:
   MAIN_PYTHON_VERSION: '3.10'
-  DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
+  DOCUMENTATION_CNAME: 'ansys.github.io/actions'
   test-library-name: 'ansys-actions'
 
 concurrency:
