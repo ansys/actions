@@ -1,7 +1,0 @@
-commit-style:
-  name: "Run commit style checks"
-  runs-on: ubuntu-latest
-  steps:
-    - uses: ansys/actions/commit-style@{{ branch }}
-      with:
-        token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}

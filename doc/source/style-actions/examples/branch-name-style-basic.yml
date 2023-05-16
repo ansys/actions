@@ -1,5 +1,0 @@
-branch-name-style:
-  name: "Run branch name style checks"
-  runs-on: ubuntu-latest
-  steps:
-    - uses: ansys/actions/branch-name-style@{{ branch }}
