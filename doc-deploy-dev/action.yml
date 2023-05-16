@@ -93,7 +93,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -118,7 +118,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -158,7 +158,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -181,7 +181,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -218,22 +218,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Copy the 'version/stable/index.html' to 'version/index.html' file. If
-          no stable release is available, copy the 'dev/index.html' instead.
-          Update all references to point to 'stable/_static' or 'dev/_static'.
-
-    - uses: ansys/actions/_doc-gen-versions-page@main
-      with:
-        cname: ${{ inputs.cname }}
-        content-element-id: ${{ inputs.content-element-id }}
-
-    # ------------------------------------------------------------------------
-
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -247,7 +232,7 @@ runs:
 
      # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >

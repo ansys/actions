@@ -46,7 +46,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -64,7 +64,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -93,7 +93,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -141,7 +141,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
