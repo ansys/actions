@@ -48,7 +48,7 @@ html_context = {
 
 # Specify the location of your GitHub repo
 html_theme_options = {
-    "github_url": "https://github.com/pyansys/actions",
+    "github_url": "https://github.com/ansys/actions",
     "use_edit_page_button": True,
     "additional_breadcrumbs": [
         ("PyAnsys", "https://docs.pyansys.com/"),

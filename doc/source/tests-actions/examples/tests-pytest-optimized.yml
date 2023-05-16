@@ -25,7 +25,7 @@ tests:
         LICENSE_SERVER: ${{ '{{ secrets.LICENSE_SERVER }}' }}
 
     - name: "Run pytest with desired markers and extra arguments"
-      uses: pyansys/actions/tests-pytest@{{ branch }}
+      uses: ansys/actions/tests-pytest@{{ branch }}
       with:
         requires-xvfb: true
         pytest-markers: ${{ '{{ matrix.cfg.markers }}' }}
