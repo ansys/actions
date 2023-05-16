@@ -20,7 +20,7 @@ ACCEPTED_LICENSES = BASE_DIR / "check-licenses" / "accepted-licenses.txt"
 IGNORED_PACKAGES = BASE_DIR / "check-licenses" / "ignored-packages.txt"
 
 # Project information
-project = "PyAnsys Actions"
+project = "Ansys Actions"
 copyright = f"(c) 2022-{datetime.today().year} ANSYS, Inc. and/or its affiliates."
 author = "ANSYS, Inc."
 cname = os.getenv("DOCUMENTATION_CNAME", "nocname.com")
