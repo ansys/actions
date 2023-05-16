@@ -37,7 +37,7 @@ runs:
 
     - name: "Set up Python"
       if: inputs.skip-install == 'false'
-      uses: pyansys/actions/_setup-python@v3
+      uses: ansys/actions/_setup-python@v3
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -60,8 +60,8 @@ runs:
     - name: "Download txt files so they are found from other repos"
       shell: bash
       run: |
-        wget https://raw.githubusercontent.com/pyansys/actions/main/check-licenses/accepted-licenses.txt
-        wget https://raw.githubusercontent.com/pyansys/actions/main/check-licenses/ignored-packages.txt
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/accepted-licenses.txt
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/ignored-packages.txt
 
     - name: "Check licences of packages"
       shell: bash

@@ -25,7 +25,7 @@ runs:
   steps:
   
     - name: "Release to public PyPI index"
-      uses: pyansys/actions/_release-pypi@v3
+      uses: ansys/actions/_release-pypi@v3
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://upload.pypi.org/legacy/"

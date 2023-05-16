@@ -5,6 +5,6 @@ release-gitub:
   if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
   steps:
     - name: "Release to GitHub"
-      uses: pyansys/actions/release-github@{{ branch }}
+      uses: ansys/actions/release-github@{{ branch }}
       with:
         library-name: "ansys-<product>-<library"

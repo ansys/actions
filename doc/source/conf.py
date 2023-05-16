@@ -39,7 +39,7 @@ html_favicon = ansys_favicon
 
 # Specify the location of your GitHub repo
 html_theme_options = {
-    "github_url": "https://github.com/pyansys/actions",
+    "github_url": "https://github.com/ansys/actions",
     "switcher": {
         "json_url": f"https://{cname}/versions.json",
         "version_match": get_version_match(__version__),

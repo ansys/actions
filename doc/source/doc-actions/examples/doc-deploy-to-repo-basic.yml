@@ -4,7 +4,7 @@ doc-deploy-to-repo:
   needs: doc-build
   steps:
     - name: "Deploy documentation"
-      uses: pyansys/actions/doc-deploy-to-repo@{{ branch }}
+      uses: ansys/actions/doc-deploy-to-repo@{{ branch }}
       with:
         cname: "<library>.docs.pyansys.com"
         repository: "<owner>/<repository-name>"

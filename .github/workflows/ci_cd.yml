@@ -82,12 +82,12 @@ jobs:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           Please add one of the following labels to add this contribution to the Release Notes :point_down:
-          - [bug](https://github.com/pyansys/actions/pulls?q=label%3Abug+)
-          - [documentation](https://github.com/pyansys/actions/pulls?q=label%3Adocumentation+)
-          - [enhancement](https://github.com/pyansys/actions/pulls?q=label%3Aenhancement+)
-          - [good first issue](https://github.com/pyansys/actions/pulls?q=label%3Agood+first+issue)
-          - [maintenance](https://github.com/pyansys/actions/pulls?q=label%3Amaintenance+)
-          - [release](https://github.com/pyansys/actions/pulls?q=label%3Arelease+)
+          - [bug](https://github.com/ansys/actions/pulls?q=label%3Abug+)
+          - [documentation](https://github.com/ansys/actions/pulls?q=label%3Adocumentation+)
+          - [enhancement](https://github.com/ansys/actions/pulls?q=label%3Aenhancement+)
+          - [good first issue](https://github.com/ansys/actions/pulls?q=label%3Agood+first+issue)
+          - [maintenance](https://github.com/ansys/actions/pulls?q=label%3Amaintenance+)
+          - [release](https://github.com/ansys/actions/pulls?q=label%3Arelease+)
 
   code-style:
     name: "Code style"
@@ -95,7 +95,7 @@ jobs:
     needs: commenter
     steps:
       - name: "Run code style checks"
-        uses: pyansys/actions/code-style@v3
+        uses: ansys/actions/code-style@v3
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -117,7 +117,7 @@ jobs:
         run: ls -R tests
 
       - name: "Set up Python"
-        uses: pyansys/actions/_setup-python@v3
+        uses: ansys/actions/_setup-python@v3
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-cache: false
@@ -136,7 +136,7 @@ jobs:
     needs: commenter
     steps:
       - name: "Run documentation style checks"
-        uses: pyansys/actions/doc-style@v3
+        uses: ansys/actions/doc-style@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -146,7 +146,7 @@ jobs:
     needs: doc-style
     steps:
       - name: "Build documentation"
-        uses: pyansys/actions/doc-build@v3
+        uses: ansys/actions/doc-build@v3
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -162,7 +162,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@v3
+      uses: ansys/actions/_setup-python@v3
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
@@ -194,7 +194,7 @@ jobs:
     needs: tests-build
     steps:
     - name: "Release to the test PyPI repository"
-      uses: pyansys/actions/release-pypi-test@v3
+      uses: ansys/actions/release-pypi-test@v3
       with:
         library-name: ${{ env.test-library-name }}
         twine-username: "__token__"
@@ -250,7 +250,7 @@ jobs:
     needs: release-gitub
     steps:
       - name: "Deploy stable documentation"
-        uses: pyansys/actions/doc-deploy-stable@v4
+        uses: ansys/actions/doc-deploy-stable@v4
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}

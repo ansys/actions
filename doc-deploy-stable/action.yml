@@ -109,7 +109,7 @@ runs:
   
     - name: "Set up Python ${{ inputs.python-version }}"
       if: env.ACCEPTED_FORMAT == 'true'
-      uses: pyansys/actions/_setup-python@v3
+      uses: ansys/actions/_setup-python@v3
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
@@ -125,8 +125,8 @@ runs:
       if: env.ACCEPTED_FORMAT == 'true'
       shell: bash
       run: |
-        curl https://raw.githubusercontent.com/pyansys/actions/release/3.0/scripts/version_mapper.py -o version_mapper.py
-        curl https://raw.githubusercontent.com/pyansys/actions/release/3.0/scripts/redirect.html -o index.html
+        curl https://raw.githubusercontent.com/ansys/actions/release/3.0/scripts/version_mapper.py -o version_mapper.py
+        curl https://raw.githubusercontent.com/ansys/actions/release/3.0/scripts/redirect.html -o index.html
 
     - name: "Update the version JSON file"
       if: env.ACCEPTED_FORMAT == 'true'

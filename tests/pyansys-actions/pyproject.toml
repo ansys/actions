@@ -31,4 +31,4 @@ dependencies = [
 name = "ansys.actions.core"
 
 [project.urls]
-Source = "https://github.com/pyansys/actions"
+Source = "https://github.com/ansys/actions"

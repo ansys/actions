@@ -31,9 +31,9 @@ licenses.
 .. admonition:: Projects requiring additional licenses or packages
 
     If a certain project requires a license or package that is not supported,
-    `open an issue <https://github.com/pyansys/actions/issues>`_ in the
-    `official pyansys/actions repository
-    <https://github.com/pyansys/actions>`_. For additional support, please
+    `open an issue <https://github.com/ansys/actions/issues>`_ in the
+    `official ansys/actions repository
+    <https://github.com/ansys/actions>`_. For additional support, please
     contact the `PyAnsys support <mailto:support@pyansys.com>`_.
 
 .. jinja:: check-licenses

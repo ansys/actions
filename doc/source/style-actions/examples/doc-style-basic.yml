@@ -3,6 +3,6 @@ doc-style:
   runs-on: ubuntu-latest
   steps:
     - name: "Running documentation style checks"
-      uses: pyansys/actions/doc-style@{{ branch }}
+      uses: ansys/actions/doc-style@{{ branch }}
       with:
         token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
