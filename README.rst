@@ -7,7 +7,7 @@ Ansys actions
    :target: https://actions.docs.ansys.com/
    :alt: PyAnsys
 
-.. |GH-CI| image:: https://github.com/ansys/actions/actions/workflows/ci.yml/badge.svg
+.. |CI-CD| image:: https://github.com/ansys/actions/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/ansys/actions/actions/workflows/ci.yml
    :alt: CI-CD
 
