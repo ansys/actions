@@ -4,6 +4,6 @@ doc-build:
   needs: doc-style
   steps:
     - name: "Run Ansys documentation building action"
-      uses: pyansys/actions/doc-build@{{ branch }}
+      uses: ansys/actions/doc-build@{{ branch }}
       with:
         requires-xvfb: true

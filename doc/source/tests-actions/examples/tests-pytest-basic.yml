@@ -8,7 +8,7 @@ tests:
      fail-fast: false
   steps:
     - name: "Run pytest"
-      uses: pyansys/actions/tests-pytest@{{ branch }}
+      uses: ansys/actions/tests-pytest@{{ branch }}
       with:
         pytest-markers: "-k 'mocked'"
         pytest-extra-args: "--cov=ansys.<library> --cov-report=term --cov-report=html:.cov/html"

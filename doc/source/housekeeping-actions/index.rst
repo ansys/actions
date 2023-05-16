@@ -19,8 +19,8 @@ Package cleanup of untagged versions
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 
@@ -41,8 +41,8 @@ Package cleanup excluding certain versions
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 

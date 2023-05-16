@@ -20,7 +20,7 @@ ACCEPTED_LICENSES = BASE_DIR / "check-licenses" / "accepted-licenses.txt"
 IGNORED_PACKAGES = BASE_DIR / "check-licenses" / "ignored-packages.txt"
 
 # Project information
-project = "PyAnsys Actions"
+project = "Ansys Actions"
 copyright = f"(c) 2022-{datetime.today().year} ANSYS, Inc. and/or its affiliates."
 author = "ANSYS, Inc."
 cname = os.getenv("DOCUMENTATION_CNAME", "nocname.com")
@@ -37,10 +37,23 @@ branch_name = "main" if __version__.endswith("dev0") else f"v{__version__[0]}"
 html_logo = pyansys_logo_black
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
+html_short_title = html_title = project  # necessary for proper breadcrumb title
+html_context = {
+    "github_user": "ansys",
+    "github_repo": "actions",
+    "github_version": "main",
+    "doc_path": "doc/source",
+}
+
 
 # Specify the location of your GitHub repo
 html_theme_options = {
-    "github_url": "https://github.com/pyansys/actions",
+    "github_url": "https://github.com/ansys/actions",
+    "use_edit_page_button": True,
+    "additional_breadcrumbs": [
+        ("PyAnsys", "https://docs.pyansys.com/"),
+        ("PyAnsys Developer’s Guide", "https://dev.docs.pyansys.com/"),
+    ],
     "switcher": {
         "json_url": f"https://{cname}/versions.json",
         "version_match": get_version_match(__version__),
@@ -146,15 +159,16 @@ def generate_inputs_table_from_action_file(action_file):
     table_content = []
 
     with open(action_file, "r") as yaml_file:
-        file_content = yaml.safe_load(yaml_file)
-        inputs = file_content["inputs"]
-        for input_name, values in inputs.items():
-            values = [
-                values.get(field, None) for field in field_names if field != "input"
-            ]
-            table_row = [input_name]
-            table_row.extend(values)
-            table_content.append(table_row)
+        file_content: dict = yaml.safe_load(yaml_file)
+        inputs = file_content.get("inputs", None)
+        if inputs:
+            for input_name, values in inputs.items():
+                values = [
+                    values.get(field, None) for field in field_names if field != "input"
+                ]
+                table_row = [input_name]
+                table_row.extend(values)
+                table_content.append(table_row)
         return str(Table(table_content, headers=headers, tablefmt="grid"))
 
 

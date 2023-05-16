@@ -2,7 +2,7 @@ Licenses actions
 ================
 
 Licenses actions verify that any dependency used by a Python library uses
-PyAnsys authorized open source licenses. 
+PyAnsys authorized open source licenses.
 
 
 Check licenses action
@@ -21,8 +21,8 @@ Check licenses action
     .. dropdown:: {{ title }}
        :animate: fade-in
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
     {% endfor %}
 

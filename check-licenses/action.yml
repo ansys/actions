@@ -8,28 +8,28 @@ description: |
   its runtime dependencies.
 
   .. jinja:: check-licenses
-  
+
       .. grid:: 1 1 1 2
           :gutter: 2
-      
+
           .. grid-item-card:: :octicon:`codescan-checkmark` Accepted third party licenses
-      
+
               {% for license in accepted_licenses %}
               * {{ license }}
               {% endfor %}
-      
+
           .. grid-item-card:: :octicon:`package` Ignored packages
-      
+
               {% for package in ignored_packages %}
               * {{ package }}
               {% endfor %}
-  
+
   .. admonition:: Projects requiring additional licenses or packages
-  
+
       If a certain project requires a license or package that is not supported,
-      `open an issue <https://github.com/pyansys/actions/issues>`_ in the
-      `official pyansys/actions repository
-      <https://github.com/pyansys/actions>`_. For additional support, please
+      `open an issue <https://github.com/ansys/actions/issues>`_ in the
+      `official ansys/actions repository
+      <https://github.com/ansys/actions>`_. For additional support, please
       contact the `PyAnsys support <mailto:support@pyansys.com>`_.
 
 inputs:
@@ -67,7 +67,7 @@ runs:
       uses: actions/checkout@v3
 
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@v4
+      uses: ansys/actions/_setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -90,8 +90,8 @@ runs:
     - name: "Download the list of accepted and ignored packages"
       shell: bash
       run: |
-        wget https://raw.githubusercontent.com/pyansys/actions/main/check-licenses/accepted-licenses.txt
-        wget https://raw.githubusercontent.com/pyansys/actions/main/check-licenses/ignored-packages.txt
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/accepted-licenses.txt
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/ignored-packages.txt
 
     - name: "Check licences of packages"
       shell: bash

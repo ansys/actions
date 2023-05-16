@@ -2,7 +2,7 @@ name: "Clean untagged package versions."
 description: "Action cleaning up untagged package versions published at ghcr.io."
 
 inputs:
-  package-name: 
+  package-name:
     description: "Package name."
     required: true
     type: string
@@ -31,7 +31,7 @@ runs:
   steps:
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: pyansys/actions/_setup-python@v4
+      uses: ansys/actions/_setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
@@ -47,26 +47,26 @@ runs:
       shell: bash
       run: |
         cat > clean-untagged.py << 'EOF'
-        
+
         from datetime import datetime, timedelta
         import os
-        
+
         from ghapi.all import GhApi
         from ghapi.core import print_summary
         from ghapi.page import paged
-        
+
         PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-        
+
         org_str = "${{ inputs.package-org }}"
         pck_str = "${{ inputs.package-name }}"
         last_days_str = "${{ inputs.allow-last-days }}"
-        
+
         last_days = int(last_days_str) if last_days_str != "" else None
         if last_days:
             delete_before_date = datetime.now() - timedelta(days=last_days)
-        
+
         api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
-        
+
         paged_packages = paged(
             api.packages.get_all_package_versions_for_package_owned_by_org,
             org=org_str,
@@ -75,7 +75,7 @@ runs:
             state="active",
             per_page=100,
         )
-        
+
         # Loop over all pages
         for page in paged_packages:
             for package in page:
@@ -86,10 +86,10 @@ runs:
                     > delete_before_date.timestamp()
                 ):
                     continue
-                
+
                 # Check if the given package has no tags
                 package_tags = package.metadata.container.tags
-                
+
                 # If no tags were found... delete it!
                 if not package_tags:
                     print(f"Deleting package: {package}")
@@ -99,7 +99,7 @@ runs:
                         package_type="container",
                         package_version_id=package["id"],
                     )
-        
+
         EOF
         cat clean-untagged.py
 
@@ -109,4 +109,4 @@ runs:
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
       run: |
         python clean-untagged.py
-   
+

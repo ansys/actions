@@ -54,9 +54,9 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: "Release to PyAnsys private index"
-      uses: pyansys/actions/_release-pypi@v4
+      uses: ansys/actions/_release-pypi@v4
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"

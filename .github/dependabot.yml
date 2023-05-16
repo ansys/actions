@@ -4,6 +4,8 @@ updates:
     directory: "/requirements"
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "build"
     labels:
       - "maintenance"
       - "dependencies"
@@ -12,5 +14,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "build"
     labels:
       - "maintenance"

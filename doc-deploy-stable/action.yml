@@ -8,10 +8,10 @@ description: |
 
   .. note::
 
-      If your project is using ``pyansys/actions@v3`` or lower and you would
+      If your project is using ``ansys/actions@v3`` or lower and you would
       like to update to this version of the actions, see the `guidelines for
       migrating to the latest multi-version documentation layout
-      <https://dev.docs.pyansys.com/how-to/documenting/multi-version-migration-from-pyansys-actions-v3-to-pyansys-actions-v4>`_ .
+      <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-pyansys-actions-v3-to-pyansys-actions-v4>`_ .
 
 inputs:
 
@@ -93,13 +93,22 @@ inputs:
     default: true
     type: string
 
+  content-element-id:
+    description: >
+      Identifier of the HTML tag that comprises all the content of the article
+      or post.
+    required: false
+    default: 'main-content'
+    type: string
+
+
 runs:
   using: "composite"
   steps:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -145,7 +154,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -170,7 +179,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -215,7 +224,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -253,6 +262,16 @@ runs:
 
         cat versions.json
 
+    - name: "Add an 'Older versions' item if required"
+      shell: bash
+      run: |
+        num_versions=$(jq length versions.json)
+
+        if [ $num_elements -gt ${{ inputs.render-last }} ]; then
+          cname=${{ inputs.cname }}
+          new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/index.html\" }"
+          jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
+
     - name: "Convert the first stable version into the 'stable' one"
       shell: bash
       run: |
@@ -274,17 +293,17 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
           Generate the content for the announcement file. Place a copy of this
-          file in each one of outdated stable versions. 
+          file in each one of outdated stable versions.
 
     - name: "Generate the template content for the 'announcement.html' file"
       shell: bash
       run: |
-        cat > announcement.html <<'EOF'  
+        cat > announcement.html <<'EOF'
           <p>
             You are not viewing the most recent version of this documentation.
             The latest stable release is <a href="STABLE_URL">LATEST_STABLE_VERSION</a>
@@ -316,7 +335,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -345,7 +364,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -359,7 +378,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >

@@ -6,13 +6,6 @@ description: |
   development version of a library to the specified branch of a repository. By
   default, the ``gh-pages`` branch of the current repository is assumed.
 
-  .. note::
-
-      If your project is using ``pyansys/actions@v3`` or lower and you would
-      like to update to this version of the actions, see the `guidelines for
-      migrating to the latest multi-version documentation layout
-      <https://dev.docs.pyansys.com/how-to/documenting/multi-version-migration-from-pyansys-actions-v3-to-pyansys-actions-v4>`_ .
-
 inputs:
 
   # Required inputs
@@ -26,7 +19,7 @@ inputs:
   token:
     description: >
       Required password, key or token with the correct credentials for deploying the
-      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token is
+      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token
       is enough. For workflows deploying to other repositories, `generate and
       use a token with writing access
       <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
@@ -85,13 +78,22 @@ inputs:
     default: true
     type: string
 
+  content-element-id:
+    description: >
+      Identifier of the HTML tag that comprises all the content of the article
+      or post.
+    required: false
+    default: 'main-content'
+    type: string
+
+
 runs:
   using: "composite"
   steps:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -116,7 +118,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -156,7 +158,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -179,7 +181,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -192,10 +194,10 @@ runs:
       shell: bash
       run: |
         if $(grep -q "(stable)" versions.json)
-        then 
+        then
           echo "Redirecting to the latest stable version..."
           echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
-        else 
+        else
           echo "Redirecting to the latest development version..."
           echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/dev/" >> $GITHUB_ENV
         fi
@@ -216,7 +218,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -230,7 +232,7 @@ runs:
 
      # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@v4
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >

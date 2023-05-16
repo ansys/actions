@@ -23,7 +23,7 @@ inputs:
     description: >
       Namespace of the Python library. The namespace is the path used when
       importing the library in Python. The library requires to have a
-      ``__version__`` variable at its top ``__init__.py`` file. 
+      ``__version__`` variable at its top ``__init__.py`` file.
     required: true
     type: string
 
@@ -63,9 +63,9 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
-  
+
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: pyansys/actions/_setup-python@v4
+      uses: ansys/actions/_setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
