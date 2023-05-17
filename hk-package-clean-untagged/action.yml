@@ -13,7 +13,7 @@ inputs:
   package-org:
     description: "Organization at which packages are published."
     required: false
-    default: 'pyansys'
+    default: 'ansys'
     type: string
   allow-last-days:
     description: "Avoid removing the last N days images: e.g. '2'."
