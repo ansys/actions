@@ -7,8 +7,8 @@ Ansys actions
    :target: https://actions.docs.ansys.com/
    :alt: PyAnsys
 
-.. |CI-CD| image:: https://github.com/ansys/actions/actions/workflows/ci.yml/badge.svg
-   :target: https://github.com/ansys/actions/actions/workflows/ci.yml
+.. |CI-CD| image:: https://github.com/ansys/actions/actions/workflows/ci_cd.yml/badge.svg
+   :target: https://github.com/ansys/actions/actions/workflows/ci_cd.yml
    :alt: CI-CD
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
