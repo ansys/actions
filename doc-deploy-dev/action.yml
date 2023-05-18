@@ -151,7 +151,10 @@ runs:
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
         cd version/dev && compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact && rm $compressed_artifact
+        ouch decompress $compressed_artifact
+        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
+        mv $decompressed_artifact/* .
+        rm -rf $compressed_artifact $decompressed_artifact
 
     - name: "Display structure of version/dev"
       shell: bash
