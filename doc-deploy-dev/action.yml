@@ -147,7 +147,9 @@ runs:
       shell: bash
       if: inputs.decompress-artifact == 'true'
       run: |
-        sudo apt-get install -y cargo && cargo install ouch && ouch --version
+        sudo apt-get install -y cargo && cargo install ouch
+        export PATH="$HOME/.cargo/bin/:$PATH"
+        ouch --version
         cd version/dev && compressed_artifact=$(ls .)
         ouch decompress $compressed_artifact && rm $compressed_artifact
 
