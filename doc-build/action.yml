@@ -120,12 +120,12 @@ runs:
     - name: "Install system dependencies"
       shell: bash
       run: |
-        sudo apt-get install ${{ env.NEEDED_DEPS }}
+        sudo apt-get install -y ${{ env.NEEDED_DEPS }}
 
     - name: "Install LaTeX"
       shell: bash
       run: |
-        sudo apt-get install texlive-latex-extra latexmk
+        sudo apt-get install -y texlive-latex-extra latexmk
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
