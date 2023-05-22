@@ -15,6 +15,11 @@ inputs:
     required: false
     default: 'ansys'
     type: string
+  repository:
+    description: "Repository at which packages are published."
+    required: false
+    default: ''
+    type: string
   allow-last-days:
     description: "Avoid removing the last N days images: e.g. '2'."
     required: false
@@ -58,6 +63,7 @@ runs:
         PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
         org_str = "${{ inputs.package-org }}"
+        repo_str = "${{ inputs.repository }}"
         pck_str = "${{ inputs.package-name }}"
         last_days_str = "${{ inputs.allow-last-days }}"
 
@@ -65,7 +71,7 @@ runs:
         if last_days:
             delete_before_date = datetime.now() - timedelta(days=last_days)
 
-        api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
+        api = GhApi(debug=print_summary, repo=repo_str, token=os.getenv("PACKAGE_DELETION_TOKEN"))
 
         paged_packages = paged(
             api.packages.get_all_package_versions_for_package_owned_by_org,
