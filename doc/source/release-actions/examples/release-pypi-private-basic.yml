@@ -7,6 +7,6 @@ release-pypi-private:
     - name: "Release to the private PyPI repository"
       uses: ansys/actions/release-pypi-private@{{ branch }}
       with:
-        library-name: "ansys-<product>-<library"
+        library-name: "ansys-<product>-<library>"
         twine-username: "__token__"
         twine-token: ${{ '{{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}' }}

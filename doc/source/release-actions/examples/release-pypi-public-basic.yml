@@ -7,6 +7,6 @@ release-pypi-public:
     - name: "Release to the public PyPI repository"
       uses: ansys/actions/release-pypi-public@{{ branch }}
       with:
-        library-name: "ansys-<product>-<library"
+        library-name: "ansys-<product>-<library>"
         twine-username: "__token__"
         twine-token: ${{ '{{ secrets.PYPI_TOKEN }}' }}

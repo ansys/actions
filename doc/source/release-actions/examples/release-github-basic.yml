@@ -7,4 +7,4 @@ release-gitub:
     - name: "Release to GitHub"
       uses: ansys/actions/release-github@{{ branch }}
       with:
-        library-name: "ansys-<product>-<library"
+        library-name: "ansys-<product>-<library>"

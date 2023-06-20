@@ -7,6 +7,6 @@ release-pypi-test:
     - name: "Release to the test PyPI repository"
       uses: ansys/actions/release-pypi-test@{{ branch }}
       with:
-        library-name: "ansys-<product>-<library"
+        library-name: "ansys-<product>-<library>"
         twine-username: "__token__"
         twine-token: ${{ '{{ secrets.PYANSYS_PYPI_TEST_PAT }}' }}
