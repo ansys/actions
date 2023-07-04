@@ -89,7 +89,14 @@ runs:
     - name: "Verify library is properly installed and get its version number"
       shell: bash
       run: |
-        echo "library_version=$(python -c "from ${{ inputs.library-namespace }} import __version__; print(__version__)")" >> $GITHUB_ENV
+        library_version=$(python -c "from ${{ inputs.library-namespace }} import __version__; print(__version__)" || exit 1 )
+        if [ -z "$library_version" ]; then
+            echo "Problem getting the library version"
+            exit 1;
+        else
+            echo "The library version is: $library_version";
+        fi;
+        echo "$library_version" >> $GITHUB_ENV
 
     - name: "Generate the wheelhouse"
       shell: bash
