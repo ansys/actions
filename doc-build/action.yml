@@ -96,6 +96,14 @@ inputs:
     required: false
     type: boolean
 
+  check-links:
+    description: >
+      Whether to perform external link checks during the generation of
+      documentation. Default value is ``false``.
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -177,6 +185,10 @@ runs:
       run: |
         make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         make -C doc pdf
+        if [[ ${{ inputs.check-links }} == 'true' ]];
+        then
+          make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+        fi
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
           make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
