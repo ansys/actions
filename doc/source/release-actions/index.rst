@@ -77,7 +77,6 @@ Release GitHub action
 
 .. jinja:: release-github
 
-
     {{ description }}
 
     {{ inputs_table }}
@@ -93,5 +92,4 @@ Release GitHub action
           :language: yaml
 
     {% endfor %}
-
 
