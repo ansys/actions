@@ -3,9 +3,9 @@ Ansys actions
 =============
 |ansys| |CI-CD| |MIT|
 
-.. |ansys| image:: https://img.shields.io/badge/Py-Ansys-ffc107.svg?labelColor=black&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABDklEQVQ4jWNgoDfg5mD8vE7q/3bpVyskbW0sMRUwofHD7Dh5OBkZGBgW7/3W2tZpa2tLQEOyOzeEsfumlK2tbVpaGj4N6jIs1lpsDAwMJ278sveMY2BgCA0NFRISwqkhyQ1q/Nyd3zg4OBgYGNjZ2ePi4rB5loGBhZnhxTLJ/9ulv26Q4uVk1NXV/f///////69du4Zdg78lx//t0v+3S88rFISInD59GqIH2esIJ8G9O2/XVwhjzpw5EAam1xkkBJn/bJX+v1365hxxuCAfH9+3b9/+////48cPuNehNsS7cDEzMTAwMMzb+Q2u4dOnT2vWrMHu9ZtzxP9vl/69RVpCkBlZ3N7enoDXBwEAAA+YYitOilMVAAAAAElFTkSuQmCC
+.. |ansys| image:: https://img.shields.io/badge/Ansys-ffc107.svg?labelColor=black&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABDklEQVQ4jWNgoDfg5mD8vE7q/3bpVyskbW0sMRUwofHD7Dh5OBkZGBgW7/3W2tZpa2tLQEOyOzeEsfumlK2tbVpaGj4N6jIs1lpsDAwMJ278sveMY2BgCA0NFRISwqkhyQ1q/Nyd3zg4OBgYGNjZ2ePi4rB5loGBhZnhxTLJ/9ulv26Q4uVk1NXV/f///////69du4Zdg78lx//t0v+3S88rFISInD59GqIH2esIJ8G9O2/XVwhjzpw5EAam1xkkBJn/bJX+v1365hxxuCAfH9+3b9/+////48cPuNehNsS7cDEzMTAwMMzb+Q2u4dOnT2vWrMHu9ZtzxP9vl/69RVpCkBlZ3N7enoDXBwEAAA+YYitOilMVAAAAAElFTkSuQmCC
    :target: https://actions.docs.ansys.com/
-   :alt: PyAnsys
+   :alt: Ansys
 
 .. |CI-CD| image:: https://github.com/ansys/actions/actions/workflows/ci_cd.yml/badge.svg
    :target: https://github.com/ansys/actions/actions/workflows/ci_cd.yml
@@ -23,3 +23,31 @@ reused by projects in the Ansys ecosystem.
 
 For more information on available actions and how to use them, see
 `actions.docs.ansys.com <https://actions.docs.ansys.com>`_ .
+
+
+Recommended workflows strategy
+==============================
+
+The different actions provided by `ansys/actions
+<https://github.com/ansys/actions>`_ can be used to create a simple but
+effective workflows.
+
+The following lines suggest the recommended workflows for different events
+including pushing a new commit to a pull-request, merging a commit to the main
+branch of a repository, and performing a new release. Each image contains the
+different job steps declared in a YML file. Jobs colored with green color
+execute whereas jobs colored with a grey background do not execute.
+
+**Recommended workflow when pushing a new commit to a pull-request**
+
+.. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_pr.png
+
+**Recommended workflow when merging a new commit to the main branch of a repository**
+
+.. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_pr.png
+
+**Recommended workflow when performing a new release**
+
+.. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_pr.png
+
+
