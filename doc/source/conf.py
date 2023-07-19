@@ -31,8 +31,14 @@ version_file = source_dir / "../../VERSION"
 with open(str(version_file), "r") as file:
     __version__ = file.read().splitlines()[0]
 release = version = __version__
-branch_name = "main" if __version__.endswith("dev0") else f"release/{get_version_match(__version__)}"
-actions_version = "main" if __version__.endswith("dev0") else f"v{get_version_match(__version__)}"
+branch_name = (
+    "main"
+    if __version__.endswith("dev0")
+    else f"release/{get_version_match(__version__)}"
+)
+actions_version = (
+    "main" if __version__.endswith("dev0") else f"v{get_version_match(__version__)}"
+)
 
 # Use the default pyansys logo
 html_logo = pyansys_logo_black
@@ -140,7 +146,11 @@ def generate_description_from_action_file(action_file):
         file_content = yaml.safe_load(yaml_file)
         description = file_content["description"]
         source_code_link = f"{html_theme_options['github_url']}/blob/{branch_name}/{action_file.parent.name}/action.yml"
-        return description + f"\n:fab:`github` `[Source code for this action] <{source_code_link}>`_"
+        return (
+            description
+            + f"\n:fab:`github` `[Source code for this action] <{source_code_link}>`_"
+        )
+
 
 def generate_inputs_table_from_action_file(action_file):
     """Generate the RST table containing all the input information for the action.
@@ -191,7 +201,9 @@ jinja_contexts = {
 }
 
 
-def render_example_template_with_actions_version(example_template_file, actions_version):
+def render_example_template_with_actions_version(
+    example_template_file, actions_version
+):
     """Renders a example template with desired branch name.
 
     Parameters
