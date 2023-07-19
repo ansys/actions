@@ -100,7 +100,7 @@ inputs:
     description: >
       Whether to perform external link checks during the generation of
       documentation. Default value is ``false``.
-    default: false
+    default: true
     required: false
     type: boolean
 
