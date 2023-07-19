@@ -42,9 +42,13 @@ execute whereas jobs colored with a grey background do not execute.
 
 .. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_pr.png
 
+|
+
 **Recommended workflow when merging a new commit to the main branch of a repository**
 
 .. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_main.png
+
+|
 
 **Recommended workflow when performing a new release**
 
