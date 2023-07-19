@@ -140,7 +140,7 @@ def generate_description_from_action_file(action_file):
         file_content = yaml.safe_load(yaml_file)
         description = file_content["description"]
         source_code_link = f"{html_theme_options['github_url']}/blob/{branch_name}/{action_file.parent.name}/action.yml"
-        return description + f"Source code {source_code_link}"
+        return description + f"\n:fab:`github` `[Source code for this action] <{source_code_link}>`_"
 
 def generate_inputs_table_from_action_file(action_file):
     """Generate the RST table containing all the input information for the action.
@@ -234,7 +234,7 @@ def collect_examples_from_action_name(action_name):
 
     """
     return [
-        render_example_template_with_branch_name(path, branch_name)
+        render_example_template_with_actions_version(path, actions_version)
         for path in DOC_SOURCE_DIR.glob("**/*")
         if path.is_file()
         and path.name.startswith(action_name)
