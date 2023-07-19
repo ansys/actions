@@ -59,12 +59,29 @@ inputs:
     default: ''
     type: string
 
+  skip-install:
+    description: >
+      Whether to skip the installation of the project. The default is ``false``.
+      If used in combination with other actions, it might not be needed to install
+      the project.
+    default: false
+    required: false
+    type: boolean
+
+  checkout:
+    description: >
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
+      if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main

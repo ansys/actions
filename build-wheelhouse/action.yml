@@ -49,6 +49,15 @@ inputs:
     default: true
     type: boolean
 
+  check-licenses:
+    description: >
+      Whether to check the library's dependencies license or not. If ``true``. the licenses
+      are checked. If ``false``, no license check is performed. By default it is set to
+      ``true``.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -130,3 +139,11 @@ runs:
         name: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
         retention-days: 7
+
+    - name: Check library's dependencies license
+      uses: ansys/actions/check-licenses@main
+      if: ${{ inputs.check-licenses == 'true' }}
+      with:
+        python-version: ${{ inputs.python-version }}
+        skip-install: true
+        checkout: false
