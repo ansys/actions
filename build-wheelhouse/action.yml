@@ -127,7 +127,7 @@ runs:
 
     - name: Check library's dependencies license
       uses: ansys/actions/check-licenses@main
-      if: ${{ inputs.check-licenses == 'true' }} 
+      if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}
         skip-install: true
