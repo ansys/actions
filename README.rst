@@ -38,19 +38,30 @@ branch of a repository, and performing a new release. Each image contains the
 different job steps declared in a YML file. Jobs colored with green color
 execute whereas jobs colored with a grey background do not execute.
 
+|
+
 **Recommended workflow when pushing a new commit to a pull-request**
+This workflow is recommended to ensure that the code ready to be merged is
+compliant with the project style, its code integrity, and that it is capable of
+successfully generating all the desired library artifacts.
 
 .. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_pr.png
 
 |
 
 **Recommended workflow when merging a new commit to the main branch of a repository**
+This workflow is similar to the one for validating new code contributions in a
+pull-request, but it also deploys the development documentation as new changes
+were introduced in the main development branch.
 
 .. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_main.png
 
 |
 
 **Recommended workflow when performing a new release**
+This workflow outlines the recommended steps for performing a new software
+release, ensuring a smooth and well-documented process by deploying
+the stable documentation at the end of the workflow.
 
 .. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_release.png
 
