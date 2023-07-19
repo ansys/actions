@@ -10,6 +10,5 @@ build-wheelhouse:
       uses: ansys/actions/build-wheelhouse@{{ branch }}
       with:
         library-name: "<ansys-product-library>"
-        library-namespace: "<ansys.product.library>"
         operating-system: ${{ '{{ matrix.os }}' }}
         python-version: ${{ '{{ matrix.python-version }}' }}
