@@ -25,8 +25,8 @@ For more information on available actions and how to use them, see
 `actions.docs.ansys.com <https://actions.docs.ansys.com>`_ .
 
 
-Recommended workflows strategy
-==============================
+Recommended workflow strategy
+=============================
 
 The different actions provided by `ansys/actions
 <https://github.com/ansys/actions>`_ can be used to create a simple but
