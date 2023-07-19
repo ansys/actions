@@ -8,7 +8,6 @@ Code style action
 -----------------
 .. jinja:: code-style
 
-    {{ url }}
 
     {{ description }}
 
@@ -31,7 +30,6 @@ Doc style action
 ----------------
 .. jinja:: doc-style
 
-    {{ url }}
 
     {{ description }}
 
@@ -55,7 +53,6 @@ Commit style action
 
 .. jinja:: commit-style
 
-    {{ url }}
 
     {{ description }}
 
@@ -79,7 +76,6 @@ Branch name style action
 
 .. jinja:: branch-name-style
 
-    {{ url }}
 
     {{ description }}
 

@@ -10,7 +10,6 @@ Check licenses action
 
 .. jinja:: check-licenses
 
-    {{ url }}
 
     {{ description }}
 
