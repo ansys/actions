@@ -3,6 +3,6 @@ check-licenses:
   runs-on: ubuntu-latest
   steps:
     - name: "Validate third party licenses"
-      uses: ansys/actions/check-licenses@{{ branch }}
+      uses: ansys/actions/check-licenses@{{ version }}
       with:
         python-version: ${{ '{{ env.MAIN_PYTHON_VERSION }}' }}
