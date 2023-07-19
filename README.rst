@@ -45,7 +45,7 @@ This workflow is recommended to ensure that the code ready to be merged is
 compliant with the project style, its code integrity, and that it is capable of
 successfully generating all the desired library artifacts.
 
-.. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_pr.png
+.. image:: https://github.com/ansys/actions/blob/main/doc/source/_static/ci_cd_pr.png
 
 |
 
@@ -54,7 +54,7 @@ This workflow is similar to the one for validating new code contributions in a
 pull-request, but it also deploys the development documentation as new changes
 were introduced in the main development branch.
 
-.. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_main.png
+.. image:: https://github.com/ansys/actions/blob/main/doc/source/_static/ci_cd_main.png
 
 |
 
@@ -63,6 +63,6 @@ This workflow outlines the recommended steps for performing a new software
 release, ensuring a smooth and well-documented process by deploying
 the stable documentation at the end of the workflow.
 
-.. image:: https://github.com/ansys/actions/blob/doc/readme/doc/source/_static/ci_cd_release.png
+.. image:: https://github.com/ansys/actions/blob/main/doc/source/_static/ci_cd_release.png
 
 
