@@ -10,6 +10,8 @@ Check licenses action
 
 .. jinja:: check-licenses
 
+    {{ url }}
+
     {{ description }}
 
     {{ inputs_table }}

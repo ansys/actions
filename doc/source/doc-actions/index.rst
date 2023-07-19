@@ -13,6 +13,8 @@ Doc build action
 
 .. jinja:: doc-build
 
+    {{ url }}
+
     {{ description }}
 
     {{ inputs_table }}
@@ -35,6 +37,8 @@ Doc deploy dev action
 
 .. jinja:: doc-deploy-dev
 
+    {{ url }}
+
     {{ description }}
 
     {{ inputs_table }}
@@ -56,6 +60,8 @@ Doc deploy stable action
 ------------------------
 
 .. jinja:: doc-deploy-stable
+
+    {{ url }}
 
     {{ description }}
 

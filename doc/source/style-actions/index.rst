@@ -8,6 +8,8 @@ Code style action
 -----------------
 .. jinja:: code-style
 
+    {{ url }}
+
     {{ description }}
 
     {{ inputs_table }}
@@ -28,6 +30,8 @@ Code style action
 Doc style action
 ----------------
 .. jinja:: doc-style
+
+    {{ url }}
 
     {{ description }}
 
@@ -51,7 +55,11 @@ Commit style action
 
 .. jinja:: commit-style
 
+    {{ url }}
+
     {{ description }}
+
+    {{ inputs_table }}
 
     Examples
     ++++++++
@@ -71,7 +79,11 @@ Branch name style action
 
 .. jinja:: branch-name-style
 
+    {{ url }}
+
     {{ description }}
+
+    {{ inputs_table }}
 
     Examples
     ++++++++

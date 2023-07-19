@@ -182,6 +182,7 @@ public_actions = {
 # Generate the Jinja contexts for the input tables
 jinja_contexts = {
     action_dir.name: {
+        "url": f"Check the `{action_dir.name} implementation <https://github.com/ansys/actions/blob/main/{action_dir.name}/action.yml>`_ at the previous link.",
         "description": generate_description_from_action_file(action_file),
         "inputs_table": generate_inputs_table_from_action_file(action_file),
     }
