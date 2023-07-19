@@ -148,7 +148,7 @@ def generate_description_from_action_file(action_file):
         source_code_link = f"{html_theme_options['github_url']}/blob/{branch_name}/{action_file.parent.name}/action.yml"
         return (
             description
-            + f"\n:fab:`github` `[Source code for this action] <{source_code_link}>`_"
+            + f"\n`Source code for this action <{source_code_link}>`__ :fab:`github`"
         )
 
 
