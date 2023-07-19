@@ -31,7 +31,8 @@ version_file = source_dir / "../../VERSION"
 with open(str(version_file), "r") as file:
     __version__ = file.read().splitlines()[0]
 release = version = __version__
-branch_name = "main" if __version__.endswith("dev0") else f"v{__version__[0]}"
+branch_name = "main" if __version__.endswith("dev0") else f"release/{get_version_match(__version__)}"
+actions_version = "main" if __version__.endswith("dev0") else f"v{get_version_match(__version__)}"
 
 # Use the default pyansys logo
 html_logo = pyansys_logo_black
@@ -137,8 +138,9 @@ def generate_description_from_action_file(action_file):
     """
     with open(action_file, "r") as yaml_file:
         file_content = yaml.safe_load(yaml_file)
-        return file_content["description"]
-
+        description = file_content["description"]
+        source_code_link = f"{html_theme_options['github_url']}/blob/{branch_name}/{action_file.parent.name}/action.yml"
+        return description + f"Source code {source_code_link}"
 
 def generate_inputs_table_from_action_file(action_file):
     """Generate the RST table containing all the input information for the action.
@@ -182,7 +184,6 @@ public_actions = {
 # Generate the Jinja contexts for the input tables
 jinja_contexts = {
     action_dir.name: {
-        "url": f"Check the `{action_dir.name} implementation <https://github.com/ansys/actions/blob/main/{action_dir.name}/action.yml>`_ at the previous link.",
         "description": generate_description_from_action_file(action_file),
         "inputs_table": generate_inputs_table_from_action_file(action_file),
     }
@@ -190,15 +191,15 @@ jinja_contexts = {
 }
 
 
-def render_example_template_with_branch_name(example_template_file, branch_name):
+def render_example_template_with_actions_version(example_template_file, actions_version):
     """Renders a example template with desired branch name.
 
     Parameters
     ----------
     example_template_file : ~pathlib.Path
         The ``Path`` for the example template file.
-    branch_name : str
-        A string representing the name of the branch.
+    actions_version : str
+        A string representing the actions version.
 
     Returns
     -------
@@ -210,7 +211,7 @@ def render_example_template_with_branch_name(example_template_file, branch_name)
         loader=jinja2.FileSystemLoader(example_template_file.parent)
     )
     example_template = env.get_template(example_template_file.name)
-    content = example_template.render(branch=branch_name)
+    content = example_template.render(version=actions_version)
     output_file_name = example_template_file.name[:-4] + "-rendered-example.yml"
     example_rendered_file = example_template_file.parent / output_file_name
     with open(example_rendered_file, "w") as file:

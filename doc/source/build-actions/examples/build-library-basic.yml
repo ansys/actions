@@ -3,6 +3,6 @@ build-library:
   runs-on: ubuntu-latest
   steps:
     - name: "Build library source and wheel artifacts"
-      uses: ansys/actions/build-library@{{ branch }}
+      uses: ansys/actions/build-library@{{ version }}
       with:
         library-name: "ansys-<product>-<library>"
