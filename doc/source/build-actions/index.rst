@@ -10,7 +10,6 @@ Build library action
 
 .. jinja:: build-library
 
-
     {{ description }}
 
     {{ inputs_table }}
@@ -33,7 +32,6 @@ Build wheelhouse action
 
 .. jinja:: build-wheelhouse
 
-
     {{ description }}
 
     {{ inputs_table }}
@@ -55,7 +53,6 @@ Build CI wheels action
 ----------------------
 
 .. jinja:: build-ci-wheels
-
 
     {{ description }}
 

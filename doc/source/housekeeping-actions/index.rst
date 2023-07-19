@@ -8,7 +8,6 @@ Package cleanup of untagged versions
 
 .. jinja:: hk-package-clean-untagged
 
-
     {{ description }}
 
     {{ inputs_table }}
@@ -30,7 +29,6 @@ Package cleanup excluding certain versions
 ------------------------------------------
 
 .. jinja:: hk-package-clean-except
-
 
     {{ description }}
 
