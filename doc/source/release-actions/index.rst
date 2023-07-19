@@ -12,7 +12,6 @@ Release PyPI private action
 
 .. jinja:: release-pypi-private
 
-
     {{ description }}
 
     {{ inputs_table }}
@@ -35,7 +34,6 @@ Release PyPI test action
 
 .. jinja:: release-pypi-test
 
-
     {{ description }}
 
     {{ inputs_table }}
@@ -56,7 +54,6 @@ Release PyPI public action
 --------------------------
 
 .. jinja:: release-pypi-public
-
 
     {{ description }}
 

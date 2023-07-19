@@ -12,7 +12,6 @@ test session.
 
 .. jinja:: tests-pytest
 
-
     {{ description }}
 
     {{ inputs_table }}
