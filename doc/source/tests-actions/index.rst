@@ -12,8 +12,9 @@ test session.
 
 .. jinja:: tests-pytest
 
-    {{ inputs_table }}
+    {{ description }}
 
+    {{ inputs_table }}
 
 Examples
 ++++++++

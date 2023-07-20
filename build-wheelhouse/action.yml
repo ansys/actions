@@ -19,14 +19,6 @@ inputs:
     required: true
     type: string
 
-  library-namespace:
-    description: >
-      Namespace of the Python library. The namespace is the path used when
-      importing the library in Python. The library requires to have a
-      ``__version__`` variable at its top ``__init__.py`` file.
-    required: true
-    type: string
-
   operating-system:
     description: >
       Name of the operating system where the library is installed.
@@ -53,6 +45,15 @@ inputs:
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
+  check-licenses:
+    description: >
+      Whether to check the library's dependencies license or not. If ``true``. the licenses
+      are checked. If ``false``, no license check is performed. By default it is set to
+      ``true``.
     required: false
     default: true
     type: boolean
@@ -86,10 +87,33 @@ runs:
       run: |
         python -m pip install ${{ env.install_target }}
 
+    - name: "Verify if importlib-metadata needs to be installed"
+      shell: bash
+      run: |
+        python_version="${{ inputs.python-version }}"
+        if (( $(echo "$python_version < 3.8" | bc -l) )); then
+          echo "needs_importlib_metadata=true" >> $GITHUB_ENV
+        else
+          echo "needs_importlib_metadata=false" >> $GITHUB_ENV
+        fi
+
+    - name: "Install importlib-metadata (only for Python <= 3.7)"
+      if: env.needs_importlib_metadata == 'true'
+      shell: bash
+      run: |
+        python -m pip install importlib-metadata
+
     - name: "Verify library is properly installed and get its version number"
       shell: bash
       run: |
-        version=$(python -c "from ${{ inputs.library-namespace }} import __version__; print(); print(__version__)" | tail -1 || exit 1 )
+        library_name=${{ inputs.library-name }}
+
+        if [ ${{ env.needs_importlib_metadata }} ]; then
+          version=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
+        else
+          version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
+        fi
+
         if [ -z "$version" ]; then
             echo "Problem getting the library version"
             exit 1;
@@ -115,3 +139,11 @@ runs:
         name: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
         retention-days: 7
+
+    - name: Check library's dependencies license
+      uses: ansys/actions/check-licenses@main
+      if: ${{ inputs.check-licenses == 'true' }}
+      with:
+        python-version: ${{ inputs.python-version }}
+        skip-install: true
+        checkout: false

@@ -7,9 +7,8 @@ build-wheelhouse:
          python-version: ['3.7', '3.8', '3.9', '3.10']
   steps:
     - name: "Build a wheelhouse of the Python library"
-      uses: ansys/actions/build-wheelhouse@{{ branch }}
+      uses: ansys/actions/build-wheelhouse@{{ version }}
       with:
         library-name: "<ansys-product-library>"
-        library-namespace: "<ansys.product.library>"
         operating-system: ${{ '{{ matrix.os }}' }}
         python-version: ${{ '{{ matrix.python-version }}' }}

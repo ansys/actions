@@ -5,7 +5,7 @@ doc-deploy-dev:
   if: github.event_name == 'push'
   steps:
     - name: "Deploy the latest documentation"
-      uses: ansys/actions/doc-deploy-dev@{{ branch }}
+      uses: ansys/actions/doc-deploy-dev@{{ version }}
       with:
           cname: "<library>.docs.pyansys.com"
           token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
