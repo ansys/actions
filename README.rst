@@ -30,7 +30,7 @@ Recommended workflow strategy
 
 The different actions provided by `ansys/actions
 <https://github.com/ansys/actions>`_ can be used to create a simple but
-effective workflows.
+effective workflow.
 
 The following lines suggest the recommended workflows for different events
 including pushing a new commit to a pull-request, merging a commit to the main
