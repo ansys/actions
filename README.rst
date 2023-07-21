@@ -38,12 +38,13 @@ repository, and performing a new release. Each image showcases the distinct job
 steps declared in a YML file. Jobs highlighted in green signify that they
 execute, while those with a grey background indicate that they do not execute.
 
-    For additional in-depth information on the previous topic, please refer to
-    the poster `CI/CD pipelines for scientists <https://scipy2023.pyansys.com/ci_cd.pdf>`_.
+For additional in-depth information refer to the poster `CI/CD pipelines for
+scientists <https://scipy2023.pyansys.com/ci_cd.pdf>`_.
 
 |
 
 **Recommended workflow when pushing a new commit to a pull-request**
+
 This workflow is recommended to ensure that the code ready to be merged is
 compliant with the project style, its code integrity, and that it is capable of
 successfully generating all the desired library artifacts.
@@ -53,6 +54,7 @@ successfully generating all the desired library artifacts.
 |
 
 **Recommended workflow when merging a new commit to the main branch of a repository**
+
 This workflow is similar to the one for validating new code contributions in a
 pull-request, but it also deploys the development documentation as new changes
 were introduced in the main development branch.
@@ -62,6 +64,7 @@ were introduced in the main development branch.
 |
 
 **Recommended workflow when performing a new release**
+
 This workflow outlines the recommended steps for performing a new software
 release, ensuring a smooth and well-documented process by deploying
 the stable documentation at the end of the workflow.
