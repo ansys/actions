@@ -7,6 +7,16 @@ description: |
   be used in its own job step. It clones the project and installs the project with
   its runtime dependencies.
 
+  .. note::
+
+     **This action relies on PyPI metadata to identify the license for each package.**
+
+      If the metadata are flawed or not included, it may lead to
+      inconclusive results. In those cases, please perform a thorough review of the
+      package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
+      Even though packages may define their license as of a certain type, the
+      package could be not applying properly its licensing conditions.
+
   .. jinja:: check-licenses
 
       .. grid:: 1 1 1 2
