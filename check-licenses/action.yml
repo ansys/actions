@@ -8,10 +8,10 @@ description: |
   its runtime dependencies.
 
   .. note::
-      
+
       **This action relies on PyPI metadata to determine which is the license for each
       package.**
-      
+
       If the metadata are flawed or not included, it may lead to
       inconclusive results. In those cases, please perform a thorough review of the
       package you are using. Furthermore, do not take the PyPI metadata as fully
