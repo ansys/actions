@@ -9,8 +9,7 @@ description: |
 
   .. note::
 
-      **This action relies on PyPI metadata to determine which is the license for each
-      package.**
+     **This action relies on PyPI metadata to identify the license for each package.**
 
       If the metadata are flawed or not included, it may lead to
       inconclusive results. In those cases, please perform a thorough review of the
