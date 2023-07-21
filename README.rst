@@ -32,11 +32,14 @@ The different actions provided by `ansys/actions
 <https://github.com/ansys/actions>`_ can be used to create a simple but
 effective workflow.
 
-The following lines suggest the recommended workflows for different events
-including pushing a new commit to a pull-request, merging a commit to the main
-branch of a repository, and performing a new release. Each image contains the
-different job steps declared in a YML file. Jobs colored with green color
-execute whereas jobs colored with a grey background do not execute.
+The following lines describe the suggested workflows for various events, such as
+pushing a new commit to a pull request, merging a commit to the main branch of a
+repository, and performing a new release. Each image showcases the distinct job
+steps declared in a YML file. Jobs highlighted in green signify that they
+execute, while those with a grey background indicate that they do not execute.
+
+    For additional in-depth information on the previous topic, please refer to
+    the poster `CI/CD pipelines for scientists <https://scipy2023.pyansys.com/ci_cd.pdf>`_.
 
 |
 
@@ -64,5 +67,3 @@ release, ensuring a smooth and well-documented process by deploying
 the stable documentation at the end of the workflow.
 
 .. image:: https://github.com/ansys/actions/blob/main/doc/source/_static/ci_cd_release.png
-
-
