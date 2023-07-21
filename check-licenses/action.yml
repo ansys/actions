@@ -13,8 +13,8 @@ description: |
 
       If the metadata are flawed or not included, it may lead to
       inconclusive results. In those cases, please perform a thorough review of the
-      package you are using. Furthermore, do not take the PyPI metadata as fully
-      true. Even though packages may define their license as of a certain type, the
+      package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
+      Even though packages may define their license as of a certain type, the
       package could be not applying properly its licensing conditions.
 
   .. jinja:: check-licenses
