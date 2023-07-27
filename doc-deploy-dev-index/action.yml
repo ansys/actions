@@ -2,8 +2,8 @@ name: >
   Doc deploy dev index action
 
 description: |
-  This action automates the process of creating indexes and scraping the 
-  desired HTML documentation artifact that contains the development version 
+  This action automates the process of creating indexes and scraping the
+  desired HTML documentation artifact that contains the development version
   of a library, then deploying it to a Meilisearch instance.
 
 inputs:
@@ -46,9 +46,9 @@ inputs:
 
   template:
     description: >
-      The "template" parameter specifies the layout used for the HTML documentation. 
-      By default, it is set to ``sphinx_pydata`` which assumes that the document is 
-      constructed using the pydata-sphinx-theme or its associated theme, 
+      The "template" parameter specifies the layout used for the HTML documentation.
+      By default, it is set to ``sphinx_pydata`` which assumes that the document is
+      constructed using the pydata-sphinx-theme or its associated theme,
       such as the ansys-sphinx-theme.
     required: false
     default: "sphinx_pydata"
@@ -91,16 +91,18 @@ runs:
       with:
         level: "INFO"
         message: >
-          Download the documentation artifact from the current workflow. 
-  
+          Download the documentation artifact from the current workflow.
+
     - name: "Download the development documentation artifact"
       uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: ${{ inputs.doc-artifact-name }}
 
-    - name: Display structure of downloaded files
-        run: ls -R
+    - name: "Display structure of version/dev"
+      shell: bash
+      run: |
+        ls -R version/dev
 
     # ------------------------------------------------------------------------
 
@@ -110,8 +112,10 @@ runs:
         message: >
           Install the pymeilisearch required for the indexing.
 
-    - name: Install the package requirements
-        run: python -m pip install pymeilisearch 
+    - name: "Install build and twine"
+      shell: bash
+      run: |
+        python -m pip install pymeilisearch
 
      # ------------------------------------------------------------------------
 
@@ -122,8 +126,9 @@ runs:
           Scrap the document and deploy it to pymeilisearch.
 
     - name: Scrape the dev documentation to meilisearch
-        run: |
-          pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.library_name }}-vdev  --cname ${{ inputs.cname }}/version/dev/ html ${{ inputs.doc-artifact-name }}
-        env:
-          MEILISEARCH_HOST_URL: ${{ inputs.host-url }}
-          MEILISEARCH_API_KEY: ${{ inputs.api-key }}
+      shell: bash
+      run: |
+        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.library_name }}-vdev  --cname ${{ inputs.cname }}/version/dev/ html ${{ inputs.doc-artifact-name }}
+      env:
+        MEILISEARCH_HOST_URL: ${{ inputs.host-url }}
+        MEILISEARCH_API_KEY: ${{ inputs.api-key }}
