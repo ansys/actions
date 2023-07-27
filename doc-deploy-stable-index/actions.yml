@@ -1,5 +1,5 @@
 name: >
-  Doc deploy dev index action
+  Doc deploy stable index action
 
 description: |
   This action automates the process of creating indexes and scraping the
@@ -34,6 +34,13 @@ inputs:
     required: true
     type: string
 
+  python-version:
+    description: >
+      Python version used for execution of the stable docs scraping.
+    required: true
+    type: string
+
+
   # Optional inputs
 
   doc-artifact-name:
@@ -54,11 +61,22 @@ inputs:
     default: "sphinx_pydata"
     type: string
 
+  target:
+    description: >
+      Optional target used during the building process for version.
+    required: false
+    default: ''
+    type: string
 
 
 runs:
   using: "composite"
   steps:
+
+    - name: "Set up Python"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
 
     # ------------------------------------------------------------------------
 
@@ -112,15 +130,52 @@ runs:
         message: >
           Install the pymeilisearch required for the indexing.
 
-    - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
-      with:
-        python-version: '3.10'
-
     - name: "Install build and twine"
       shell: bash
       run: |
         python -m pip install pymeilisearch
+
+    - name: "Update pip and install the build and wheel libraries"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip build wheel
+
+    - name: "Check if specific target is requested"
+      shell: bash
+      run: |
+        echo "install_target=$( [[ '${{ inputs.target }}' == '' ]] && echo '.' || echo '.[${{ inputs.target }}]')" >> $GITHUB_ENV
+
+    - name: "Install the library"
+      shell: bash
+      run: |
+        python -m pip install ${{ env.install_target }}
+
+    - name: "Verify if importlib-metadata needs to be installed"
+      shell: bash
+      run: |
+        python_version="${{ inputs.python-version }}"
+        if (( $(echo "$python_version < 3.8" | bc -l) )); then
+          echo "needs_importlib_metadata=true" >> $GITHUB_ENV
+        else
+          echo "needs_importlib_metadata=false" >> $GITHUB_ENV
+        fi
+
+    - name: "Install importlib-metadata (only for Python <= 3.7)"
+      if: env.needs_importlib_metadata == 'true'
+      shell: bash
+      run: |
+        python -m pip install importlib-metadata
+
+    - name: "Verify library is properly installed and get its version number"
+      shell: bash
+      run: |
+        library_name=${{ inputs.library-name }}
+
+        if [ ${{ env.needs_importlib_metadata }} ]; then
+          VERSION=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
+        else
+          VERSION=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
+        fi
 
      # ------------------------------------------------------------------------
 
@@ -133,7 +188,8 @@ runs:
     - name: Scrape the dev documentation to meilisearch
       shell: bash
       run: |
-        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.library_name }}-vdev  --cname ${{ inputs.cname }}/version/dev/ html ${{ inputs.doc-artifact-name }}
+        VERSION_MEILI=$(python -c "print('$VERSION'.replace('.', '-'))")
+        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.library_name }}-v$VERSION  --cname ${{ inputs.cname }}/version/$VERSION/ html ${{ inputs.doc-artifact-name }}
       env:
         MEILISEARCH_HOST_URL: ${{ inputs.host-url }}
         MEILISEARCH_API_KEY: ${{ inputs.api-key }}
