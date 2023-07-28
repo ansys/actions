@@ -29,13 +29,13 @@ inputs:
 
   api-key:
     description: >
-      The API key used to access the Meilsearch instance host.
+      The API key used to access the Meilisearch instance host.
     required: true
     type: string
 
   host-url:
     description: >
-      The URL where the Meilsearch instance is hosted.
+      The URL where the Meilisearch instance is hosted.
     required: true
     type: string
 
