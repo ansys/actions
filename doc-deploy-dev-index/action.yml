@@ -2,9 +2,9 @@ name: >
   Doc deploy dev index action
 
 description: |
-  This action automates the process of scraping and creating indexes from the
-  desired development documentation artifacts in HTML form. Later, the action
-  deploys the index to a Meilisearch instance.
+  This action automates the process of creating indexes and scraping the
+  desired HTML documentation artifact that contains the development version
+  of a library, then deploying it to a Meilisearch instance.
 
 inputs:
 
@@ -94,9 +94,9 @@ runs:
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: '3.10'
 
-    - name: "Install pymeilisearch"
+    - name: "Install build and twine"
       shell: bash
       run: |
         python -m pip install --upgrade pip pymeilisearch
@@ -112,7 +112,7 @@ runs:
     - name: Scrape the dev documentation to meilisearch
       shell: bash
       run: |
-        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.library-name }}-dev  --cname ${{ inputs.cname }}/version/dev/ html ${{ inputs.doc-artifact-name }}
+        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.library_name }}-vdev  --cname ${{ inputs.cname }}/version/dev/ html ${{ inputs.doc-artifact-name }}
       env:
         MEILISEARCH_HOST_URL: ${{ inputs.host-url }}
         MEILISEARCH_API_KEY: ${{ inputs.api-key }}

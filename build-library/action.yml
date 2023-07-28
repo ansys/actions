@@ -28,7 +28,7 @@ inputs:
 
   python-version:
     description: >
-      Python version used for installing ``build`` library.
+      Python version used for installing and execution of the build process.
     default: '3.10'
     required: false
     type: string
