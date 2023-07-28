@@ -10,7 +10,7 @@ inputs:
 
   # Required inputs
 
-  scrap_cname:
+  cname:
     description: >
       The CNAME (canonical Name) that points to the documentation website for a specific version,
       specifically intended for scraping purposes.
