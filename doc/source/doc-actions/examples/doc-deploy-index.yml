@@ -5,7 +5,7 @@ doc-deploy-dev:
   if: github.event_name == 'push'
   steps:
     - name: "Deploy the latest documentation index"
-      uses: ansys/actions/doc-deploy-indexv@{{ version }}
+      uses: ansys/actions/doc-deploy-index@{{ version }}
       with:
           cname: "<library>.docs.pyansys.com/version/<version-number>"
           index-name: "<index-name>"
