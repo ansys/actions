@@ -27,7 +27,7 @@ inputs:
 
   python-version:
     description: >
-      Python version used for installing and execution of the build wheel process.
+      Python version used for installing and generating the wheelhouse artifact.
     required: true
     type: string
 
