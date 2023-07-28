@@ -16,9 +16,9 @@ inputs:
     required: true
     type: string
 
-  library-name:
+  index-name:
     description: >
-      The name of the library.
+      The identifier given to the document in pymeilisearch.
     required: true
     type: string
 
@@ -31,6 +31,12 @@ inputs:
   host-url:
     description: >
       The URL where the Meilsearch instance is hosted.
+    required: true
+    type: string
+
+  python-version:
+    description: >
+      Python version used for execution of the stable docs scraping.
     required: true
     type: string
 
@@ -59,11 +65,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-
-    - name: "Install Git and clone project"
-      uses: actions/checkout@v3
-
-    # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
       with:
