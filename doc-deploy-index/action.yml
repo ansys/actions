@@ -39,14 +39,14 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
   python-version:
     description: >
       Python version used for execution of the stable docs scraping.
-    required: true
+    default: '3.10'
+    required: false
     type: string
-
-
-  # Optional inputs
 
   doc-artifact-name:
     description: >
