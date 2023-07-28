@@ -112,7 +112,7 @@ runs:
     - name: Scrape the dev documentation to meilisearch
       shell: bash
       run: |
-        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.library_name }}-vdev  --cname ${{ inputs.cname }}/version/dev/ html ${{ inputs.doc-artifact-name }}
+        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.index-name }}  --cname ${{ inputs.cname }}/version/dev/ html ${{ inputs.doc-artifact-name }}
       env:
         MEILISEARCH_HOST_URL: ${{ inputs.host-url }}
         MEILISEARCH_API_KEY: ${{ inputs.api-key }}
