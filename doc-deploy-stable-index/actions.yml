@@ -3,7 +3,7 @@ name: >
 
 description: |
   This action automates the process of creating indexes and scraping the
-  desired HTML documentation artifact that contains the development version
+  stable HTML documentation artifact that contains the development version
   of a library, then deploying it to a Meilisearch instance.
 
 inputs:
@@ -130,15 +130,15 @@ runs:
         message: >
           Install the pymeilisearch required for the indexing.
 
-    - name: "Install build and twine"
-      shell: bash
-      run: |
-        python -m pip install pymeilisearch
-
     - name: "Update pip and install the build and wheel libraries"
       shell: bash
       run: |
         python -m pip install --upgrade pip build wheel
+
+    - name: "Install build and twine"
+      shell: bash
+      run: |
+        python -m pip install pymeilisearch
 
     - name: "Check if specific target is requested"
       shell: bash
