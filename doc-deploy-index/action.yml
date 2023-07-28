@@ -1,9 +1,9 @@
 name: >
-  Doc deploy stable index action
+  Doc deploy index action
 
 description: |
   This action automates the process of creating indexes and scraping the
-  stable HTML documentation artifact that contains the development version
+  HTML documentation artifact that contains the development version
   of a library, then deploying it to a Meilisearch instance.
 
 inputs:
@@ -66,6 +66,15 @@ inputs:
     default: "sphinx_pydata"
     type: string
 
+  decompress-artifact:
+    description: >
+      Whether to decompress the ``doc-artifact-name`` file using `ouch
+      <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
+      is ``false``.
+    required: false
+    default: false
+    type: string
+
 
 runs:
   using: "composite"
@@ -89,6 +98,24 @@ runs:
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: ${{ inputs.doc-artifact-name }}
+
+    - name: "Update apt-get"
+      shell: bash
+      run: |
+        sudo apt-get update
+
+    - name: "Decompress artifact content"
+      shell: bash
+      if: inputs.decompress-artifact == 'true'
+      run: |
+        sudo apt-get install -y cargo && cargo install ouch
+        export PATH="$HOME/.cargo/bin/:$PATH"
+        ouch --version
+        cd ${{ inputs.doc-artifact-name }} && compressed_artifact=$(ls .)
+        ouch decompress $compressed_artifact
+        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
+        mv $decompressed_artifact/* .
+        rm -rf $compressed_artifact $decompressed_artifact
 
     - name: "Display structure of ${{ inputs.doc-artifact-name }}"
       shell: bash
