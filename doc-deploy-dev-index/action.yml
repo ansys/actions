@@ -60,30 +60,8 @@ runs:
   using: "composite"
   steps:
 
-    # ------------------------------------------------------------------------
-
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Checkout the repository branch for deploying the documentation. If
-          this step fails, then it means that the provided token is not valid.
-
-    - name: "Get the name of the repository"
-      shell: bash
-      run: |
-        if [[ "${{ inputs.repository }}" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
-        else
-          echo "REPOSITORY=${{ inputs.repository }}" >> $GITHUB_ENV
-        fi
-
-    - name: "Checkout ${{ env.REPOSITORY }} repository"
+    - name: "Install Git and clone project"
       uses: actions/checkout@v3
-      with:
-        repository: ${{ env.REPOSITORY }}
-        ref: ${{ inputs.branch }}
-        token: ${{ inputs.token }}
 
     # ------------------------------------------------------------------------
 
