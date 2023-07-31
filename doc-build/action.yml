@@ -175,7 +175,7 @@ runs:
       run: |
         python -m pip install .
 
-    - name: "Install test dependencies from pyproject.toml"
+    - name: "Install documentation dependencies from pyproject.toml"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'false'
       run: |
