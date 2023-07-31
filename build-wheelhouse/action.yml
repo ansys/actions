@@ -1,7 +1,7 @@
 name: >
   Build wheelhouse action
 
-description: >
+description: |
   Generates compressed artifacts for the wheelhouse of a Python library. The
   wheelhouse contains all the necessary dependencies to install the project.
   This allows for local installations and avoids the need to connect to the
