@@ -5,6 +5,20 @@ description: >
   Checks if the name of the branch follows the branch naming convention of
   PyAnsys.
 
+  .. note::
+
+      Branch names must start with one of the following prefixes:
+
+      - fix
+      - feat
+      - junk
+      - maint
+      - doc or docs
+      - no-ci
+      - testing or test
+      - release
+      - dependabot
+
 runs:
   using: "composite"
   steps:
