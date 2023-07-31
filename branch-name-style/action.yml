@@ -1,7 +1,7 @@
 name: >
   Branch name style
 
-description: >
+description: |
   Checks if the name of the branch follows the branch naming convention of
   PyAnsys.
 
