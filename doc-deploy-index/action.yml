@@ -81,13 +81,13 @@ runs:
   steps:
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -124,7 +124,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
@@ -137,7 +137,7 @@ runs:
 
      # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v4
       with:
         level: "INFO"
         message: >
