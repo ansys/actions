@@ -7,6 +7,11 @@ description: >
   This allows for local installations and avoids the need to connect to the
   online PyPI index.
 
+  .. warning::
+
+      Since version 4.1, the input parameter ``library-namespace`` is no longer
+      required.
+
 inputs:
 
   # Required inputs
