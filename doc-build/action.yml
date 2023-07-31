@@ -177,7 +177,7 @@ runs:
 
     - name: "Install test dependencies from pyproject.toml"
       shell: bash
-      if: env.EXISTS_TESTS_REQUIREMENTS == 'false'
+      if: env.EXISTS_DOC_REQUIREMENTS == 'false'
       run: |
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           python -m pip install poetry
