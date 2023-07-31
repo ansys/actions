@@ -115,7 +115,7 @@ inputs:
   redirection-description:
     description: >
       Description to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will be empty.
+      multi-version mechanism implemented. By default, it will be empty. 
     required: false
     default: ''
     type: string
