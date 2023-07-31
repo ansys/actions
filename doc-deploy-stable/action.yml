@@ -290,10 +290,11 @@ runs:
       run: |
         num_versions=$(jq length versions.json)
 
-        if [ $num_elements -gt ${{ inputs.render-last }} ]; then
+        if [ $num_versions -gt ${{ inputs.render-last }} ]; then
           cname=${{ inputs.cname }}
           new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/index.html\" }"
           jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
+        fi
 
     - name: "Convert the first stable version into the 'stable' one"
       shell: bash
