@@ -153,12 +153,6 @@ runs:
       shell: bash
       run: python -m pip install -U pip
 
-    - name: "Install Python library"
-      shell: bash
-      if: inputs.skip-install == 'false'
-      run:
-        python -m pip install .
-
     - name: "Check if requirements.txt file exists"
       shell: bash
       run: |
@@ -166,18 +160,31 @@ runs:
 
     - name: "Print previous output"
       shell: bash
-      run:
+      run: |
         echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
 
     - name: "Install documentation dependencies from requirements file"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'true'
-      run: python -m pip install -r requirements/requirements_doc.txt
+      run: |
+        python -m pip install -r requirements/requirements_doc.txt
+
+    - name: "Install Python library"
+      shell: bash
+      if: inputs.skip-install == 'false'
+      run: |
+        python -m pip install .
 
     - name: "Install documentation dependencies from pyproject.toml"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'false'
-      run: python -m pip install .[doc]
+      run: |
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          python -m pip install poetry
+          poetry install --with doc
+        else
+          python -m pip install .[doc]
+        fi
 
     - name: "Build HTML, PDF, and JSON documentation"
       if: inputs.requires-xvfb == 'false'
