@@ -13,7 +13,7 @@ description: >
       - feat
       - junk
       - maint
-      - doc or docs
+      - docs
       - no-ci
       - testing or test
       - release
