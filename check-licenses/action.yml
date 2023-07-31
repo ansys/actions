@@ -114,6 +114,13 @@ runs:
       shell: bash
       run: pip install ${{ env.install_target }}
 
+    - name:  "Install wget on Windows"
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          choco install wget
+        fi
+
     - name: "Download the list of accepted and ignored packages"
       shell: bash
       run: |
