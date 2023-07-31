@@ -105,8 +105,8 @@ inputs:
     description: >
       Title to be inserted in the redirection index.html coming from the
       multi-version mechanism implemented. By default, it will assign
-      "Redirecting to https://<CNAME>/version/stable/" or
-      "Redirecting to https://<CNAME>/version/dev/" depending on whether
+      "Redirecting to ``https://<CNAME>/version/stable/``" or
+      "Redirecting to ``https://<CNAME>/version/dev/``" depending on whether
       there is a stable version released already or not.
     required: false
     default: ''
