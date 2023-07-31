@@ -294,6 +294,7 @@ runs:
           cname=${{ inputs.cname }}
           new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/index.html\" }"
           jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
+        fi
 
     - name: "Convert the first stable version into the 'stable' one"
       shell: bash
