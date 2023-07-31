@@ -48,7 +48,7 @@ inputs:
 
   python-version:
     description: >
-      Python version used for installing and running ``pre-commit``.
+      Python version used for installing and executing licence check.
     default: '3.10'
     required: false
     type: string
