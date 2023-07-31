@@ -233,7 +233,7 @@ runs:
         if [ -z "${{ inputs.redirection-title }}" ]; then
           echo "<title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
         else
-          echo "<title>${{ inputs.redirection_title }}</title>" >> index.html
+          echo "<title>${{ inputs.redirection-title }}</title>" >> index.html
         fi
         echo "<meta name=\"description\" content=\"${{ inputs.redirection-description }}\">" >> index.html
         echo "<meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
