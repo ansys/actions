@@ -150,3 +150,9 @@ runs:
           pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses | awk 'NR>1 {print $1 " " $2 " has " $3 " license"}'
           exit 1
         fi
+
+    - name: "List packages if failure occurred"
+      if: ${{ failure() }}
+      shell: bash
+      run: |
+        pip-licenses --summary --ignore-packages $ignored_packages
