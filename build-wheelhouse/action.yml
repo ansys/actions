@@ -117,7 +117,7 @@ runs:
       run: |
         library_name=${{ inputs.library-name }}
 
-        if [ ${{ env.needs_importlib_metadata }} ]; then
+        if [ ${{ env.needs_importlib_metadata }} == 'true' ]; then
           version=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
         else
           version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
