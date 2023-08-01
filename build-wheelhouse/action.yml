@@ -100,7 +100,7 @@ runs:
         major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
         if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 8 )) )); then
           echo "needs_importlib_metadata=true" >> $GITHUB_ENV
-        elif (( $(( $major_python_version < 3 )) ))
+        elif (( $(( $major_python_version < 3 )) )); then
           echo "needs_importlib_metadata=true" >> $GITHUB_ENV
         else
           echo "needs_importlib_metadata=false" >> $GITHUB_ENV
