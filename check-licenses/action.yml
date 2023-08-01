@@ -121,6 +121,7 @@ runs:
 
     - name:  "Update bash on macOS"
       if: runner.os == 'macOS'
+      shell: bash
       run: |
         brew install bash
 
