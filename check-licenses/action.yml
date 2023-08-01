@@ -155,4 +155,4 @@ runs:
       if: ${{ failure() }}
       shell: bash
       run: |
-        pip-licenses --summary --ignore-packages $ignored_packages
+        pip-licenses --ignore-packages $ignored_packages
