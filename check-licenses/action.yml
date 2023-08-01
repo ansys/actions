@@ -154,11 +154,8 @@ runs:
         else
           echo -e "\nInvalid licenses found:\n"
           pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses | awk 'NR>1 {print $1 " " $2 " has " $3 " license"}'
+          # print all packages
+          echo -e "\n\n"
+          pip-licenses --ignore-packages $ignored_packages
           exit 1
         fi
-
-    - name: "List packages if failure occurred"
-      if: ${{ failure() }}
-      shell: bash
-      run: |
-        pip-licenses --ignore-packages $ignored_packages
