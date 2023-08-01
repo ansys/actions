@@ -119,6 +119,11 @@ runs:
       shell: bash
       run: choco install wget
 
+    - name:  "Update bash on macOS"
+      if: runner.os == 'macOS'
+      run: |
+        brew install bash
+
     - name: "Download the list of accepted and ignored packages"
       shell: bash
       run: |
