@@ -12,7 +12,7 @@ env:
   MAIN_PYTHON_VERSION: '3.10'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   test-library-name: 'ansys-actions'
-  MEILISEARCH_API_PUBLIC_KEY: ${{ secrets.MEILISEARCH_API_KEY }}
+  MEILISEARCH_API_KEY: ${{ secrets.MEILISEARCH_API_KEY }}
   MEILISEARCH_HOST_URL: https://backend.search.pyansys.com
 
 concurrency:
