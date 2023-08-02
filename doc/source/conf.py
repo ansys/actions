@@ -65,6 +65,12 @@ html_theme_options = {
         "json_url": f"https://{cname}/versions.json",
         "version_match": get_version_match(__version__),
     },
+    "use_meilisearch": {
+        "api_key": os.getenv("MEILISEARCH_API_KEY", ""),
+        "index_uids": {
+            f"actions-v{get_version_match(__version__).replace('.', '-')}": "Ansys-actions",
+        },
+    },
 }
 
 # Specify Sphinx extensions to use
