@@ -1,8 +1,9 @@
 defusedxml
+filelock
 matplotlib
 pypiwin32
-filelock
+pywin32
+reuse
+typing
 typing_extensions
 typing-extensions
-pywin32
-typing
