@@ -77,7 +77,7 @@ inputs:
 
   pymeilisearchopts:
     description: >
-      Set of options to pass to `pymeilisearch <https://pymeilisearch.docs.ansys.com/version/stable/`_
+      Set of options to pass to `pymeilisearch <https://pymeilisearch.docs.ansys.com/version/stable/>`_
       while scraping.Default is None.
     default: ''
     required: false
