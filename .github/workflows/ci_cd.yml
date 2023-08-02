@@ -270,24 +270,16 @@ jobs:
       - name: "Install Git and clone project"
         uses: actions/checkout@v3
 
-      - name: "Set up Python"
-        uses: ansys/actions/_setup-python@main
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-cache: false
-
-      - name: "Isolate testing library"
-        run: mv .ci/${{ env.test-library-name }} ~/
-
-      - name: "Install library"
+      - name: "get version of library"
         shell: bash
         run: |
-          python -m pip install -e .
+          version=$(cat VERSION)
+          echo "ver=$version" >> $GITHUB_ENV
 
       - name: Scrape the stable documentation to PyMeilisearch
         run: |
-          VERSION=$(python -c "from ansys.actions.core  import __version__; print('.'.join(__version__.split('.')[:2]))")
-          VERSION_MEILI=$(python -c "from ansys.actions.core  import __version__; print('-'.join(__version__.split('.')[:2]))")
+          VERSION=$(python -c "import os; version=os.environ['ver']; print('.'.join(version.split('.')[:2]))")
+          VERSION_MEILI=$(python -c "import os; version=os.environ['ver']; print('-'.join(version.split('.')[:2]))")
           echo "Calculated VERSION: $VERSION"
           echo "Calculated VERSION_MEILI: $VERSION_MEILI"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
