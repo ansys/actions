@@ -3,5 +3,6 @@ matplotlib
 pypiwin32
 filelock
 typing_extensions
+typing-extensions
 pywin32
 typing
