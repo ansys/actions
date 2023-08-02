@@ -262,11 +262,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: doc-deploy-stable
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
       - name: "Install Git and clone project"
         uses: actions/checkout@v3
 
