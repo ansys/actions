@@ -189,14 +189,14 @@ jobs:
 
   doc-index-dev:
     name: "Deploy dev index docs"
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: doc-deploy-dev
+    needs: doc-build
     steps:
       - name: "Deploy the latest documentation index"
         uses: ansys/actions/doc-deploy-index@v4
         with:
-          cname: ${{ env.DOCUMENTATION_CNAME}}/version/dev
+          cname: ${{ env.DOCUMENTATION_CNAME }}/version/dev
           index-name: "actions-vdev"
           host-url: ${{ vars.MEILISEARCH_HOST_URL }}
           api-key: ${{ env.MEILISEARCH_API_KEY }}
