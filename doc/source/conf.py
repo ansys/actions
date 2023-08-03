@@ -66,7 +66,7 @@ html_theme_options = {
         "version_match": get_version_match(__version__),
     },
     "use_meilisearch": {
-        "api_key": os.getenv("MEILISEARCH_API_KEY", ""),
+        "api_key": os.getenv("MEILISEARCH_PUBLIC_API_KEY", ""),
         "index_uids": {
             f"actions-v{get_version_match(__version__).replace('.', '-')}": "Ansys-actions",
         },
