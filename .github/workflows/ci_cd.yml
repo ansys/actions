@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Test var"
-        run: echo "${{ env.MEILISEARCH_HOST_URL }}"
+        run: echo "${{ vars.MEILISEARCH_HOST_URL }}"
 
   labeler:
     name: "Label syncer"
