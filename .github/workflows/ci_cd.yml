@@ -13,7 +13,6 @@ env:
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   test-library-name: 'ansys-actions'
   MEILISEARCH_API_KEY: ${{ secrets.MEILISEARCH_API_KEY }}
-  MEILISEARCH_HOST_URL: ${{ secrets.MEILISEARCH_HOST_UR }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
