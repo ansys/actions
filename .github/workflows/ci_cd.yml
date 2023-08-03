@@ -20,13 +20,6 @@ concurrency:
 
 jobs:
 
-  test-var:
-    name: "Test org env var"
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Test var"
-        run: echo "${{ vars.MEILISEARCH_HOST_URL }}"
-
   labeler:
     name: "Label syncer"
     runs-on: ubuntu-latest
@@ -205,7 +198,7 @@ jobs:
         with:
           cname: ${{ env.DOCUMENTATION_CNAME}}/version/dev
           index-name: "actions-vdev"
-          host-url: ${{ env.MEILISEARCH_HOST_URL }}
+          host-url: ${{ vars.MEILISEARCH_HOST_URL }}
           api-key: ${{ env.MEILISEARCH_API_KEY }}
 
   release:
@@ -290,5 +283,5 @@ jobs:
         with:
           cname: ${{ env.DOCUMENTATION_CNAME}}/version/${{ env.VERSION }}
           index-name: actions-v{{ env.VERSION_MEILI }}
-          host-url: ${{ env.MEILISEARCH_HOST_URL }}
+          host-url: ${{ vars.MEILISEARCH_HOST_URL }}
           api-key: ${{ env.MEILISEARCH_API_KEY }}
