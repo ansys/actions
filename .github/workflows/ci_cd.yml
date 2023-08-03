@@ -20,6 +20,13 @@ concurrency:
 
 jobs:
 
+  test-var:
+    name: "Test org env var"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Test var"
+        run: echo "${{ env.MEILISEARCH_HOST_URL }}"
+
   labeler:
     name: "Label syncer"
     runs-on: ubuntu-latest
