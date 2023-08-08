@@ -283,6 +283,6 @@ jobs:
         uses: ansys/actions/doc-deploy-index@v4
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/${{ env.VERSION }}
-          index-name: actions-v{{ env.VERSION_MEILI }}
+          index-name: actions-v${{ env.VERSION_MEILI }}
           host-url: ${{ vars.MEILISEARCH_HOST_URL }}
           api-key: ${{ env.MEILISEARCH_API_KEY }}
