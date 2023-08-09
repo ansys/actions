@@ -75,9 +75,9 @@ inputs:
     default: false
     type: string
 
-  pymeilisearchopts:
+  stop-urls:
     description: >
-      Set of options to pass to `pymeilisearch <https://pymeilisearch.docs.ansys.com/version/stable/>`_
+      URLs to stp scraping using `pymeilisearch <https://pymeilisearch.docs.ansys.com/version/stable/>`_
       while scraping. Default is ``None``.
     default: ''
     required: false
@@ -154,7 +154,7 @@ runs:
     - name: Scrape the dev documentation to meilisearch
       shell: bash
       run: |
-        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.index-name }} --cname ${{ inputs.cname }} html ${{ inputs.doc-artifact-name }}
+        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.index-name }} --cname ${{ inputs.cname }} html ${{ inputs.doc-artifact-name }} --stop_urls  ${{ inputs.stop-urls }}
       env:
         MEILISEARCH_HOST_URL: ${{ inputs.host-url }}
         MEILISEARCH_API_KEY: ${{ inputs.api-key }}
