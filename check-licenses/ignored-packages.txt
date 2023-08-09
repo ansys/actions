@@ -7,3 +7,4 @@ reuse
 typing
 typing_extensions
 typing-extensions
+ansys-corba
