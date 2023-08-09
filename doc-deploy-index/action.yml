@@ -77,8 +77,8 @@ inputs:
 
   stop-urls:
     description: >
-      URLs to stp scraping using `pymeilisearch <https://pymeilisearch.docs.ansys.com/version/stable/>`_
-      while scraping. Default is ``None``.
+      A list of stop points when scraping URLs. If specified,
+      crawling will stop when encountering any URL containing any of the strings in this list.
     default: ''
     required: false
     type: string
@@ -154,7 +154,7 @@ runs:
     - name: Scrape the dev documentation to meilisearch
       shell: bash
       run: |
-        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.index-name }} --cname ${{ inputs.cname }} html ${{ inputs.doc-artifact-name }} --stop_urls  ${{ inputs.stop-urls }}
+        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.index-name }} --cname ${{ inputs.cname }} html ${{ inputs.doc-artifact-name }} --stop_urls ${{ inputs.stop-urls }}
       env:
         MEILISEARCH_HOST_URL: ${{ inputs.host-url }}
         MEILISEARCH_API_KEY: ${{ inputs.api-key }}
