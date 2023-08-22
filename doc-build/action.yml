@@ -190,12 +190,12 @@ runs:
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
-        make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        make -C doc pdf
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
           make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
+        make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        make -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
           make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
@@ -205,6 +205,10 @@ runs:
       if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
+        if [[ ${{ inputs.check-links }} == 'true' ]];
+        then
+          xvfb-run make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+        fi
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         xvfb-run make -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
