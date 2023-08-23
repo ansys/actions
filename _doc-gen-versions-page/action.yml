@@ -95,13 +95,33 @@ runs:
         EOF
         )
 
-        # Inject the versions script in the head of the HTML page
-        escaped_script_content=$(echo "$script_content" | tr '\n' ' ' | sed 's/[\/&]/\\&/g')
-        sed -i "/<\/footer>/s/.*/&\n<style> \
-        .bd-main .bd-content .bd-article-container { \
-        display: flex; \
-        flex-direction: column; \
-        justify-content: start;} \
-        .table { border-collapse: collapse; width: 100%; } \
-        .table th, .table td { border: 1px solid #dddddd; text-align: center; padding: 8px; } \
-        .table th { background-color: var(--pst-color-table-hover); }</style>\n<script>$escaped_script_content<\/script>/" "$html_file"
+        # Generate the content to inject
+        injected_content=$(cat <<EOL
+        <style>
+        .bd-main .bd-content .bd-article-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+        }
+        .table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .table th, .table td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 8px;
+        }
+        .table th {
+            background-color: var(--pst-color-table-hover);
+        }
+        </style>
+        <script>
+        $script_content
+        </script>
+        EOL
+        )
+
+        # Use awk to inject the content
+        awk -v content="$injected_content" '/<\/footer>/ {print content} 1' "$html_file" > temp.html
+        mv temp.html "$html_file"
