@@ -1,0 +1,161 @@
+name: >
+  Doc deploy index action
+
+description: |
+  This action automates the process of creating indexes and scraping the
+  HTML documentation artifact that contains the development version
+  of a library, then deploying it to a Meilisearch instance.
+
+inputs:
+
+  # Required inputs
+
+  cname:
+    description: >
+      The CNAME (canonical Name) that points to the documentation website for a specific version,
+      specifically intended for scraping purposes.
+
+      The format of the CNAME should be "cname/version/version-number," where:
+      - "cname" is the main Canonical Name
+      - "version-number" is the specific number associated with the version (e.g., 0.1, 0.2, 0.3).
+    required: true
+    type: string
+
+  index-name:
+    description: >
+      The identifier given to the documentation in pymeilisearch.
+    required: true
+    type: string
+
+  api-key:
+    description: >
+      The API key used to access the Meilisearch instance host.
+    required: true
+    type: string
+
+  host-url:
+    description: >
+      The URL where the Meilisearch instance is hosted.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  python-version:
+    description: >
+      Python version used for execution of the stable docs scraping.
+    default: '3.10'
+    required: false
+    type: string
+
+  doc-artifact-name:
+    description: >
+      The name of the HTML documentation artifact. This artifact is expected to
+      contain all the HTML and static files.The dafault value is ``documentation-html``.
+    required: false
+    default: 'documentation-html'
+    type: string
+
+  template:
+    description: >
+      The "template" parameter specifies the layout used for the HTML documentation.
+      By default, it is set to ``sphinx_pydata`` which assumes that the document is
+      constructed using the pydata-sphinx-theme or its associated theme,
+      such as the ansys-sphinx-theme.
+    required: false
+    default: "sphinx_pydata"
+    type: string
+
+  decompress-artifact:
+    description: >
+      Whether to decompress the ``doc-artifact-name`` file using `ouch
+      <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
+      is ``false``.
+    required: false
+    default: false
+    type: string
+
+  pymeilisearchopts:
+    description: >
+      A list of pyemeilisearch options when scraping URLs. See
+      `pymeilisearch user guide <https://pymeilisearch.docs.ansys.com/version/stable/user-guide/index.html>`_
+      for available options
+    default: ''
+    required: false
+    type: string
+
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Set up Python"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Download the documentation artifact from the current workflow.
+
+    - name: "Download the development documentation artifact"
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.doc-artifact-name }}
+        path: ${{ inputs.doc-artifact-name }}
+
+    - name: "Update apt-get"
+      shell: bash
+      run: |
+        sudo apt-get update
+
+    - name: "Decompress artifact content"
+      shell: bash
+      if: inputs.decompress-artifact == 'true'
+      run: |
+        sudo apt-get install -y cargo && cargo install ouch
+        export PATH="$HOME/.cargo/bin/:$PATH"
+        ouch --version
+        cd ${{ inputs.doc-artifact-name }} && compressed_artifact=$(ls .)
+        ouch decompress $compressed_artifact
+        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
+        mv $decompressed_artifact/* .
+        rm -rf $compressed_artifact $decompressed_artifact
+
+    - name: "Display structure of ${{ inputs.doc-artifact-name }}"
+      shell: bash
+      run: |
+        ls -R ${{ inputs.doc-artifact-name }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install the pymeilisearch required for the indexing.
+
+    - name: "Install build and twine"
+      shell: bash
+      run: |
+        python -m pip install pymeilisearch
+
+     # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Scrap the document and deploy it to pymeilisearch.
+
+    - name: Scrape the dev documentation to meilisearch
+      shell: bash
+      run: |
+        pymeilisearch upload --template ${{ inputs.template }} --index ${{ inputs.index-name }} --cname ${{ inputs.cname }} html ${{ inputs.doc-artifact-name }} ${{ inputs.pymeilisearchopts }}
+      env:
+        MEILISEARCH_HOST_URL: ${{ inputs.host-url }}
+        MEILISEARCH_API_KEY: ${{ inputs.api-key }}

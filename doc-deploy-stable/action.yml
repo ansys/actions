@@ -8,10 +8,10 @@ description: |
 
   .. note::
 
-      If your project is using ``pyansys/actions@v3`` or lower and you would
+      If your project is using ``ansys/actions@v3`` or lower and you would
       like to update to this version of the actions, see the `guidelines for
       migrating to the latest multi-version documentation layout
-      <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-pyansys-actions-v3-to-pyansys-actions-v4>`_ .
+      <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-ansys-actions-v3-to-ansys-actions-v4>`_ .
 
 inputs:
 
@@ -93,13 +93,40 @@ inputs:
     default: true
     type: string
 
+  content-element-id:
+    description: >
+      Identifier of the HTML tag that comprises all the content of the article
+      or post.
+    required: false
+    default: 'main-content'
+    type: string
+
+  redirection-title:
+    description: >
+      Title to be inserted in the redirection index.html coming from the
+      multi-version mechanism implemented. By default, it will assign
+      "Redirecting to ``https://<CNAME>/version/stable/``" or
+      "Redirecting to ``https://<CNAME>/version/dev/``" depending on whether
+      there is a stable version released already or not.
+    required: false
+    default: ''
+    type: string
+
+  redirection-description:
+    description: >
+      Description to be inserted in the redirection index.html coming from the
+      multi-version mechanism implemented. By default, it will be empty.
+    required: false
+    default: ''
+    type: string
+
 runs:
   using: "composite"
   steps:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -145,7 +172,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -170,7 +197,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -204,9 +231,14 @@ runs:
       shell: bash
       if: inputs.decompress-artifact == 'true'
       run: |
-        sudo apt-get install cargo && cargo install ouch && ouch --version
+        sudo apt-get install -y cargo && cargo install ouch
+        export PATH="$HOME/.cargo/bin/:$PATH"
+        ouch --version
         cd version/${{ env.VERSION }} && compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact && rm $compressed_artifact
+        ouch decompress $compressed_artifact
+        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
+        mv $decompressed_artifact/* .
+        rm -rf $compressed_artifact $decompressed_artifact
 
     - name: "Display structure of version/dev"
       shell: bash
@@ -215,7 +247,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -226,7 +258,7 @@ runs:
     - name: "Install 'sponge' and 'jq' for manipulating JSON files"
       shell: bash
       run: |
-        sudo apt-get install moreutils jq
+        sudo apt-get install -y moreutils jq
 
     - name: "Create a clean 'versions.json' file"
       shell: bash
@@ -253,6 +285,17 @@ runs:
 
         cat versions.json
 
+    - name: "Add an 'Older versions' item if required"
+      shell: bash
+      run: |
+        num_versions=$(jq length versions.json)
+
+        if [ $num_versions -gt ${{ inputs.render-last }} ]; then
+          cname=${{ inputs.cname }}
+          new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/\" }"
+          jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
+        fi
+
     - name: "Convert the first stable version into the 'stable' one"
       shell: bash
       run: |
@@ -274,7 +317,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -316,7 +359,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -334,7 +377,12 @@ runs:
       run: |
         echo "<!DOCTYPE html>" > index.html
         echo "<meta charset=\"utf-8\">" >> index.html
-        echo "<title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
+        if [ -z "${{ inputs.redirection-title }}" ]; then
+          echo "<title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
+        else
+          echo "<title>${{ inputs.redirection-title }}</title>" >> index.html
+        fi
+        echo "<meta name=\"description\" content=\"${{ inputs.redirection-description }}\">" >> index.html
         echo "<meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
         echo "<link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
 
@@ -345,7 +393,22 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Copy the 'version/stable/index.html' to 'version/index.html' file. If
+          no stable release is available, copy the 'dev/index.html' instead.
+          Update all references to point to 'stable/_static' or 'dev/_static'.
+
+    - uses: ansys/actions/_doc-gen-versions-page@main
+      with:
+        cname: ${{ inputs.cname }}
+        content-element-id: ${{ inputs.content-element-id }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -359,7 +422,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -367,14 +430,14 @@ runs:
           documentation.
 
     - name: "Generate 'sitemap.xml' file"
-      uses: pyansys/actions/_doc-gen-sitemap
+      uses: ansys/actions/_doc-gen-sitemap
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
 
     # ------------------------------------------------------------------------
 
-    - uses: pyansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >

@@ -7,6 +7,16 @@ description: |
   be used in its own job step. It clones the project and installs the project with
   its runtime dependencies.
 
+  .. note::
+
+     **This action relies on PyPI metadata to identify the license for each package.**
+
+      If the metadata are flawed or not included, it may lead to
+      inconclusive results. In those cases, please perform a thorough review of the
+      package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
+      Even though packages may define their license as of a certain type, the
+      package could be not applying properly its licensing conditions.
+
   .. jinja:: check-licenses
 
       .. grid:: 1 1 1 2
@@ -27,9 +37,9 @@ description: |
   .. admonition:: Projects requiring additional licenses or packages
 
       If a certain project requires a license or package that is not supported,
-      `open an issue <https://github.com/pyansys/actions/issues>`_ in the
-      `official pyansys/actions repository
-      <https://github.com/pyansys/actions>`_. For additional support, please
+      `open an issue <https://github.com/ansys/actions/issues>`_ in the
+      `official ansys/actions repository
+      <https://github.com/ansys/actions>`_. For additional support, please
       contact the `PyAnsys support <mailto:support@pyansys.com>`_.
 
 inputs:
@@ -38,7 +48,7 @@ inputs:
 
   python-version:
     description: >
-      Python version used for installing and running ``pre-commit``.
+      Python version used for installing and executing licence check.
     default: '3.10'
     required: false
     type: string
@@ -59,15 +69,32 @@ inputs:
     default: ''
     type: string
 
+  skip-install:
+    description: >
+      Whether to skip the installation of the project. The default is ``false``.
+      If used in combination with other actions, it might not be needed to install
+      the project.
+    default: false
+    required: false
+    type: boolean
+
+  checkout:
+    description: >
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
       uses: actions/checkout@v3
+      if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -87,11 +114,22 @@ runs:
       shell: bash
       run: pip install ${{ env.install_target }}
 
+    - name:  "Install wget on Windows"
+      if: runner.os == 'Windows'
+      shell: bash
+      run: choco install wget
+
+    - name:  "Update bash on macOS"
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        brew install bash
+
     - name: "Download the list of accepted and ignored packages"
       shell: bash
       run: |
-        wget https://raw.githubusercontent.com/pyansys/actions/main/check-licenses/accepted-licenses.txt
-        wget https://raw.githubusercontent.com/pyansys/actions/main/check-licenses/ignored-packages.txt
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/accepted-licenses.txt
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/ignored-packages.txt
 
     - name: "Check licences of packages"
       shell: bash
@@ -116,5 +154,8 @@ runs:
         else
           echo -e "\nInvalid licenses found:\n"
           pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses | awk 'NR>1 {print $1 " " $2 " has " $3 " license"}'
+          # print all packages
+          echo -e "\n\n"
+          pip-licenses --ignore-packages $ignored_packages
           exit 1
         fi

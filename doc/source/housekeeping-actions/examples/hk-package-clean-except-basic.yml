@@ -3,7 +3,7 @@ hk-package-clean-except:
   runs-on: ubuntu-latest
   steps:
     - name: "Perform versions cleanup - except certain tags"
-      uses: pyansys/actions/hk-package-clean-except@{{ branch }}
+      uses: ansys/actions/hk-package-clean-except@{{ version }}
       with:
         package-name: 'mypackage'
         token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}

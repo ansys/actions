@@ -51,6 +51,13 @@ inputs:
     required: false
     type: string
 
+  skip-dependencies-cache:
+    description: >
+      Whether to ignore dependencies cache or not - for OS libraries.
+    required: true
+    default: false
+    type: boolean
+
   requires-xvfb:
     description: >
       Whether to install `X Virtual Frame Buffer (XVFB)
@@ -89,6 +96,14 @@ inputs:
     required: false
     type: boolean
 
+  check-links:
+    description: >
+      Whether to perform external link checks during the generation of
+      documentation. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -108,6 +123,7 @@ runs:
 
     - name: "Cache apt packages needed"
       uses: awalsh128/cache-apt-pkgs-action@v1
+      if: ${{ inputs.skip-dependencies-cache == 'false' }}
       with:
         packages: ${{ env.NEEDED_DEPS }}
         version: 1.0
@@ -120,15 +136,15 @@ runs:
     - name: "Install system dependencies"
       shell: bash
       run: |
-        sudo apt-get install ${{ env.NEEDED_DEPS }}
+        sudo apt-get install -y ${{ env.NEEDED_DEPS }}
 
     - name: "Install LaTeX"
       shell: bash
       run: |
-        sudo apt-get install texlive-latex-extra latexmk
+        sudo apt-get install -y texlive-latex-extra latexmk
 
     - name: "Set up Python"
-      uses: pyansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -137,12 +153,6 @@ runs:
       shell: bash
       run: python -m pip install -U pip
 
-    - name: "Install Python library"
-      shell: bash
-      if: inputs.skip-install == 'false'
-      run:
-        python -m pip install .
-
     - name: "Check if requirements.txt file exists"
       shell: bash
       run: |
@@ -150,23 +160,40 @@ runs:
 
     - name: "Print previous output"
       shell: bash
-      run:
+      run: |
         echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
 
     - name: "Install documentation dependencies from requirements file"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'true'
-      run: python -m pip install -r requirements/requirements_doc.txt
+      run: |
+        python -m pip install -r requirements/requirements_doc.txt
+
+    - name: "Install Python library"
+      shell: bash
+      if: inputs.skip-install == 'false'
+      run: |
+        python -m pip install .
 
     - name: "Install documentation dependencies from pyproject.toml"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'false'
-      run: python -m pip install .[doc]
+      run: |
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          python -m pip install poetry
+          poetry install --with doc
+        else
+          python -m pip install .[doc]
+        fi
 
     - name: "Build HTML, PDF, and JSON documentation"
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
+        if [[ ${{ inputs.check-links }} == 'true' ]];
+        then
+          make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+        fi
         make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         make -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
@@ -178,6 +205,10 @@ runs:
       if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
+        if [[ ${{ inputs.check-links }} == 'true' ]];
+        then
+          xvfb-run make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+        fi
         xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         xvfb-run make -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];

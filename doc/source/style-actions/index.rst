@@ -53,6 +53,8 @@ Commit style action
 
     {{ description }}
 
+    {{ inputs_table }}
+
     Examples
     ++++++++
 
@@ -72,6 +74,8 @@ Branch name style action
 .. jinja:: branch-name-style
 
     {{ description }}
+
+    {{ inputs_table }}
 
     Examples
     ++++++++

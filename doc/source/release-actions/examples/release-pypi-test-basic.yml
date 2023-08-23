@@ -5,8 +5,8 @@ release-pypi-test:
   if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
   steps:
     - name: "Release to the test PyPI repository"
-      uses: pyansys/actions/release-pypi-test@{{ branch }}
+      uses: ansys/actions/release-pypi-test@{{ version }}
       with:
-        library-name: "ansys-<product>-<library"
+        library-name: "ansys-<product>-<library>"
         twine-username: "__token__"
         twine-token: ${{ '{{ secrets.PYANSYS_PYPI_TEST_PAT }}' }}

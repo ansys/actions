@@ -1,11 +1,16 @@
 name: >
   Build wheelhouse action
 
-description: >
+description: |
   Generates compressed artifacts for the wheelhouse of a Python library. The
   wheelhouse contains all the necessary dependencies to install the project.
   This allows for local installations and avoids the need to connect to the
   online PyPI index.
+
+  .. warning::
+
+      Since version 4.1, the input parameter ``library-namespace`` is no longer
+      required.
 
 inputs:
 
@@ -19,14 +24,6 @@ inputs:
     required: true
     type: string
 
-  library-namespace:
-    description: >
-      Namespace of the Python library. The namespace is the path used when
-      importing the library in Python. The library requires to have a
-      ``__version__`` variable at its top ``__init__.py`` file.
-    required: true
-    type: string
-
   operating-system:
     description: >
       Name of the operating system where the library is installed.
@@ -35,7 +32,7 @@ inputs:
 
   python-version:
     description: >
-      Python version used for installing and running ``pre-commit``.
+      Python version used for installing and execution of the build wheel process.
     required: true
     type: string
 
@@ -57,6 +54,15 @@ inputs:
     default: true
     type: boolean
 
+  check-licenses:
+    description: >
+      Whether to check the library's dependencies license or not. If ``true``. the licenses
+      are checked. If ``false``, no license check is performed. By default it is set to
+      ``true``.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -65,7 +71,7 @@ runs:
       uses: actions/checkout@v3
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: pyansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -86,10 +92,44 @@ runs:
       run: |
         python -m pip install ${{ env.install_target }}
 
+    - name: "Verify if importlib-metadata needs to be installed"
+      shell: bash
+      run: |
+        python_version="${{ inputs.python-version }}"
+        minor_python_version=$(echo "$python_version" | awk -F "." '{print $2}')
+        major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
+        if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 8 )) )); then
+          echo "needs_importlib_metadata=true" >> $GITHUB_ENV
+        elif (( $(( $major_python_version < 3 )) )); then
+          echo "needs_importlib_metadata=true" >> $GITHUB_ENV
+        else
+          echo "needs_importlib_metadata=false" >> $GITHUB_ENV
+        fi
+
+    - name: "Install importlib-metadata (only for Python <= 3.7)"
+      if: env.needs_importlib_metadata == 'true'
+      shell: bash
+      run: |
+        python -m pip install importlib-metadata
+
     - name: "Verify library is properly installed and get its version number"
       shell: bash
       run: |
-        echo "library_version=$(python -c "from ${{ inputs.library-namespace }} import __version__; print(__version__)")" >> $GITHUB_ENV
+        library_name=${{ inputs.library-name }}
+
+        if [ ${{ env.needs_importlib_metadata }} == 'true' ]; then
+          version=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
+        else
+          version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
+        fi
+
+        if [ -z "$version" ]; then
+            echo "Problem getting the library version"
+            exit 1;
+        else
+            echo "The library version is: $version";
+        fi;
+        echo "library_version=$version" >> $GITHUB_ENV
 
     - name: "Generate the wheelhouse"
       shell: bash
@@ -108,3 +148,11 @@ runs:
         name: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
         retention-days: 7
+
+    - name: Check library's dependencies license
+      uses: ansys/actions/check-licenses@main
+      if: ${{ inputs.check-licenses == 'true' }}
+      with:
+        python-version: ${{ inputs.python-version }}
+        skip-install: true
+        checkout: false

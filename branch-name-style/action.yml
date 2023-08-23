@@ -1,9 +1,23 @@
 name: >
   Branch name style
 
-description: >
+description: |
   Checks if the name of the branch follows the branch naming convention of
   PyAnsys.
+
+  .. note::
+
+      Branch names must start with one of the following prefixes:
+
+      - fix
+      - feat
+      - junk
+      - maint
+      - docs
+      - no-ci
+      - testing or test
+      - release
+      - dependabot
 
 runs:
   using: "composite"
@@ -21,7 +35,7 @@ runs:
         fi
 
         branch_prefix=$(echo "$branch_name" | cut -d '/' -f 1)
-        valid_prefixes=("fix" "feat" "junk" "maint" "doc" "docs" "no-ci" "test" "testing" "release" "dependabot")
+        valid_prefixes=("fix" "feat" "junk" "maint" "docs" "no-ci" "test" "testing" "release" "dependabot")
 
         if [[ ! ${valid_prefixes[@]} =~ $branch_prefix ]]; then
           echo "\033[1;91m[ERROR]: Branch name $branch_prefix prefix is not valid." >&2

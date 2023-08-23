@@ -2,6 +2,6 @@ commit-style:
   name: "Run commit style checks"
   runs-on: ubuntu-latest
   steps:
-    - uses: pyansys/actions/commit-style@{{ branch }}
+    - uses: ansys/actions/commit-style@{{ version }}
       with:
         token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}

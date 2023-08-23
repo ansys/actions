@@ -3,4 +3,4 @@ check-pr-conventional-name:
   runs-on: ubuntu-latest
   steps:
     - name: "Check if PR name follows conventional commit standards"
-      uses: pyansys/actions/check-pr-conventional-name@{{ branch }}
+      uses: ansys/actions/check-pr-conventional-name@{{ version }}
