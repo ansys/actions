@@ -292,7 +292,7 @@ runs:
 
         if [ $num_versions -gt ${{ inputs.render-last }} ]; then
           cname=${{ inputs.cname }}
-          new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/index.html\" }"
+          new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/\" }"
           jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
         fi
 

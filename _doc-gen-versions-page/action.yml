@@ -97,4 +97,11 @@ runs:
 
         # Inject the versions script in the head of the HTML page
         escaped_script_content=$(echo "$script_content" | tr '\n' ' ' | sed 's/[\/&]/\\&/g')
-        sed -i "/<\/footer>/s/.*/&\n<script>$escaped_script_content<\/script>/" "$html_file"
+        sed -i "/<\/footer>/s/.*/&\n<style> \
+        .bd-main .bd-content .bd-article-container { \
+        display: flex; \
+        flex-direction: column; \
+        justify-content: start;} \
+        .table { border-collapse: collapse; width: 100%; } \
+        .table th, .table td { border: 1px solid #dddddd; text-align: center; padding: 8px; } \
+        .table th { background-color: var(--pst-color-table-hover); }</style>\n<script>$escaped_script_content<\/script>/" "$html_file"
