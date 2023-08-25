@@ -1,7 +1,8 @@
 name: "Check library and third-party vulnerabilities."
 description: >
   Action actively checking for library and third party vulnerabilities by
-  means of the `bandit <>`_ and `safety <>`_ Python packages. These packages
+  means of the `bandit <https://bandit.readthedocs.io/en/latest/>`_ and
+  `safety <https://pyup.io/safety/>`_ Python packages. These packages
   allow you to identify security issues and vulnerabilities inside your code.
 
   This action has two running modes:
