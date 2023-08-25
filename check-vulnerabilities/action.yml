@@ -87,7 +87,6 @@ runs:
     - name: "Declare needed environment variables"
       shell: bash
       run: |
-        echo "DEPENDENCY_CHECK_TOKEN=${{ inputs.token }}" >> $GITHUB_ENV
         echo "DEPENDENCY_CHECK_PACKAGE_NAME=${{ inputs.python-package-name }}" >> $GITHUB_ENV
         echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ '${{ inputs.repo-full-name }}' == '' ]] && echo '${{ github.repository }}' || echo '${{ inputs.repo-full-name }}')" >> $GITHUB_ENV
         if [[ ${{ inputs.dry-run }} == 'true' ]];
@@ -143,7 +142,7 @@ runs:
 
         import github
 
-        TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
+        TOKEN = os.environ.get("INPUT_TOKEN", None)
         REPOSITORY = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
         PACKAGE = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
         DRY_RUN = os.environ.get("DEPENDENCY_CHECK_DRY_RUN", False)
@@ -167,7 +166,7 @@ runs:
             if any([v is None for v in [TOKEN, REPOSITORY, PACKAGE]]):
                 raise RuntimeError(
                     "Required environment variables are not defined. Enter value for ",
-                    "'DEPENDENCY_CHECK_TOKEN', 'DEPENDENCY_CHECK_PACKAGE_NAME', ",
+                    "'INPUT_TOKEN', 'DEPENDENCY_CHECK_PACKAGE_NAME', ",
                     "'DEPENDENCY_CHECK_REPOSITORY'.",
                 )
 
