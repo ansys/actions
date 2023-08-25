@@ -22,7 +22,7 @@ inputs:
       Token with write permissions on the repository.
     required: true
     type: string
-  
+
   python-package-name:
     description: >
       Python package name being evaluate as it is shown on PyPI.
