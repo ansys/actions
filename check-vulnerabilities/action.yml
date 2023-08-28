@@ -162,8 +162,8 @@ runs:
         TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
         REPOSITORY = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
         PACKAGE = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
-        DRY_RUN = os.environ.get("DEPENDENCY_CHECK_DRY_RUN", False)
-        EXIT_ON_ERROR_IF_NEW_ADVISORY = os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", False)
+        DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
+        EXIT_ON_ERROR_IF_NEW_ADVISORY = True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 
 
         def dict_hash(dictionary: Dict[str, Any]) -> str:
