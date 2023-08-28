@@ -288,7 +288,7 @@ runs:
 
         {desc}
         """
-                    repo.create_issue(title=summary, body=issue_body, labels="security")
+                    repo.create_issue(title=summary, body=issue_body, labels=["security"])
                 else:
                     # New safety advisory detected
                     safety_results_reported += 1
@@ -384,7 +384,7 @@ runs:
         #### Description
         {desc}
         """
-                    repo.create_issue(title=summary, body=issue_body, labels="security")
+                    repo.create_issue(title=summary, body=issue_body, labels=["security"])
                 else:
                     # New bandit advisory detected
                     bandit_results_reported += 1
