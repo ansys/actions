@@ -34,6 +34,14 @@ inputs:
 
   # Optional inputs
 
+  source-directory:
+    description: >
+      The source folder of the repository to be evaluated by bandit.
+      By default, it is set to ``src``
+    default: 'src'
+    required: false
+    type: string
+
   repo-full-name:
     description: >
       The repository to be evaluated. By default, it is extracted from the
@@ -123,6 +131,11 @@ runs:
         python -m pip install --upgrade pip
         pip install "pygithub>=1.59,<2" "bandit>=1.7,<2" "safety>=2.3,<3"
 
+    - name: "Run safety and bandit"
+      shell: bash
+      run: |
+        safety check -o bare --save-json info_safety.json
+        bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json
 
     - name: "Declare Python script"
       shell: bash
@@ -287,7 +300,7 @@ runs:
             if not bandit_results:
                 raise RuntimeError(
                     "Bandit results have not been generated... Something went wrong during",
-                    "the execution of 'bandit -r src -o info_bandit.json -f json'. ",
+                    "the execution of 'bandit -r <source-directory> -o info_bandit.json -f json'. ",
                     "Verify workflow logs.",
                 )
 
@@ -389,4 +402,3 @@ runs:
       shell: bash
       run: |
         # python dependency-check.py
-
