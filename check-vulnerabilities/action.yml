@@ -134,8 +134,8 @@ runs:
     - name: "Run safety and bandit"
       shell: bash
       run: |
-        safety check -o bare --save-json info_safety.json
-        bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json
+        safety check -o bare --save-json info_safety.json --continue-on-error
+        bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json --exit-zero
 
     - name: "Declare Python script"
       shell: bash
@@ -402,3 +402,10 @@ runs:
       shell: bash
       run: |
         python dependency-check.py
+
+    - name: "Uploading safety and bandit results"
+      uses: actions/upload-artifact@v3
+      with:
+        name: vulnerability-results
+        path: ./info_*.json
+        retention-days: 7
