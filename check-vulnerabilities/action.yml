@@ -97,6 +97,7 @@ runs:
     - name: "Declare needed environment variables"
       shell: bash
       run: |
+        echo "INPUT_TOKEN=${{ inputs.token }}" >> $GITHUB_ENV
         echo "DEPENDENCY_CHECK_PACKAGE_NAME=${{ inputs.python-package-name }}" >> $GITHUB_ENV
         echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ '${{ inputs.repo-full-name }}' == '' ]] && echo '${{ github.repository }}' || echo '${{ inputs.repo-full-name }}')" >> $GITHUB_ENV
         if [[ ${{ inputs.dry-run }} == 'true' ]];
