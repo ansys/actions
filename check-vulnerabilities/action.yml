@@ -186,8 +186,6 @@ runs:
                     "'DEPENDENCY_CHECK_TOKEN', 'DEPENDENCY_CHECK_PACKAGE_NAME', ",
                     "'DEPENDENCY_CHECK_REPOSITORY'.",
                 )
-            print(f"DEPENDENCY_CHECK_PACKAGE_NAME with value '{PACKAGE}'")
-            print(f"DEPENDENCY_CHECK_REPOSITORY with value '{REPOSITORY}'")
 
             # Check if DRY_RUN or not
             if DRY_RUN:
