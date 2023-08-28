@@ -160,8 +160,8 @@ runs:
         import github
 
         TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
-        REPOSITORY = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
-        PACKAGE = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
+        PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
+        REPOSITORY = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
         DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
         EXIT_ON_ERROR_IF_NEW_ADVISORY = True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 
@@ -186,9 +186,8 @@ runs:
                     "'DEPENDENCY_CHECK_TOKEN', 'DEPENDENCY_CHECK_PACKAGE_NAME', ",
                     "'DEPENDENCY_CHECK_REPOSITORY'.",
                 )
-            print(f"DEPENDENCY_CHECK_TOKEN with value '{DEPENDENCY_CHECK_TOKEN}'")
-            print(f"DEPENDENCY_CHECK_PACKAGE_NAME with value '{DEPENDENCY_CHECK_PACKAGE_NAME}'")
-            print(f"DEPENDENCY_CHECK_REPOSITORY with value '{DEPENDENCY_CHECK_REPOSITORY}'")
+            print(f"DEPENDENCY_CHECK_PACKAGE_NAME with value '{PACKAGE}'")
+            print(f"DEPENDENCY_CHECK_REPOSITORY with value '{REPOSITORY}'")
 
             # Check if DRY_RUN or not
             if DRY_RUN:
