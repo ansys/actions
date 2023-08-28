@@ -1,0 +1,404 @@
+name: "Check library and third-party vulnerabilities."
+description: >
+  Action actively checking for library and third party vulnerabilities by
+  means of the `bandit <https://bandit.readthedocs.io/en/latest/>`_ and
+  `safety <https://pyup.io/safety/>`_ Python packages. These packages
+  allow you to identify security issues and vulnerabilities inside your code.
+
+  This action has two running modes:
+
+    - **Default mode**: when running on default mode, if a security advisory
+      is detected, this action will publish both the security advisory and
+      an issue so that end users are informed about existing issues.
+
+    - **Development mode**: repository maintainers are asked to activate
+      the ``dev-mode`` option, which will activate both ``dry-run`` and
+      ``exit-with-error-on-new-advisory`` (independently of other configurations
+      provided). This way developers are informed of potential vulnerabilities
+      being introduced by them on their feature branch (while no new advisories
+      are created).
+
+
+inputs:
+  token:
+    description: >
+      Token with write permissions on the repository.
+    required: true
+    type: string
+
+  python-package-name:
+    description: >
+      Python package name being evaluate as it is shown on PyPI.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  source-directory:
+    description: >
+      The source folder of the repository to be evaluated by bandit.
+      By default, it is set to ``src``
+    default: 'src'
+    required: false
+    type: string
+
+  repo-full-name:
+    description: >
+      The repository to be evaluated. By default, it is extracted from the
+      GitHub context.
+    default: ''
+    required: false
+    type: string
+
+  dev-mode:
+    description: >
+      Whether to run or not this action in development mode. It will activate
+      by default the ``dry-run`` and ``exit-with-error-on-new-advisory`` flags.
+    required: false
+    default: false
+    type: boolean
+
+  dry-run:
+    description: >
+      Whether to run or not this action in dry run mode. Dry run mode executes
+      all the action steps and prints on screen the results (if any).
+    required: false
+    default: false
+    type: boolean
+
+  exit-with-error-on-new-advisory:
+    description: >
+      Whether to exit the action on error if a new advisory is detected.
+      This mode is not recommended on ``main`` branches since it will cause the
+      workflow to fail. To be used on ``feature`` branches in combination with
+      ``dry-run`` mode.
+    required: false
+    default: false
+    type: boolean
+
+  checkout:
+    description: >
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
+
+  python-version:
+    description: >
+      Desired Python version.
+    default: '3.10'
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Declare needed environment variables"
+      shell: bash
+      run: |
+        echo "DEPENDENCY_CHECK_PACKAGE_NAME=${{ inputs.python-package-name }}" >> $GITHUB_ENV
+        echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ '${{ inputs.repo-full-name }}' == '' ]] && echo '${{ github.repository }}' || echo '${{ inputs.repo-full-name }}')" >> $GITHUB_ENV
+        if [[ ${{ inputs.dry-run }} == 'true' ]];
+        then
+          echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
+        fi
+        if [[ ${{ inputs.exit-with-error-on-new-advisory }} == 'true' ]];
+        then
+          echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
+        fi
+        if [[ ${{ inputs.dev-mode }} == 'true' ]];
+        then
+          echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
+          echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
+        fi
+
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v3
+      if: ${{ inputs.checkout == 'true' }}
+      with:
+        repository: ${{ env.DEPENDENCY_CHECK_REPOSITORY }}
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: false
+
+    - name: "Install requirements"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install "pygithub>=1.59,<2" "bandit>=1.7,<2" "safety>=2.3,<3"
+
+    - name: "Run safety and bandit"
+      shell: bash
+      run: |
+        safety check -o bare --save-json info_safety.json
+        bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json
+
+    - name: "Declare Python script"
+      shell: bash
+      run: |
+        cat > dependency-check.py << 'EOF'
+
+        """
+        Security vulnerabilities script.
+
+        Notes
+        -----
+        Script for detecting vulnerabilities on a given repo and creating
+        associated security vulnerability advisories.
+        """
+        import hashlib
+        import json
+        import os
+        import sys
+        from typing import Any, Dict
+
+        import github
+
+        TOKEN = os.environ.get("INPUT_TOKEN", None)
+        REPOSITORY = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
+        PACKAGE = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
+        DRY_RUN = os.environ.get("DEPENDENCY_CHECK_DRY_RUN", False)
+        EXIT_ON_ERROR_IF_NEW_ADVISORY = os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", False)
+
+
+        def dict_hash(dictionary: Dict[str, Any]) -> str:
+            """MD5 hash of a dictionary."""
+            dhash = hashlib.md5()
+            # We need to sort arguments so {'a': 1, 'b': 2} is
+            # the same as {'b': 2, 'a': 1}
+            encoded = json.dumps(dictionary, sort_keys=True).encode()
+            dhash.update(encoded)
+            return dhash.hexdigest()
+
+
+        def check_vulnerabitlities():
+            """Check library and third-party vulnerabilities."""
+            new_advisory_detected = False
+            # Check that the needed environment variables are provided
+            if any([v is None for v in [TOKEN, REPOSITORY, PACKAGE]]):
+                raise RuntimeError(
+                    "Required environment variables are not defined. Enter value for ",
+                    "'INPUT_TOKEN', 'DEPENDENCY_CHECK_PACKAGE_NAME', ",
+                    "'DEPENDENCY_CHECK_REPOSITORY'.",
+                )
+
+            # Check if DRY_RUN or not
+            if DRY_RUN:
+                print("Dry run... not creating advisories and issues.")
+                print("Information will be presented on screen.\n")
+
+            # Load the security checks
+            safety_results = {}
+            with open("info_safety.json", "r") as json_file:
+                safety_results = json.loads(json_file.read())
+
+            # If the security checks have not been loaded... problem ahead!
+            if not safety_results:
+                raise RuntimeError(
+                    "Safety results have not been generated... Something went wrong during",
+                    "the execution of 'safety check -o bare --save-json info_safety.json'. ",
+                    "Verify workflow logs.",
+                )
+
+            # Connect to the repository
+            g = github.Github(auth=github.Auth.Token(TOKEN))
+
+            # Get the repository
+            repo = g.get_repo(REPOSITORY)
+
+            # Get the available security advisories
+            existing_advisories = {}
+            pl_advisories = repo.get_repository_advisories()
+            for advisory in pl_advisories:
+                existing_advisories[advisory.summary] = advisory
+
+            ###############################################################################
+            # THIRD PARTY SECURITY ADVISORIES
+            ###############################################################################
+
+            # Process the detected advisories by Safety
+            vulnerability: dict
+            for vulnerability in safety_results["vulnerabilities"]:
+                # Retrieve the needed values
+                v_id = vulnerability.get("vulnerability_id")
+                v_package = vulnerability.get("package_name")
+                v_cve = vulnerability.get("CVE")
+                v_url = vulnerability.get("more_info_url")
+                v_desc = vulnerability.get("advisory")
+                v_affected_versions = vulnerability.get("vulnerable_spec")
+                v_fixed_versions = vulnerability.get("fixed_versions")
+
+                # Advisory info
+                summary = f"Safety vulnerability {v_id} for package '{v_package}'"
+                vuln_adv = {
+                    "package": {"name": f"{v_package}", "ecosystem": "pip"},
+                    "vulnerable_version_range": f"{v_affected_versions}",
+                    "patched_versions": f"{v_fixed_versions}",
+                    "vulnerable_functions": [],
+                }
+                desc = f"""
+        {v_desc}
+
+        #### More information
+
+        Visit {v_url} to find out more information.
+        """
+                # Check if the advisory already exists
+                if existing_advisories.get(summary):
+                    continue
+                elif not DRY_RUN:
+                    # Detected new advisory
+                    new_advisory_detected = True
+
+                    # Create the advisory but do not publish it
+                    advisory = repo.create_repository_advisory(
+                        summary=summary,
+                        description=desc,
+                        severity_or_cvss_vector_string="medium",
+                        cve_id=v_cve,
+                        vulnerabilities=[vuln_adv],
+                    )
+
+                    # Create an issue
+                    issue_body = f"""
+        A new security advisory was open in this repository. See {advisory.url}.
+
+        ---
+        **NOTE**
+
+        Please update the security advisory status after evaluating. Publish the advisory
+        once it has been verified (since it has been created in draft mode).
+
+        ---
+
+        #### Description
+
+        {desc}
+        """
+                    repo.create_issue(title=summary, body=issue_body, labels="security")
+                else:
+                    # Detected new advisory
+                    new_advisory_detected = True
+                    print("===========================================\n")
+                    print(f"{summary}")
+                    print(f"{desc}")
+
+            ###############################################################################
+            # LIBRARY SECURITY ADVISORIES
+            ###############################################################################
+
+            # Load the bandit checks
+            bandit_results = {}
+            with open("info_bandit.json", "r") as json_file:
+                bandit_results = json.loads(json_file.read())
+
+            # If the bandit results have not been loaded... problem ahead!
+            if not bandit_results:
+                raise RuntimeError(
+                    "Bandit results have not been generated... Something went wrong during",
+                    "the execution of 'bandit -r <source-directory> -o info_bandit.json -f json'. ",
+                    "Verify workflow logs.",
+                )
+
+            # Process the detected advisories by Bandit
+            vulnerability: dict
+            for vulnerability in bandit_results["results"]:
+                # Retrieve the needed values
+                v_hash = dict_hash(vulnerability)
+                v_test_id = vulnerability.get("test_id")
+                v_test_name = vulnerability.get("test_name")
+                v_severity_level = vulnerability.get("issue_severity", "medium").lower()
+                v_filename = vulnerability.get("filename")
+                v_code = vulnerability.get("code")
+                v_package = PACKAGE
+                v_cwe = vulnerability.get("issue_cwe", {"id": "", "link": ""})
+                v_url = vulnerability.get("more_info")
+                v_desc = vulnerability.get("issue_text")
+
+                # Advisory info
+                summary = f"Bandit [{v_test_id}:{v_test_name}] on {v_filename} - Hash: {v_hash}"
+                vuln_adv = {"package": {"name": f"{v_package}", "ecosystem": "pip"}}
+                desc = f"""
+        {v_desc}
+
+        #### Code
+
+        On file {v_filename}:
+
+        ```
+        {v_code}
+        ```
+
+        #### CWE - {v_cwe['id']}
+
+        For more information see {v_cwe['link']}
+
+        #### More information
+
+        Visit {v_url} to find out more information.
+        """
+                # Check if the advisory already exists
+                if existing_advisories.get(summary):
+                    continue
+                elif not DRY_RUN:
+                    # Detected new advisory
+                    new_advisory_detected = True
+
+                    # Create the advisory but do not publish it
+                    advisory = repo.create_repository_advisory(
+                        summary=summary,
+                        description=desc,
+                        severity_or_cvss_vector_string=v_severity_level,
+                        vulnerabilities=[vuln_adv],
+                        cwe_ids=[f"CWE-{v_cwe['id']}"],
+                    )
+
+                    # Create an issue
+                    issue_body = f"""
+        A new security advisory was open in this repository. See {advisory.url}.
+
+        ---
+        **NOTE**
+
+        Please update the security advisory status after evaluating. Publish the advisory
+        once it has been verified (since it has been created in draft mode).
+
+        ---
+
+        #### Description
+        {desc}
+        """
+                    repo.create_issue(title=summary, body=issue_body, labels="security")
+                else:
+                    # Detected new advisory
+                    new_advisory_detected = True
+                    print("===========================================\n")
+                    print(f"{summary}")
+                    print(f"{desc}")
+
+            # Return whether new advisories have been created or not
+            return new_advisory_detected
+
+
+        if __name__ == "__main__":
+            new_advisory_detected = check_vulnerabitlities()
+
+            if new_advisory_detected and EXIT_ON_ERROR_IF_NEW_ADVISORY:
+                # New advisories detected - exit with error
+                sys.exit(1)
+            else:
+                # No new advisories detected or no failure requested
+                pass
+
+
+        EOF
+        cat dependency-check.py
+
+    - name: "Run safety advisory checks"
+      shell: bash
+      run: |
+        python dependency-check.py

@@ -62,3 +62,4 @@ see each card below:
    build-actions/index
    release-actions/index
    housekeeping-actions/index
+   vulnerability-actions/index
