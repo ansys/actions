@@ -396,17 +396,15 @@ runs:
             # Print out information
             safety_entries = len(safety_results["vulnerabilities"])
             bandit_entries = len(bandit_results["results"])
-            print("===========================================")
-            print("===========================================")
-            print("===========================================")
+            print("\n*******************************************")
             print(f"Total 'safety' advisories detected: {safety_entries}")
             print(f"Total 'safety' advisories reported: {safety_results_reported}")
             print(f"Total 'bandit' advisories detected: {bandit_entries}")
             print(f"Total 'bandit' advisories reported: {bandit_results_reported}")
-            print(f"\n******************************************\n")
+            print("*******************************************")
             print(f"Total advisories detected: {safety_entries + bandit_entries}")
             print(f"Total advisories reported: {safety_results_reported + bandit_results_reported}")
-            print(f"******************************************")
+            print("*******************************************")
 
             # Return whether new advisories have been created or not
             return new_advisory_detected
