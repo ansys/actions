@@ -130,7 +130,12 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        pip install "pygithub>=1.59,<2" "bandit>=1.7,<2" "safety>=2.3,<3"
+        pip install "pygithub>=1.59,<2" "bandit>=1.7,<2" "safety>=2.3,<3" "setuptools>=65.5.1"
+
+    - name: "Install library"
+      shell: bash
+      run: |
+        python -m pip install .
 
     - name: "Run safety and bandit"
       shell: bash
