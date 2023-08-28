@@ -97,6 +97,7 @@ runs:
     - name: "Declare needed environment variables"
       shell: bash
       run: |
+        echo "DEPENDENCY_CHECK_TOKEN=${{ inputs.token }}" >> $GITHUB_ENV
         echo "DEPENDENCY_CHECK_PACKAGE_NAME=${{ inputs.python-package-name }}" >> $GITHUB_ENV
         echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ '${{ inputs.repo-full-name }}' == '' ]] && echo '${{ github.repository }}' || echo '${{ inputs.repo-full-name }}')" >> $GITHUB_ENV
         if [[ ${{ inputs.dry-run }} == 'true' ]];
@@ -131,11 +132,17 @@ runs:
         python -m pip install --upgrade pip
         pip install "pygithub>=1.59,<2" "bandit>=1.7,<2" "safety>=2.3,<3"
 
+
+    - name: "Install library"
+      shell: bash
+      run: |
+        python -m pip install .
+
     - name: "Run safety and bandit"
       shell: bash
       run: |
-        safety check -o bare --save-json info_safety.json
-        bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json
+        safety check -o bare --save-json info_safety.json --continue-on-error
+        bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json --exit-zero
 
     - name: "Declare Python script"
       shell: bash
@@ -158,11 +165,11 @@ runs:
 
         import github
 
-        TOKEN = os.environ.get("INPUT_TOKEN", None)
-        REPOSITORY = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
-        PACKAGE = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
-        DRY_RUN = os.environ.get("DEPENDENCY_CHECK_DRY_RUN", False)
-        EXIT_ON_ERROR_IF_NEW_ADVISORY = os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", False)
+        TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
+        PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
+        REPOSITORY = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
+        DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
+        ERROR_IF_NEW_ADVISORY = True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 
 
         def dict_hash(dictionary: Dict[str, Any]) -> str:
@@ -182,7 +189,7 @@ runs:
             if any([v is None for v in [TOKEN, REPOSITORY, PACKAGE]]):
                 raise RuntimeError(
                     "Required environment variables are not defined. Enter value for ",
-                    "'INPUT_TOKEN', 'DEPENDENCY_CHECK_PACKAGE_NAME', ",
+                    "'DEPENDENCY_CHECK_TOKEN', 'DEPENDENCY_CHECK_PACKAGE_NAME', ",
                     "'DEPENDENCY_CHECK_REPOSITORY'.",
                 )
 
@@ -221,6 +228,7 @@ runs:
             ###############################################################################
 
             # Process the detected advisories by Safety
+            safety_results_reported = 0
             vulnerability: dict
             for vulnerability in safety_results["vulnerabilities"]:
                 # Retrieve the needed values
@@ -251,7 +259,8 @@ runs:
                 if existing_advisories.get(summary):
                     continue
                 elif not DRY_RUN:
-                    # Detected new advisory
+                    # New safety advisory detected
+                    safety_results_reported += 1
                     new_advisory_detected = True
 
                     # Create the advisory but do not publish it
@@ -281,7 +290,8 @@ runs:
         """
                     repo.create_issue(title=summary, body=issue_body, labels="security")
                 else:
-                    # Detected new advisory
+                    # New safety advisory detected
+                    safety_results_reported += 1
                     new_advisory_detected = True
                     print("===========================================\n")
                     print(f"{summary}")
@@ -305,6 +315,7 @@ runs:
                 )
 
             # Process the detected advisories by Bandit
+            bandit_results_reported = 0
             vulnerability: dict
             for vulnerability in bandit_results["results"]:
                 # Retrieve the needed values
@@ -345,7 +356,8 @@ runs:
                 if existing_advisories.get(summary):
                     continue
                 elif not DRY_RUN:
-                    # Detected new advisory
+                    # New bandit advisory detected
+                    bandit_results_reported += 1
                     new_advisory_detected = True
 
                     # Create the advisory but do not publish it
@@ -374,11 +386,25 @@ runs:
         """
                     repo.create_issue(title=summary, body=issue_body, labels="security")
                 else:
-                    # Detected new advisory
+                    # New bandit advisory detected
+                    bandit_results_reported += 1
                     new_advisory_detected = True
                     print("===========================================\n")
                     print(f"{summary}")
                     print(f"{desc}")
+
+            # Print out information
+            safety_entries = len(safety_results["vulnerabilities"])
+            bandit_entries = len(bandit_results["results"])
+            print("\n*******************************************")
+            print(f"Total 'safety' advisories detected: {safety_entries}")
+            print(f"Total 'safety' advisories reported: {safety_results_reported}")
+            print(f"Total 'bandit' advisories detected: {bandit_entries}")
+            print(f"Total 'bandit' advisories reported: {bandit_results_reported}")
+            print("*******************************************")
+            print(f"Total advisories detected: {safety_entries + bandit_entries}")
+            print(f"Total advisories reported: {safety_results_reported + bandit_results_reported}")
+            print("*******************************************")
 
             # Return whether new advisories have been created or not
             return new_advisory_detected
@@ -387,12 +413,13 @@ runs:
         if __name__ == "__main__":
             new_advisory_detected = check_vulnerabitlities()
 
-            if new_advisory_detected and EXIT_ON_ERROR_IF_NEW_ADVISORY:
+            if new_advisory_detected and ERROR_IF_NEW_ADVISORY:
                 # New advisories detected - exit with error
                 sys.exit(1)
             else:
                 # No new advisories detected or no failure requested
                 pass
+
 
 
         EOF
@@ -402,3 +429,11 @@ runs:
       shell: bash
       run: |
         python dependency-check.py
+
+    - name: "Uploading safety and bandit results"
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: vulnerability-results
+        path: ./info_*.json
+        retention-days: 7
