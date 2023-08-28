@@ -274,7 +274,7 @@ runs:
 
                     # Create an issue
                     issue_body = f"""
-        A new security advisory was open in this repository. See {advisory.url}.
+        A new security advisory was open in this repository. See {advisory.html_url}.
 
         ---
         **NOTE**
