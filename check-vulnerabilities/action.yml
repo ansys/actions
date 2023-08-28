@@ -7,16 +7,16 @@ description: >
 
   This action has two running modes:
 
-  - **Default mode**: when running on default mode, if a security advisory
-    is detected, this action will publish both the security advisory and
-    an issue so that end users are informed about existing issues.
+    - **Default mode**: when running on default mode, if a security advisory
+      is detected, this action will publish both the security advisory and
+      an issue so that end users are informed about existing issues.
 
-  - **Development mode**: repository maintainers are asked to activate
-    the ``dev-mode`` option, which will activate both ``dry-run`` and
-    ``exit-with-error-on-new-advisory`` (independently of other configurations
-    provided). This way developers are informed of potential vulnerabilities
-    being introduced by them on their feature branch (while no new advisories
-    are created).
+    - **Development mode**: repository maintainers are asked to activate
+      the ``dev-mode`` option, which will activate both ``dry-run`` and
+      ``exit-with-error-on-new-advisory`` (independently of other configurations
+      provided). This way developers are informed of potential vulnerabilities
+      being introduced by them on their feature branch (while no new advisories
+      are created).
 
 
 inputs:
