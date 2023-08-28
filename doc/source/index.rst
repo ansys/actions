@@ -51,7 +51,7 @@ see each card below:
 
        Housekeeping actions provide for general repository operations such as package cleanup.
 
-    .. grid-item-card:: :octicon:`search` Vulnerabilities actions
+    .. grid-item-card:: :octicon:`shield` Vulnerabilities actions
        :link: housekeeping-actions/index
        :link-type: doc
 
