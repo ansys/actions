@@ -401,4 +401,4 @@ runs:
     - name: "Run safety advisory checks"
       shell: bash
       run: |
-        # python dependency-check.py
+        python dependency-check.py
