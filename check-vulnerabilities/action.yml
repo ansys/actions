@@ -1,5 +1,7 @@
-name: "Check library and third-party vulnerabilities."
-description: >
+name: >
+  "Check library and third-party vulnerabilities."
+
+description: |
   Action actively checking for library and third party vulnerabilities by
   means of the `bandit <https://bandit.readthedocs.io/en/latest/>`_ and
   `safety <https://pyup.io/safety/>`_ Python packages. These packages
@@ -7,17 +9,27 @@ description: >
 
   This action has two running modes:
 
-    - **Default mode**: when running on default mode, if a security advisory
-      is detected, this action will publish both the security advisory and
-      an issue so that end users are informed about existing issues.
+  - **Default mode**: when running on default mode, if a security advisory
+    is detected, this action will publish both the security advisory and
+    an issue so that end users are informed about existing issues.
 
-    - **Development mode**: repository maintainers are asked to activate
-      the ``dev-mode`` option, which will activate both ``dry-run`` and
-      ``exit-with-error-on-new-advisory`` (independently of other configurations
-      provided). This way developers are informed of potential vulnerabilities
-      being introduced by them on their feature branch (while no new advisories
-      are created).
+  - **Development mode**: repository maintainers are asked to activate
+    the ``dev-mode`` option, which will activate both ``dry-run`` and
+    ``exit-with-error-on-new-advisory`` (independently of other configurations
+    provided). This way developers are informed of potential vulnerabilities
+    being introduced by them on their feature branch (while no new advisories
+    are created).
 
+
+  The following list of `safety`_ vulnerabilities are accepted:
+
+  .. card:: :octicon:`codescan-checkmark` Accepted safety vulnerabilities
+
+      .. jinja:: check-vulnerabilities
+
+          {% for v_id in ignored_safety %}
+          - `Vulnerability {{ v_id }} <https://pyup.io/v/{{ v_id }}/f17>`_
+          {% endfor %}
 
 inputs:
   token:
@@ -138,10 +150,23 @@ runs:
       run: |
         python -m pip install .
 
+    - name: "Download the list of ignored safety vulnerabilities"
+      shell: bash
+      run: |
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-vulnerabilities/ignored-safety.txt
+
     - name: "Run safety and bandit"
       shell: bash
       run: |
-        safety check -o bare --save-json info_safety.json --continue-on-error
+        # Load accepted safety vulnerabilities
+        mapfile ignored_safety_vulnerabilities < ignored-safety.txt
+        ignored_vulnerabilities=''
+        for pckg in ${ignored_safety_vulnerabilities[*]}; do ignored_vulnerabilities+="-i $pckg "; done
+          ignored_safety_vulnerabilities=${ignored_safety_vulnerabilities::-1}
+        echo "Ignored safety vulnerabilities: $ignored_vulnerabilities"
+
+        # Run security tools
+        safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
         bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json --exit-zero
 
     - name: "Declare Python script"
