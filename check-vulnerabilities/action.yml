@@ -138,10 +138,23 @@ runs:
       run: |
         python -m pip install .
 
+    - name: "Download the list of ignored safety vulnerabilities"
+      shell: bash
+      run: |
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-vulnerabilities/ignored-safety.txt
+
     - name: "Run safety and bandit"
       shell: bash
       run: |
-        safety check -o bare --save-json info_safety.json --continue-on-error
+        # Load accepted safety vulnerabilities
+        mapfile ignored_safety_vulnerabilities < ignored-safety.txt
+        ignored_vulnerabilities=''
+        for pckg in ${ignored_safety_vulnerabilities[*]}; do ignored_vulnerabilities+="-i $pckg "; done
+          ignored_safety_vulnerabilities=${ignored_safety_vulnerabilities::-1}
+        echo "Ignored safety vulnerabilities: $ignored_vulnerabilities"
+
+        # Run security tools
+        safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
         bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json --exit-zero
 
     - name: "Declare Python script"
