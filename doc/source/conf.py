@@ -18,6 +18,7 @@ ACTIONS_SUFFIXES = "-style"
 ACTIONS_INPUTS_FIELDS = ("description", "required", "type", "default")
 ACCEPTED_LICENSES = BASE_DIR / "check-licenses" / "accepted-licenses.txt"
 IGNORED_PACKAGES = BASE_DIR / "check-licenses" / "ignored-packages.txt"
+IGNORED_SAFETY = BASE_DIR / "check-vulnerabilities" / "ignored-safety.txt"
 
 # Project information
 project = "Ansys Actions"
@@ -323,7 +324,14 @@ def load_file_lines_as_list(file_path):
         return list(accepted_licenses_file.read().split("\n"))
 
 
+# Check licenses
 for var, file in zip(
     ["accepted_licenses", "ignored_packages"], [ACCEPTED_LICENSES, IGNORED_PACKAGES]
 ):
     jinja_contexts["check-licenses"][var] = load_file_lines_as_list(file)
+
+# Check vulnerabilities
+jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_file_lines_as_list(
+    IGNORED_SAFETY
+)
+print(jinja_contexts["check-vulnerabilities"]["ignored_safety"])
