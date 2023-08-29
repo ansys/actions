@@ -52,7 +52,7 @@ see each card below:
        Housekeeping actions provide for general repository operations such as package cleanup.
 
     .. grid-item-card:: :octicon:`shield` Vulnerabilities actions
-       :link: housekeeping-actions/index
+       :link: vulnerability-actions/index
        :link-type: doc
 
        Vulnerabilities actions provide for actively checking library and third party vulnerabilities.
