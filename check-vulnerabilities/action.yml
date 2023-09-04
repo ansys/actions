@@ -127,7 +127,7 @@ runs:
         fi
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       if: ${{ inputs.checkout == 'true' }}
       with:
         repository: ${{ env.DEPENDENCY_CHECK_REPOSITORY }}

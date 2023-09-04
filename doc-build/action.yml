@@ -109,7 +109,7 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Collect system dependencies"
