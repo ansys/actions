@@ -1,3 +1,4 @@
+ansys-corba
 defusedxml
 filelock
 matplotlib
@@ -5,6 +6,6 @@ pypiwin32
 pywin32
 reuse
 typing
-typing_extensions
 typing-extensions
-ansys-corba
+typing_extensions
+WMI
