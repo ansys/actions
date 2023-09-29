@@ -134,7 +134,7 @@ runs:
     - name: "Generate the wheelhouse"
       shell: bash
       run: |
-        python -m pip wheel . -w wheelhouse
+        python -m pip wheel ${{ env.install_target }} -w wheelhouse
 
     - name: "Compress the wheelhouse"
       uses: vimtor/action-zip@v1.1
