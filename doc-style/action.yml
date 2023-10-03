@@ -43,12 +43,11 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Run Vale"
-      uses: errata-ai/vale-action@reviewdog
+      uses: errata-ai/vale-action@13d79669d1c7cf33b26fc5607214ef529f071cdc
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
         HOME: '/home/runner'
       with:
-        version: 2.28.3
         files: ./doc
         reporter: github-pr-check
         level: error
