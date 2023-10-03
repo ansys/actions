@@ -48,7 +48,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
         HOME: '/home/runner'
       with:
-        files: ./doc
+        files: doc
         reporter: github-pr-check
         level: error
         filter_mode: nofilter
