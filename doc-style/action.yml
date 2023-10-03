@@ -47,8 +47,9 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
-        working-directory: doc
+        files: ./doc
         reporter: github-pr-check
         level: error
         filter_mode: nofilter
         fail_on_error: true
+        vale_flags: "--config=${{ inputs.vale-config }}"
