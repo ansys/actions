@@ -44,10 +44,10 @@ runs:
 
     - name: "Run Vale"
       uses: errata-ai/vale-action@reviewdog
-      working-directory: doc
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
+        working-directory: doc
         reporter: github-pr-check
         level: error
         filter_mode: nofilter
