@@ -44,12 +44,11 @@ runs:
 
     - name: "Run Vale"
       uses: errata-ai/vale-action@reviewdog
+      working-directory: doc
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
-        files: doc
         reporter: github-pr-check
         level: error
         filter_mode: nofilter
         fail_on_error: true
-        vale_flags: "--config=${{ inputs.vale-config }}"
