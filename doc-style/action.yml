@@ -46,6 +46,7 @@ runs:
       uses: errata-ai/vale-action@reviewdog
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
+        HOME: '/home/runner'
       with:
         files: ./doc
         reporter: github-pr-check
