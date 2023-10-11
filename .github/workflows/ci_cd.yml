@@ -196,7 +196,7 @@ jobs:
     needs: [doc-build]
     steps:
       - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@main
+        uses: ansys/actions/doc-deploy-index@fix/docs-indexing
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/dev
           index-name: "actions-vdev"
