@@ -190,12 +190,13 @@ jobs:
 
   doc-index-dev:
     name: "Deploy dev index docs"
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: doc-deploy-dev
+    #needs: doc-deploy-dev
+    needs: [doc-build, tests]
     steps:
       - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@v4
+        uses: ansys/actions/doc-deploy-index@fix/docs-indexing
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/dev
           index-name: "actions-vdev"

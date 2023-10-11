@@ -142,8 +142,7 @@ runs:
     - name: "Install build and twine"
       shell: bash
       run: |
-        python -m pip install pymeilisearch
-        python -m pip install -U pyOpenSSL cryptography
+        python -m pip install git+https://github.com/ansys/pymeilisearch.git@fix/add-dependency
 
      # ------------------------------------------------------------------------
 
