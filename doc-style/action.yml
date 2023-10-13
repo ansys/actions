@@ -26,6 +26,15 @@ inputs:
     required: false
     type: string
 
+  vale-version:
+    description: >
+      Version number for Vale.
+    # TODO: use the latest stable version from Vale, see issue
+    # https://github.com/ansys/actions/issues/350
+    default: '2.29.3'
+    required: false
+    type: string
+
   checkout:
       description: >
         Whether to clone the repository in the CI/CD machine. Default value is
@@ -53,3 +62,4 @@ runs:
         filter_mode: nofilter
         fail_on_error: true
         vale_flags: "--config=${{ inputs.vale-config }}"
+        version: ${{ inputs.vale-version }}
