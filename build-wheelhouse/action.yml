@@ -97,6 +97,9 @@ runs:
       run: |
         library_name=${{ inputs.library-name }}
 
+        library_name="${library_name//-/.}"
+        echo "Modified the library name for importing: '$library_name'"
+
         if python -c "import $library_name"; then
             echo "Python module '$library_name' successfully imported."
         else
