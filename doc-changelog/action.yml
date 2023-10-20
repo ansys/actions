@@ -83,5 +83,5 @@ runs:
           rm $changelog_file
         fi
 
-        towncrier create -c "${{ inputs.pr-title }}" ${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md
+        towncrier create -c '"${{ inputs.pr-title }}"' ${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md
 
