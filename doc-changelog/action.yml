@@ -1,0 +1,87 @@
+name: >
+  Documentation Changelog
+
+description: |
+  Adds a newsfragment to the target repository using ``towncrier``
+  containing the title and number of the pull request. 
+
+
+inputs:
+
+  # Required inputs
+
+  path-to-fragment:
+    description: >
+      Path to where the towncrier fragment is stored
+    required: true
+    type: string
+
+  pr-title:
+    description: >
+      Title of the pull request
+    required: true
+    type: string
+
+  pr-number:
+    description: >
+      The pull request number
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v4
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+
+    - name: "Install towncrier"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip towncrier
+
+    - name: "Get pull request type"
+      shell: bash
+      run: |
+        added=`if [[ ${{ inputs.pr-title }} == *"add"* ]] || [[ ${{ inputs.pr-title }} == *"Add"* ]]; then echo "True"; fi`
+        removed=`if [[ ${{ inputs.pr-title }} == *"remove"* ]] || [[ ${{ inputs.pr-title }} == *"Remove"* ]]; then echo "True"; fi`
+        changed=`if [[ ${{ inputs.pr-title }} == *"change"* ]] || [[ ${{ inputs.pr-title }} == *"Change"* ]]; then echo "True"; fi`
+        updated=`if [[ ${{ inputs.pr-title }} == *"update"* ]] || [[ ${{ inputs.pr-title }} == *"Update"* ]]; then echo "True"; fi`
+        fixed=`if [[ ${{ inputs.pr-title }} == *"fix"* ]] || [[ ${{ inputs.pr-title }} == *"Fix"* ]]; then echo "True"; fi`
+        dependency=`if [[ ${{ inputs.pr-title }} == *"bump"* ]] || [[ ${{ inputs.pr-title }} == *"Bump"* ]]; then echo "True"; fi`
+
+        # If string is not null, then save the pull request type as an env variable
+        if [ ! -z "$added" ]; then
+          echo "PR-TYPE=added" >> $GITHUB_ENV
+        else if [ ! -z "$removed" ]; then
+          echo "PR-TYPE=removed" >> $GITHUB_ENV
+        else if [ ! -z "$changed" ] || [ ! -z "$updated" ]; then
+          echo "PR-TYPE=changed" >> $GITHUB_ENV
+        else if [ ! -z "$fixed" ]; then
+          echo "PR-TYPE=fixed" >> $GITHUB_ENV
+        else if [ ! -z "$dependency" ]; then
+          echo "PR-TYPE=dependencies" >> $GITHUB_ENV
+        else
+          echo 'The pull request title "${{ inputs.pr-title }}" is invalid. Please ensure it contains one of the following keywords:'
+          echo  "Add, Remove, Change, Update, Fix, or Bump (for dependencies)."
+          exit 1
+        fi
+
+    - name: "Create towncrier fragment"
+      shell: bash
+      run: |
+        # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
+        changelog_file="${{ inputs.path-to-fragment }}/${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
+
+        if [ -f $changelog_file ]; then
+          rm $changelog_file
+        fi
+
+        towncrier create -c "${{ inputs.pr-title }}" ${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md
+
