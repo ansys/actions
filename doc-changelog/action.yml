@@ -59,13 +59,13 @@ runs:
         # If string is not null, then save the pull request type as an env variable
         if [ ! -z "$added" ]; then
           echo "PR-TYPE=added" >> $GITHUB_ENV
-        else if [ ! -z "$removed" ]; then
+        elif [ ! -z "$removed" ]; then
           echo "PR-TYPE=removed" >> $GITHUB_ENV
-        else if [ ! -z "$changed" ] || [ ! -z "$updated" ]; then
+        elif [ ! -z "$changed" ] || [ ! -z "$updated" ]; then
           echo "PR-TYPE=changed" >> $GITHUB_ENV
-        else if [ ! -z "$fixed" ]; then
+        elif [ ! -z "$fixed" ]; then
           echo "PR-TYPE=fixed" >> $GITHUB_ENV
-        else if [ ! -z "$dependency" ]; then
+        elif [ ! -z "$dependency" ]; then
           echo "PR-TYPE=dependencies" >> $GITHUB_ENV
         else
           echo 'The pull request title "${{ inputs.pr-title }}" is invalid. Please ensure it contains one of the following keywords:'
