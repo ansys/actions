@@ -58,8 +58,13 @@ runs:
 
         # Add other URLs
         while IFS= read -r -d '' file; do
-          url=${file#$input_dir}
-          url=${url%.html}
+          if [[ $file == *"$input_dir"* ]]; then
+            url=${file#$input_dir}
+            url=${url%.html}
+          else
+            # $input_dir is not in the file path, add it to the beginning of the URL
+            url="$input_dir${file%.html}"
+          fi
           echo "  <url>" >> $output
           echo "    <loc>$website$url</loc>" >> $output
           echo "    <lastmod>$(date +%Y-%m-%dT%H:%M:%S+00:00)</lastmod>" >> $output
