@@ -3,7 +3,7 @@ name: >
 
 description: |
   Adds a newsfragment to the target repository using ``towncrier``
-  containing the title and number of the pull request. 
+  containing the title and number of the pull request.
 
 
 inputs:
@@ -13,6 +13,12 @@ inputs:
   path-to-fragment:
     description: >
       Path to where the towncrier fragment is stored
+    required: true
+    type: string
+
+  pr-branch:
+    description: >
+      Name of the pull request
     required: true
     type: string
 
@@ -34,6 +40,11 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
+
+    - name: Check out branch
+      run: |
+        git checkout ${{ inputs.pr-branch }}
+        git branch
 
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
