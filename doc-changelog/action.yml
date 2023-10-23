@@ -16,11 +16,11 @@ inputs:
     required: true
     type: string
 
-  pr-branch:
-    description: >
-      Name of the pull request
-    required: true
-    type: string
+  # pr-branch:
+  #   description: >
+  #     Name of the pull request
+  #   required: true
+  #   type: string
 
   pr-title:
     description: >
@@ -41,11 +41,12 @@ runs:
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
 
-    - name: Check out branch
-      shell: bash
-      run: |
-        git checkout ${{ inputs.pr-branch }}
-        git branch
+    # - name: Check out branch
+    #   shell: bash
+    #   run: |
+    #     git pull
+    #     git checkout ${{ inputs.pr-branch }}
+    #     git branch
 
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
@@ -89,11 +90,22 @@ runs:
       shell: bash
       run: |
         # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
-        changelog_file="${{ inputs.path-to-fragment }}/${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
+        file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
+        changelog_file="${{ inputs.path-to-fragment }}/$file"
 
         if [ -f $changelog_file ]; then
           rm $changelog_file
         fi
 
-        towncrier create -c '"${{ inputs.pr-title }}"' ${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md
+        towncrier create -c '"${{ inputs.pr-title }}"' $file
+
+    - name: "Create towncrier fragment"
+      shell: bash
+      run: |
+        file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
+        changelog_file="${{ inputs.path-to-fragment }}/$file"
+
+        git add $changelog_file
+        git commit -m "adding fragment"
+        git push
 
