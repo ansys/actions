@@ -61,7 +61,7 @@ runs:
           if [[ $file == *"$input_dir"* ]]; then
             url=${file%.html}
           else
-            # $input_dir is not in the file path, add it to the begining of the URL
+            # $input_dir is not in the file path, add it to the beginning of the URL
             url="$input_dir${file%.html}"
           fi
           echo "  <url>" >> $output
