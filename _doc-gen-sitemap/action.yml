@@ -40,7 +40,7 @@ runs:
       shell: bash
       run: |
         # Declare the website name and the output file for the sitemap
-        website="https://www.${{ inputs.cname }}"
+        website="https://${{ inputs.cname }}"
         input_dir=${{ inputs.html-directory }}
         output="sitemap.xml"
 
@@ -59,10 +59,9 @@ runs:
         # Add other URLs
         while IFS= read -r -d '' file; do
           if [[ $file == *"$input_dir"* ]]; then
-            url=${file#$input_dir}
-            url=${url%.html}
+            url=${file%.html}
           else
-            # $input_dir is not in the file path, add it to the beginning of the URL
+            # $input_dir is not in the file path, add it to the begining of the URL
             url="$input_dir${file%.html}"
           fi
           echo "  <url>" >> $output
