@@ -70,7 +70,7 @@ runs:
 
     - name: "Build wheels for CPython ${{ inputs.python-version }}"
       if: ${{ inputs.cibw-build  != 'cp38-*' && inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@v2.11.1
+      uses: pypa/cibuildwheel@v2.16.2
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
         CIBW_SKIP: ${{ inputs.cibw-skip }}
@@ -80,7 +80,7 @@ runs:
 
     - name: "Build wheels for CPython 3.8"
       if: ${{ inputs.cibw-build == 'cp38-*' && inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@v2.11.1
+      uses: pypa/cibuildwheel@v2.16.2
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
         CIBW_SKIP: ${{ inputs.cibw-skip }}
@@ -90,7 +90,7 @@ runs:
 
     - name: "Build wheels for PyPy"
       if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
-      uses: pypa/cibuildwheel@v2.11.1
+      uses: pypa/cibuildwheel@v2.16.2
       env:
         CIBW_BUILD: "pp38-* pp39-*"
         CIBW_SKIP: ${{ inputs.cibw-skip }}
