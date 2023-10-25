@@ -101,11 +101,11 @@ runs:
         git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-        # Checkout the branch
-        git switch origin/${{ inputs.pr-branch }}
-
         # Update the repository
-        git pull
+        git pull origin ${{ inputs.pr-branch }}
+
+        # Checkout the branch
+        git checkout ${{ inputs.pr-branch }}
 
         # Add and commit fragment
         git add $changelog_file
