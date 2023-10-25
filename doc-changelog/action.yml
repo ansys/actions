@@ -119,21 +119,21 @@ runs:
 
         echo $modified
 
-        # If the file was modified (the string is not empty), add and commit fragment
-        if [ ! -z "$modified" ]; then
-          # Add and commit fragment
-          git add $changelog_file
-          git commit -m "adding fragment"
+    #     # If the file was modified (the string is not empty), add and commit fragment
+    #     if [ ! -z "$modified" ]; then
+    #       # Add and commit fragment
+    #       git add $changelog_file
+    #       git commit -m "adding fragment"
 
-          # Save env variable
-          echo "FILE_MODIFIED=True" >> $GITHUB_ENV
-        else
-          echo "FILE_MODIFIED=False" >> $GITHUB_ENV
-        fi
+    #       # Save env variable
+    #       echo "FILE_MODIFIED=True" >> $GITHUB_ENV
+    #     else
+    #       echo "FILE_MODIFIED=False" >> $GITHUB_ENV
+    #     fi
 
-    - name: "Push fragment to PR branch"
-      if: ${{ env.FILE_MODIFIED }} == True
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ inputs.token }}
-        branch: ${{ inputs.pr-branch }}
+    # - name: "Push fragment to PR branch"
+    #   if: ${{ env.FILE_MODIFIED }} == True
+    #   uses: ad-m/github-push-action@master
+    #   with:
+    #     github_token: ${{ inputs.token }}
+    #     branch: ${{ inputs.pr-branch }}
