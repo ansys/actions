@@ -117,7 +117,7 @@ runs:
 
         modified=`git diff HEAD --name-only`
 
-        echo $modified
+        echo "modified: $modified"
 
         if [ ! -z "$modified" ]; then
           # Add and commit fragment
