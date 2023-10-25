@@ -97,7 +97,7 @@ runs:
         fi
 
         # Create changelog fragment with towncrier
-        towncrier create -c '"${{ inputs.pr-title }}"' $file
+        towncrier create -c ${{ inputs.pr-title }} $file
 
         # Configure git username & email
         git config user.name 'github-actions[bot]'
