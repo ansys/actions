@@ -115,14 +115,17 @@ runs:
         git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
+        git add $changelog_file
+
         modified=`git status` 
-        # `git diff HEAD --name-only`
+        file=`git diff HEAD --name-only`
 
         echo "modified: $modified"
+        echo "file: $file"
 
         if [ ! -z "$modified" ]; then
           # Add and commit fragment
-          git add $changelog_file
+          # git add $changelog_file
           git commit -m "adding fragment"
           echo "MODIFIED=True" >> $GITHUB_ENV
         else
