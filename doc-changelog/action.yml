@@ -64,10 +64,13 @@ runs:
       run: |
         # Check inputs.pr-title is surrounded by double quotes
         title="${{ inputs.pr-title }}"
+
+        echo $title
+
         if [[ $title =~ ^\".*\"$ ]]; then
           echo "PR title is wrapped in double quotes"
-        else
-          title="${{ inputs.pr-title }}"
+        # else
+        #   title="${{ inputs.pr-title }}"
         fi
 
         # Check if pr-title string starts with Add, Remove, Change, Fix, or Bump
