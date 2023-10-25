@@ -102,7 +102,7 @@ runs:
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
         # Checkout the branch
-        git checkout ${{ inputs.pr-branch }}
+        git switch ${{ inputs.pr-branch }}
 
         # Update the repository
         git pull
