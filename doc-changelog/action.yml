@@ -42,25 +42,28 @@ inputs:
 
 runs:
   using: "composite"
-  if: github.event.pull_request.merged == true
   steps:
     - name: "Install Git and clone project"
+      if: ${{ github.event.pull_request.merged }} == true
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.pr-branch }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ github.event.pull_request.merged }} == true
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
     - name: "Install towncrier"
+      if: ${{ github.event.pull_request.merged }} == true
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier
 
     - name: "Get pull request type"
+      if: ${{ github.event.pull_request.merged }} == true
       shell: bash
       run: |
         # Check inputs.pr-title is surrounded by double quotes
@@ -99,6 +102,7 @@ runs:
         fi
 
     - name: "Create and commit towncrier fragment"
+      if: ${{ github.event.pull_request.merged }} == true
       shell: bash
       run: |
         file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
@@ -121,6 +125,7 @@ runs:
         git commit -m "adding fragment"
 
     - name: "Push fragment to PR branch"
+      if: ${{ github.event.pull_request.merged }} == true
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ inputs.token }}
