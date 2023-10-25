@@ -117,6 +117,8 @@ runs:
 
         modified=`git diff --name-only`
 
+        echo $modified
+
         # If the file was modified (the string is not empty), add and commit fragment
         if [ ! -z "$modified" ]; then
           # Add and commit fragment
