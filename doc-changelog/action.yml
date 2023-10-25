@@ -71,12 +71,15 @@ runs:
           title="${{ inputs.pr-title }}"
         fi
 
+        # Save title into env variable
+        echo "PR-TITLE=$title" >> $GITHUB_ENV
+
         # Check if pr-title string starts with Add, Remove, Change, Fix, or Bump
-        added=`if [[ ${{ inputs.pr-title }} =~ ^[a,A]dd ]]; then echo "True"; fi`
-        removed=`if [[ ${{ inputs.pr-title }} =~ ^[r,R]emove ]]; then echo "True"; fi`
-        changed=`if [[ ${{ inputs.pr-title }} =~ ^[c,C]hange ]]; then echo "True"; fi`
-        fixed=`if [[ ${{ inputs.pr-title }} =~ ^[f,F]ix ]]; then echo "True"; fi`
-        dependency=`if [[ ${{ inputs.pr-title }} =~ ^[b,B]ump ]]; then echo "True"; fi`
+        added=`if [[ $title =~ ^[a,A]dd ]]; then echo "True"; fi`
+        removed=`if [[ $title =~ ^[r,R]emove ]]; then echo "True"; fi`
+        changed=`if [[ $title =~ ^[c,C]hange ]]; then echo "True"; fi`
+        fixed=`if [[ $title =~ ^[f,F]ix ]]; then echo "True"; fi`
+        dependency=`if [[ $title =~ ^[b,B]ump ]]; then echo "True"; fi`
 
         # If string is not null, then save the pull request type as an env variable
         if [ ! -z "$added" ]; then
@@ -107,7 +110,7 @@ runs:
         fi
 
         # Create changelog fragment with towncrier
-        towncrier create -c ${{ inputs.pr-title }} $file
+        towncrier create -c ${{ env.PR-TITLE }} $file
 
         # Configure git username & email
         git config user.name 'github-actions[bot]'
