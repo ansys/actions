@@ -120,7 +120,7 @@ runs:
 
         if [ ! -z "$modified" ]; then
           # Add and commit fragment
-          git add $changelog_file
+          git add .
           git commit -m "adding fragment"
 
           # Save modified env variable for next step
