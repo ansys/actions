@@ -104,7 +104,7 @@ runs:
         changelog_file="${{ inputs.path-to-fragment }}/$file"
 
         # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
-        if [[ "$changelog_file" == *"${{ inputs.pr-number }}"* ]]; then
+        if [[ "$changelog_file" == *"${{ inputs.pr-number }}."* ]]; then
           rm $changelog_file
         fi
 
@@ -122,6 +122,8 @@ runs:
           # Add and commit fragment
           git add $changelog_file
           git commit -m "adding fragment"
+
+          # Save modified env variable for next step
           echo "MODIFIED=True" >> $GITHUB_ENV
         else
           echo "MODIFIED=False" >> $GITHUB_ENV
