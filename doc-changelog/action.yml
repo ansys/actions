@@ -100,14 +100,10 @@ runs:
     - name: "Create and commit towncrier fragment"
       shell: bash
       run: |
-        # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
-
-        echo `pwd`
-        echo `ls -l`
-
         file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
         changelog_file="${{ inputs.path-to-fragment }}/$file"
 
+        # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
         if [ -f $changelog_file ]; then
           rm $changelog_file
         fi
@@ -119,11 +115,22 @@ runs:
         git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-        # Add and commit fragment
-        git add $changelog_file
-        git commit -m "adding fragment"
+        modified=`git diff --name-only`
+
+        # If the file was modified (the string is not empty), add and commit fragment
+        if [ ! -z "$modified" ]; then
+          # Add and commit fragment
+          git add $changelog_file
+          git commit -m "adding fragment"
+
+          # Save env variable
+          echo "FILE_MODIFIED=True" >> $GITHUB_ENV
+        else
+          echo "FILE_MODIFIED=False" >> $GITHUB_ENV
+        fi
 
     - name: "Push fragment to PR branch"
+      if: ${{ env.FILE_MODIFIED }} == True
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ inputs.token }}
