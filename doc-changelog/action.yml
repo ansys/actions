@@ -104,7 +104,7 @@ runs:
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
         # Update the repository
-        git pull ${{ inputs.pr-branch }}
+        git pull
 
         # Add and commit fragment
         git add $changelog_file
