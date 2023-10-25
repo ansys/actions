@@ -101,6 +101,9 @@ runs:
       shell: bash
       run: |
         # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
+
+        pwd
+        
         file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
         changelog_file="${{ inputs.path-to-fragment }}/$file"
 
@@ -114,9 +117,6 @@ runs:
         # Configure git username & email
         git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
-
-        # Update the repository
-        git pull
 
         # Add and commit fragment
         git add $changelog_file
