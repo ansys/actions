@@ -115,14 +115,22 @@ runs:
         git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-        git diff --name-only
+        modified=`git diff HEAD --name-only`
 
-    #     # Add and commit fragment
-    #     git add $changelog_file
-    #     git commit -m "adding fragment"
+        echo $modified
 
-    # - name: "Push fragment to PR branch"
-    #   uses: ad-m/github-push-action@master
-    #   with:
-    #     github_token: ${{ inputs.token }}
-    #     branch: ${{ inputs.pr-branch }}
+        if [ ! -z "$modified" ]; then
+          # Add and commit fragment
+          git add $changelog_file
+          git commit -m "adding fragment"
+          echo "MODIFIED=True" >> $GITHUB_ENV
+        else
+          echo "MODIFIED=False" >> $GITHUB_ENV
+        fi
+
+    - name: "Push fragment to PR branch"
+      if: ${{ env.MODIFIED }} == True
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ inputs.token }}
+        branch: ${{ inputs.pr-branch }}
