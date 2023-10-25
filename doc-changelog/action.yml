@@ -104,7 +104,7 @@ runs:
         changelog_file="${{ inputs.path-to-fragment }}/$file"
 
         # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
-        if [ -f $changelog_file ]; then
+        if [ $changelog_file == "${{ inputs.pr-number }}"* ]; then
           rm $changelog_file
         fi
 
