@@ -102,8 +102,9 @@ runs:
       run: |
         # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
 
-        pwd
-        
+        echo `pwd`
+        echo `ls -l`
+
         file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
         changelog_file="${{ inputs.path-to-fragment }}/$file"
 
