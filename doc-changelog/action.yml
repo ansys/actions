@@ -100,8 +100,8 @@ runs:
     - name: "Create and commit towncrier fragment"
       shell: bash
       run: |
-        file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
-        changelog_file="${{ inputs.path-to-fragment }}/$file"
+        # file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
+        changelog_file="${{ inputs.path-to-fragment }}/${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
 
         # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
         if [ "$changelog_file" == *"${{ inputs.pr-number }}"* ]; then
@@ -110,7 +110,7 @@ runs:
         fi
 
         # Create changelog fragment with towncrier
-        towncrier create -c ${{ inputs.pr-title }} $file
+        towncrier create -c ${{ inputs.pr-title }} ${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md
 
         # Configure git username & email
         git config user.name 'github-actions[bot]'
