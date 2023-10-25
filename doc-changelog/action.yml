@@ -100,26 +100,23 @@ runs:
     - name: "Create and commit towncrier fragment"
       shell: bash
       run: |
-        # file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
-        changelog_file="${{ inputs.path-to-fragment }}/${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
+        file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
+        changelog_file="${{ inputs.path-to-fragment }}/$file"
 
         # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
-        if [ "$changelog_file" == *"${{ inputs.pr-number }}"* ]; then
-          echo "REMOVING FILE"
+        if [[ "$changelog_file" == *"${{ inputs.pr-number }}"* ]]; then
           rm $changelog_file
         fi
 
         # Create changelog fragment with towncrier
-        towncrier create -c ${{ inputs.pr-title }} ${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md
+        towncrier create -c ${{ inputs.pr-title }} $file
 
         # Configure git username & email
         git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-        file=`git diff HEAD --name-only`
-
+        modified=`git diff HEAD --name-only`
         echo "modified: $modified"
-        echo "file: $file"
 
         if [ ! -z "$modified" ]; then
           # Add and commit fragment
