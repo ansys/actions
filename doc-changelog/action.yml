@@ -115,12 +115,14 @@ runs:
         git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-        # Add and commit fragment
-        git add $changelog_file
-        git commit -m "adding fragment"
+        git diff --name-only
 
-    - name: "Push fragment to PR branch"
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ inputs.token }}
-        branch: ${{ inputs.pr-branch }}
+    #     # Add and commit fragment
+    #     git add $changelog_file
+    #     git commit -m "adding fragment"
+
+    # - name: "Push fragment to PR branch"
+    #   uses: ad-m/github-push-action@master
+    #   with:
+    #     github_token: ${{ inputs.token }}
+    #     branch: ${{ inputs.pr-branch }}
