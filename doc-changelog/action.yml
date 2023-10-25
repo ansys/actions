@@ -69,7 +69,6 @@ runs:
         else
           echo "PR title is not wrapped in double quotes"
           title="${{ inputs.pr-title }}"
-          exit 1
         fi
 
         # Check if pr-title string starts with Add, Remove, Change, Fix, or Bump
