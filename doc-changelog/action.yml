@@ -63,15 +63,14 @@ runs:
       shell: bash
       run: |
         # Check inputs.pr-title is surrounded by double quotes
-        # title="${{ inputs.pr-title }}"
-
-        # echo $title
-
-        # if [[ $title =~ ^\".*\"$ ]]; then
-        #   echo "PR title is wrapped in double quotes"
-        # else
-        #   title="${{ inputs.pr-title }}"
-        # fi
+        if [[ "${{ inputs.pr-title }}" =~ ^\".*\"$ ]]; then
+          echo "PR title is wrapped in double quotes"
+          title=${{ inputs.pr-title }}
+        else
+          echo "PR title is not wrapped in double quotes"
+          title="${{ inputs.pr-title }}"
+          exit 1
+        fi
 
         # Check if pr-title string starts with Add, Remove, Change, Fix, or Bump
         added=`if [[ ${{ inputs.pr-title }} =~ ^[a,A]dd ]]; then echo "True"; fi`
