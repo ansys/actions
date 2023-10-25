@@ -42,7 +42,7 @@ inputs:
 
 runs:
   using: "composite"
-  if: ${{ github.event.pull_request.merged }} == true
+  if: github.event.pull_request.merged == true
   steps:
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
