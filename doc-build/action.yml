@@ -82,7 +82,7 @@ inputs:
 
   requirements-file:
     description: >
-      Path to the requirements file in case it needs to be in an specific location.
+      Path to the requirements file in case it needs to be in a specific location.
       This is useful for non python projects, where you don't necessarily have a requirements
       file in the root of the project.
     default: 'requirements/requirements_doc.txt'
