@@ -80,6 +80,15 @@ inputs:
     required: false
     type: boolean
 
+  requirements-file:
+    description: >
+      Path to the requirements file in case it needs to be in a specific location.
+      This is useful for non python projects, where you don't necessarily have a requirements
+      file in the root of the project.
+    default: 'requirements/requirements_doc.txt'
+    required: false
+    type: string
+
   checkout:
     description: >
       Whether to clone the repository in the CI/CD machine. Default value is
@@ -122,7 +131,7 @@ runs:
         fi
 
     - name: "Cache apt packages needed"
-      uses: awalsh128/cache-apt-pkgs-action@v1
+      uses: awalsh128/cache-apt-pkgs-action@v1.3.0
       if: ${{ inputs.skip-dependencies-cache == 'false' }}
       with:
         packages: ${{ env.NEEDED_DEPS }}
@@ -156,7 +165,7 @@ runs:
     - name: "Check if requirements.txt file exists"
       shell: bash
       run: |
-        echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f requirements/requirements_doc.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+        echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f ${{ inputs.requirements-file }} ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
     - name: "Print previous output"
       shell: bash
@@ -167,7 +176,7 @@ runs:
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'true'
       run: |
-        python -m pip install -r requirements/requirements_doc.txt
+        python -m pip install -r ${{ inputs.requirements-file }}
 
     - name: "Install Python library"
       shell: bash
