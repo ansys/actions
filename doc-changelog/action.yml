@@ -35,6 +35,7 @@ runs:
     - name: "Check pull request type"
       env:
         PR_TITLE: "${{ github.event.pull_request.title }}"
+      shell: bash
       run: |
         # Check if PR_TITLE string contains Add, Remove, Change, Fix, or Bump
         if [[ ${{ env.PR_TITLE }} =~ [a,A]dd]]; then echo "PR_TYPE=added" >> $GITHUB_ENV;
@@ -56,7 +57,7 @@ runs:
       shell: bash
       run: |
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_TYPE }}.md"
-        pr_type_arr = ( "added" "removed" "changed" "fixed" "dependencies")
+        pr_type_arr = ("added" "removed" "changed" "fixed" "dependencies")
 
         # Remove fragment if it already exists for pull request
         for type in "${pr_type_arr[@]}"
