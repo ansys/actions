@@ -63,7 +63,7 @@ runs:
         for type in "${pr_type_arr[@]}"
         do
           exists=`find . -type f -name "${{ env.PR_NUMBER }}.$type.md"`
-          if [ ! -z "$exists" ]; then echo "removing $exists"; fi
+          if [ ! -z "$exists" ]; then rm $exists; fi
         done
 
         # Create changelog fragment with towncrier
