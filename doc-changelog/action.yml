@@ -5,16 +5,7 @@ description: |
   Adds a newsfragment to the target repository using ``towncrier``
   containing the title and number of the pull request.
 
-
 inputs:
-
-  # Required inputs
-
-  path-to-fragment:
-    description: >
-      Path to where the towncrier fragment is stored
-    required: true
-    type: string
 
   token:
     description: >
@@ -41,54 +32,41 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier
 
-    - name: "Save github event inputs as environment variables"
-      shell: bash
+    - name: "Check pull request type"
+      env:
+        PR_TITLE: "${{ github.event.pull_request.title }}"
       run: |
-        echo "PR_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
-        echo 'PR_TITLE="${{ github.event.pull_request.title }}"' >> $GITHUB_ENV
-        echo "PR_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
-        echo "FRAGMENT_PATH=${{ inputs.path-to-fragment }}" >> $GITHUB_ENV
-
-    - name: "Get pull request type"
-      shell: bash
-      run: |
-        # Check if PR_TITLE string starts with Add, Remove, Change, Fix, or Bump
-        added=`if [[ ${{ env.PR_TITLE }} =~ ^[a,A]dd ]]; then echo "True"; fi`
-        removed=`if [[ ${{ env.PR_TITLE }} =~ ^[r,R]emove ]]; then echo "True"; fi`
-        changed=`if [[ ${{ env.PR_TITLE }} =~ ^[c,C]hange ]]; then echo "True"; fi`
-        fixed=`if [[ ${{ env.PR_TITLE }} =~ ^[f,F]ix ]]; then echo "True"; fi`
-        dependency=`if [[ ${{ env.PR_TITLE }} =~ ^[b,B]ump ]]; then echo "True"; fi`
-
-        # If string is not null, then save the pull request type as an env variable
-        if [ ! -z "$added" ]; then
-          echo "PR_TYPE=added" >> $GITHUB_ENV
-        elif [ ! -z "$removed" ]; then
-          echo "PR_TYPE=removed" >> $GITHUB_ENV
-        elif [ ! -z "$changed" ]; then
-          echo "PR_TYPE=changed" >> $GITHUB_ENV
-        elif [ ! -z "$fixed" ]; then
-          echo "PR_TYPE=fixed" >> $GITHUB_ENV
-        elif [ ! -z "$dependency" ]; then
-          echo "PR_TYPE=dependencies" >> $GITHUB_ENV
+        # Check if PR_TITLE string contains Add, Remove, Change, Fix, or Bump
+        if [[ ${{ env.PR_TITLE }} =~ [a,A]dd]]; then echo "PR_TYPE=added" >> $GITHUB_ENV;
+        elif [[ ${{ env.PR_TITLE }} =~ [r,R]emove ]]; then echo "PR_TYPE=removed" >> $GITHUB_ENV;
+        elif [[ ${{ env.PR_TITLE }} =~ [c,C]hange ]]; then echo "PR_TYPE=changed" >> $GITHUB_ENV;
+        elif [[ ${{ env.PR_TITLE }} =~ [f,F]ix ]]; then echo "PR_TYPE=fixed" >> $GITHUB_ENV;
+        elif [[ ${{ env.PR_TITLE }} =~ [b,B]ump ]]; then echo "PR_TYPE=dependencies" >> $GITHUB_ENV;
         else
-          echo "The pull request title ${{ env.PR_TITLE }} is invalid. Please ensure it starts with one of the following keywords:"
+          echo "The pull request title ${{ env.PR_TITLE }} is invalid. Please ensure it contains one of the following keywords:"
           echo  "Add, Remove, Change, Fix, or Bump (for dependencies)."
           exit 1
         fi
 
     - name: "Create and commit towncrier fragment"
+      env:
+        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+        PR_TITLE: "${{ github.event.pull_request.title }}"
+        PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
-        file="${{ env.PR_NUMBER }}.${{ env.PR_TYPE }}.md"
-        changelog_file="${{ env.FRAGMENT_PATH }}/$file"
+        fragment="${{ env.PR_NUMBER }}.${{ env.PR_TYPE }}.md"
+        pr_type_arr = ( "added" "removed" "changed" "fixed" "dependencies")
 
-        # If fragment already exists with ${{ env.PR_NUMBER }}, remove it and create a new one
-        if [[ "$changelog_file" == *"${{ env.PR_NUMBER }}."* ]]; then
-          rm ${{ env.FRAGMENT_PATH }}/${{ env.PR_NUMBER }}.*
-        fi
+        # Remove fragment if it already exists for pull request
+        for type in "${pr_type_arr[@]}"
+        do
+          exists=`find . -type f -name "${{ env.PR_NUMBER }}.$type.md"`
+          if [ ! -z "$exists" ]; then echo "removing $exists"; fi
+        done
 
         # Create changelog fragment with towncrier
-        towncrier create -c "${{ env.PR_TITLE }}" $file
+        towncrier create -c "${{ env.PR_TITLE }}" $fragment
 
         # Configure git username & email
         git config user.name 'github-actions[bot]'
