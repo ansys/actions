@@ -16,24 +16,6 @@ inputs:
     required: true
     type: string
 
-  pr-branch:
-    description: >
-      Name of the pull request
-    required: true
-    type: string
-
-  pr-title:
-    description: >
-      Title of the pull request
-    required: true
-    type: string
-
-  pr-number:
-    description: >
-      The pull request number
-    required: true
-    type: string
-
   token:
     description: >
       GitHub token for doing a git commit & push
@@ -59,41 +41,37 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier
 
+    - name: "Save github event inputs as environment variables"
+      shell: bash
+      run: |
+        echo "PR_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+        echo 'PR_TITLE="${{ github.event.pull_request.title }}"' >> $GITHUB_ENV
+        echo "PR_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
+        echo "FRAGMENT_PATH=${{ inputs.path-to-fragment }}" >> $GITHUB_ENV
+
     - name: "Get pull request type"
       shell: bash
       run: |
-        # Check inputs.pr-title is surrounded by double quotes
-        title='${{ inputs.pr-title }}'
-        if [[ "$title" =~ ^\".*\"$ ]]; then
-          echo "PR title is wrapped in double quotes"
-        else
-          echo "PR title is not wrapped in double quotes"
-          title="${{ inputs.pr-title }}"
-        fi
-
-        # Save title into env variable
-        echo "PR-TITLE=$title" >> $GITHUB_ENV
-
-        # Check if pr-title string starts with Add, Remove, Change, Fix, or Bump
-        added=`if [[ $title =~ ^[a,A]dd ]]; then echo "True"; fi`
-        removed=`if [[ $title =~ ^[r,R]emove ]]; then echo "True"; fi`
-        changed=`if [[ $title =~ ^[c,C]hange ]]; then echo "True"; fi`
-        fixed=`if [[ $title =~ ^[f,F]ix ]]; then echo "True"; fi`
-        dependency=`if [[ $title =~ ^[b,B]ump ]]; then echo "True"; fi`
+        # Check if PR_TITLE string starts with Add, Remove, Change, Fix, or Bump
+        added=`if [[ ${{ env.PR_TITLE }} =~ ^[a,A]dd ]]; then echo "True"; fi`
+        removed=`if [[ ${{ env.PR_TITLE }} =~ ^[r,R]emove ]]; then echo "True"; fi`
+        changed=`if [[ ${{ env.PR_TITLE }} =~ ^[c,C]hange ]]; then echo "True"; fi`
+        fixed=`if [[ ${{ env.PR_TITLE }} =~ ^[f,F]ix ]]; then echo "True"; fi`
+        dependency=`if [[ ${{ env.PR_TITLE }} =~ ^[b,B]ump ]]; then echo "True"; fi`
 
         # If string is not null, then save the pull request type as an env variable
         if [ ! -z "$added" ]; then
-          echo "PR-TYPE=added" >> $GITHUB_ENV
+          echo "PR_TYPE=added" >> $GITHUB_ENV
         elif [ ! -z "$removed" ]; then
-          echo "PR-TYPE=removed" >> $GITHUB_ENV
+          echo "PR_TYPE=removed" >> $GITHUB_ENV
         elif [ ! -z "$changed" ]; then
-          echo "PR-TYPE=changed" >> $GITHUB_ENV
+          echo "PR_TYPE=changed" >> $GITHUB_ENV
         elif [ ! -z "$fixed" ]; then
-          echo "PR-TYPE=fixed" >> $GITHUB_ENV
+          echo "PR_TYPE=fixed" >> $GITHUB_ENV
         elif [ ! -z "$dependency" ]; then
-          echo "PR-TYPE=dependencies" >> $GITHUB_ENV
+          echo "PR_TYPE=dependencies" >> $GITHUB_ENV
         else
-          echo "The pull request title ${{ inputs.pr-title }} is invalid. Please ensure it starts with one of the following keywords:"
+          echo "The pull request title ${{ env.PR_TITLE }} is invalid. Please ensure it starts with one of the following keywords:"
           echo  "Add, Remove, Change, Fix, or Bump (for dependencies)."
           exit 1
         fi
@@ -101,16 +79,16 @@ runs:
     - name: "Create and commit towncrier fragment"
       shell: bash
       run: |
-        file="${{ inputs.pr-number }}.${{ env.PR-TYPE }}.md"
-        changelog_file="${{ inputs.path-to-fragment }}/$file"
+        file="${{ env.PR_NUMBER }}.${{ env.PR_TYPE }}.md"
+        changelog_file="${{ env.FRAGMENT_PATH }}/$file"
 
-        # If fragment already exists with ${{ inputs.pr-number }}, remove it and create a new one
-        if [[ "$changelog_file" == *"${{ inputs.pr-number }}."* ]]; then
-          rm ${{ inputs.path-to-fragment }}/${{ inputs.pr-number }}.*
+        # If fragment already exists with ${{ env.PR_NUMBER }}, remove it and create a new one
+        if [[ "$changelog_file" == *"${{ env.PR_NUMBER }}."* ]]; then
+          rm ${{ env.FRAGMENT_PATH }}/${{ env.PR_NUMBER }}.*
         fi
 
         # Create changelog fragment with towncrier
-        towncrier create -c "${{ env.PR-TITLE }}" $file
+        towncrier create -c "${{ env.PR_TITLE }}" $file
 
         # Configure git username & email
         git config user.name 'github-actions[bot]'
@@ -123,16 +101,5 @@ runs:
           # Add and commit fragment
           git add .
           git commit -m "adding fragment"
-
-          # Save modified env variable for next step
-          echo "MODIFIED=True" >> $GITHUB_ENV
-        else
-          echo "MODIFIED=False" >> $GITHUB_ENV
+          git push
         fi
-
-    - name: "Push fragment to PR branch"
-      if: ${{ env.MODIFIED }} == True
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ inputs.token }}
-        branch: ${{ inputs.pr-branch }}
