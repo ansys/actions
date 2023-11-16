@@ -7,25 +7,50 @@ description: |
 
 inputs:
 
+  # Required inputs
+
   token:
     description: >
       GitHub token for doing a git commit & push
     required: true
     type: string
 
+  # Optional inputs
+
+  python-version:
+    description: >
+      Python version used for setting up Python.
+    default: '3.10'
+    required: false
+    type: string
+
+  use-python-cache:
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
+      env:
+        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       uses: actions/checkout@v4
       with:
-        ref: ${{ inputs.pr-branch }}
+        ref: ${{ env.PR_BRANCH }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+        PYTHON_CACHE: ${{ inputs.use-python-cache }}
       uses: ansys/actions/_setup-python@main
       with:
-        python-version: ${{ inputs.python-version }}
-        use-cache: ${{ inputs.use-python-cache }}
+        python-version: ${{ env.PYTHON_VERSION }}
+        use-cache: ${{ env.PYTHON_CACHE }}
 
     - name: "Install towncrier"
       shell: bash
