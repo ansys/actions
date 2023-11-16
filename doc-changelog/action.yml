@@ -57,7 +57,7 @@ runs:
       shell: bash
       run: |
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_TYPE }}.md"
-        pr_type_arr = ("added" "removed" "changed" "fixed" "dependencies")
+        pr_type_arr=("added" "removed" "changed" "fixed" "dependencies")
 
         # Remove fragment if it already exists for pull request
         for type in "${pr_type_arr[@]}"
