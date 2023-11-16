@@ -38,13 +38,13 @@ runs:
       shell: bash
       run: |
         # Check if PR_TITLE string contains Add, Remove, Change, Fix, or Bump
-        if [[ ${{ env.PR_TITLE }} =~ [a,A]dd ]]; then echo "PR_TYPE=added" >> $GITHUB_ENV;
-        elif [[ ${{ env.PR_TITLE }} =~ [r,R]emove ]]; then echo "PR_TYPE=removed" >> $GITHUB_ENV;
-        elif [[ ${{ env.PR_TITLE }} =~ [c,C]hange ]]; then echo "PR_TYPE=changed" >> $GITHUB_ENV;
-        elif [[ ${{ env.PR_TITLE }} =~ [f,F]ix ]]; then echo "PR_TYPE=fixed" >> $GITHUB_ENV;
-        elif [[ ${{ env.PR_TITLE }} =~ [b,B]ump ]]; then echo "PR_TYPE=dependencies" >> $GITHUB_ENV;
+        if [[ "${{ env.PR_TITLE }}" =~ [a,A]dd ]]; then echo "PR_TYPE=added" >> $GITHUB_ENV;
+        elif [[ "${{ env.PR_TITLE }}" =~ [r,R]emove ]]; then echo "PR_TYPE=removed" >> $GITHUB_ENV;
+        elif [[ "${{ env.PR_TITLE }}" =~ [c,C]hange ]]; then echo "PR_TYPE=changed" >> $GITHUB_ENV;
+        elif [[ "${{ env.PR_TITLE }}" =~ [f,F]ix ]]; then echo "PR_TYPE=fixed" >> $GITHUB_ENV;
+        elif [[ "${{ env.PR_TITLE }}" =~ [b,B]ump ]]; then echo "PR_TYPE=dependencies" >> $GITHUB_ENV;
         else
-          echo "The pull request title ${{ env.PR_TITLE }} is invalid. Please ensure it contains one of the following keywords:"
+          echo "The pull request title "${{ env.PR_TITLE }}" is invalid. Please ensure it contains one of the following keywords:"
           echo  "Add, Remove, Change, Fix, or Bump (for dependencies)."
           exit 1
         fi
