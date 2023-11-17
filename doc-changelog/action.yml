@@ -41,6 +41,7 @@ runs:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       uses: actions/checkout@v4
       with:
+        # Required to checkout branch from origin rather than remote
         ref: ${{ env.PR_BRANCH }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
@@ -57,21 +58,23 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier
 
-    - name: "Check pull request type"
+    - name: "Check pull request title style"
+      env:
+        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+      uses: ansys/actions/commit-style@v4
+      with:
+        token: ${{ inputs.token }}
+
+    - name: "Save pull request type"
       env:
         PR_TITLE: "${{ github.event.pull_request.title }}"
       shell: bash
       run: |
-        # Check if PR_TITLE string contains Add, Remove, Change, Fix, or Bump
-        if [[ "${{ env.PR_TITLE }}" =~ [a,A]dd ]]; then echo "PR_TYPE=added" >> $GITHUB_ENV;
-        elif [[ "${{ env.PR_TITLE }}" =~ [r,R]emove ]]; then echo "PR_TYPE=removed" >> $GITHUB_ENV;
-        elif [[ "${{ env.PR_TITLE }}" =~ [c,C]hange ]]; then echo "PR_TYPE=changed" >> $GITHUB_ENV;
-        elif [[ "${{ env.PR_TITLE }}" =~ [f,F]ix ]]; then echo "PR_TYPE=fixed" >> $GITHUB_ENV;
-        elif [[ "${{ env.PR_TITLE }}" =~ [b,B]ump ]]; then echo "PR_TYPE=dependencies" >> $GITHUB_ENV;
-        else
-          echo "The pull request title "${{ env.PR_TITLE }}" is invalid. Please ensure it contains one of the following keywords:"
-          echo  "Add, Remove, Change, Fix, or Bump (for dependencies)."
-          exit 1
+        # Check if PR_TITLE string contains feat, fix, docs, style, refactor, perf, test, build, ci, chore, or revert
+        if [[ "${{ env.PR_TITLE }}" == feat* ]]; then echo "PR_TYPE=added" >> $GITHUB_ENV;
+        elif [[ "${{ env.PR_TITLE }}" == fix* ]]; then "PR_TYPE=fixed" >> $GITHUB_ENV;
+        elif [[ ("${{ env.PR_TITLE }}" == chore* ) && ("${{ env.PR_TITLE }}" =~ [b,B]ump) ]]; then echo "PR_TYPE=dependencies" >> $GITHUB_ENV;
+        else echo "PR_TYPE=changed" >> $GITHUB_ENV;
         fi
 
     - name: "Create and commit towncrier fragment"
@@ -82,7 +85,7 @@ runs:
       shell: bash
       run: |
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_TYPE }}.md"
-        pr_type_arr=("added" "removed" "changed" "fixed" "dependencies")
+        pr_type_arr=("added" "fixed" "changed" "dependencies")
 
         # Remove fragment if it already exists for pull request
         for type in "${pr_type_arr[@]}"
