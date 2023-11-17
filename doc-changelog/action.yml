@@ -72,7 +72,7 @@ runs:
       run: |
         # Check if PR_TITLE string contains feat, fix, docs, style, refactor, perf, test, build, ci, chore, or revert
         if [[ "${{ env.PR_TITLE }}" == feat* ]]; then echo "PR_TYPE=added" >> $GITHUB_ENV;
-        elif [[ "${{ env.PR_TITLE }}" == fix* ]]; then "PR_TYPE=fixed" >> $GITHUB_ENV;
+        elif [[ "${{ env.PR_TITLE }}" == fix* ]]; then echo "PR_TYPE=fixed" >> $GITHUB_ENV;
         elif [[ ("${{ env.PR_TITLE }}" == chore* ) && ("${{ env.PR_TITLE }}" =~ [b,B]ump) ]]; then echo "PR_TYPE=dependencies" >> $GITHUB_ENV;
         else echo "PR_TYPE=changed" >> $GITHUB_ENV;
         fi
