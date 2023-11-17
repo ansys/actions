@@ -1,0 +1,63 @@
+changelog-fragment:
+  name: "Create changelog fragment"
+  runs-on: ubuntu-latest
+  steps:
+    - uses: ansys/actions/doc-changelog@{{ version }}
+      with:
+        token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
+
+# The following criteria is required to use this action as well:
+
+# 1. Make changelog.d folder in the root of your repository.
+
+# 2. Add a file named changelog_template.jinja into the changelog.d
+#    folder with the following content uncommented:
+
+# {% if sections[""] %}
+# {% for category, val in definitions.items() if category in sections[""] %}
+#
+# ### {{ definitions[category]['name'] }}
+#
+# {% for text, values in sections[""][category].items() %}
+# - {{ text }} {{ values|join(', ') }}
+# {% endfor %}
+#
+# {% endfor %}
+# {% else %}
+# No significant changes.
+#
+#
+# {% endif %}
+
+# 3. Add information to pyproject.toml as follows:
+#    *** Note: Replace {project} in title_format and issue_format with the name of your repository.
+#    For example, pymechanical would be https://github.com/ansys/pymechanical/tree/{version}
+
+# [tool.towncrier]
+# directory = "changelog.d"
+# filename = "CHANGELOG.md"
+# start_string = "<!-- towncrier release notes start -->\n"
+# underlines = ["", "", ""]
+# template = "changelog.d/changelog_template.jinja"
+# title_format = "## [{version}](https://github.com/ansys/{project}/tree/{version}) - {project_date}"
+# issue_format = "[#{issue}](https://github.com/ansys/{project}/issues/{issue})"
+#
+# [[tool.towncrier.type]]
+# directory = "added"
+# name = "Added"
+# showcontent = true
+#
+# [[tool.towncrier.type]]
+# directory = "changed"
+# name = "Changed"
+# showcontent = true
+#
+# [[tool.towncrier.type]]
+# directory = "fixed"
+# name = "Fixed"
+# showcontent = true
+#
+# [[tool.towncrier.type]]
+# directory = "dependencies"
+# name = "Dependencies"
+# showcontent = true
