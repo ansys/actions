@@ -101,12 +101,14 @@ runs:
         git config user.name 'github-actions[bot]'
         git config user.email 'github-actions[bot]@users.noreply.github.com'
 
+        # Add towncrier fragment
+        git add .
+
         modified=`git diff HEAD --name-only`
         echo "modified: $modified"
 
         if [ ! -z "$modified" ]; then
-          # Add and commit fragment
-          git add .
+          # Commit and push fragment
           git commit -m "adding fragment"
           git push
         fi
