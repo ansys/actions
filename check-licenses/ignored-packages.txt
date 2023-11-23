@@ -10,4 +10,3 @@ typing
 typing-extensions
 typing_extensions
 WMI
-openai
