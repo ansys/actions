@@ -52,6 +52,11 @@ inputs:
     required: true
     type: boolean
 
+  skip-existing:
+    description: >
+      Continue uploading files if one already exists. Only valid when uploading
+      to PyPI. Other implementations may not support this.
+
 runs:
   using: "composite"
   steps:
@@ -77,12 +82,21 @@ runs:
       shell: bash
       run: ls -R
 
+    - name: "Evaluate if skip-existing is required"
+      shell: bash
+      run: |
+        if [[ ${{ inputs.skip-existing }} == 'true' ]]; then
+          echo "SKIP_EXISTING=$(echo '--skip-existing')" >> $GITHUB_ENV
+        else
+          echo "SKIP_EXISTING=$(echo '')" >> $GITHUB_ENV
+        fi
+
     - name: "Upload artifacts to private PyPi"
       shell: bash
       if: inputs.dry-run == 'false'
       run: |
-        python -m twine upload --verbose --skip-existing ${{ inputs.library-name }}-artifacts/*.whl
-        python -m twine upload --verbose --skip-existing ${{ inputs.library-name }}-artifacts/*.tar.gz
+        python -m twine upload --verbose ${env.SKIP_EXISTING} ${{ inputs.library-name }}-artifacts/*.whl
+        python -m twine upload --verbose ${env.SKIP_EXISTING} ${{ inputs.library-name }}-artifacts/*.tar.gz
       env:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
