@@ -1,4 +1,4 @@
 maintenance:
-- .github/**/*
-- .pre-commit-config.yaml
-- VERSION
+- any-glob-to-any-file: .github/**/*
+- any-glob-to-any-file: .pre-commit-config.yaml
+- any-glob-to-any-file: VERSION
