@@ -56,6 +56,9 @@ inputs:
     description: >
       Continue uploading files if one already exists. Only valid when uploading
       to PyPI. Other implementations may not support this.
+    required: false
+    default: true
+    type: boolean
 
 runs:
   using: "composite"
