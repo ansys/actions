@@ -120,6 +120,16 @@ inputs:
     default: ''
     type: string
 
+  independent-patch-release-docs:
+    description: >
+      Whether to generate documentation for independent patch releases. Default
+      value is ``false``. By default, patch releases will overwrite the
+      documentation of the previous patch release. If this option is enabled,
+      then the documentation of each patch release will be kept.
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -166,9 +176,13 @@ runs:
     - name: "Assemble the version number using the collected major and minor numbers"
       shell: bash
       run: |
-          major=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 1)
-          minor=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 2)
-          echo "VERSION=$major.$minor" >> $GITHUB_ENV
+          if [[ ${{ inputs.independent-patch-release-docs }} == 'true' ]]; then
+            echo "VERSION=${{ env.VERSION_RAW }}" >> $GITHUB_ENV
+          else
+            major=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 1)
+            minor=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 2)
+            echo "VERSION=$major.$minor" >> $GITHUB_ENV
+          fi
 
     # ------------------------------------------------------------------------
 
@@ -276,7 +290,7 @@ runs:
       shell: bash
       run: |
         for version in $( ls version | \
-                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$" | \
+                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)$" | \
                           sort -r --version-sort | \
                           head -${{ inputs.render-last }}); do
           url="https://${{ inputs.cname }}/version/$version/"
@@ -346,7 +360,7 @@ runs:
       shell: bash
       run: |
         for version_dir in $( ls version | \
-                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$" | \
+                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)$" | \
                           grep -v "${{ env.LATEST_STABLE_VERSION }}" | \
                           sort -r --version-sort ); do
             find version/$version_dir -type d -not \( -path "*/_*" -type d -prune \) -exec cp announcement.html {} \;
