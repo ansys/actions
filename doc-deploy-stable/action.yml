@@ -166,10 +166,11 @@ runs:
         tag=${{ github.ref_name }}
         version=$( echo $tag | cut -d '/' -f 2)
 
-        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)$ ]]; then
           echo "VERSION_RAW=$(echo $version)" >> $GITHUB_ENV
         else
           echo -e "\033[1;91m[ERROR]: Branch names must follow 'release/<MAJOR>.<MINOR>' name convention.\033[0m"
+          echo -e "\033[1;91m[ERROR]: or 'release/<MAJOR>.<MINOR>.<PATCH>' name convention.\033[0m"
           exit 1
         fi
 
