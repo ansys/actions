@@ -151,7 +151,7 @@ runs:
         rm -rf version/dev && mkdir -p version/dev
 
     - name: "Download the development documentation artifact"
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/dev

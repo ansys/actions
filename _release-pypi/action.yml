@@ -68,7 +68,7 @@ runs:
         python -m pip install --upgrade pip twine
 
     - name: "Download the library artifacts from build-library step"
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.library-name }}-artifacts
         path: ${{ inputs.library-name }}-artifacts
