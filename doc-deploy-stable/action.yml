@@ -430,7 +430,7 @@ runs:
           documentation.
 
     - name: "Generate 'sitemap.xml' file"
-      uses: ansys/actions/_doc-gen-sitemap@main
+      uses: ansys/actions/_doc-gen-sitemap@v5
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
