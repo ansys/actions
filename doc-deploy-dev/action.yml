@@ -111,7 +111,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v5
       with:
         level: "INFO"
         message: >
@@ -136,7 +136,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v5
       with:
         level: "INFO"
         message: >
@@ -181,7 +181,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v5
       with:
         level: "INFO"
         message: >
@@ -204,7 +204,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v5
       with:
         level: "INFO"
         message: >
@@ -246,7 +246,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v5
       with:
         level: "INFO"
         message: >
@@ -254,14 +254,14 @@ runs:
           no stable release is available, copy the 'dev/index.html' instead.
           Update all references to point to 'stable/_static' or 'dev/_static'.
 
-    - uses: ansys/actions/_doc-gen-versions-page@main
+    - uses: ansys/actions/_doc-gen-versions-page@v5
       with:
         cname: ${{ inputs.cname }}
         content-element-id: ${{ inputs.content-element-id }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v5
       with:
         level: "INFO"
         message: >
@@ -275,7 +275,7 @@ runs:
 
      # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v5
       with:
         level: "INFO"
         message: >
