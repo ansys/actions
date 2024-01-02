@@ -1,6 +1,7 @@
 ansys-corba
 ansys-turbogrid-api
 defusedxml
+distlib
 filelock
 matplotlib
 pypiwin32

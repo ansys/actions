@@ -163,7 +163,7 @@ jobs:
         ls -R && python -m build && python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.test-library-name }}-artifacts
         path: ~/${{ env.test-library-name }}/dist/
@@ -194,7 +194,7 @@ jobs:
     needs: doc-deploy-dev
     steps:
       - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@v4
+        uses: ansys/actions/doc-deploy-index@main
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/dev
           index-name: "actions-vdev"
@@ -209,7 +209,7 @@ jobs:
     steps:
 
     - name: "Download HTML documentation"
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: documentation-html
         path: documentation-html
@@ -221,7 +221,7 @@ jobs:
         dest: documentation-html.zip
 
     - name: "Download PDF documentation"
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: documentation-pdf
         path: documentation-pdf
@@ -280,7 +280,7 @@ jobs:
           echo "VERSION_MEILI=$VERSION_MEILI" >> $GITHUB_ENV
 
       - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@v4
+        uses: ansys/actions/doc-deploy-index@main
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/${{ env.VERSION }}
           index-name: actions-v${{ env.VERSION_MEILI }}
