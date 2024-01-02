@@ -166,7 +166,7 @@ runs:
         tag=${{ github.ref_name }}
         version=$( echo $tag | cut -d '/' -f 2)
 
-        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)$ ]]; then
+        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ ]]; then
           echo "VERSION_RAW=$(echo $version)" >> $GITHUB_ENV
         else
           echo -e "\033[1;91m[ERROR]: Branch names must follow 'release/<MAJOR>.<MINOR>' name convention.\033[0m"
@@ -291,7 +291,7 @@ runs:
       shell: bash
       run: |
         for version in $( ls version | \
-                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)$" | \
+                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
                           sort -r --version-sort | \
                           head -${{ inputs.render-last }}); do
           url="https://${{ inputs.cname }}/version/$version/"
@@ -361,7 +361,7 @@ runs:
       shell: bash
       run: |
         for version_dir in $( ls version | \
-                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)$" | \
+                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
                           grep -v "${{ env.LATEST_STABLE_VERSION }}" | \
                           sort -r --version-sort ); do
             find version/$version_dir -type d -not \( -path "*/_*" -type d -prune \) -exec cp announcement.html {} \;
