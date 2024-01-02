@@ -97,8 +97,8 @@ runs:
       shell: bash
       if: inputs.dry-run == 'false'
       run: |
-        python -m twine upload --verbose ${env.SKIP_EXISTING} ${{ inputs.library-name }}-artifacts/*.whl
-        python -m twine upload --verbose ${env.SKIP_EXISTING} ${{ inputs.library-name }}-artifacts/*.tar.gz
+        python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.whl
+        python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.tar.gz
       env:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
