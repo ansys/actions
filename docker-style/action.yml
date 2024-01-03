@@ -38,6 +38,7 @@ runs:
   steps:
 
     - name: Check docker directory existence
+      shell: bash
       run: |
         if [ ! -d "./docker" ]; then
           echo "Directory 'docker' does not exist. Except in special cases, e.g. '.devcontainer', we emphasize that dockerfiles are expected to be in the docker directory in the root of the project."
@@ -45,6 +46,7 @@ runs:
         fi
 
     - name: Check provided directory
+      shell: bash
       run: |
         allowed_working_dirs = ("docker" ".devcontainer")
         is_allowed = false
@@ -63,9 +65,9 @@ runs:
 
     - name: Run Hadolint
       uses: hadolint/hadolint-action@v3.1.0
-      working-directory: ${{ inputs.directory }}
       env:
         HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
       with:
         dockerfile: "Dockerfile"
         recursive: ${{ inputs.recursive }}
+        working-directory: ${{ inputs.directory }}
