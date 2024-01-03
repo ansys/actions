@@ -1,0 +1,71 @@
+name: >
+  Lint Dockerfile
+
+description: >
+  Evaluate the quality of your project Dockerfile(s) by using `hadolint
+  <https://github.com/hadolint/hadolint/>`_. This action is expected to be used within a
+  matrix job to lint Dockerfile(s) from multiple working directories. The action uses `hadolint-action
+  <https://github.com/hadolint/hadolint-action>`_ behind the scenes. If you want to evaluate multiple
+  Dockerfiles contained in various directory of the provided working directory, use the recursive option.
+
+  This action emphasis the fact of having Dockerfile(s) contained inside the "docker" directory in the
+  root of the project. Exception can be added as it is the case for the ".devcontainer" directory.
+
+  .. warning::
+      Two checks are performed and failing any of them results in the action failure:
+      - the root of the project must contain a docker directory;
+      - the provided working directory must be allowed, i.e. is either "docker" or ".devcontainer".
+
+inputs:
+
+  # Required inputs
+
+  directory:
+    description: >
+      Directory from which to search for Dockerfile(s).
+    required: true
+
+  # Optional inputs
+
+  recursive:
+    description: >
+      Search for Dockerfile(s) recursively.
+    required: false
+    default: false
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Check docker directory existence
+      run: |
+        if [ ! -d "./docker" ]; then
+          echo "Directory 'docker' does not exist. Except in special cases, e.g. '.devcontainer', we emphasize that dockerfiles are expected to be in the docker directory in the root of the project."
+          exit 1
+        fi
+
+    - name: Check provided directory
+      run: |
+        allowed_working_dirs = ("docker" ".devcontainer")
+        is_allowed = false
+        for dir in "${allowed_working_dirs[@]}"
+        do
+          if [ "$dir" == "${{ inputs.directory }}" ] ; then
+            is_allowed = true
+          fi
+        done
+        if [ "$is_allowed" = true ] ; then
+          echo "Provided working directory is allowed"
+        else
+          echo "Provided working directory is not allowed"
+          exit 1
+        fi
+
+    - name: Run Hadolint
+      uses: hadolint/hadolint-action@v3.1.0
+      working-directory: ${{ inputs.directory }}
+      env:
+        HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
+      with:
+        dockerfile: "Dockerfile"
+        recursive: ${{ inputs.recursive }}
