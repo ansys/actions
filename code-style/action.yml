@@ -27,13 +27,13 @@ inputs:
     default: true
     type: boolean
 
-  docker_working_directories:
+  docker-directory:
     description: >
       A comma-separated list of directories from which to search for Dockerfile(s).
     required: false
     default: "docker"
-  
-  docker_recursive:
+
+  docker-recursive:
     description: >
       Search for Dockerfile(s) recursively.
     required: false
@@ -62,23 +62,16 @@ runs:
       shell: bash
       run: pre-commit run --all-files --show-diff-on-failure
 
-    - name: Check docker working directories
+    - name: Check docker directory existence
       id: checkdocker
       run: |
-        echo "::set-output name=exists::true"
-        IFS=',' read -ra dirs <<< "${{ inputs.docker_working_directories }}"
-        for dir in "${dirs[@]}"; do
-          if [ ! -d "$dir" ]; then
-            echo "Directory $dir does not exist !"
-            echo "::set-output name=exists::false"
-          fi
-        done
+        if [ -d "./docker" ]; then
+          echo "::set-output name=exists::true"
+        fi
 
-    - name: Run Hadolint
-      uses: hadolint/hadolint-action@v3.1.0
+    - name: Run Dockerfile linting
+      uses: ansys/actions/docker-style
       if: steps.checkdocker.outputs.exists == 'true'
-      env:
-        HADOLINT_RECURSIVE: "${{ inputs.docker_recursive }}"
       with:
-        dockerfile: "Dockerfile"
-        recursive: ${{ inputs.docker_recursive }}
+        working_directory: ${{ inputs.docker-directory }}
+        recursive: ${{ inputs.docker-recursive }}
