@@ -27,6 +27,18 @@ inputs:
     default: true
     type: boolean
 
+  docker_working_directories:
+    description: >
+      A comma-separated list of directories from which to search for Dockerfile(s).
+    required: false
+    default: "docker"
+  
+  docker_recursive:
+    description: >
+      Search for Dockerfile(s) recursively.
+    required: false
+    default: false
+
 runs:
   using: "composite"
   steps:
@@ -49,3 +61,24 @@ runs:
     - name: "Run pre-commit"
       shell: bash
       run: pre-commit run --all-files --show-diff-on-failure
+
+    - name: Check docker working directories
+      id: checkdocker
+      run: |
+        echo "::set-output name=exists::true"
+        IFS=',' read -ra dirs <<< "${{ inputs.docker_working_directories }}"
+        for dir in "${dirs[@]}"; do
+          if [ ! -d "$dir" ]; then
+            echo "Directory $dir does not exist !"
+            echo "::set-output name=exists::false"
+          fi
+        done
+
+    - name: Run Hadolint
+      uses: hadolint/hadolint-action@v3.1.0
+      if: steps.checkdocker.outputs.exists == 'true'
+      env:
+        HADOLINT_RECURSIVE: "${{ inputs.docker_recursive }}"
+      with:
+        dockerfile: "Dockerfile"
+        recursive: ${{ inputs.docker_recursive }}
