@@ -59,6 +59,7 @@ runs:
     # The followings steps are applying docker-style action to allowed working dirs if the exist.
     # Changes performed here should coherent with the 'allowed_working_dirs' in the docker-style action.
     - name: Check if docker directory exists
+      shell: bash
       id: checkdocker
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
@@ -66,13 +67,14 @@ runs:
         fi
 
     - name: Run Dockerfile linting in docker directory
-      uses: ansys/actions/docker-style
+      uses: ansys/actions/docker-style@feat/lint_dockerfile
       if: steps.checkdocker.outputs.exists == 'true'
       with:
         directory: docker
         recursive: ${{ inputs.docker-recursive }}
 
     - name: Check if .devcontainer directory exists
+      shell: bash
       id: checkdevcontainer
       run: |
         if [ -d "${{ github.workspace }}/.devcontainer" ]; then
@@ -80,7 +82,7 @@ runs:
         fi
 
     - name: Run Dockerfile linting in .devcontainer directory
-      uses: ansys/actions/docker-style
+      uses: ansys/actions/docker-style@feat/lint_dockerfile
       if: steps.checkdevcontainer.outputs.exists == 'true'
       with:
         directory: .devcontainer
