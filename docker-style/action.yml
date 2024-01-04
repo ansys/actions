@@ -64,16 +64,26 @@ runs:
           exit 1
         fi
 
-    # Workaround used because option "work-directory" cannot be used with "uses", it only works with the key-word "run".
-    - name: Move to specific directory
+    - name: Install hadolint
       shell: bash
       run: |
-        cd ${{ github.workspace }}/${{ inputs.directory }}
+        brew install hadolint
 
     - name: Run Hadolint
-      uses: hadolint/hadolint-action@v3.1.0
-      env:
-        HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
-      with:
-        dockerfile: "Dockerfile"
-        recursive: ${{ inputs.recursive }}
+      working-directory: ${{ inputs.directory }}
+      shell: bash
+      run: |
+        hadolint Dockerfile
+    # # Workaround used because option "work-directory" cannot be used with "uses", it only works with the key-word "run".
+    # - name: Move to specific directory
+    #   shell: bash
+    #   run: |
+    #     cd ${{ github.workspace }}/${{ inputs.directory }}
+
+    # - name: Run Hadolint
+    #   uses: hadolint/hadolint-action@v3.1.0
+    #   env:
+    #     HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
+    #   with:
+    #     dockerfile: "Dockerfile"
+    #     recursive: ${{ inputs.recursive }}
