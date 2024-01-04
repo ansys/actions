@@ -91,6 +91,6 @@ runs:
       # env:
       #   HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
       with:
-        dockerfile: "**/Dockerfile"
+        dockerfile: "${{ inputs.directory }}/**/Dockerfile"
         # recursive: ${{ inputs.recursive }}
         error_level: ${{ inputs.error-level }}
