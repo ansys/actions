@@ -29,7 +29,7 @@ inputs:
 
   docker-recursive:
     description: >
-      Search for Dockerfile(s) recursively.
+      Search for Dockerfile(s) recursively. Only applies to directory 'docker'.
     required: false
     default: false
 
@@ -93,5 +93,4 @@ runs:
       if: steps.checkdevcontainer.outputs.exists == 'true'
       with:
         directory: .devcontainer
-        recursive: ${{ inputs.docker-recursive }}
         error-level: ${{ inputs.docker-error-level }}
