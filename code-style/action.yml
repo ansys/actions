@@ -33,6 +33,12 @@ inputs:
     required: false
     default: false
 
+  docker-error-level:
+    description: >
+      Fail docker-style action based on hadolint output (-1: never, 0: error, 1: warning, 2: info)
+    required: false
+    default: 2
+
 runs:
   using: "composite"
   steps:
@@ -72,6 +78,7 @@ runs:
       with:
         directory: docker
         recursive: ${{ inputs.docker-recursive }}
+        error-level: ${{ inputs.docker-error-level }}
 
     - name: Check if .devcontainer directory exists
       shell: bash
@@ -87,3 +94,4 @@ runs:
       with:
         directory: .devcontainer
         recursive: ${{ inputs.docker-recursive }}
+        error-level: ${{ inputs.docker-error-level }}
