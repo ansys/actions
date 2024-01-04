@@ -27,12 +27,6 @@ inputs:
     default: true
     type: boolean
 
-  docker-directory:
-    description: >
-      A comma-separated list of directories from which to search for Dockerfile(s).
-    required: false
-    default: "docker"
-
   docker-recursive:
     description: >
       Search for Dockerfile(s) recursively.
@@ -62,16 +56,32 @@ runs:
       shell: bash
       run: pre-commit run --all-files --show-diff-on-failure
 
-    - name: Check docker directory existence
+    # The followings steps are applying docker-style action to allowed working dirs if the exist.
+    # Changes performed here should coherent with the 'allowed_working_dirs' in the docker-style action.
+    - name: Check if docker directory exists
       id: checkdocker
       run: |
-        if [ -d "./docker" ]; then
+        if [ -d "${{ github.workspace }}/docker" ]; then
           echo "::set-output name=exists::true"
         fi
 
-    - name: Run Dockerfile linting
+    - name: Run Dockerfile linting in docker directory
       uses: ansys/actions/docker-style
       if: steps.checkdocker.outputs.exists == 'true'
       with:
-        working_directory: ${{ inputs.docker-directory }}
+        directory: docker
+        recursive: ${{ inputs.docker-recursive }}
+
+    - name: Check if .devcontainer directory exists
+      id: checkdevcontainer
+      run: |
+        if [ -d "${{ github.workspace }}/.devcontainer" ]; then
+          echo "::set-output name=exists::true"
+        fi
+
+    - name: Run Dockerfile linting in .devcontainer directory
+      uses: ansys/actions/docker-style
+      if: steps.checkdevcontainer.outputs.exists == 'true'
+      with:
+        directory: .devcontainer
         recursive: ${{ inputs.docker-recursive }}
