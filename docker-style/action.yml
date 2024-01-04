@@ -81,9 +81,9 @@ runs:
         cd ${{ github.workspace }}/${{ inputs.directory }}
 
     - name: Run Hadolint
-      uses: hadolint/hadolint-action@v3.1.0
-      env:
-        HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
+      uses: jbergstroem/hadolint-gh-action@v1
+      # env:
+      #   HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
       with:
         dockerfile: "**/Dockerfile"
-        recursive: ${{ inputs.recursive }}
+        # recursive: ${{ inputs.recursive }}
