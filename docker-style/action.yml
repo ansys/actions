@@ -4,8 +4,8 @@ name: >
 description: >
   Evaluate the quality of your project Dockerfile(s) by using `hadolint
   <https://github.com/hadolint/hadolint/>`_. This action is expected to be used within a
-  matrix job to lint Dockerfile(s) from multiple directories. The action uses `hadolint-action
-  <https://github.com/hadolint/hadolint-action>`_ behind the scenes. If you want to evaluate multiple
+  matrix job to lint Dockerfile(s) from multiple directories. The action uses `hadolint-gh-action
+  <https://github.com/jbergstroem/hadolint-gh-action>`_ behind the scenes. If you want to evaluate multiple
   Dockerfiles contained in various directories of the provided directory, use the recursive option.
 
   This action emphasis the fact of having Dockerfile(s) contained inside the "docker" directory in the
@@ -70,29 +70,8 @@ runs:
           exit 1
         fi
 
-    # - name: Install hadolint
-    #   shell: bash
-    #   run: |
-    #     brew install hadolint
-
-    # - name: Run Hadolint
-    #   working-directory: ${{ inputs.directory }}
-    #   shell: bash
-    #   run: |
-    #     hadolint Dockerfile
-    # # Workaround used because option "work-directory" cannot be used with "uses", it only works with the key-word "run".
-    # - name: Move to specific directory
-    #   shell: bash
-    #   run: |
-    #     cd ${{ github.workspace }}/${{ inputs.directory }}
-
     - name: Run Hadolint
       uses: jbergstroem/hadolint-gh-action@v1
-      # env:
-      #   HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
       with:
-        # ${{ inputs.recursive }}
         dockerfile: ${{ inputs.recursive == 'true' && format('{0}/**/Dockerfile', inputs.directory) || format('{0}/Dockerfile', inputs.directory) }}
-        # dockerfile: "${{ inputs.directory }}/**/Dockerfile"
-        # recursive: ${{ inputs.recursive }}
         error_level: ${{ inputs.error-level }}
