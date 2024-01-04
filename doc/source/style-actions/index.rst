@@ -46,6 +46,27 @@ Doc style action
     {% endfor %}
 
 
+Docker style action
+-------------------
+.. jinja:: docker-style
+
+    {{ description }}
+
+    {{ inputs_table }}
+
+    Examples
+    ++++++++
+
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
+
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
+
+    {% endfor %}
+
+
 Commit style action
 -------------------
 

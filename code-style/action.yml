@@ -66,7 +66,7 @@ runs:
 
     # The followings steps are applying docker-style action to allowed working dirs if the exist.
     # Changes performed here should coherent with the 'allowed_working_dirs' in the docker-style action.
-    - name: Check if docker directory exists
+    - name: "Check if docker directory exists"
       shell: bash
       id: checkdocker
       run: |
@@ -74,7 +74,7 @@ runs:
           echo "::set-output name=exists::true"
         fi
 
-    - name: Run Dockerfile linting in docker directory
+    - name: "Run Dockerfile linting in docker directory"
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       if: steps.checkdocker.outputs.exists == 'true'
       with:
@@ -82,7 +82,7 @@ runs:
         recursive: ${{ inputs.docker-recursive }}
         error-level: ${{ inputs.docker-error-level }}
 
-    - name: Check if .devcontainer directory exists
+    - name: "Check if .devcontainer directory exists"
       shell: bash
       id: checkdevcontainer
       run: |
@@ -90,7 +90,7 @@ runs:
           echo "::set-output name=exists::true"
         fi
 
-    - name: Run Dockerfile linting in .devcontainer directory
+    - name: "Run Dockerfile linting in .devcontainer directory"
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       if: steps.checkdevcontainer.outputs.exists == 'true'
       with:
