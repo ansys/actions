@@ -46,7 +46,7 @@ runs:
   using: "composite"
   steps:
 
-    - name: Check docker directory existence
+    - name: "Check docker directory existence"
       shell: bash
       run: |
         if [ ! -d "${{ github.workspace }}/docker" ]; then
@@ -55,7 +55,7 @@ runs:
         fi
 
     # Changes performed in allowed_working_dirs should be applied to the code-style action.
-    - name: Check provided directory
+    - name: "Check provided directory"
       shell: bash
       run: |
         allowed_working_dirs=("docker" ".devcontainer")
@@ -73,7 +73,7 @@ runs:
           exit 1
         fi
 
-    - name: Run Hadolint
+    - name: "Run Hadolint"
       uses: jbergstroem/hadolint-gh-action@v1
       with:
         dockerfile: ${{ inputs.recursive == 'true' && format('{0}/**/Dockerfile', inputs.directory) || format('{0}/Dockerfile', inputs.directory) }}
