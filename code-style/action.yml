@@ -75,7 +75,7 @@ runs:
         fi
 
     - name: "Run Dockerfile linting in docker directory"
-      uses: ansys/actions/docker-style@feat/lint_dockerfile
+      uses: ansys/actions/docker-style@main
       if: steps.checkdocker.outputs.exists == 'true'
       with:
         directory: docker
@@ -91,7 +91,7 @@ runs:
         fi
 
     - name: "Run Dockerfile linting in .devcontainer directory"
-      uses: ansys/actions/docker-style@feat/lint_dockerfile
+      uses: ansys/actions/docker-style@main
       if: steps.checkdevcontainer.outputs.exists == 'true'
       with:
         directory: .devcontainer
