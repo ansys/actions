@@ -32,12 +32,14 @@ inputs:
       Search for Dockerfile(s) recursively. Only applies to directory 'docker'.
     required: false
     default: false
+    type: bool
 
   docker-error-level:
     description: >
       Fail docker-style action based on hadolint output (-1: never, 0: error, 1: warning, 2: info)
     required: false
     default: 2
+    type: int
 
 runs:
   using: "composite"
