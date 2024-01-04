@@ -48,15 +48,15 @@ runs:
     - name: Check provided directory
       shell: bash
       run: |
-        allowed_working_dirs = ("docker" ".devcontainer")
-        is_allowed = false
+        allowed_working_dirs=("docker" ".devcontainer")
+        is_allowed=false
         for dir in "${allowed_working_dirs[@]}"
         do
           if [ "$dir" == "${{ inputs.directory }}" ] ; then
-            is_allowed = true
+            is_allowed=true
           fi
         done
-        if [ "$is_allowed" = true ] ; then
+        if [ "$is_allowed" == true ] ; then
           echo "Provided working directory is allowed"
         else
           echo "Provided working directory is not allowed"
