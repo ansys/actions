@@ -80,17 +80,19 @@ runs:
     #   shell: bash
     #   run: |
     #     hadolint Dockerfile
-    # Workaround used because option "work-directory" cannot be used with "uses", it only works with the key-word "run".
-    - name: Move to specific directory
-      shell: bash
-      run: |
-        cd ${{ github.workspace }}/${{ inputs.directory }}
+    # # Workaround used because option "work-directory" cannot be used with "uses", it only works with the key-word "run".
+    # - name: Move to specific directory
+    #   shell: bash
+    #   run: |
+    #     cd ${{ github.workspace }}/${{ inputs.directory }}
 
     - name: Run Hadolint
       uses: jbergstroem/hadolint-gh-action@v1
       # env:
       #   HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
       with:
-        dockerfile: "${{ inputs.directory }}/**/Dockerfile"
+        # ${{ inputs.recursive }}
+        dockerfile: ${{ inputs.recursive == 'true' && '${{ inputs.directory }}/**/Dockerfile' || '${{ inputs.directory }}/Dockerfile' }}
+        # dockerfile: "${{ inputs.directory }}/**/Dockerfile"
         # recursive: ${{ inputs.recursive }}
         error_level: ${{ inputs.error-level }}
