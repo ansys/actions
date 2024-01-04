@@ -92,7 +92,7 @@ runs:
       #   HADOLINT_RECURSIVE: "${{ inputs.recursive }}"
       with:
         # ${{ inputs.recursive }}
-        dockerfile: ${{ inputs.recursive == 'true' && ${{ inputs.directory }}/**/Dockerfile || ${{ inputs.directory }}/Dockerfile }}
+        dockerfile: ${{ inputs.recursive == 'true' && format('{0}/**/Dockerfile', inputs.directory) || format('{0}/Dockerfile', inputs.directory) }}
         # dockerfile: "${{ inputs.directory }}/**/Dockerfile"
         # recursive: ${{ inputs.recursive }}
         error_level: ${{ inputs.error-level }}
