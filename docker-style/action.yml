@@ -33,6 +33,12 @@ inputs:
     required: false
     default: false
 
+  error-level:
+    description: >
+      Fail action based on hadolint output (-1: never, 0: error, 1: warning, 2: info)
+    required: false
+    default: 2
+
 runs:
   using: "composite"
   steps:
@@ -87,3 +93,4 @@ runs:
       with:
         dockerfile: "**/Dockerfile"
         # recursive: ${{ inputs.recursive }}
+        error_level: ${{ inputs.error-level }}
