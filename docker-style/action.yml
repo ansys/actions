@@ -57,9 +57,9 @@ runs:
           fi
         done
         if [ "$is_allowed" == true ] ; then
-          echo "Provided working directory is allowed"
+          echo "Provided directory '${{ inputs.directory }}' is allowed"
         else
-          echo "Provided working directory is not allowed"
+          echo "Provided directory '${{ inputs.directory }}' is not allowed"
           exit 1
         fi
 
