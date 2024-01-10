@@ -195,19 +195,28 @@ runs:
           python -m pip install .[doc]
         fi
 
+    - name: "Determine make command context"
+      shell: bash
+      run: |
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
+        else
+          echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
+        fi
+
     - name: "Build HTML, PDF, and JSON documentation"
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
-          make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+          ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
-        make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        make -C doc pdf
+        ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
-          make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+          ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
 
     - name: "Build HTML, PDF, and JSON documentation using xvfb"
@@ -216,13 +225,13 @@ runs:
       run: |
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
-          xvfb-run make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
-        xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run make -C doc pdf
+        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
-          xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
 
     - name: "Upload HTML documentation artifact"
