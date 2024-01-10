@@ -191,9 +191,16 @@ runs:
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           python -m pip install poetry
           poetry install --with doc
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
         else
           python -m pip install .[doc]
+        fi
+
+    - name: "Determine make command context"
+      shell: bash
+      run: |
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
+        else
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
         fi
 
