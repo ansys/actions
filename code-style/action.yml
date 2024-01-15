@@ -29,7 +29,7 @@ inputs:
 
   docker-recursive:
     description: >
-      Search for Dockerfile(s) recursively. Only applies to directory 'docker'.
+      Search for Dockerfile(s) recursively. Only applies to allowed directories, i.e. docker and .devcontainer.
     required: false
     default: false
     type: bool
