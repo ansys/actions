@@ -87,9 +87,9 @@ runs:
       shell: bash
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
-          echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
+          echo "HAS_DOCKER_DIR='true'" >> $GITHUB_OUTPUT
         else
-          echo "HAS_DOCKER_DIR=false" >> $GITHUB_OUTPUT
+          echo "HAS_DOCKER_DIR='false'" >> $GITHUB_OUTPUT
         fi
 
     # ------------------------------------------------------------------------
@@ -138,9 +138,9 @@ runs:
       shell: bash
       run: |
         if [ -d "${{ github.workspace }}/.devcontainer" ]; then
-          echo "HAS_DEVCONTAINER_DIR=true" >> $GITHUB_OUTPUT
+          echo "HAS_DEVCONTAINER_DIR='true'" >> $GITHUB_OUTPUT
         else
-          echo "HAS_DEVCONTAINER_DIR=false" >> $GITHUB_OUTPUT
+          echo "HAS_DEVCONTAINER_DIR='false'" >> $GITHUB_OUTPUT
         fi
 
     # ------------------------------------------------------------------------
