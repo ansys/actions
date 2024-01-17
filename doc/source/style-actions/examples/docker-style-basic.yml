@@ -1,5 +1,5 @@
-code-style:
-  name: "Running docker style checks"
+docker-style:
+  name: "Docker style"
   runs-on: ubuntu-latest
   steps:
     - name: "Run PyAnsys docker style checks"

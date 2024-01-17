@@ -64,7 +64,7 @@ runs:
       shell: bash
       run: pre-commit run --all-files --show-diff-on-failure
 
-    # The followings steps are applying docker-style action to allowed working dirs if the exist.
+    # The following steps are applying docker-style action to allowed working dirs if they exist.
     # Changes performed here should coherent with the 'allowed_working_dirs' in the docker-style action.
     - name: "Check if docker directory exists"
       shell: bash
@@ -87,12 +87,12 @@ runs:
       id: checkdevcontainer
       run: |
         if [ -d "${{ github.workspace }}/.devcontainer/Dockerfile" ]; then
-          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "HAS_DEVCONTAINER_DIR=true" >> $GITHUB_OUTPUT
         fi
 
     - name: "Run Dockerfile linting in .devcontainer directory"
       uses: ansys/actions/docker-style@main
-      if: steps.checkdevcontainer.outputs.exists == 'true'
+      if: env.HAS_DEVCONTAINER_DIR == 'true'
       with:
         directory: .devcontainer
         error-level: ${{ inputs.docker-error-level }}
