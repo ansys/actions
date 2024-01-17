@@ -58,6 +58,7 @@ runs:
           If it does not, then the rest of the action should not be performed.
 
     - name: "Check if docker directory exists"
+      id: checkdocker
       shell: bash
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
@@ -69,7 +70,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: env.HAS_DOCKER_DIR == 'false'
+      if: steps.checkdocker.outputs.HAS_DOCKER_DIR == 'false'
       with:
         level: "WARNING"
         message: >
@@ -79,7 +80,7 @@ runs:
           directory at the root of the repository.
 
     - name: "Exit workflow"
-      if: env.HAS_DOCKER_DIR == 'false'
+      if: steps.checkdocker.outputs.HAS_DOCKER_DIR == 'false'
       shell: bash
       run: exit 1
 
@@ -94,6 +95,7 @@ runs:
 
     # Changes performed in allowed_working_dirs should be applied to the code-style action.
     - name: "Check provided directory"
+      id: checkdir
       shell: bash
       run: |
         allowed_working_dirs=("docker" ".devcontainer")
@@ -109,27 +111,28 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: env.DIRECTORY_ALLOWED == 'false'
+      if: steps.checkdir.outputs.DIRECTORY_ALLOWED == 'false'
       with:
         level: "ERROR"
         message: >
           Exit action because the provided directory isn't allowed.
 
     - name: "Exit workflow"
-      if: env.DIRECTORY_ALLOWED == 'false'
+      if: steps.checkdir.outputs.DIRECTORY_ALLOWED == 'false'
       shell: bash
       run: exit 1
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: env.DIRECTORY_ALLOWED == 'false'
+      if: steps.checkdir.outputs.DIRECTORY_ALLOWED == 'true'
       with:
         level: "INFO"
         message: >
           Lint directory '${{ github.workspace }}/${{ inputs.directory }}'.
 
     - name: "Run Hadolint"
+      if: steps.checkdir.outputs.DIRECTORY_ALLOWED == 'true'
       uses: jbergstroem/hadolint-gh-action@v1
       with:
         dockerfile: ${{ inputs.recursive == 'true' && format('{0}/**/Dockerfile', inputs.directory) || format('{0}/Dockerfile', inputs.directory) }}
