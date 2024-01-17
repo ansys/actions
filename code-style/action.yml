@@ -84,19 +84,18 @@ runs:
           be performed.
 
     - name: "Check if docker directory exists"
-      id: checkdocker
       shell: bash
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
-          echo "HAS_DOCKER_DIR='true'" >> $GITHUB_OUTPUT
+          echo "HAS_DOCKER_DIR=true" >> $GITHUB_ENV
         else
-          echo "HAS_DOCKER_DIR='false'" >> $GITHUB_OUTPUT
+          echo "HAS_DOCKER_DIR=false" >> $GITHUB_ENV
         fi
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: steps.checkdocker.outputs.HAS_DOCKER_DIR == 'false'
+      if: env.HAS_DOCKER_DIR == 'false'
       with:
         level: "WARNING"
         message: >
@@ -106,21 +105,21 @@ runs:
           directory at the root of the repository.
 
     - name: "Exit workflow"
-      if: steps.checkdocker.outputs.HAS_DOCKER_DIR == 'false'
+      if: env.HAS_DOCKER_DIR == 'false'
       shell: bash
       run: exit 0
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: steps.checkdocker.outputs.HAS_DOCKER_DIR == 'true'
+      if: env.HAS_DOCKER_DIR == 'true'
       with:
         level: "INFO"
         message: >
           Lint directory '${{ github.workspace }}/docker'.
 
     - name: "Run Dockerfile linting in docker directory"
-      if: steps.checkdocker.outputs.HAS_DOCKER_DIR == 'true'
+      if: env.HAS_DOCKER_DIR == 'true'
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
         directory: docker
@@ -137,18 +136,17 @@ runs:
 
     - name: "Check if .devcontainer directory exists"
       shell: bash
-      id: checkdevcontainer
       run: |
         if [ -d "${{ github.workspace }}/.devcontainer" ]; then
-          echo "HAS_DEVCONTAINER_DIR='true'" >> $GITHUB_OUTPUT
+          echo "HAS_DEVCONTAINER_DIR=true" >> $GITHUB_ENV
         else
-          echo "HAS_DEVCONTAINER_DIR='false'" >> $GITHUB_OUTPUT
+          echo "HAS_DEVCONTAINER_DIR=false" >> $GITHUB_ENV
         fi
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: steps.checkdevcontainer.outputs.HAS_DEVCONTAINER_DIR == 'false'
+      if: env.HAS_DEVCONTAINER_DIR == 'false'
       with:
         level: "INFO"
         message: >
@@ -156,21 +154,21 @@ runs:
           the repository.
 
     - name: "Exit workflow"
-      if: steps.checkdevcontainer.outputs.HAS_DEVCONTAINER_DIR == 'false'
+      if: env.HAS_DEVCONTAINER_DIR == 'false'
       shell: bash
       run: exit 0
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: steps.checkdevcontainer.outputs.HAS_DEVCONTAINER_DIR == 'true'
+      if: env.HAS_DEVCONTAINER_DIR == 'true'
       with:
         level: "INFO"
         message: >
           Lint directory '${{ github.workspace }}/.devcontainer'.
 
     - name: "Run Dockerfile linting in .devcontainer directory"
-      if: steps.checkdevcontainer.outputs.HAS_DEVCONTAINER_DIR == 'false'
+      if: env.HAS_DEVCONTAINER_DIR == 'false'
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
         directory: .devcontainer
