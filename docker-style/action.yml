@@ -62,6 +62,8 @@ runs:
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
           echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
+        else
+          echo "HAS_DOCKER_DIR=false" >> $GITHUB_OUTPUT
         fi
 
     # ------------------------------------------------------------------------
