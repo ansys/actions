@@ -87,7 +87,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Check that the provided directory is among allowed directories, i.e.
+          Check that '${{ inputs.directory }}' is among allowed directories, i.e.
           'docker' and '.devcontainer'.
 
     # Changes performed in allowed_working_dirs should be applied to the code-style action.
