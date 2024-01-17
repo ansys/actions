@@ -8,13 +8,15 @@ description: >
   <https://github.com/jbergstroem/hadolint-gh-action>`_ behind the scenes. If you want to evaluate multiple
   Dockerfiles contained in various directories of the provided directory, use the recursive option.
 
-  This action emphasis the fact of having Dockerfile(s) contained inside the "docker" directory in the
-  root of the project. Exception can be added as it is the case for the ".devcontainer" directory.
+  This action emphasis the fact of having Dockerfile(s) contained inside the 'docker' directory in the
+  root of the project. Exception can be added as it is the case for the ''.devcontainer' directory.
 
   .. warning::
+      This action only looks for docker files named Dockerfile.
+      A docker file like Dockerfile.linux will not be linted.
       Two checks are performed and failing any of them results in the action failure:
-      - the root of the project must contain a docker directory;
-      - the provided directory must be allowed, i.e. is either "docker" or ".devcontainer".
+      - the root of the project must contain a 'docker' directory;
+      - the provided directory must be allowed, i.e. is either 'docker' or '.devcontainer'.
 
 inputs:
 
@@ -46,13 +48,47 @@ runs:
   using: "composite"
   steps:
 
-    - name: "Check docker directory existence"
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Check that directory 'docker' exists at the root of the repository.
+          If it does not, then the rest of the action should not be performed.
+
+    - name: "Check if docker directory exists"
       shell: bash
       run: |
-        if [ ! -d "${{ github.workspace }}/docker" ]; then
-          echo "Directory 'docker' does not exist. Except in special cases, e.g. '.devcontainer', we emphasize that dockerfiles are expected to be in the docker directory in the root of the project."
-          exit 1
+        if [ -d "${{ github.workspace }}/docker" ]; then
+          echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
         fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: env.HAS_DOCKER_DIR == 'false'
+      with:
+        level: "WARNING"
+        message: >
+          Exit action as no 'docker' directory exists at the root of the
+          repository. Except in special cases, e.g. '.devcontainer', we
+          emphasize that docker files are expected to be in the 'docker'
+          directory at the root of the repository.
+
+    - name: "Exit workflow"
+      if: env.HAS_DOCKER_DIR == 'false'
+      shell: bash
+      run: exit 1
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Check that the provided directory is among allowed directories, i.e.
+          'docker' and '.devcontainer'.
 
     # Changes performed in allowed_working_dirs should be applied to the code-style action.
     - name: "Check provided directory"
@@ -66,12 +102,30 @@ runs:
             is_allowed=true
           fi
         done
-        if [ "$is_allowed" == true ] ; then
-          echo "Provided directory '${{ inputs.directory }}' is allowed"
-        else
-          echo "Provided directory '${{ inputs.directory }}' is not allowed"
-          exit 1
-        fi
+        echo "DIRECTORY_ALLOWED=$is_allowed" >> $GITHUB_OUTPUT
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: env.DIRECTORY_ALLOWED == 'false'
+      with:
+        level: "ERROR"
+        message: >
+          Exit action because the provided directory isn't allowed.
+
+    - name: "Exit workflow"
+      if: env.DIRECTORY_ALLOWED == 'false'
+      shell: bash
+      run: exit 1
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: env.DIRECTORY_ALLOWED == 'false'
+      with:
+        level: "INFO"
+        message: >
+          Lint directory '${{ github.workspace }}/${{ inputs.directory }}'.
 
     - name: "Run Hadolint"
       uses: jbergstroem/hadolint-gh-action@v1
