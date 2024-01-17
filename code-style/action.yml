@@ -104,7 +104,7 @@ runs:
           Lint directory '${{ github.workspace }}/docker'.
 
     - name: "Run Dockerfile linting in docker directory"
-      uses: ansys/actions/docker-style@main
+      uses: ansys/actions/docker-style@feat/lint_dockerfile
       if: env.HAS_DOCKER_DIR == 'true'
       with:
         directory: docker
@@ -127,7 +127,7 @@ runs:
         fi
 
     - name: "Run Dockerfile linting in .devcontainer directory"
-      uses: ansys/actions/docker-style@main
+      uses: ansys/actions/docker-style@feat/lint_dockerfile
       if: env.HAS_DEVCONTAINER_DIR == 'true'
       with:
         directory: .devcontainer
