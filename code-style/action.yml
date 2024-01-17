@@ -76,7 +76,7 @@ runs:
 
     - name: "Run Dockerfile linting in docker directory"
       uses: ansys/actions/docker-style@main
-      if: steps.checkdocker.outputs.exists == 'true'
+      if: env.HAS_DOCKER_DIR == 'true'
       with:
         directory: docker
         recursive: ${{ inputs.docker-recursive }}
