@@ -88,7 +88,21 @@ runs:
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
           echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
+        else
+          echo "HAS_DOCKER_DIR=false" >> $GITHUB_OUTPUT
         fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: env.HAS_DOCKER_DIR == 'false'
+      with:
+        level: "WARNING"
+        message: >
+          Exit action as no 'docker' directory exists at the root of the
+          repository. Except in special cases, e.g. '.devcontainer', we
+          emphasize that docker files are expected to be in the 'docker'
+          directory at the root of the repository.
 
     - name: "Exit workflow"
       if: env.HAS_DOCKER_DIR == 'false'
@@ -98,6 +112,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: env.HAS_DOCKER_DIR == 'true'
       with:
         level: "INFO"
         message: >
@@ -124,7 +139,33 @@ runs:
       run: |
         if [ -d "${{ github.workspace }}/.devcontainer" ]; then
           echo "HAS_DEVCONTAINER_DIR=true" >> $GITHUB_OUTPUT
+        else
+          echo "HAS_DEVCONTAINER_DIR=false" >> $GITHUB_OUTPUT
         fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: env.HAS_DEVCONTAINER_DIR == 'false'
+      with:
+        level: "INFO"
+        message: >
+          Exit action as no '.devcontainer' directory exists at the root of
+          the repository.
+
+    - name: "Exit workflow"
+      if: env.HAS_DEVCONTAINER_DIR == 'false'
+      shell: bash
+      run: exit 0
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: env.HAS_DEVCONTAINER_DIR == 'true'
+      with:
+        level: "INFO"
+        message: >
+          Lint directory '${{ github.workspace }}/.devcontainer'.
 
     - name: "Run Dockerfile linting in .devcontainer directory"
       uses: ansys/actions/docker-style@feat/lint_dockerfile
