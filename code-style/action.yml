@@ -79,6 +79,24 @@ runs:
       with:
         level: "INFO"
         message: >
+          Extend the workflow to lint Dockerfile(s) if option docker-lint is
+          set to true, exit otherwise.
+
+    - name: "Check if docker directory exists"
+      shell: bash
+      run: |
+        if ${{ inputs.docker-lint }} == true ; then
+          exit 0
+        fi
+
+    # ------------------------------------------------------------------------
+
+    # The following steps are applying docker-style action to allowed working dirs if they exist.
+    # Changes performed should coherent with the 'allowed_working_dirs' in the docker-style action.
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
           Check that directory 'docker' exists at the root of the repository.
           If it does not, then it means that the rest of the action should not
           be performed.
