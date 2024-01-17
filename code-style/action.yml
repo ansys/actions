@@ -27,6 +27,13 @@ inputs:
     default: true
     type: boolean
 
+  docker-lint:
+    description: >
+      Extend the workflow to lint Dockerfile(s).
+    required: false
+    default: false
+    type: bool
+
   docker-recursive:
     description: >
       Search for Dockerfile(s) recursively. Only applies to allowed directories, i.e. docker and .devcontainer.
@@ -64,15 +71,37 @@ runs:
       shell: bash
       run: pre-commit run --all-files --show-diff-on-failure
 
+    # ------------------------------------------------------------------------
+
     # The following steps are applying docker-style action to allowed working dirs if they exist.
-    # Changes performed here should coherent with the 'allowed_working_dirs' in the docker-style action.
+    # Changes performed should coherent with the 'allowed_working_dirs' in the docker-style action.
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Check that directory 'docker' exists at the root of the repository.
+          If it does not, then it means that the rest of the action should not
+          be performed.
+
     - name: "Check if docker directory exists"
       shell: bash
-      id: checkdocker
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
           echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
         fi
+
+    - name: "Exit workflow"
+      if: env.HAS_DOCKER_DIR == 'false'
+      shell: bash
+      run: exit 0
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Lint directory '${{ github.workspace }}/docker'.
 
     - name: "Run Dockerfile linting in docker directory"
       uses: ansys/actions/docker-style@main
@@ -82,11 +111,18 @@ runs:
         recursive: ${{ inputs.docker-recursive }}
         error-level: ${{ inputs.docker-error-level }}
 
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Check if directory '.devcontainer' exists.
+
     - name: "Check if .devcontainer directory exists"
       shell: bash
-      id: checkdevcontainer
       run: |
-        if [ -d "${{ github.workspace }}/.devcontainer/Dockerfile" ]; then
+        if [ -d "${{ github.workspace }}/.devcontainer" ]; then
           echo "HAS_DEVCONTAINER_DIR=true" >> $GITHUB_OUTPUT
         fi
 
