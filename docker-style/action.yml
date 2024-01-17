@@ -61,9 +61,9 @@ runs:
       shell: bash
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
-          echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
+          echo "HAS_DOCKER_DIR='true'" >> $GITHUB_OUTPUT
         else
-          echo "HAS_DOCKER_DIR=false" >> $GITHUB_OUTPUT
+          echo "HAS_DOCKER_DIR='false'" >> $GITHUB_OUTPUT
         fi
 
     # ------------------------------------------------------------------------
@@ -97,11 +97,11 @@ runs:
       shell: bash
       run: |
         allowed_working_dirs=("docker" ".devcontainer")
-        is_allowed=false
+        is_allowed='false'
         for dir in "${allowed_working_dirs[@]}"
         do
           if [ "$dir" == "${{ inputs.directory }}" ] ; then
-            is_allowed=true
+            is_allowed='true'
           fi
         done
         echo "DIRECTORY_ALLOWED=$is_allowed" >> $GITHUB_OUTPUT
