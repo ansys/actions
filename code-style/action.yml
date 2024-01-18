@@ -87,6 +87,8 @@ runs:
       run: |
         if [[ "${{ inputs.docker-lint }}" == "false" ]]; then
           exit 0
+        else
+          echo "SOMETHIN STRANGE IS HAPPENING"
         fi
 
     # ------------------------------------------------------------------------
