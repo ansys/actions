@@ -85,7 +85,7 @@ runs:
     - name: "Exit if docker-lint is false"
       shell: bash
       run: |
-        if [ ${{ inputs.docker-lint }} == false ]; then
+        if [[ "${{ inputs.docker-lint }}" == "false" ]]; then
           exit 0
         fi
 
