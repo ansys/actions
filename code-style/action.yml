@@ -156,7 +156,7 @@ runs:
           Lint directory '${{ github.workspace }}/.devcontainer'.
 
     - name: "Run Dockerfile linting in .devcontainer directory"
-      if: env.HAS_DEVCONTAINER_DIR == 'false' & env.RUN_DOCKER_LINT == 'true'
+      if: env.HAS_DEVCONTAINER_DIR == 'false' && env.RUN_DOCKER_LINT == 'true'
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
         directory: .devcontainer
