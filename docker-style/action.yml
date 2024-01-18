@@ -12,6 +12,7 @@ description: >
   root of the project. Exception can be added as it is the case for the ''.devcontainer' directory.
 
   .. warning::
+
       This action only looks for docker files named Dockerfile.
       A docker file like Dockerfile.linux will not be linted.
       Two checks are performed and failing any of them results in the action failure:
