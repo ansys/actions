@@ -8,8 +8,8 @@ description: >
   <https://github.com/jbergstroem/hadolint-gh-action>`_ behind the scenes. If you want to evaluate multiple
   Dockerfiles contained in various directories of the provided directory, use the recursive option.
 
-  This action emphasis the fact of having Dockerfile(s) contained inside the 'docker' directory in the
-  root of the project. Exception can be added as it is the case for the ''.devcontainer' directory.
+  This action emphasizes the fact of having Dockerfile(s) contained inside the 'docker' directory in the
+  root of the project. Exceptions can be added as it is the case for the ''.devcontainer' directory.
 
   .. warning::
 
