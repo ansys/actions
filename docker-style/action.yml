@@ -3,33 +3,33 @@ name: >
 
 description: >
   Evaluate the quality of your project Dockerfile(s) by using `hadolint
-  <https://github.com/hadolint/hadolint/>`_. This action is expected to be used within a
-  matrix job to lint Dockerfile(s) from multiple directories. The action uses `hadolint-gh-action
-  <https://github.com/jbergstroem/hadolint-gh-action>`_ behind the scenes. If you want to evaluate multiple
-  Dockerfiles contained in various directories of the provided directory, use the recursive option.
+  <https://github.com/hadolint/hadolint/>`_. This action is expected to
+  be used within a matrix job to lint Dockerfile(s) from multiple directories.
+  The action uses `hadolint-gh-action
+  <https://github.com/jbergstroem/hadolint-gh-action>`_ behind the scenes.
+  If you want to evaluate multiple Dockerfiles contained in various
+  directories of the provided directory, use the recursive option.
 
-  This action emphasizes the fact of having Dockerfile(s) contained inside the 'docker' directory in the
-  root of the project. Exceptions can be added as it is the case for the ''.devcontainer' directory.
+  .. note::
+
+      This action emphasizes the fact of having Dockerfile(s) contained inside the
+      'docker' directory in the root of the project.
 
   .. warning::
 
       This action only looks for docker files named Dockerfile.
       A docker file like Dockerfile.linux will not be linted.
-      Two checks are performed and failing any of them results in the action failure:
-      - the root of the project must contain a 'docker' directory;
-      - the provided directory must be allowed, i.e. is either 'docker' or '.devcontainer'.
 
 inputs:
 
-  # Required inputs
+  # Optional inputs
 
   directory:
     description: >
       Directory from which to search for Dockerfile(s).
-    required: true
+    required: false
+    default: docker
     type: string
-
-  # Optional inputs
 
   recursive:
     description: >
@@ -40,7 +40,8 @@ inputs:
 
   error-level:
     description: >
-      Fail action based on hadolint output (-1: never, 0: error, 1: warning, 2: info)
+      Fail action based on hadolint output (-1: never, 0: error,1: warning,
+      2: info)
     required: false
     default: 2
     type: int
@@ -56,7 +57,7 @@ runs:
         level: "INFO"
         message: >
           Check that directory 'docker' exists at the root of the repository.
-          If it does not, then the rest of the action should not be performed.
+          If it does not, then a warning is emitted.
 
     - name: "Check if docker directory exists"
       shell: bash
@@ -74,15 +75,9 @@ runs:
       with:
         level: "WARNING"
         message: >
-          Exit action as no 'docker' directory exists at the root of the
-          repository. Except in special cases, e.g. '.devcontainer', we
-          emphasize that docker files are expected to be in the 'docker'
-          directory at the root of the repository.
-
-    - name: "Exit workflow"
-      if: env.HAS_DOCKER_DIR == 'false'
-      shell: bash
-      run: exit 1
+          No 'docker' directory found. Except in special cases, e.g.
+          '.devcontainer', we emphasize that docker files are stored in the
+          'docker' directory at the root of the repository.
 
     # ------------------------------------------------------------------------
 
@@ -90,41 +85,23 @@ runs:
       with:
         level: "INFO"
         message: >
-          Check that '${{ inputs.directory }}' is among allowed directories, i.e.
-          'docker' and '.devcontainer'.
+          Check that directory
+          '${{ github.workspace }}/${{ inputs.directory }}' exists. If not,
+          a warning is raised and nothing is done.
 
-    # Changes performed in allowed_working_dirs should be applied to the code-style action.
-    - name: "Check provided directory"
+    - name: "Check if directory input exists"
       shell: bash
       run: |
-        allowed_working_dirs=("docker" ".devcontainer")
-        is_allowed=false
-        for dir in "${allowed_working_dirs[@]}"
-        do
-          if [ "$dir" == "${{ inputs.directory }}" ] ; then
-            is_allowed=true
-          fi
-        done
-        echo "DIRECTORY_ALLOWED=$is_allowed" >> $GITHUB_ENV
+        if [ -d "${{ github.workspace }}/${{ inputs.directory }}" ]; then
+          echo "DIRECTORY_EXISTS=true" >> $GITHUB_ENV
+        else
+          echo "DIRECTORY_EXISTS=false" >> $GITHUB_ENV
+        fi
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: env.DIRECTORY_ALLOWED == 'false'
-      with:
-        level: "ERROR"
-        message: >
-          Exit action because the provided directory isn't allowed.
-
-    - name: "Exit workflow"
-      if: env.DIRECTORY_ALLOWED == 'false'
-      shell: bash
-      run: exit 1
-
-    # ------------------------------------------------------------------------
-
-    - uses: ansys/actions/_logging@main
-      if: env.DIRECTORY_ALLOWED == 'true'
+      if: env.DIRECTORY_EXISTS == 'true'
       with:
         level: "INFO"
         message: >
@@ -134,5 +111,20 @@ runs:
       if: env.DIRECTORY_ALLOWED == 'true'
       uses: jbergstroem/hadolint-gh-action@v1
       with:
-        dockerfile: ${{ inputs.recursive == 'true' && format('{0}/**/Dockerfile', inputs.directory) || format('{0}/Dockerfile', inputs.directory) }}
+        dockerfile: >-
+          ${{
+            inputs.recursive == 'true' &&
+            format('{0}/**/Dockerfile', inputs.directory) ||
+            format('{0}/Dockerfile', inputs.directory)
+          }}
         error_level: ${{ inputs.error-level }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: env.DIRECTORY_EXISTS == 'false'
+      with:
+        level: "WARNING"
+        message: >
+          Directory '${{ github.workspace }}/${{ inputs.directory }}' does not
+          exists.
