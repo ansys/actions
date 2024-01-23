@@ -108,7 +108,7 @@ runs:
           Lint directory '${{ github.workspace }}/${{ inputs.directory }}'.
 
     - name: "Run Hadolint"
-      if: env.DIRECTORY_ALLOWED == 'true'
+      if: env.DIRECTORY_EXISTS == 'true'
       uses: jbergstroem/hadolint-gh-action@v1
       with:
         dockerfile: >-
