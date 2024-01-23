@@ -6,7 +6,14 @@ description: >
   <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
   ``pre-commit``. It is assumed that your project contains a
   ``.pre-commit-config.yaml`` file in the root directory. The action can also
-  be extended to lint docker files.
+  be extended to lint docker files that are contained in docker and
+  .devcontainer.
+
+    .. warning::
+
+      If docker lint is enabled and directories docker or .devcontainer exist,
+      the action will fail if it doesn't find a Dockerfile.
+
 
 inputs:
 
@@ -49,13 +56,6 @@ inputs:
     default: 2
     type: int
 
-  docker-directory:
-    description: >
-      Directory from which to search for Dockerfile(s).
-    required: false
-    default: docker
-    type: string
-
 runs:
   using: "composite"
   steps:
@@ -88,13 +88,22 @@ runs:
         level: "INFO"
         message: >
           Extend the workflow to lint Dockerfile(s) in
-          '${{ github.workspace }}/docker'.
+          '${{ github.workspace }}/docker' and
+          '${{ github.workspace }}/.devcontainer'.
 
     - name: "Run Dockerfile linting in docker directory"
       if: ${{ inputs.docker-lint == 'true' }}
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
-        directory: ${{ inputs.docker-directory }}
+        directory: docker
+        recursive: ${{ inputs.docker-recursive }}
+        error-level: ${{ inputs.docker-error-level }}
+
+    - name: "Run Dockerfile linting in docker directory"
+      if: ${{ inputs.docker-lint == 'true' }}
+      uses: ansys/actions/docker-style@feat/lint_dockerfile
+      with:
+        directory: .devcontainer
         recursive: ${{ inputs.docker-recursive }}
         error-level: ${{ inputs.docker-error-level }}
 
