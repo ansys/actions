@@ -5,7 +5,8 @@ description: >
   This action evaluates the code quality of your project by using `pre-commit
   <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
   ``pre-commit``. It is assumed that your project contains a
-  ``.pre-commit-config.yaml`` file in the root directory.
+  ``.pre-commit-config.yaml`` file in the root directory. The action can also
+  be extended to lint docker files.
 
 inputs:
 
@@ -48,6 +49,13 @@ inputs:
     default: 2
     type: int
 
+  docker-directory:
+    description: >
+      Directory from which to search for Dockerfile(s).
+    required: false
+    default: docker
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -73,91 +81,29 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    # The following steps are applying docker-style action to allowed working dirs if they exist.
-    # Changes performed should coherent with the 'allowed_working_dirs' in the docker-style action.
+    # Trigger docker-style action if docker-lint is set to true.
     - uses: ansys/actions/_logging@main
+      if: ${{ inputs.docker-lint == 'true' }}
       with:
         level: "INFO"
         message: >
-          Extend the workflow to lint Dockerfile(s) if option docker-lint is
-          set to true, exit otherwise.
-
-    - name: "Exit if docker-lint is false"
-      shell: bash
-      run: |
-        if [[ "${{ inputs.docker-lint }}" == "true" ]]; then
-          echo "RUN_DOCKER_LINT=true" >> $GITHUB_ENV
-        fi
-
-    # ------------------------------------------------------------------------
-
-    - uses: ansys/actions/_logging@main
-      if: env.RUN_DOCKER_LINT == 'true'
-      with:
-        level: "INFO"
-        message: >
-          Check that directory 'docker' exists at the root of the repository.
-          If it does not, then it means that the rest of the action should not
-          be performed.
-
-    - name: "Check if docker directory exists"
-      if: env.RUN_DOCKER_LINT == 'true'
-      shell: bash
-      run: |
-        if [ -d "${{ github.workspace }}/docker" ]; then
-          echo "HAS_DOCKER_DIR=true" >> $GITHUB_ENV
-        else
-          echo "HAS_DOCKER_DIR=false" >> $GITHUB_ENV
-        fi
-
-    # ------------------------------------------------------------------------
-
-    - uses: ansys/actions/_logging@main
-      if: env.HAS_DOCKER_DIR == 'true' && env.RUN_DOCKER_LINT == 'true'
-      with:
-        level: "INFO"
-        message: >
-          Lint directory '${{ github.workspace }}/docker'.
+          Extend the workflow to lint Dockerfile(s) in
+          '${{ github.workspace }}/docker'.
 
     - name: "Run Dockerfile linting in docker directory"
-      if: env.HAS_DOCKER_DIR == 'true' && env.RUN_DOCKER_LINT == 'true'
-      uses: ansys/actions/docker-style@main
+      if: ${{ inputs.docker-lint == 'true' }}
+      uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
-        directory: docker
+        directory: ${{ inputs.docker-directory }}
         recursive: ${{ inputs.docker-recursive }}
         error-level: ${{ inputs.docker-error-level }}
 
     # ------------------------------------------------------------------------
 
+    # End action as docker-lint is set to false.
     - uses: ansys/actions/_logging@main
-      if: env.RUN_DOCKER_LINT == 'true'
+      if: ${{ inputs.docker-lint == 'false' }}
       with:
         level: "INFO"
         message: >
-          Check if directory '.devcontainer' exists.
-
-    - name: "Check if .devcontainer directory exists"
-      if: env.RUN_DOCKER_LINT == 'true'
-      shell: bash
-      run: |
-        if [ -d "${{ github.workspace }}/.devcontainer" ]; then
-          echo "HAS_DEVCONTAINER_DIR=true" >> $GITHUB_ENV
-        else
-          echo "HAS_DEVCONTAINER_DIR=false" >> $GITHUB_ENV
-        fi
-
-    # ------------------------------------------------------------------------
-
-    - uses: ansys/actions/_logging@main
-      if: env.HAS_DEVCONTAINER_DIR == 'true' && env.RUN_DOCKER_LINT == 'true'
-      with:
-        level: "INFO"
-        message: >
-          Lint directory '${{ github.workspace }}/.devcontainer'.
-
-    - name: "Run Dockerfile linting in .devcontainer directory"
-      if: env.HAS_DEVCONTAINER_DIR == 'false' && env.RUN_DOCKER_LINT == 'true'
-      uses: ansys/actions/docker-style@main
-      with:
-        directory: .devcontainer
-        error-level: ${{ inputs.docker-error-level }}
+          Docker lint disabled.
