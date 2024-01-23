@@ -91,7 +91,7 @@ runs:
           '${{ github.workspace }}/docker' and
           '${{ github.workspace }}/.devcontainer'.
 
-    - name: "Run Dockerfile linting in docker directory"
+    - name: "Run Dockerfile linting in 'docker' directory"
       if: ${{ inputs.docker-lint == 'true' }}
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
@@ -99,7 +99,7 @@ runs:
         recursive: ${{ inputs.docker-recursive }}
         error-level: ${{ inputs.docker-error-level }}
 
-    - name: "Run Dockerfile linting in docker directory"
+    - name: "Run Dockerfile linting in '.devcontainer' directory"
       if: ${{ inputs.docker-lint == 'true' }}
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
