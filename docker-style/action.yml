@@ -9,6 +9,9 @@ description: >
   <https://github.com/jbergstroem/hadolint-gh-action>`_ behind the scenes.
   If you want to evaluate multiple Dockerfiles contained in various
   directories of the provided directory, use the recursive option.
+  When linting a Dockerfile dedicated to Windows, one should use hadolint
+  shell pragma to avoid false positives from ShellCheck, see `hadolint shell pragma
+  <https://github.com/hadolint/hadolint/pull/708>`_.
 
   .. note::
 
