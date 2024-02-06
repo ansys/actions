@@ -91,7 +91,7 @@ runs:
         message: >
           Extend the workflow to lint Dockerfile(s).
 
-    - name: "Run Dockerfile linting"
+    - name: "Run Dockerfile linting in 'docker' directory"
       if: ${{ inputs.docker-lint == 'true' }}
       uses: ansys/actions/docker-style@main
       with:
