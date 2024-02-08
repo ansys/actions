@@ -78,9 +78,9 @@ runs:
       with:
         level: "WARNING"
         message: >
-          No 'docker' directory found. Except in special cases, e.g.
-          '.devcontainer', we emphasize that docker files are stored in the
-          'docker' directory at the root of the repository.
+          No 'docker' directory found. If possible, please follow the common
+          approach of storing docker files in the 'docker' directory at the
+          root of the repository.
 
     # ------------------------------------------------------------------------
 
