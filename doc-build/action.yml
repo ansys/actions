@@ -132,7 +132,7 @@ runs:
 
     - name: "Cache apt packages needed"
       uses: awalsh128/cache-apt-pkgs-action@v1.3.1
-      if: ${{ inputs.skip-dependencies-cache == 'false' }} && ${{ env.NEEDED_DEPS != '' }}
+      if: ${{ inputs.skip-dependencies-cache == 'false' }} && env.NEEDED_DEPS != ''
       with:
         packages: ${{ env.NEEDED_DEPS }}
         version: 1.0
