@@ -131,7 +131,7 @@ runs:
         fi
 
     - name: "Cache apt packages needed"
-      uses: awalsh128/cache-apt-pkgs-action@v1.3.0
+      uses: awalsh128/cache-apt-pkgs-action@v1.3.1
       if: ${{ inputs.skip-dependencies-cache == 'false' }}
       with:
         packages: ${{ env.NEEDED_DEPS }}
