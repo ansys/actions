@@ -146,16 +146,14 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: |
-        ${{ env.NON_EXISTING_DIRS != '' && contains(env.NON_EXISTING_DIRS, ' ') }}
+      if: ${{ env.NON_EXISTING_DIRS != '' && contains(env.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
         message: >
           Non existing directories: '${{ env.NON_EXISTING_DIRS }}'
 
     - uses: ansys/actions/_logging@main
-      if: |
-        ${{ env.NON_EXISTING_DIRS != '' && contains(env.NON_EXISTING_DIRS, ' ') }}
+      if: ${{ env.NON_EXISTING_DIRS != '' && contains(env.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
         message: >
