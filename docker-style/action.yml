@@ -106,9 +106,9 @@ runs:
             NON_EXISTING_DIRS+="$directory "
           fi
         done
-        EXISTING_DIRS=${EXISTING_DIRS%% }
+        EXISTING_DIRS=${EXISTING_DIRS%%}
         echo "EXISTING_DIRS=$EXISTING_DIRS" >> $GITHUB_ENV
-        NON_EXISTING_DIRS=${NON_EXISTING_DIRS%% }
+        NON_EXISTING_DIRS=${NON_EXISTING_DIRS%%}
         echo "NON_EXISTING_DIRS=$NON_EXISTING_DIRS" >> $GITHUB_ENV
 
     # ------------------------------------------------------------------------
@@ -153,7 +153,7 @@ runs:
           Non existing directories: '${{ env.NON_EXISTING_DIRS }}'
 
     - uses: ansys/actions/_logging@main
-      if: ${{ env.NON_EXISTING_DIRS != '' && contains(env.NON_EXISTING_DIRS, ' ') }}
+      if: ${{ env.NON_EXISTING_DIRS != '' && !contains(env.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
         message: >
