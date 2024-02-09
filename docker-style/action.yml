@@ -3,9 +3,9 @@ name: >
 
 description: >
   Evaluate the quality of your project Dockerfile(s) by using `hadolint
-  <https://github.com/hadolint/hadolint/>`_. This action is expected to
-  be used within a matrix job to lint Dockerfile(s) from multiple directories.
-  The action uses `hadolint-gh-action
+  <https://github.com/hadolint/hadolint/>`_. This action can be used to
+  lint Dockerfile(s) from multiple directories, see input "directory"
+  description. The action uses `hadolint-gh-action
   <https://github.com/jbergstroem/hadolint-gh-action>`_ behind the scenes.
   If you want to evaluate multiple Dockerfiles contained in various
   directories of the provided directory, use the recursive option.
@@ -29,7 +29,9 @@ inputs:
 
   directory:
     description: >
-      Directory from which to search for Dockerfile(s).
+      Directory from which to search for Dockerfile(s). You can pass multiple
+      directories for processing by separating them with spaces, e.g.
+      "docker .devcontainer".
     required: false
     default: docker
     type: string
@@ -88,46 +90,75 @@ runs:
       with:
         level: "INFO"
         message: >
-          Check that directory
-          '${{ github.workspace }}/${{ inputs.directory }}' exists. If not,
-          a warning is raised and nothing is done.
+          Check that directory (or diresctories) exist(s). If not, a warning
+          is raised and non existing ones are ignored.
 
-    - name: "Check if directory input exists"
+    - name: "Filter input directory"
       shell: bash
       run: |
-        if [ -d "${{ github.workspace }}/${{ inputs.directory }}" ]; then
-          echo "DIRECTORY_EXISTS=true" >> $GITHUB_ENV
-        else
-          echo "DIRECTORY_EXISTS=false" >> $GITHUB_ENV
-        fi
+        EXISTING_DIRS=""
+        NON_EXISTING_DIRS=""
+        for directory in ${{ inputs.directory }}
+        do
+          if [ -d "${{ github.workspace }}/$directory" ]; then
+            EXISTING_DIRS+="$directory "
+          else
+            NON_EXISTING_DIRS+="$directory "
+          fi
+        done
+        EXISTING_DIRS=${EXISTING_DIRS%% }
+        echo "EXISTING_DIRS=$EXISTING_DIRS" >> $GITHUB_ENV
+        NON_EXISTING_DIRS=${NON_EXISTING_DIRS%% }
+        echo "NON_EXISTING_DIRS=$NON_EXISTING_DIRS" >> $GITHUB_ENV
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: env.DIRECTORY_EXISTS == 'true'
+      if: env.EXISTING_DIRS != ""
       with:
         level: "INFO"
         message: >
-          Lint directory '${{ github.workspace }}/${{ inputs.directory }}'.
+          Lint '${{ inputs.directory }}'.
+
+    - name: "Format Hadolint dockerfile input"
+      if: env.EXISTING_DIRS != ""
+      shell: bash
+      run: |
+        fmt_directory="${{ inputs.directory }}"
+        if [[ "${{ inputs.recursive }}" == 'true' ]]; then
+          fmt_directory_array=($fmt_directory)
+          for i in "${!fmt_directory_array[@]}"; do
+            fmt_directory_array[i]="${fmt_directory_array[i]}**/Dockerfile"
+          done
+          fmt_directory="${fmt_directory_array[*]}"
+        else
+          fmt_directory="${directories}/Dockerfile"
+        fi
+        echo "FORMATED_HADOLINT_DOCKERFILE_INPUT=$fmt_directory" >> $GITHUB_ENV
 
     - name: "Run Hadolint"
-      if: env.DIRECTORY_EXISTS == 'true'
+      if: env.EXISTING_DIRS != ""
       uses: jbergstroem/hadolint-gh-action@v1
       with:
-        dockerfile: >-
-          ${{
-            inputs.recursive == 'true' &&
-            format('{0}/**/Dockerfile', inputs.directory) ||
-            format('{0}/Dockerfile', inputs.directory)
-          }}
+        dockerfile: ${{ env.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
         error_level: ${{ inputs.error-level }}
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: env.DIRECTORY_EXISTS == 'false'
+      if: |
+        env.NON_EXISTING_DIRS != "" &&
+        contains(env.NON_EXISTING_DIRS, " ")
       with:
         level: "WARNING"
         message: >
-          Directory '${{ github.workspace }}/${{ inputs.directory }}' does not
-          exists.
+          Non existing directories: ${{ env.NON_EXISTING_DIRS }}
+
+    - uses: ansys/actions/_logging@main
+      if: |
+        env.NON_EXISTING_DIRS != "" &&
+        !contains(env.NON_EXISTING_DIRS, " ")
+      with:
+        level: "WARNING"
+        message: >
+          Non existing directory: ${{ env.NON_EXISTING_DIRS }}

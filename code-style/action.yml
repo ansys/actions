@@ -91,19 +91,11 @@ runs:
         message: >
           Extend the workflow to lint Dockerfile(s).
 
-    - name: "Run Dockerfile linting in 'docker' directory"
+    - name: "Run Dockerfile linting in directories 'docker' and '.devcontainer'"
       if: ${{ inputs.docker-lint == 'true' }}
       uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
-        directory: docker
-        recursive: ${{ inputs.docker-recursive }}
-        error-level: ${{ inputs.docker-error-level }}
-
-    - name: "Run Dockerfile linting in '.devcontainer' directory"
-      if: ${{ inputs.docker-lint == 'true' }}
-      uses: ansys/actions/docker-style@feat/lint_dockerfile
-      with:
-        directory: .devcontainer
+        directory: "docker .devcontainer"
         recursive: ${{ inputs.docker-recursive }}
         error-level: ${{ inputs.docker-error-level }}
 
