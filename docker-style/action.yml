@@ -152,7 +152,7 @@ runs:
       with:
         level: "WARNING"
         message: >
-          Non existing directories: '${{ env.NON_EXISTING_DIRS }}''
+          Non existing directories: '${{ env.NON_EXISTING_DIRS }}'
 
     - uses: ansys/actions/_logging@main
       if: |
@@ -161,4 +161,4 @@ runs:
       with:
         level: "WARNING"
         message: >
-          Non existing directory: '${{ env.NON_EXISTING_DIRS }}''
+          Non existing directory: '${{ env.NON_EXISTING_DIRS }}'
