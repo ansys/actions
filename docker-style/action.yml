@@ -90,8 +90,8 @@ runs:
       with:
         level: "INFO"
         message: >
-          Check that directory (or diresctories) exist(s). If not, a warning
-          is raised and non existing ones are ignored.
+          Check that directory input exist. If not, a warning is raised and
+          non existing ones (if any) are ignored.
 
     - name: "Filter input directory"
       shell: bash
