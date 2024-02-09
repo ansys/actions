@@ -106,9 +106,9 @@ runs:
             NON_EXISTING_DIRS+="$directory "
           fi
         done
-        EXISTING_DIRS=${EXISTING_DIRS%%}
+        EXISTING_DIRS=$(echo -n "$EXISTING_DIRS" | xargs)
         echo "EXISTING_DIRS=$EXISTING_DIRS" >> $GITHUB_ENV
-        NON_EXISTING_DIRS=${NON_EXISTING_DIRS%%}
+        NON_EXISTING_DIRS=$(echo -n "$NON_EXISTING_DIRS" | xargs)
         echo "NON_EXISTING_DIRS=$NON_EXISTING_DIRS" >> $GITHUB_ENV
 
     # ------------------------------------------------------------------------
