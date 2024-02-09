@@ -114,14 +114,14 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: env.EXISTING_DIRS != ""
+      if: ${{ env.EXISTING_DIRS }} != ""
       with:
         level: "INFO"
         message: >
           Lint '${{ inputs.directory }}'.
 
     - name: "Format Hadolint dockerfile input"
-      if: env.EXISTING_DIRS != ""
+      if: ${{ !!env.EXISTING_DIRS }}
       shell: bash
       run: |
         fmt_directory="${{ inputs.directory }}"
@@ -137,7 +137,7 @@ runs:
         echo "FORMATED_HADOLINT_DOCKERFILE_INPUT=$fmt_directory" >> $GITHUB_ENV
 
     - name: "Run Hadolint"
-      if: env.EXISTING_DIRS != ""
+      if: ${{ !!env.EXISTING_DIRS }}
       uses: jbergstroem/hadolint-gh-action@v1
       with:
         dockerfile: ${{ env.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
@@ -147,7 +147,7 @@ runs:
 
     - uses: ansys/actions/_logging@main
       if: |
-        env.NON_EXISTING_DIRS != "" &&
+        ${{ !!env.NON_EXISTING_DIRS }} &&
         contains(env.NON_EXISTING_DIRS, " ")
       with:
         level: "WARNING"
@@ -156,7 +156,7 @@ runs:
 
     - uses: ansys/actions/_logging@main
       if: |
-        env.NON_EXISTING_DIRS != "" &&
+        ${{ !!env.NON_EXISTING_DIRS }} &&
         !contains(env.NON_EXISTING_DIRS, " ")
       with:
         level: "WARNING"
