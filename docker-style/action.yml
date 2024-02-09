@@ -114,7 +114,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: ${{ env.EXISTING_DIRS }} != ""
+      if: ${{ !!env.EXISTING_DIRS }}
       with:
         level: "INFO"
         message: >
@@ -147,8 +147,8 @@ runs:
 
     - uses: ansys/actions/_logging@main
       if: |
-        ${{ env.NON_EXISTING_DIRS }} != '' &&
-        contains(env.NON_EXISTING_DIRS, " ")
+        ${{ !!env.NON_EXISTING_DIRS &&
+        contains(env.NON_EXISTING_DIRS, " ") }}
       with:
         level: "WARNING"
         message: >
@@ -156,8 +156,8 @@ runs:
 
     - uses: ansys/actions/_logging@main
       if: |
-        ${{ env.NON_EXISTING_DIRS }} != '' &&
-        !contains(env.NON_EXISTING_DIRS, " ")
+        ${{ !!env.NON_EXISTING_DIRS &&
+        !contains(env.NON_EXISTING_DIRS, " ") }}
       with:
         level: "WARNING"
         message: >
