@@ -128,7 +128,7 @@ runs:
         if [[ "${{ inputs.recursive }}" == 'true' ]]; then
           fmt_directory_array=($fmt_directory)
           for i in "${!fmt_directory_array[@]}"; do
-            fmt_directory_array[i]="${fmt_directory_array[i]}**/Dockerfile"
+            fmt_directory_array[i]="${fmt_directory_array[i]}/**/Dockerfile"
           done
           fmt_directory="${fmt_directory_array[*]}"
         else
@@ -138,7 +138,7 @@ runs:
 
     - name: "Run Hadolint"
       if: ${{ !!env.EXISTING_DIRS }}
-      uses: jbergstroem/hadolint-gh-action@v1
+      uses: jbergstroem/hadolint-gh-action@v1.11
       with:
         dockerfile: ${{ env.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
         error_level: ${{ inputs.error-level }}
