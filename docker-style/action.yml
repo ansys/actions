@@ -124,7 +124,7 @@ runs:
       if: ${{ !!env.EXISTING_DIRS }}
       shell: bash
       run: |
-        fmt_directory="${{ inputs.directory }}"
+        fmt_directory="${{ env.EXISTING_DIRS }}"
         pattern="${{ inputs.recursive == 'true' && '/**' || '' }}/Dockerfile"
         fmt_directory_array=($fmt_directory)
         for i in "${!fmt_directory_array[@]}"; do
