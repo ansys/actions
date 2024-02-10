@@ -125,15 +125,12 @@ runs:
       shell: bash
       run: |
         fmt_directory="${{ inputs.directory }}"
-        if [[ "${{ inputs.recursive }}" == 'true' ]]; then
-          fmt_directory_array=($fmt_directory)
-          for i in "${!fmt_directory_array[@]}"; do
-            fmt_directory_array[i]="${fmt_directory_array[i]}/**/Dockerfile"
-          done
-          fmt_directory="${fmt_directory_array[*]}"
-        else
-          fmt_directory="${directories}/Dockerfile"
-        fi
+        pattern="${{ inputs.recursive == 'true' && '/**' || '' }}/Dockerfile"
+        fmt_directory_array=($fmt_directory)
+        for i in "${!fmt_directory_array[@]}"; do
+          fmt_directory_array[i]="${fmt_directory_array[i]}${pattern}"
+        done
+        fmt_directory="${fmt_directory_array[*]}"
         echo "FORMATED_HADOLINT_DOCKERFILE_INPUT=$fmt_directory" >> $GITHUB_ENV
 
     - name: "Run Hadolint"
