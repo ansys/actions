@@ -93,7 +93,7 @@ runs:
 
     - name: "Run Dockerfile linting in directories 'docker' and '.devcontainer'"
       if: ${{ inputs.docker-lint == 'true' }}
-      uses: ansys/actions/docker-style@main
+      uses: ansys/actions/docker-style@feat/lint_dockerfile
       with:
         directory: "docker .devcontainer"
         recursive: ${{ inputs.docker-recursive }}
