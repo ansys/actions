@@ -118,7 +118,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Lint '${{ inputs.directory }}'.
+          Lint '${{ env.EXISTING_DIRS }}'.
 
     - name: "Format Hadolint dockerfile input"
       if: ${{ !!env.EXISTING_DIRS }}
