@@ -6,6 +6,7 @@ with PyAnsys guidelines.
 
 Code style action
 -----------------
+
 .. jinja:: code-style
 
     {{ description }}
@@ -27,6 +28,7 @@ Code style action
 
 Doc style action
 ----------------
+
 .. jinja:: doc-style
 
     {{ description }}
