@@ -42,7 +42,7 @@ inputs:
 
       .. note::
 
-            This will override the ``SPHINXOPTS`` declared in your Makefile.
+          This will override the ``SPHINXOPTS`` declared in your Makefile.
 
     default: '-j auto -W --keep-going'
     required: false
