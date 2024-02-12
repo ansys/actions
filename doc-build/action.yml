@@ -39,6 +39,11 @@ inputs:
       Set of options to pass to the ``Sphinx`` builder. Default options include
       using the maximum number of cores in the CPU of the machine and treating
       warnings as errors.
+
+      .. note::
+
+          This will override the ``SPHINXOPTS`` declared in your Makefile.
+
     default: '-j auto -W --keep-going'
     required: false
     type: string
