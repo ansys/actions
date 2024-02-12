@@ -49,7 +49,7 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
-      if: ${{ inputs.checkout == 'true' }}
+      if: inputs.checkout == 'true'
 
     - name: "Run Vale"
       uses: errata-ai/vale-action@reviewdog
