@@ -137,7 +137,7 @@ runs:
         python -m pip wheel ${{ env.install_target }} -w wheelhouse
 
     - name: "Compress the wheelhouse"
-      uses: vimtor/action-zip@v1.1
+      uses: vimtor/action-zip@v1.2
       with:
         files: wheelhouse
         dest: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
