@@ -6,6 +6,7 @@ with PyAnsys guidelines.
 
 Code style action
 -----------------
+
 .. jinja:: code-style
 
     {{ description }}
@@ -27,7 +28,30 @@ Code style action
 
 Doc style action
 ----------------
+
 .. jinja:: doc-style
+
+    {{ description }}
+
+    {{ inputs_table }}
+
+    Examples
+    ++++++++
+
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
+
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
+
+    {% endfor %}
+
+
+Docker style action
+-------------------
+
+.. jinja:: docker-style
 
     {{ description }}
 
