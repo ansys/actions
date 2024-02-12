@@ -215,7 +215,7 @@ jobs:
         path: documentation-html
 
     - name: "Zip HTML documentation"
-      uses: vimtor/action-zip@v1.1
+      uses: vimtor/action-zip@v1.2
       with:
         files: documentation-html
         dest: documentation-html.zip
@@ -227,7 +227,7 @@ jobs:
         path: documentation-pdf
 
     - name: "Zip PDF documentation"
-      uses: vimtor/action-zip@v1.1
+      uses: vimtor/action-zip@v1.2
       with:
         files: documentation-pdf
         dest: documentation-pdf.zip
