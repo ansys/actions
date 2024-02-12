@@ -88,6 +88,15 @@ inputs:
     default: false
     type: boolean
 
+  hide-log:
+    description: >
+      Whether to hide the output log of the GitHub action.
+      By default, the log is available to anyone for public repositories.
+      This would disclose any potential vulnerabilities to anyone.
+    default: true
+    required: false
+    type: boolean
+
   checkout:
     description: >
       Whether to clone the repository in the CI/CD machine. Default value is
@@ -453,7 +462,11 @@ runs:
     - name: "Run safety advisory checks"
       shell: bash
       run: |
-        python dependency-check.py
+        if [[ ${{ inputs.hide-log }} == 'true' ]]; then
+          python dependency-check.py > /dev/null 2>&1
+        else
+          python dependency-check.py
+        fi
 
     - name: "Uploading safety and bandit results"
       uses: actions/upload-artifact@v4
