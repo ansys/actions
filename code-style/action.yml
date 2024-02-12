@@ -6,8 +6,7 @@ description: >
   <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
   ``pre-commit``. It is assumed that your project contains a
   ``.pre-commit-config.yaml`` file in the root directory. The action can also
-  be extended to lint docker files that are contained in docker and
-  .devcontainer.
+  be extended to lint docker files that are contained in the docker directory and the .devcontainer directory.
 
     .. warning::
 
@@ -85,14 +84,14 @@ runs:
 
     # Trigger docker-style action if docker-lint is set to true.
     - uses: ansys/actions/_logging@main
-      if: ${{ inputs.docker-lint == 'true' }}
+      if: inputs.docker-lint == 'true'
       with:
         level: "INFO"
         message: >
           Extend the workflow to lint Dockerfile(s).
 
     - name: "Run Dockerfile linting in directories 'docker' and '.devcontainer'"
-      if: ${{ inputs.docker-lint == 'true' }}
+      if: inputs.docker-lint == 'true'
       uses: ansys/actions/docker-style@main
       with:
         directory: "docker .devcontainer"

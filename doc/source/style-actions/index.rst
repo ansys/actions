@@ -48,6 +48,7 @@ Doc style action
 
 Docker style action
 -------------------
+
 .. jinja:: docker-style
 
     {{ description }}

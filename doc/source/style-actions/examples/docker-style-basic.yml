@@ -2,8 +2,7 @@ docker-style:
   name: "Docker style"
   runs-on: ubuntu-latest
   steps:
-    - name: "Run PyAnsys docker style checks"
-      uses: ansys/actions/docker-style@{{ version }}
+    - uses: ansys/actions/docker-style@{{ version }}
       with:
         directory: docker
         recursive: true
