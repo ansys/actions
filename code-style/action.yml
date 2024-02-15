@@ -90,6 +90,7 @@ runs:
       shell: bash
       run: |
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          python -m pip install poetry
           poetry install
         else
           pip install .
