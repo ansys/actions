@@ -89,11 +89,11 @@ runs:
       if: inputs.skip-install == 'false'
       shell: bash
       run: |
-      if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-        poetry install
-      else
-        pip install .
-      fi
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          poetry install
+        else
+          pip install .
+        fi
 
     - name: "Run pre-commit"
       shell: bash
