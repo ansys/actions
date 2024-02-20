@@ -46,7 +46,6 @@ jobs:
       run: |
           git push --delete origin ${{ env.X }}
           git push --delete origin ${{ env.X }}.${{ env.Y }}
-          git tag -d ${{ env.X }} ${{ env.X }}.${{ env.Y }}
 
     - name: "Create new tags"
       run: |
