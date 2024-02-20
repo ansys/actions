@@ -101,6 +101,8 @@ runs:
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
+        # Check my python executable and install with
+        python -c "import sys; print(sys.executable)"
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           python -m pip install poetry
           python -m poetry install
@@ -112,6 +114,7 @@ runs:
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
+        python -c "import sys; print(sys.executable)"
         python -m pip install pre-commit
         pre-commit install
 
@@ -119,6 +122,7 @@ runs:
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
+        python -c "import sys; print(sys.executable)"
         pre-commit run --all-files --show-diff-on-failure
 
     # ------------------------------------------------------------------------
