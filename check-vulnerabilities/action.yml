@@ -97,6 +97,14 @@ inputs:
     required: false
     type: boolean
 
+  upload-reports:
+    description: >
+      Whether to upload the artifacts containing the vulnerability report.
+      By default, the report artifacts will not be uploaded to hide any potential vulnerabilities?
+    default: false
+    required: false
+    type: boolean
+
   checkout:
     description: >
       Whether to clone the repository in the CI/CD machine. Default value is
@@ -470,7 +478,7 @@ runs:
 
     - name: "Uploading safety and bandit results"
       uses: actions/upload-artifact@v4
-      if: always()
+      if: ${{ inputs.upload-reports == 'true' }}
       with:
         name: vulnerability-results
         path: ./info_*.json
