@@ -85,11 +85,22 @@ runs:
         python -m pip install --upgrade pip
         python -m venv .venv
 
+    - name: "Store venv activation mechanism depending on OS"
+      shell: bash
+      run: |
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+        elif [[ "$RUNNER_OS" == "Windows" ]]; then
+          echo "ACTIVATE_VENV=$(echo '.venv\\Scripts\\activate')" >> $GITHUB_ENV
+        fi
+
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           python -m pip install poetry
           python -m poetry install
@@ -100,14 +111,14 @@ runs:
     - name: "Install pre-commit"
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         python -m pip install pre-commit
         pre-commit install
 
     - name: "Run pre-commit"
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         pre-commit run --all-files --show-diff-on-failure
 
     # ------------------------------------------------------------------------
