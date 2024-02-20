@@ -58,26 +58,33 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier
 
-    - name: "Check pull request title style"
+    - name: "Set PR_TYPE env variable based on PR label"
       env:
-        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-      uses: ansys/actions/commit-style@v4
-      with:
-        token: ${{ inputs.token }}
-
-    - name: "Save pull request type"
-      env:
-        PR_TITLE: "${{ github.event.pull_request.title }}"
+        PR_TYPE: ""
       shell: bash
       run: |
-        # Check if PR_TITLE string contains feat, fix, docs, style, refactor, perf, test, build, ci, chore, or revert
-        if [[ "${{ env.PR_TITLE }}" == feat* ]]; then echo "PR_TYPE=added" >> $GITHUB_ENV;
-        elif [[ "${{ env.PR_TITLE }}" == fix* ]]; then echo "PR_TYPE=fixed" >> $GITHUB_ENV;
-        elif [[ ("${{ env.PR_TITLE }}" == chore* ) && ("${{ env.PR_TITLE }}" =~ [b,B]ump) ]]; then echo "PR_TYPE=dependencies" >> $GITHUB_ENV;
-        else echo "PR_TYPE=changed" >> $GITHUB_ENV;
-        fi
+        #!/bin/bash
+
+        # The key is the label (for example, "enhancement")
+        # The value is the subsection for the changelog once it's generated (for example, "added")
+
+        declare -A pr_labels=( ["enhancement"]="added" ["bug"]="fixed" ["dependencies"]="dependencies" ["documentation"]="documentation" ["maintenance"]="changed" )
+
+        echo ${{ github.event.pull_request.labels.*.name }}
+
+        for label in "${!pr_labels[@]}";
+        do
+          # If PR_TYPE is empty and the PR contains a label from the pr_labels array, set the PR_TYPE value
+          if [ -z "${{ env.PR_TYPE }}" ] -a [[ ${{ github.event.pull_request.labels.*.name }} == "$label" ]]; then
+            echo PR_TYPE="${pr_labels[$label]}" >> $GITHUB_ENV
+          fi
+        done
+
+        # If there are no labels, put it in the misc. section
+        if [ -z "${{ env.PR_TYPE }}" ]; then echo PR_TYPE="miscellaneous" >> $GITHUB_ENV; fi
 
     - name: "Create and commit towncrier fragment"
+      if: ${{ env.PR_TYPE }} != ""
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
         PR_TITLE: "${{ github.event.pull_request.title }}"
@@ -85,14 +92,11 @@ runs:
       shell: bash
       run: |
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_TYPE }}.md"
-        pr_type_arr=("added" "fixed" "changed" "dependencies")
 
-        # Remove fragment if it already exists for pull request
-        for type in "${pr_type_arr[@]}"
-        do
-          exists=`find . -type f -name "${{ env.PR_NUMBER }}.$type.md"`
-          if [ ! -z "$exists" ]; then rm $exists; fi
-        done
+        # Check if the fragment file exists in the repository
+        exists=`find . -type f -name "$fragment"`
+        # If the file exists, remove it
+        if [ ! -z "$exists" ]; then rm $exists; fi
 
         # Create changelog fragment with towncrier
         towncrier create -c "${{ env.PR_TITLE }}" $fragment
