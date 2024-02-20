@@ -1,0 +1,46 @@
+name: Rolling release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions: write-all
+
+jobs:
+  automate-tagging:
+    name: "Perform rolling release"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
+
+    - name: "Configure git"
+      run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+    - name: "Decompose tag into components"
+      run: |
+        if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          # Split the tag into its components
+          IFS='.' read -ra PARTS <<< "${{ github.ref_name }}"
+          echo "X=${PARTS[0]}" >> $GITHUB_ENV
+          echo "Y=${PARTS[1]}" >> $GITHUB_ENV
+          echo "Z=${PARTS[2]}" >> $GITHUB_ENV
+        else
+          echo "Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
+          exit 1
+        fi
+
+    - name: "Remove old tags"
+      run: |
+          git push --delete origin ${{ env.X }}
+          git push --delete origin ${{ env.X }}.${{ env.Y }}
+          git tag -d ${{ env.X }} ${{ env.X }}.${{ env.Y }}
+
+    - name: "Create new tags"
+      run: |
+          git tag ${{ env.X }}.${{ env.Y }}
+          git tag ${{ env.X }}
+          git push origin ${{ env.X }}.${{ env.Y }}
+          git push origin ${{ env.X }}
