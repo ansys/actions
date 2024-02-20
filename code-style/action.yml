@@ -93,7 +93,7 @@ runs:
         elif [[ "$RUNNER_OS" == "macOS" ]]; then
           echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
         elif [[ "$RUNNER_OS" == "Windows" ]]; then
-          echo "ACTIVATE_VENV=$(echo '.venv\Scripts\activate')" >> $GITHUB_ENV
+          echo "ACTIVATE_VENV=$(echo '.venv\\Scripts\\activate')" >> $GITHUB_ENV
         fi
 
     - name: "Install project (if required)"
