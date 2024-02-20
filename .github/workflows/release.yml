@@ -1,6 +1,8 @@
 name: Rolling release
 on:
   push:
+    branches:
+      - release/*
     tags:
       - "v*.*.*"
 
