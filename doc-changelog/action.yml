@@ -70,7 +70,7 @@ runs:
 
         declare -A pr_labels=( ["enhancement"]="added" ["bug"]="fixed" ["dependencies"]="dependencies" ["documentation"]="documentation" ["maintenance"]="changed" )
 
-        echo ${{ github.event.pull_request.labels.*.name }}
+        echo toJSON(github.event.pull_request.labels.*.name)
 
         for label in "${!pr_labels[@]}";
         do
