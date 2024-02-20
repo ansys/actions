@@ -100,7 +100,7 @@ runs:
       if: inputs.skip-install == 'false'
       shell: bash
       run: |
-        .\.venv\Scripts\activate
+        source .venv/bin/activate
         # Check my python executable and install with
         python -c "import sys; print(sys.prefix); print(sys.base_prefix)"
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
@@ -113,7 +113,7 @@ runs:
     - name: "Install pre-commit"
       shell: bash
       run: |
-        .\.venv\Scripts\activate
+        source .venv/bin/activate
         python -c "import sys; print(sys.prefix); print(sys.base_prefix)"
         python -m pip install pre-commit
         pre-commit install
@@ -121,7 +121,7 @@ runs:
     - name: "Run pre-commit"
       shell: bash
       run: |
-        .\.venv\Scripts\activate
+        source .venv/bin/activate
         python -c "import sys; print(sys.prefix); print(sys.base_prefix)"
         pre-commit run --all-files --show-diff-on-failure
 
