@@ -1,6 +1,7 @@
 ansys-corba
 ansys-turbogrid-api
 defusedxml
+distlib
 filelock
 matplotlib
 pypiwin32
@@ -10,4 +11,3 @@ typing
 typing-extensions
 typing_extensions
 WMI
-openai

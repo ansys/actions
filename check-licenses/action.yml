@@ -116,8 +116,16 @@ runs:
 
     - name:  "Install wget on Windows"
       if: runner.os == 'Windows'
-      shell: bash
-      run: choco install wget
+      shell: pwsh
+      run: |
+        # Check if wget is installed - if not, install it
+        if (-not (Get-Command wget -ErrorAction SilentlyContinue)) {
+            Write-Host "wget is not installed. Installing using Chocolatey..."
+            # Install wget using Chocolatey
+            choco install wget -y
+        } else {
+            Write-Host "wget is already installed."
+        }
 
     - name:  "Update bash on macOS"
       if: runner.os == 'macOS'

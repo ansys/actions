@@ -54,7 +54,7 @@ runs:
           directory containing the final artifacts to be published in GitHub.
 
     - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: /tmp/artifacts
 
@@ -80,13 +80,13 @@ runs:
         mv /tmp/artifacts/documentation-pdf dist/documentation/documentation-pdf
 
     - name: "Compressing HTML documentation"
-      uses: vimtor/action-zip@v1.1
+      uses: vimtor/action-zip@v1.2
       with:
         files: dist/documentation/documentation-html
         dest: dist/documentation/documentation-html.zip
 
     - name: "Compressing PDF documentation"
-      uses: vimtor/action-zip@v1.1
+      uses: vimtor/action-zip@v1.2
       with:
         files: dist/documentation/documentation-pdf
         dest: dist/documentation/documentation-pdf.zip

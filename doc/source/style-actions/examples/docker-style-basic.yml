@@ -1,0 +1,9 @@
+docker-style:
+  name: "Docker style"
+  runs-on: ubuntu-latest
+  steps:
+    - uses: ansys/actions/docker-style@{{ version }}
+      with:
+        directory: docker
+        recursive: true
+        error-level: 1

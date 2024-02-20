@@ -1,5 +1,6 @@
 Ansys
 ansys
+CI
 dev
 GitHub
 pytest

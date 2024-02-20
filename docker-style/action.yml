@@ -1,0 +1,169 @@
+name: >
+  Lint Dockerfile
+
+description: >
+  Evaluate the quality of your project Dockerfile(s) by using `hadolint
+  <https://github.com/hadolint/hadolint/>`_. This action can be used to
+  lint Dockerfile(s) from multiple directories, see input "directory"
+  description. The action uses `hadolint-gh-action
+  <https://github.com/jbergstroem/hadolint-gh-action>`_ behind the scenes.
+  If you want to evaluate multiple Dockerfiles contained in various
+  directories of the provided directory, use the recursive option.
+  When linting a Dockerfile dedicated to Windows, one should use hadolint
+  shell pragma to avoid false positives from ShellCheck, see `hadolint shell pragma
+  <https://github.com/hadolint/hadolint/pull/708>`_.
+
+  .. note::
+
+      This action emphasizes the fact of having Dockerfile(s) contained inside the
+      'docker' directory in the root of the project.
+
+  .. warning::
+
+      This action only looks for docker files named Dockerfile.
+      A docker file like Dockerfile.linux will not be linted.
+
+inputs:
+
+  # Optional inputs
+
+  directory:
+    description: >
+      Directory from which to search for Dockerfile(s). You can pass multiple
+      directories for processing by separating them with spaces, e.g.
+      "docker .devcontainer".
+    required: false
+    default: docker
+    type: string
+
+  recursive:
+    description: >
+      Search for Dockerfile(s) recursively.
+    required: false
+    default: false
+    type: bool
+
+  error-level:
+    description: >
+      Fail action based on hadolint output (-1: never, 0: error, 1: warning,
+      2: info)
+    required: false
+    default: 2
+    type: int
+
+  checkout:
+    description: >
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v4
+      if: inputs.checkout == 'true'
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Check that directory 'docker' exists at the root of the repository.
+          If it does not, then a warning is emitted.
+
+    - name: "Check if docker directory exists"
+      shell: bash
+      run: |
+        if [ -d "${{ github.workspace }}/docker" ]; then
+          echo "HAS_DOCKER_DIR=true" >> $GITHUB_ENV
+        else
+          echo "HAS_DOCKER_DIR=false" >> $GITHUB_ENV
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: env.HAS_DOCKER_DIR == 'false'
+      with:
+        level: "WARNING"
+        message: >
+          No 'docker' directory found. If possible, please follow the common
+          approach of storing docker files in the 'docker' directory at the
+          root of the repository.
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Check that directory input exist. If not, a warning is raised and
+          non existing ones (if any) are ignored.
+
+    - name: "Filter input directory"
+      shell: bash
+      run: |
+        EXISTING_DIRS=""
+        NON_EXISTING_DIRS=""
+        for directory in ${{ inputs.directory }}
+        do
+          if [ -d "${{ github.workspace }}/$directory" ]; then
+            EXISTING_DIRS+="$directory "
+          else
+            NON_EXISTING_DIRS+="$directory "
+          fi
+        done
+        EXISTING_DIRS=$(echo -n "$EXISTING_DIRS" | xargs)
+        echo "EXISTING_DIRS=$EXISTING_DIRS" >> $GITHUB_ENV
+        NON_EXISTING_DIRS=$(echo -n "$NON_EXISTING_DIRS" | xargs)
+        echo "NON_EXISTING_DIRS=$NON_EXISTING_DIRS" >> $GITHUB_ENV
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ !!env.EXISTING_DIRS }}
+      with:
+        level: "INFO"
+        message: >
+          Lint '${{ env.EXISTING_DIRS }}'.
+
+    - name: "Format Hadolint dockerfile input"
+      if: ${{ !!env.EXISTING_DIRS }}
+      shell: bash
+      run: |
+        fmt_directory="${{ env.EXISTING_DIRS }}"
+        pattern="${{ inputs.recursive == 'true' && '/**' || '' }}/Dockerfile"
+        fmt_directory_array=($fmt_directory)
+        for i in "${!fmt_directory_array[@]}"; do
+          fmt_directory_array[i]="${fmt_directory_array[i]}${pattern}"
+        done
+        fmt_directory="${fmt_directory_array[*]}"
+        echo "FORMATED_HADOLINT_DOCKERFILE_INPUT=$fmt_directory" >> $GITHUB_ENV
+
+    - name: "Run Hadolint"
+      if: ${{ !!env.EXISTING_DIRS }}
+      uses: jbergstroem/hadolint-gh-action@v1
+      with:
+        dockerfile: ${{ env.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
+        error_level: ${{ inputs.error-level }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ env.NON_EXISTING_DIRS != '' && contains(env.NON_EXISTING_DIRS, ' ') }}
+      with:
+        level: "WARNING"
+        message: >
+          Non existing directories: '${{ env.NON_EXISTING_DIRS }}'
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ env.NON_EXISTING_DIRS != '' && !contains(env.NON_EXISTING_DIRS, ' ') }}
+      with:
+        level: "WARNING"
+        message: >
+          Non existing directory: '${{ env.NON_EXISTING_DIRS }}'

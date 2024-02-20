@@ -1,0 +1,55 @@
+name: Rolling release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions: write-all
+
+jobs:
+  automate-tagging:
+    name: "Perform rolling release"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
+
+    - name: "Configure git"
+      run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+    - name: "Decompose tag into components"
+      run: |
+        if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          # Split the tag into its components
+          IFS='.' read -ra PARTS <<< "${{ github.ref_name }}"
+          echo "X=${PARTS[0]}" >> $GITHUB_ENV
+          echo "Y=${PARTS[1]}" >> $GITHUB_ENV
+          echo "Z=${PARTS[2]}" >> $GITHUB_ENV
+        else
+          echo "Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
+          exit 1
+        fi
+
+    - name: "Verify tag was created in the proper release branch"
+      run: |
+        # Remove leading "v" from env.X
+        X_NO_V="${X:1}"
+        # Check if the tag was created in the proper branch
+        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${X_NO_V}.${{ env.Y }}" ]]; then
+          echo "Tag ${{ github.ref_name }} was created in the wrong branch. Expected branch name release/${X_NO_V}.${{ env.Y }}"
+          exit 1
+        fi
+
+    - name: "Remove old tags"
+      run: |
+          git push --delete origin ${{ env.X }}
+          git push --delete origin ${{ env.X }}.${{ env.Y }}
+
+    - name: "Create new tags"
+      run: |
+          git tag ${{ env.X }}.${{ env.Y }}
+          git tag ${{ env.X }}
+          git push origin ${{ env.X }}.${{ env.Y }}
+          git push origin ${{ env.X }}

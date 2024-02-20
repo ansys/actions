@@ -16,7 +16,7 @@ runs:
   steps:
 
     - name: "Set up Python using cache"
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       if: inputs.use-cache == 'true'
       with:
         python-version: ${{ inputs.python-version }}
@@ -24,7 +24,7 @@ runs:
         cache-dependency-path: 'pyproject.toml'
 
     - name: "Set up Python without using cache"
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       if: inputs.use-cache == 'false'
       with:
         python-version: ${{ inputs.python-version }}

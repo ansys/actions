@@ -5,7 +5,14 @@ description: >
   This action evaluates the code quality of your project by using `pre-commit
   <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
   ``pre-commit``. It is assumed that your project contains a
-  ``.pre-commit-config.yaml`` file in the root directory.
+  ``.pre-commit-config.yaml`` file in the root directory. The action can also
+  be extended to lint docker files that are contained in the docker directory and the .devcontainer directory.
+
+    .. warning::
+
+      If docker lint is enabled and directories docker or .devcontainer exist,
+      the action will fail if it doesn't find a Dockerfile.
+
 
 inputs:
 
@@ -27,6 +34,38 @@ inputs:
     default: true
     type: boolean
 
+  docker-lint:
+    description: >
+      Extend the workflow to lint Dockerfile(s).
+    required: false
+    default: false
+    type: bool
+
+  docker-recursive:
+    description: >
+      Search for Dockerfile(s) recursively. Only applies to allowed
+      directories, i.e. docker and .devcontainer.
+    required: false
+    default: false
+    type: bool
+
+  docker-error-level:
+    description: >
+      Fail docker-style action based on hadolint output (-1: never, 0: error,
+      1: warning, 2: info)
+    required: false
+    default: 2
+    type: int
+
+  skip-install:
+    description: >
+      Whether to skip the installation of the project or not. If ``true``, the
+      project is not installed. If ``false``, the project is installed. By
+      default, the project is not installed.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -40,12 +79,72 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
+    - name: "Create virtual environment"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m venv .venv
+
+    - name: "Store venv activation mechanism depending on OS"
+      shell: bash
+      run: |
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+        elif [[ "$RUNNER_OS" == "Windows" ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/Scripts/activate')" >> $GITHUB_ENV
+        fi
+
+    - name: "Install project (if required)"
+      if: inputs.skip-install == 'false'
+      shell: bash
+      run: |
+        ${{ env.ACTIVATE_VENV }}
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          python -m pip install poetry
+          python -m poetry install
+        else
+          python -m pip install .
+        fi
+
     - name: "Install pre-commit"
       shell: bash
       run: |
-        python -m pip install --upgrade pip pre-commit
+        ${{ env.ACTIVATE_VENV }}
+        python -m pip install pre-commit
         pre-commit install
 
     - name: "Run pre-commit"
       shell: bash
-      run: pre-commit run --all-files --show-diff-on-failure
+      run: |
+        ${{ env.ACTIVATE_VENV }}
+        pre-commit run --all-files --show-diff-on-failure
+
+    # ------------------------------------------------------------------------
+
+    # Trigger docker-style action if docker-lint is set to true.
+    - uses: ansys/actions/_logging@main
+      if: inputs.docker-lint == 'true'
+      with:
+        level: "INFO"
+        message: >
+          Extend the workflow to lint Dockerfile(s).
+
+    - name: "Run Dockerfile linting in directories 'docker' and '.devcontainer'"
+      if: inputs.docker-lint == 'true'
+      uses: ansys/actions/docker-style@main
+      with:
+        directory: "docker .devcontainer"
+        recursive: ${{ inputs.docker-recursive }}
+        error-level: ${{ inputs.docker-error-level }}
+
+    # ------------------------------------------------------------------------
+
+    # End action as docker-lint is set to false.
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.docker-lint == 'false' }}
+      with:
+        level: "INFO"
+        message: >
+          Docker lint disabled.

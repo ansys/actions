@@ -39,6 +39,11 @@ inputs:
       Set of options to pass to the ``Sphinx`` builder. Default options include
       using the maximum number of cores in the CPU of the machine and treating
       warnings as errors.
+
+      .. note::
+
+          This will override the ``SPHINXOPTS`` declared in your Makefile.
+
     default: '-j auto -W --keep-going'
     required: false
     type: string
@@ -131,8 +136,8 @@ runs:
         fi
 
     - name: "Cache apt packages needed"
-      uses: awalsh128/cache-apt-pkgs-action@v1.3.0
-      if: ${{ inputs.skip-dependencies-cache == 'false' }}
+      uses: awalsh128/cache-apt-pkgs-action@v1.3.1
+      if: inputs.skip-dependencies-cache == 'false' && env.NEEDED_DEPS != ''
       with:
         packages: ${{ env.NEEDED_DEPS }}
         version: 1.0
@@ -195,19 +200,28 @@ runs:
           python -m pip install .[doc]
         fi
 
+    - name: "Determine make command context"
+      shell: bash
+      run: |
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
+        else
+          echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
+        fi
+
     - name: "Build HTML, PDF, and JSON documentation"
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
-          make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+          ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
-        make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        make -C doc pdf
+        ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
-          make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+          ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
 
     - name: "Build HTML, PDF, and JSON documentation using xvfb"
@@ -216,31 +230,31 @@ runs:
       run: |
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
-          xvfb-run make -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
-        xvfb-run make -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run make -C doc pdf
+        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
-          xvfb-run make -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
+          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
 
     - name: "Upload HTML documentation artifact"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: documentation-html
         path: doc/_build/html
         retention-days: 7
 
     - name: "Upload PDF documentation artifact"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: documentation-pdf
         path: doc/_build/latex/*.pdf
         retention-days: 7
 
     - name: "Upload JSON documentation artifact"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: inputs.skip-json-build == 'false'
       with:
         name: documentation-json

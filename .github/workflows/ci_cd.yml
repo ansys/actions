@@ -34,10 +34,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Label based on changed files
-        uses: actions/labeler@v4
+        uses: actions/labeler@v5
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          sync-labels: ''
 
       - uses: actions-ecosystem/action-add-labels@v1
         if: |
@@ -68,7 +67,7 @@ jobs:
           labels: bug
 
       - name: Suggest to add labels
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         if: toJSON(github.event.pull_request.labels.*.name) == '{}'
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -164,7 +163,7 @@ jobs:
         ls -R && python -m build && python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.test-library-name }}-artifacts
         path: ~/${{ env.test-library-name }}/dist/
@@ -195,7 +194,7 @@ jobs:
     needs: doc-deploy-dev
     steps:
       - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@v4
+        uses: ansys/actions/doc-deploy-index@main
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/dev
           index-name: "actions-vdev"
@@ -210,25 +209,25 @@ jobs:
     steps:
 
     - name: "Download HTML documentation"
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: documentation-html
         path: documentation-html
 
     - name: "Zip HTML documentation"
-      uses: vimtor/action-zip@v1.1
+      uses: vimtor/action-zip@v1.2
       with:
         files: documentation-html
         dest: documentation-html.zip
 
     - name: "Download PDF documentation"
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: documentation-pdf
         path: documentation-pdf
 
     - name: "Zip PDF documentation"
-      uses: vimtor/action-zip@v1.1
+      uses: vimtor/action-zip@v1.2
       with:
         files: documentation-pdf
         dest: documentation-pdf.zip
@@ -281,7 +280,7 @@ jobs:
           echo "VERSION_MEILI=$VERSION_MEILI" >> $GITHUB_ENV
 
       - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@v4
+        uses: ansys/actions/doc-deploy-index@main
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/${{ env.VERSION }}
           index-name: actions-v${{ env.VERSION_MEILI }}
