@@ -58,7 +58,7 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier
 
-    - name: "Set PR_TYPE env variable based on PR label"
+    - name: "Set PR label environment variable"
       shell: python
       run: |
         import os
@@ -87,22 +87,22 @@ runs:
         github_env = os.getenv('GITHUB_ENV')
 
         with open(github_env, "a") as f:
-            f.write(f"PR_TYPE={get_changelog_section(pr_labels, existing_labels)}")
+            f.write(f"PR_LABEL={get_changelog_section(pr_labels, existing_labels)}")
+
+    - name: "Remove PR fragment file if it already exists"
+      shell: bash
+      run: |
+        exists=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
+        if [ ! -z "$exists" ]; then rm $exists; fi
 
     - name: "Create and commit towncrier fragment"
-      if: ${{ env.PR_TYPE }} != ""
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
         PR_TITLE: "${{ github.event.pull_request.title }}"
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
-        fragment="${{ env.PR_NUMBER }}.${{ env.PR_TYPE }}.md"
-
-        # Check if the fragment file exists in the repository
-        exists=`find . -type f -name "$fragment"`
-        # If the file exists, remove it
-        if [ ! -z "$exists" ]; then rm $exists; fi
+        fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
         # Create changelog fragment with towncrier
         towncrier create -c "${{ env.PR_TITLE }}" $fragment
