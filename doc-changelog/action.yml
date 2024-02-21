@@ -61,7 +61,6 @@ runs:
     - name: "Set PR_TYPE env variable based on PR label"
       env:
         PR_TYPE: ""
-        labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}
       shell: python
       run: |
         import os
@@ -74,9 +73,12 @@ runs:
           "maintenence": "changed"
         }
 
-        label_env_var = os.environ.get('labels')
-        print(type(label_env_var))
-        print(label_env_var)
+        print(type(${{ toJSON(github.event.pull_request.labels.*.name) }}))
+        print(${{ toJSON(github.event.pull_request.labels.*.name) }})
+
+        # label_env_var = os.environ.get('labels')
+        # print(type(label_env_var))
+        # print(label_env_var)
 
         # for label in pr_labels:
         #     if label_env_var == '' and
