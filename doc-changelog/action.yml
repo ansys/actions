@@ -59,12 +59,8 @@ runs:
         python -m pip install --upgrade pip towncrier
 
     - name: "Set PR_TYPE env variable based on PR label"
-      env:
-        PR_TYPE: ""
       shell: python
       run: |
-        import os
-
         pr_labels = {
           "enhancement": "added",
           "bug": "fixed",
@@ -73,35 +69,20 @@ runs:
           "maintenence": "changed"
         }
 
-        print(type(${{ toJSON(github.event.pull_request.labels.*.name) }}))
-        print(${{ toJSON(github.event.pull_request.labels.*.name) }})
+        existing_labels = ${{ toJSON(github.event.pull_request.labels.*.name) }}
 
-        # label_env_var = os.environ.get('labels')
-        # print(type(label_env_var))
-        # print(label_env_var)
+        def get_changelog_section(pr_labels, existing_labels):
+          label_type = ""
 
-        # for label in pr_labels:
-        #     if label_env_var == '' and
+          for key, value in pr_labels.items():
+              if key in existing_labels:
+                  label_type = value
+                  return label_type
 
-      # shell: bash
-      # run: |
-      #   #!/bin/bash
+          label_type = "miscellaneous"
+          return label_type
 
-      #   # The key is the label (for example, "enhancement")
-      #   # The value is the subsection for the changelog once it's generated (for example, "added")
-
-      #   declare -A pr_labels=( ["enhancement"]="added" ["bug"]="fixed" ["dependencies"]="dependencies" ["documentation"]="documentation" ["maintenance"]="changed" )
-
-      #   for label in "${!pr_labels[@]}";
-      #   do
-      #     # If PR_TYPE is empty and the PR contains a label from the pr_labels array, set the PR_TYPE value
-      #     if [ -z "${{ env.PR_TYPE }}" ] -a [[ ${{ github.event.pull_request.labels.*.name }} == "$label" ]]; then
-      #       echo PR_TYPE="${pr_labels[$label]}" >> $GITHUB_ENV
-      #     fi
-      #   done
-
-      #   # If there are no labels, put it in the misc. section
-      #   if [ -z "${{ env.PR_TYPE }}" ]; then echo PR_TYPE="miscellaneous" >> $GITHUB_ENV; fi
+        print(PR_TYPE=get_changelog_section(pr_labels, existing_labels)) >> $GITHUB_ENV
 
     - name: "Create and commit towncrier fragment"
       if: ${{ env.PR_TYPE }} != ""
