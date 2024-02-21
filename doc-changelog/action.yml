@@ -72,7 +72,6 @@ runs:
         }
 
         existing_labels = ${{ toJSON(github.event.pull_request.labels.*.name) }}
-        print(f"Labels in PR: {existing labels}")
 
         def get_changelog_section(pr_labels, existing_labels):
           label_type = ""
@@ -95,7 +94,7 @@ runs:
       run: |
         file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
 
-        # If file exists, then delete the file
+        # If the fragment file exists, then delete the file
         if [ ! -z "$file" ]; then
           echo "Removing $file"
           rm $file
