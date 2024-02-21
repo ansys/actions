@@ -61,27 +61,44 @@ runs:
     - name: "Set PR_TYPE env variable based on PR label"
       env:
         PR_TYPE: ""
-      shell: bash
+        labels: toJSON(github.event.pull_request.labels.*.name)
       run: |
-        #!/bin/bash
+        import os
 
-        # The key is the label (for example, "enhancement")
-        # The value is the subsection for the changelog once it's generated (for example, "added")
+        pr_labels = {
+          "enhancement": "added",
+          "bug": "fixed",
+          "dependencies": "dependencies",
+          "documentation": "documentation",
+          "maintenence": "changed"
+        }
 
-        declare -A pr_labels=( ["enhancement"]="added" ["bug"]="fixed" ["dependencies"]="dependencies" ["documentation"]="documentation" ["maintenance"]="changed" )
+        label_env_var = os.environ.get('labels')
+        print(type(label_env_var))
+        print(label_env_var)
 
-        echo toJSON(github.event.pull_request.labels.*.name)
+        # for label in pr_labels:
+        #     if label_env_var == '' and
 
-        for label in "${!pr_labels[@]}";
-        do
-          # If PR_TYPE is empty and the PR contains a label from the pr_labels array, set the PR_TYPE value
-          if [ -z "${{ env.PR_TYPE }}" ] -a [[ ${{ github.event.pull_request.labels.*.name }} == "$label" ]]; then
-            echo PR_TYPE="${pr_labels[$label]}" >> $GITHUB_ENV
-          fi
-        done
+      # shell: bash
+      # run: |
+      #   #!/bin/bash
 
-        # If there are no labels, put it in the misc. section
-        if [ -z "${{ env.PR_TYPE }}" ]; then echo PR_TYPE="miscellaneous" >> $GITHUB_ENV; fi
+      #   # The key is the label (for example, "enhancement")
+      #   # The value is the subsection for the changelog once it's generated (for example, "added")
+
+      #   declare -A pr_labels=( ["enhancement"]="added" ["bug"]="fixed" ["dependencies"]="dependencies" ["documentation"]="documentation" ["maintenance"]="changed" )
+
+      #   for label in "${!pr_labels[@]}";
+      #   do
+      #     # If PR_TYPE is empty and the PR contains a label from the pr_labels array, set the PR_TYPE value
+      #     if [ -z "${{ env.PR_TYPE }}" ] -a [[ ${{ github.event.pull_request.labels.*.name }} == "$label" ]]; then
+      #       echo PR_TYPE="${pr_labels[$label]}" >> $GITHUB_ENV
+      #     fi
+      #   done
+
+      #   # If there are no labels, put it in the misc. section
+      #   if [ -z "${{ env.PR_TYPE }}" ]; then echo PR_TYPE="miscellaneous" >> $GITHUB_ENV; fi
 
     - name: "Create and commit towncrier fragment"
       if: ${{ env.PR_TYPE }} != ""
