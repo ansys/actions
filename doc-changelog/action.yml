@@ -72,6 +72,7 @@ runs:
         }
 
         existing_labels = ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        print(f"Labels in PR: {existing labels}")
 
         def get_changelog_section(pr_labels, existing_labels):
           label_type = ""
@@ -92,8 +93,13 @@ runs:
     - name: "Remove PR fragment file if it already exists"
       shell: bash
       run: |
-        exists=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
-        if [ ! -z "$exists" ]; then rm $exists; fi
+        file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
+
+        # If file exists, then delete the file
+        if [ ! -z "$file" ]; then
+          echo "Removing $file"
+          rm $file
+        fi
 
     - name: "Create and commit towncrier fragment"
       env:

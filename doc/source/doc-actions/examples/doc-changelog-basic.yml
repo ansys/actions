@@ -1,5 +1,6 @@
 changelog-fragment:
   name: "Create changelog fragment"
+  if: github.event.action == 'labeled' || github.event.changes.title.from
   runs-on: ubuntu-latest
   steps:
     - uses: ansys/actions/doc-changelog@{{ version }}
