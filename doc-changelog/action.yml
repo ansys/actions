@@ -61,6 +61,8 @@ runs:
     - name: "Set PR_TYPE env variable based on PR label"
       shell: python
       run: |
+        import os
+
         pr_labels = {
           "enhancement": "added",
           "bug": "fixed",
@@ -82,7 +84,7 @@ runs:
           label_type = "miscellaneous"
           return label_type
 
-        print(PR_TYPE=get_changelog_section(pr_labels, existing_labels)) >> $GITHUB_ENV
+        os.environ['PR_TYPE'] = get_changelog_section(pr_labels, existing_labels)
 
     - name: "Create and commit towncrier fragment"
       if: ${{ env.PR_TYPE }} != ""
