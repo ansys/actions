@@ -61,7 +61,7 @@ runs:
     - name: "Set PR_TYPE env variable based on PR label"
       env:
         PR_TYPE: ""
-        labels: toJSON(github.event.pull_request.labels.*.name)
+        labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}
       shell: python
       run: |
         import os
