@@ -85,6 +85,7 @@ runs:
           return label_type
 
         os.environ['PR_TYPE'] = get_changelog_section(pr_labels, existing_labels)
+        os.environ["GITHUB_ENV"] += os.environ.get["PR_TYPE"]
 
     - name: "Create and commit towncrier fragment"
       if: ${{ env.PR_TYPE }} != ""
