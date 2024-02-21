@@ -62,6 +62,7 @@ runs:
       env:
         PR_TYPE: ""
         labels: toJSON(github.event.pull_request.labels.*.name)
+      shell: python
       run: |
         import os
 
