@@ -84,8 +84,10 @@ runs:
           label_type = "miscellaneous"
           return label_type
 
-        os.environ['PR_TYPE'] = get_changelog_section(pr_labels, existing_labels)
-        os.environ["GITHUB_ENV"] += os.environ.get["PR_TYPE"]
+        github_env = os.getenv('GITHUB_ENV')
+
+        with open(github_env, "a") as f:
+            f.write(f"PR_TYPE={get_changelog_section(pr_labels, existing_labels)}")
 
     - name: "Create and commit towncrier fragment"
       if: ${{ env.PR_TYPE }} != ""
