@@ -12,7 +12,7 @@ Ansys actions
    :alt: CI-CD
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-blue.svg
-   :target: https://opensource.org/licenses/MIT
+   :target: https://opensource.org/blog/license/mit
    :alt: MIT
 
 A repository containing a collection of `GitHub Workflows
