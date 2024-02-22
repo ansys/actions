@@ -1,6 +1,9 @@
+# Put changelog-fragment in .github/workflows/label.yml
+
 changelog-fragment:
   name: "Create changelog fragment"
-  if: github.event.action == 'labeled' || github.event.changes.title.from
+  if: contains('["opened","reopened","labeled"]', github.event.action) || github.event.changes.title.from
+  needs: [labeler]
   runs-on: ubuntu-latest
   steps:
     - uses: ansys/actions/doc-changelog@{{ version }}

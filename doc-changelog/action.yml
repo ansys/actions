@@ -40,9 +40,9 @@ runs:
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       uses: actions/checkout@v4
-      with:
-        # Required to checkout branch from origin rather than remote
-        ref: ${{ env.PR_BRANCH }}
+      # with:
+      #   # Required to checkout branch from origin rather than remote
+      #   ref: ${{ env.PR_BRANCH }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
       env:
@@ -67,7 +67,6 @@ runs:
           "enhancement": "added",
           "bug": "fixed",
           "dependencies": "dependencies",
-          "documentation": "documentation",
           "maintenence": "changed"
         }
 
@@ -90,6 +89,8 @@ runs:
             f.write(f"PR_LABEL={get_changelog_section(pr_labels, existing_labels)}")
 
     - name: "Remove PR fragment file if it already exists"
+      env:
+        PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
         file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
