@@ -66,8 +66,11 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
-        pr_labels=`gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name'`
-        echo LABELS="$pr_labels" >> $GITHUB_ENV
+        {
+          echo 'LABELS<<EOF'
+          gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name'
+          echo EOF
+        } >> "$GITHUB_ENV"
 
     - name: "Set PR label environment variable"
       shell: python
