@@ -84,7 +84,7 @@ runs:
           "maintenence": "changed"
         }
 
-        existing_labels = ${{ env.LABELS }}.split('\n')
+        existing_labels = "${{ env.LABELS }}".split('\n')
         print(existing_labels)
 
         # ${{ toJSON(github.event.pull_request.labels.*.name) }}
