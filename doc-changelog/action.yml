@@ -69,6 +69,7 @@ runs:
         pr_labels=$(gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name')
 
         # Save the labels to an environment variable
+        # For example, LABELS="enhancement maintenance"
         echo LABELS='"'$pr_labels'"' >> $GITHUB_ENV
 
     - name: "Set PR label environment variable"
@@ -77,6 +78,7 @@ runs:
         import os
 
         # Create a list of labels found in the pull request
+        # For example, "enhancement maintenance".split() -> ["enhancement", "maintenance"]
         existing_labels = ${{ env.LABELS }}.split()
 
         # Dictionary with the key as a label from .github/workflows/label.yml and
@@ -115,6 +117,7 @@ runs:
       shell: bash
       run: |
         # Find files containing the PR number
+        # For example, 20.*.md
         file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
 
         # If the fragment file exists, then delete the file
@@ -130,7 +133,8 @@ runs:
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
-        # Changelog fragment file in the following format, for example: 20.added.md
+        # Changelog fragment file in the following format
+        # For example, 20.added.md
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
         # Create changelog fragment with towncrier
