@@ -63,7 +63,7 @@ runs:
         OWNER: ${{ github.repository_owner }}
         REPO_NAME: ${{ github.event.repository.name }}
         PR_NUMBER: ${{ github.event.number }}
-        GH_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
         pr_labels=$(gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name')
