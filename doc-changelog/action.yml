@@ -40,9 +40,9 @@ runs:
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       uses: actions/checkout@v4
-      # with:
-      #   # Required to checkout branch from origin rather than remote
-      #   ref: ${{ env.PR_BRANCH }}
+      with:
+        # Required to checkout branch from origin rather than remote
+        ref: ${{ env.PR_BRANCH }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
       env:
@@ -58,6 +58,17 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier
 
+    - name: "Get labels in PR"
+      env:
+        OWNER: ${{ github.repository_owner }}
+        REPO_NAME: ${{ github.event.repository.name }}
+        PR_NUMBER: ${{ github.event.number }}
+      shell: bash
+      run: |
+        pr_labels=$(gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name')
+        echo $pr_labels
+        echo "LABELS=$pr_labels" >> $GITHUB_ENV
+
     - name: "Set PR label environment variable"
       shell: python
       run: |
@@ -70,7 +81,9 @@ runs:
           "maintenence": "changed"
         }
 
-        existing_labels = ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        existing_labels = ${{ env.LABELS }}
+
+        # ${{ toJSON(github.event.pull_request.labels.*.name) }}
 
         def get_changelog_section(pr_labels, existing_labels):
           label_type = ""
