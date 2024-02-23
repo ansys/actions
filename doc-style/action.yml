@@ -29,9 +29,7 @@ inputs:
   vale-version:
     description: >
       Version number for Vale.
-    # TODO: use the latest stable version from Vale, see issue
-    # https://github.com/ansys/actions/issues/350
-    default: '2.29.6'
+    default: '3.1.0'
     required: false
     type: string
 
