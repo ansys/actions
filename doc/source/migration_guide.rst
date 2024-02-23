@@ -45,7 +45,7 @@ Version ``v5``
   version ``v3`` independently inside your workflow, you need to upgrade to version ``v4``.
 - The upgrade to ``actions/setup-python`` version ``v5`` is not mandatory, but it is recommended to use the latest version.
   However, it has been seen that in Windows self-hosted runners, if a certain Python version is not already stored in the
-  cache, the action will fail. This is a known issue and the workaround is to use the previous version of the action.
+  cache, the action fails. This is a known issue and the workaround is to use the previous version of the action.
 
 **Dependency changes:**
 
