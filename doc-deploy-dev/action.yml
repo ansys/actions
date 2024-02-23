@@ -229,15 +229,19 @@ runs:
       shell: bash
       run: |
         echo "<!DOCTYPE html>" > index.html
-        echo "<meta charset=\"utf-8\">" >> index.html
+        echo "<html>" >> index.html
+        echo "  <head>" >> index.html
+        echo "    <meta charset=\"utf-8\">" >> index.html
         if [ -z "${{ inputs.redirection-title }}" ]; then
-          echo "<title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
+          echo "    <title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
         else
-          echo "<title>${{ inputs.redirection-title }}</title>" >> index.html
+          echo "    <title>${{ inputs.redirection-title }}</title>" >> index.html
         fi
-        echo "<meta name=\"description\" content=\"${{ inputs.redirection-description }}\">" >> index.html
-        echo "<meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
-        echo "<link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
+        echo "    <meta name=\"description\" content=\"${{ inputs.redirection-description }}\">" >> index.html
+        echo "    <meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
+        echo "    <link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
+        echo "  </head>" >> index.html
+        echo "</html>" >> index.html
 
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
