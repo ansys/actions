@@ -57,12 +57,11 @@ runs:
       if: inputs.vale-version == '2.29.6'
       shell: bash
       run: |
-        read -r -d '' deprecation_text <<'EOF'
+        deprecation_text="
         Ansys Actions v6 will include by default Vale version v3. For
-        migrating, please update your "doc/.vale.ini" file and "doc/styles"
-        directory as in this pull-request https://github.com/ansys/pymechanical/pull/613"
-        EOF
-
+        migrating, please update your 'doc/.vale.ini' file and 'doc/styles'
+        directory as in this pull-request https://github.com/ansys/pymechanical/pull/613
+        "
         echo "DEPRECATION_TEXT=$(echo $deprecation_text)" >> $GITHUB_ENV
 
     - uses: ansys/actions/_logging@main
