@@ -2,6 +2,11 @@
    :start-after: .. readme_common_begins
    :end-before: .. readme_common_ends
 
+.. note:: Adapting to a new version?
+
+   If you are adapting to a new version of the actions, please refer to the
+   :ref:`migration guide <migration_guide>`.
+
 For more information on available actions and how to use them,
 see each card below:
 
@@ -69,3 +74,4 @@ see each card below:
    release-actions/index
    housekeeping-actions/index
    vulnerability-actions/index
+   migration_guide
