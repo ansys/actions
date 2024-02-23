@@ -117,7 +117,7 @@ jobs:
     needs: commit-and-branch-style
     steps:
       - name: "Run documentation style checks"
-        uses: ansys/actions/doc-style@main
+        uses: ansys/actions/doc-style@feat/vale-deprecation
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
