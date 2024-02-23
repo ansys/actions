@@ -64,5 +64,5 @@ Version ``v4``
 
 **Migration Steps:**
 
-- Visit `Multi-version migration from ansys/actions@v3  to ansys/actions@v4 <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-ansys-actions-v3-to-ansys-actions-v4>`_
+- Visit `Multi-version migration from ansys/actions@v3 to ansys/actions@v4 <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-ansys-actions-v3-to-ansys-actions-v4>`_
   for a detailed migration guide.
