@@ -204,7 +204,7 @@ runs:
           exit 1
         fi
 
-    - name: "Update all href and source links to version/stable"
+    - name: "Update all local href and source links to version/stable"
       shell: bash
       run: |
         # Determine the version directory based on the existence of stable index.html
