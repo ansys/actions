@@ -389,8 +389,8 @@ runs:
           version_dir="version/dev"
         fi
         # Update URLs
-        sed -i "s#href=\"\([^h]\)#href=\"$version_dir/\1#g" index.html
-        sed -i "s#src=\"\([^h]\)#src=\"$version_dir/\1#g" index.html
+        sed -i 's|href="\(\(http\|https\)\://\)\{0,1\}|href="version/stable/|g' index.html
+        sed -i 's|src="\(\(http\|https\)\://\)\{0,1\}|src="version/stable/|g' index.html
 
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
