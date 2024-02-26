@@ -12,6 +12,9 @@ Version ``v5``
 
 **New features:**
 
+- Obscuring vulnerabilities results in ``ansys/action/check-vulnerabilities``. This is useful when you want to hide the
+  vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
+- Avoid creating issues by default if vulnerabilities are found in ``ansys/action/check-vulnerabilities``.
 - Added ``ansys/action/check-vulnerabilities`` to check for third party and first party vulnerabilities.
   This action uses ``bandit`` and ``safety`` to check for vulnerabilities in the code and dependencies, respectively.
 - Added ``ansys/actions/docker-style`` to check for Dockerfile style issues using ``hadolint``.
