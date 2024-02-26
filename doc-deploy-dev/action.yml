@@ -86,25 +86,6 @@ inputs:
     default: 'main-content'
     type: string
 
-  redirection-title:
-    description: >
-      Title to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will assign
-      "Redirecting to ``https://<CNAME>/version/stable/``" or
-      "Redirecting to ``https://<CNAME>/version/dev/``" depending on whether
-      there is a stable version released already or not.
-    required: false
-    default: ''
-    type: string
-
-  redirection-description:
-    description: >
-      Description to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will be empty.
-    required: false
-    default: ''
-    type: string
-
 runs:
   using: "composite"
   steps:
@@ -208,36 +189,45 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generate an 'index.html' for redirection to the latest stable version
-          of the documentation. If no stable version has been released, a
-          redirection to the development documentation is generated.
+          Create an index.html page copied from index.html in the stable version.
+          Update all the href and source links to point to the stable or dev version.
 
-
-    - name: "Generate the redirection URL"
+    - name: "Use the latest 'index.html' in base index.html page"
       shell: bash
       run: |
-        if $(grep -q "(stable)" versions.json)
-        then
-          echo "Redirecting to the latest stable version..."
-          echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
+        if [[ -f 'version/stable/index.html' ]]; then
+          cp version/stable/index.html index.html
         else
-          echo "Redirecting to the latest development version..."
-          echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/dev/" >> $GITHUB_ENV
+          cp version/dev/index.html index.html
         fi
 
-    - name: "Create the 'index.html' redirection file"
+    - name: "Update all the href and source links to version/stable"
       shell: bash
       run: |
-        echo "<!DOCTYPE html>" > index.html
-        echo "<meta charset=\"utf-8\">" >> index.html
-        if [ -z "${{ inputs.redirection-title }}" ]; then
-          echo "<title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
-        else
-          echo "<title>${{ inputs.redirection-title }}</title>" >> index.html
+        if [[ ! -f 'index.html' ]]; then
+          echo -e "\033[1;91m[ERROR]: The 'index.html' file does not exist.\033[0m"
+          exit 1
         fi
-        echo "<meta name=\"description\" content=\"${{ inputs.redirection-description }}\">" >> index.html
-        echo "<meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
-        echo "<link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
+
+        # Define the regex pattern to match src and href attributes
+        pattern='(src|href)="([^"]*)"'
+
+        # Loop through each matched occurrence and update the file
+        while IFS= read -r line; do
+          if [[ $line =~ $pattern ]]; then
+            url="${BASH_REMATCH[2]}"
+            if [[ $url != http://* && $url != https://* ]]; then
+                if [[ -f 'version/stable/index.html' ]]; then
+                  new_url="version/stable/$url"
+                else
+                  new_url="version/dev/$url"
+                fi
+                # Replace the original URL with the modified one
+                sed -i "s@$url@$new_url@" index.html
+                echo "Updated $url to $new_url"
+            fi
+          fi
+        done < <(grep -oE "$pattern" index.html)
 
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash

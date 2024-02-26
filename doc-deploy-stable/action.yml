@@ -101,25 +101,6 @@ inputs:
     default: 'main-content'
     type: string
 
-  redirection-title:
-    description: >
-      Title to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will assign
-      "Redirecting to ``https://<CNAME>/version/stable/``" or
-      "Redirecting to ``https://<CNAME>/version/dev/``" depending on whether
-      there is a stable version released already or not.
-    required: false
-    default: ''
-    type: string
-
-  redirection-description:
-    description: >
-      Description to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will be empty.
-    required: false
-    default: ''
-    type: string
-
   independent-patch-release-docs:
     description: >
       Whether to generate documentation for independent patch releases. Default
@@ -378,14 +359,8 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generate the redirection link. Since this is the stable documentation
-          deployment action, there is always a 'version/stable' folder. Hence,
-          redirection link always points to this folder.
-
-    - name: "Generate the redirection URL"
-      shell: bash
-      run: |
-        echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
+          Create an index.html page copied from index.html in the stable version.
+          Update all the href and source links to point to the stable or dev version.
 
     - name: "Use the latest 'index.html' in base index.html page"
       shell: bash
