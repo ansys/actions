@@ -359,8 +359,8 @@ runs:
       with:
         level: "INFO"
         message: >
-          Create an index.html page copied from index.html in the stable version.
-          Update all the href and source links to point to the stable or dev version.
+          Copy the index.html from the stable version and update all
+          local href and source links to point to either the stable or dev version.
 
     - name: "Use the latest 'index.html' in base index.html page"
       shell: bash
