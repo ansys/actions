@@ -160,6 +160,6 @@ runs:
         if [ ! -z "$modified" ]; then
           echo "modified: $modified"
           # Commit and push fragment
-          git commit -m "adding fragment"
+          git commit -m "Adding changelog entry: $fragment"
           git push
         fi
