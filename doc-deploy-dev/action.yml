@@ -215,7 +215,8 @@ runs:
           version_dir="version/dev"
         fi
         # Update URLs
-        sed -i -E "s@(src|href)=\"((https?://)?([^#\"]*)|[^#\"]*)\"@\1=\"$version_dir/\4\"@g" index.html
+        sed -i "s#href=\"\([^h]\)#href=\"$version_dir/\1#g" index.html
+        sed -i "s#src=\"\([^h]\)#src=\"$version_dir/\1#g" index.html
 
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
