@@ -14,7 +14,7 @@ inputs:
     description: >
       GitHub token for doing a git commit & push
     permissions:
-      content: read
+      contents: write
       pull-requests: write
     required: true
     type: string

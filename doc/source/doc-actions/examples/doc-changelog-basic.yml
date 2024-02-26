@@ -12,7 +12,7 @@ changelog-fragment:
   name: "Create changelog fragment"
   needs: [labeler]
   permissions:
-    content: read
+    contents: write
     pull-requests: write
   runs-on: ubuntu-latest
   steps:
