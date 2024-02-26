@@ -412,7 +412,11 @@ runs:
           if [[ $line =~ $pattern ]]; then
             url="${BASH_REMATCH[2]}"
             if [[ $url != http://* && $url != https://* ]]; then
-                new_url="version/stable/$url"
+                if [[ -f 'version/stable/index.html' ]]; then
+                  new_url="version/stable/$url"
+                else
+                  new_url="version/dev/$url"
+                fi
                 # Replace the original URL with the modified one
                 sed -i "s@$url@$new_url@" index.html
                 echo "Updated $url to $new_url"
