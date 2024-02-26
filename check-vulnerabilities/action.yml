@@ -105,6 +105,14 @@ inputs:
     required: false
     type: boolean
 
+  create-issues:
+    description: >
+      Whether to create issues for new advisories detected.
+      By default, issues are NOT created for new advisories detected.
+    default: false
+    required: false
+    type: boolean
+
   checkout:
     description: >
       Whether to clone the repository in the CI/CD machine. Default value is
@@ -141,6 +149,10 @@ runs:
         then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
+        fi
+        if [[ ${{ inputs.create-issues }} == 'true' ]];
+        then
+          echo "DEPENDENCY_CHECK_CREATE_ISSUES=1" >> $GITHUB_ENV
         fi
 
     - name: "Install Git and clone project"
@@ -212,6 +224,7 @@ runs:
         REPOSITORY = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
         DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
         ERROR_IF_NEW_ADVISORY = True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
+        CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES", None) else False
 
 
         def dict_hash(dictionary: Dict[str, Any]) -> str:
@@ -315,7 +328,8 @@ runs:
                     )
 
                     # Create an issue
-                    issue_body = f"""
+                    if CREATE_ISSUES:
+                        issue_body = f"""
         A new security advisory was open in this repository. See {advisory.html_url}.
 
         ---
@@ -330,7 +344,7 @@ runs:
 
         {desc}
         """
-                    repo.create_issue(title=summary, body=issue_body, labels=["security"])
+                        repo.create_issue(title=summary, body=issue_body, labels=["security"])
                 else:
                     # New safety advisory detected
                     safety_results_reported += 1
@@ -412,7 +426,8 @@ runs:
                     )
 
                     # Create an issue
-                    issue_body = f"""
+                    if CREATE_ISSUES:
+                        issue_body = f"""
         A new security advisory was open in this repository. See {advisory.html_url}.
 
         ---
@@ -426,7 +441,7 @@ runs:
         #### Description
         {desc}
         """
-                    repo.create_issue(title=summary, body=issue_body, labels=["security"])
+                        repo.create_issue(title=summary, body=issue_body, labels=["security"])
                 else:
                     # New bandit advisory detected
                     bandit_results_reported += 1
