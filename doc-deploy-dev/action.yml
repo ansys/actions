@@ -86,25 +86,6 @@ inputs:
     default: 'main-content'
     type: string
 
-  redirection-title:
-    description: >
-      Title to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will assign
-      "Redirecting to ``https://<CNAME>/version/stable/``" or
-      "Redirecting to ``https://<CNAME>/version/dev/``" depending on whether
-      there is a stable version released already or not.
-    required: false
-    default: ''
-    type: string
-
-  redirection-description:
-    description: >
-      Description to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will be empty.
-    required: false
-    default: ''
-    type: string
-
 runs:
   using: "composite"
   steps:
@@ -208,40 +189,24 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generate an 'index.html' for redirection to the latest stable version
-          of the documentation. If no stable version has been released, a
-          redirection to the development documentation is generated.
+          Copy the index.html from the stable version and update all
+          local href and source links to point to either the stable or dev version.
 
-
-    - name: "Generate the redirection URL"
+    - name: "Use the latest 'index.html' in base index.html page"
       shell: bash
       run: |
-        if $(grep -q "(stable)" versions.json)
-        then
-          echo "Redirecting to the latest stable version..."
-          echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
+        if [[ -f 'version/stable/index.html' ]]; then
+          cp version/stable/index.html index.html
+          sed -i 's/href="\([^http]\)/href="version\/stable\/\1/g' index.html
+          sed -i 's/src="\([^http]\)/src="version\/stable\/\1/g' index.html
+        elif [[ -f 'version/dev/index.html' ]]; then
+          cp version/dev/index.html index.html
+          sed -i 's/href="\([^http]\)/href="version\/dev\/\1/g' index.html
+          sed -i 's/src="\([^http]\)/src="version\/dev\/\1/g' index.html
         else
-          echo "Redirecting to the latest development version..."
-          echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/dev/" >> $GITHUB_ENV
+          echo "Error: The 'index.html' file does not exist." >&2
+          exit 1
         fi
-
-    - name: "Create the 'index.html' redirection file"
-      shell: bash
-      run: |
-        echo "<!DOCTYPE html>" > index.html
-        echo "<html>" >> index.html
-        echo "  <head>" >> index.html
-        echo "    <meta charset=\"utf-8\">" >> index.html
-        if [ -z "${{ inputs.redirection-title }}" ]; then
-          echo "    <title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
-        else
-          echo "    <title>${{ inputs.redirection-title }}</title>" >> index.html
-        fi
-        echo "    <meta name=\"description\" content=\"${{ inputs.redirection-description }}\">" >> index.html
-        echo "    <meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
-        echo "    <link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
-        echo "  </head>" >> index.html
-        echo "</html>" >> index.html
 
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
