@@ -371,33 +371,21 @@ runs:
           cp version/dev/index.html index.html
         fi
 
-    - name: "Update all the href and source links to version/stable"
+    - name: "Update all href and source links to version/stable"
       shell: bash
       run: |
         if [[ ! -f 'index.html' ]]; then
-          echo -e "\033[1;91m[ERROR]: The 'index.html' file does not exist.\033[0m"
+          echo "Error: The 'index.html' file does not exist." >&2
           exit 1
         fi
-
-        # Define the regex pattern to match src and href attributes
-        pattern='(src|href)="([^"]*)"'
-
-        # Loop through each matched occurrence and update the file
-        while IFS= read -r line; do
-          if [[ $line =~ $pattern ]]; then
-            url="${BASH_REMATCH[2]}"
-            if [[ $url != http://* && $url != https://* ]]; then
-                if [[ -f 'version/stable/index.html' ]]; then
-                  new_url="version/stable/$url"
-                else
-                  new_url="version/dev/$url"
-                fi
-                # Replace the original URL with the modified one
-                sed -i "s@$url@$new_url@" index.html
-                echo "Updated $url to $new_url"
-            fi
-          fi
-        done < <(grep -oE "$pattern" index.html)
+        # Determine the version directory based on the existence of stable index.html
+        if [[ -f 'version/stable/index.html' ]]; then
+          version_dir="version/stable"
+        else
+          version_dir="version/dev"
+        fi
+        # Update URLs
+        sed -i -E "s@(src|href)=\"((https?://)?([^#\"]*)|[^#\"]*)\"@\1=\"$version_dir/\4\"@g" index.html
 
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
