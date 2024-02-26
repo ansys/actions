@@ -51,6 +51,36 @@ runs:
       uses: actions/checkout@v4
       if: inputs.checkout == 'true'
 
+    # TODO: remove this deprecation in ansys/actions@v6
+
+    - name: "Build deprecation warning"
+      if: startswith(inputs.vale-version, '2.')
+      shell: bash
+      run: |
+        deprecation_text="
+        Ansys Actions v6 will include by default Vale version v3. For
+        migrating, please update your 'doc/.vale.ini' file and 'doc/styles'
+        directory as in this pull-request https://github.com/ansys/pymechanical/pull/613
+        "
+        echo "DEPRECATION_TEXT=$(echo $deprecation_text)" >> $GITHUB_ENV
+
+    - uses: ansys/actions/_logging@main
+      if: startswith(inputs.vale-version, '2.')
+      with:
+        level: "WARNING"
+        message: >
+          Ansys Actions v6 will include by default Vale version v3. For
+          migrating, please update your "doc/.vale.ini" file and "doc/styles"
+          directory as in this pull-request https://github.com/ansys/pymechanical/pull/613
+
+    - name: "Raise deprecation warning outside of the CI/CD logs"
+      shell: bash
+      if: startswith(inputs.vale-version, '2.')
+      run: |
+        echo "::warning ::${DEPRECATION_TEXT}"
+
+    # TODO: end
+
     - name: "Run Vale"
       uses: errata-ai/vale-action@reviewdog
       env:
