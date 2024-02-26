@@ -10,6 +10,12 @@ have been updated.
 Development version
 -------------------
 
+**New features:**
+
+- Obscuring vulnerabilities results in ``ansys/action/check-vulnerabilities``. This is useful when you want to hide the
+  vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
+- Avoid creating issues by default if vulnerabilities are found in ``ansys/action/check-vulnerabilities``.
+
 **Breaking Changes:**
 
 - N/A
