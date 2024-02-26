@@ -11,6 +11,9 @@
 changelog-fragment:
   name: "Create changelog fragment"
   needs: [labeler]
+  permissions:
+    content: read
+    pull-requests: write
   runs-on: ubuntu-latest
   steps:
     - uses: ansys/actions/doc-changelog@{{ version }}

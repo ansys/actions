@@ -5,12 +5,17 @@ description: |
   Adds a newsfragment to the target repository using ``towncrier``
   containing the title and number of the pull request.
 
+  This action will only work on Linux/macOS runners.
+
 inputs:
   # Required inputs
 
   token:
     description: >
       GitHub token for doing a git commit & push
+    permissions:
+      content: read
+      pull-requests: write
     required: true
     type: string
 
