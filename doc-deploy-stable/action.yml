@@ -362,6 +362,14 @@ runs:
           Create an index.html page copied from index.html in the stable version.
           Update all the href and source links to point to the stable or dev version.
 
+    - name: "Check if the 'index.html' file exists"
+      shell: bash
+      run: |
+        if [[ ! -f 'version/stable/index.html' || ! -f 'version/dev/index.html' ]]; then
+          echo "Error: The 'index.html' file does not exist." >&2
+          exit 1
+        fi
+
     - name: "Use the latest 'index.html' in base index.html page"
       shell: bash
       run: |
@@ -374,10 +382,6 @@ runs:
     - name: "Update all href and source links to version/stable"
       shell: bash
       run: |
-        if [[ ! -f 'index.html' ]]; then
-          echo "Error: The 'index.html' file does not exist." >&2
-          exit 1
-        fi
         # Determine the version directory based on the existence of stable index.html
         if [[ -f 'version/stable/index.html' ]]; then
           version_dir="version/stable"
