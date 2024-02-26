@@ -423,7 +423,7 @@ runs:
             fi
           fi
         done < <(grep -oE "$pattern" index.html)
-          
+
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
       run: |
