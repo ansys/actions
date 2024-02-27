@@ -15,7 +15,7 @@ Development version
 - Obscuring vulnerabilities results in ``ansys/actions/check-vulnerabilities``. This is useful when you want to hide the
   vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
 - Avoid creating issues by default if vulnerabilities are found in ``ansys/actions/check-vulnerabilities``.
-- Create a changelog file for each pull request using towncrier in ``ansys/actions/doc-changelog``.
+- Create a changelog fragment file for each pull request using ``towncrier`` in ``ansys/actions/doc-changelog``.
 
 **Breaking Changes:**
 
@@ -23,10 +23,12 @@ Development version
 
 **Migration Steps:**
 
-- To set up your repository to use ``ansys/actions/doc-changelog``, follow these steps:
+- To set up your repository to use ``ansys/actions/doc-changelog``, see the
+  `changelog implementation in PyMechanical <https://github.com/ansys/pymechanical/pull/617>`_
+  or follow these steps:
 
   1. Add the following lines to the pyproject.toml file,
-     replacing {repo-name} with the name of the repository. For example, pymechanical.
+     replacing {repo-name} with the name of the repository. For example, ``pymechanical``.
 
     .. code:: python
 
@@ -65,7 +67,7 @@ Development version
         showcontent = true
 
   2. Create the changelog.d folder in the root of your repository, and create a file named changelog_template.jinja.
-     Add the following lines to the jinja file:
+     Add the following lines to the ``jinja`` file:
 
     .. code:: jinja
 
@@ -96,7 +98,7 @@ Development version
   .. note::
 
       If CHANGELOG.md already has sections for previous releases, make sure to put the
-      "towncrier release notes start" comment above the release sections. For example:
+      ``"towncrier release notes start"`` comment above the release sections. For example:
 
       .. code:: md
 
@@ -105,9 +107,9 @@ Development version
           ## [0.10.7](https://github.com/ansys/pymechanical/releases/tag/v0.10.7) - February 13 2024
 
 
-  4. Update .github/workflows/label.yml and .github/workflows/ci_cd.yml to use the changelog action.
+  4. Update ``.github/workflows/label.yml`` and ``.github/workflows/ci_cd.yml`` to use the changelog action.
 
-    Change the pull_request trigger at the top of each yml file above, so it lists the pull request actions that cause the workflows to run.
+    Change the ``pull_request`` trigger at the top of each ``.yml`` file above, so it lists the pull request actions that cause the workflows to run.
 
     .. code:: yml
 
@@ -118,7 +120,7 @@ Development version
           # labeled - when labels are added to PR
           types: [opened, reopened, synchronize, edited, labeled]
 
-    At the bottom of .github/workflows/label.yml, add the following lines for the changelog action:
+    At the bottom of ``.github/workflows/label.yml``, add the following lines for the changelog action:
 
     .. code:: yml
 
@@ -144,10 +146,10 @@ Development version
 
   .. note::
 
-      "Added a feature!" will be the content of the file named 1.added.md.
-      The number one in "1.added.md" is the pull request number and "added" is the section the
-      content of the file will go under. For example, CHANGELOG.md would look like this if
-      the above md file only existed in changelog.d:
+      "Added a feature!" adds the content of the file named 1.added.md.
+      The number one in "1.added.md" is the pull request number and "added" is a subsection
+      under the released version. For example, ``CHANGELOG.md`` would look like this if
+      the above ``.md`` file only existed in changelog.d:
 
       .. code:: md
 

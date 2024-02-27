@@ -12,10 +12,9 @@ inputs:
 
   token:
     description: >
-      GitHub token for doing a git commit & push
-    permissions:
-      contents: write
-      pull-requests: write
+      GitHub token for doing a git commit & push.
+      The "contents: write" and "pull-requests: write" permissions
+      are required for this action.
     required: true
     type: string
 
@@ -136,6 +135,7 @@ runs:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
         PR_TITLE: "${{ github.event.pull_request.title }}"
         PR_NUMBER: ${{ github.event.number }}
+        GH_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
       shell: bash
       run: |
         # Changelog fragment file in the following format
