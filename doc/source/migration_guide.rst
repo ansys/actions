@@ -111,7 +111,7 @@ Development version
 
     Change the ``pull_request`` trigger at the top of each ``.yml`` file above, so it lists the pull request actions that cause the workflows to run.
 
-    .. code:: yml
+    .. code:: yaml
 
       on:
         pull_request:
@@ -122,7 +122,7 @@ Development version
 
     At the bottom of ``.github/workflows/label.yml``, add the following lines for the changelog action:
 
-    .. code:: yml
+    .. code:: yaml
 
         changelog-fragment:
           name: "Create changelog fragment"
