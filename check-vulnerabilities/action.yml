@@ -237,7 +237,7 @@ runs:
             return dhash.hexdigest()
 
 
-        def check_vulnerabitlities():
+        def check_vulnerabilities():
             """Check library and third-party vulnerabilities."""
             new_advisory_detected = False
             # Check that the needed environment variables are provided
@@ -468,7 +468,7 @@ runs:
 
 
         if __name__ == "__main__":
-            new_advisory_detected = check_vulnerabitlities()
+            new_advisory_detected = check_vulnerabilities()
 
             if new_advisory_detected and ERROR_IF_NEW_ADVISORY:
                 # New advisories detected - exit with error
