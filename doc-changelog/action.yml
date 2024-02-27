@@ -12,7 +12,7 @@ inputs:
 
   token:
     description: >
-      GitHub token for doing a git commit & push.
+      Use the PYANSYS_CI_BOT_TOKEN to do a git commit & push.
       The "contents: write" and "pull-requests: write" permissions
       are required for this action.
     required: true
@@ -46,6 +46,7 @@ runs:
       with:
         # Required to checkout branch from origin rather than remote
         ref: ${{ env.PR_BRANCH }}
+        token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
       env:

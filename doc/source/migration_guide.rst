@@ -33,11 +33,11 @@ Development version
     .. code:: python
 
         [tool.towncrier]
-        directory = "changelog.d"
+        directory = "doc/changelog.d"
         filename = "CHANGELOG.md"
         start_string = "<!-- towncrier release notes start -->\n"
         underlines = ["", "", ""]
-        template = "changelog.d/changelog_template.jinja"
+        template = "doc/changelog.d/changelog_template.jinja"
         title_format = "## [{version}](https://github.com/ansys/{repo-name}/releases/tag/v{version}) - {project_date}"
         issue_format = "[#{issue}](https://github.com/ansys/{repo-name}/pull/{issue})"
 

@@ -18,4 +18,4 @@ changelog-fragment:
   steps:
     - uses: ansys/actions/doc-changelog@{{ version }}
       with:
-        token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
+        token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
