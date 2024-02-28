@@ -112,13 +112,13 @@ At the bottom of ``.github/workflows/label.yml``, add the following lines for th
         name: "Create changelog fragment"
         needs: [labeler]
         permissions:
-        contents: write
-        pull-requests: write
+          contents: write
+          pull-requests: write
         runs-on: ubuntu-latest
         steps:
         - uses: ansys/actions/doc-changelog@feat/changelog-action
-            with:
-            token: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 
 
 Setup is complete.
