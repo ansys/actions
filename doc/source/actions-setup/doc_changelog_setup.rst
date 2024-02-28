@@ -92,9 +92,9 @@ or follow these steps:
 
 |
 
-4. Update ``.github/workflows/label.yml`` and ``.github/workflows/ci_cd.yml`` to use the changelog action.
+4. Update ``.github/workflows/label.yml`` to use the changelog action.
 
-Change the ``pull_request`` trigger at the top of each ``.yml`` file preceding, so it lists the pull request actions that cause the workflows to run.
+Change the ``pull_request`` trigger at the top of the preceding ``.yml`` file, so it lists the pull request actions that cause the workflows to run.
 
 .. code:: yaml
 
