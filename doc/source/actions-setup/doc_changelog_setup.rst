@@ -81,7 +81,7 @@ or follow these steps:
 .. note::
 
     If ``CHANGELOG.md`` already has sections for previous releases, make sure to put the
-    ``"towncrier release notes start"`` comment above the release sections. For example:
+    ``"towncrier release notes start"`` comment preceding the release sections. For example:
 
     .. code:: md
 
@@ -93,7 +93,7 @@ or follow these steps:
 
 4. Update ``.github/workflows/label.yml`` and ``.github/workflows/ci_cd.yml`` to use the changelog action.
 
-Change the ``pull_request`` trigger at the top of each ``.yml`` file above, so it lists the pull request actions that cause the workflows to run.
+Change the ``pull_request`` trigger at the top of each ``.yml`` file preceding, so it lists the pull request actions that cause the workflows to run.
 
 .. code:: yaml
 
@@ -121,7 +121,7 @@ At the bottom of ``.github/workflows/label.yml``, add the following lines for th
             token: ${{ secrets.GITHUB_TOKEN }}
 
 
-You are done with setup!
+Setup is complete.
 
 
 Towncrier commands
@@ -141,7 +141,7 @@ Create a changelog file manually:
     "Added a feature!" adds the content of the file named 1.added.md.
     The number one in "1.added.md" is the pull request number and "added" is a subsection
     under the released version. For example, ``CHANGELOG.md`` would look like this if
-    the above ``.md`` file only existed in changelog.d:
+    the preceding ``.md`` file only existed in changelog.d:
 
     .. code:: md
 
