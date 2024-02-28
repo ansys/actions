@@ -81,12 +81,20 @@ runs:
     - name: "Install build and twine"
       shell: bash
       run: |
-        python -m pip install build twine
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          python -m pip install --upgrade pip poetry build twine
+        else
+          python -m pip install build twine
+        fi
 
     - name: "Build distribution artifacts and check their health"
       shell: bash
       run: |
-        python -m build && python -m twine check dist/*
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          poetry build && poetry run twine check dist/*
+        else
+          python -m build && python -m twine check dist/*
+        fi
 
     - name: "Upload distribution artifacts to GitHub artifacts"
       uses: actions/upload-artifact@v4
