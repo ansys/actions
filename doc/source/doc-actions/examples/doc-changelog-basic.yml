@@ -8,6 +8,7 @@
 #     types: [opened, reopened, synchronize, edited, labeled]
 
 # Put changelog-fragment action in .github/workflows/label.yml
+# Don't forget to add pyansys-ci-bot as a member of your repository
 changelog-fragment:
   name: "Create changelog fragment"
   needs: [labeler]
