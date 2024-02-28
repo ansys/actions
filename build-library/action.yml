@@ -82,9 +82,9 @@ runs:
       shell: bash
       run: |
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          python -m pip install --upgrade pip poetry build twine
+          python -m pip install --upgrade pip poetry && poetry install build twine
         else
-          python -m pip install build twine
+          python -m pip install --upgrade build twine
         fi
 
     - name: "Build distribution artifacts and check their health"
