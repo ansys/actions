@@ -4,11 +4,11 @@ Doc-changelog action setup
 ==========================
 
 To set up your repository to use ``ansys/actions/doc-changelog``, see the
-`changelog implementation in PyMechanical <https://github.com/ansys/pymechanical/pull/617/files>`_
+`changelog implementation in PyAnsys-Geometry <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_
 or follow these steps:
 
 
-1. Add the following lines to the pyproject.toml file, replacing ``{repo-name}`` with the name of the repository. For example, ``pymechanical``.
+1. Add the following lines to the pyproject.toml file, replacing ``{repo-name}`` with the name of the repository. For example, ``pyansys-geometry``.
 
 .. code:: python
 
@@ -78,6 +78,7 @@ or follow these steps:
 
     <!-- towncrier release notes start -->
 
+
 .. note::
 
     If ``CHANGELOG.md`` already has sections for previous releases, make sure to put the
@@ -116,12 +117,9 @@ At the bottom of ``.github/workflows/label.yml``, add the following lines for th
           pull-requests: write
         runs-on: ubuntu-latest
         steps:
-        - uses: ansys/actions/doc-changelog@feat/changelog-action
+        - uses: ansys/actions/doc-changelog@main
           with:
             token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-
-
-Setup is complete.
 
 
 Towncrier commands
