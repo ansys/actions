@@ -1,4 +1,4 @@
-.. doc-changelog action setup:
+.. _doc_changelog_action_setup:
 
 Doc-changelog action setup
 ==========================
