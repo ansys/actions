@@ -21,28 +21,21 @@
 # SOFTWARE.
 
 name: >
-  Utils logging action
+  Generate a robots.txt file for a website.
 
-description: >
-  This action is used to generate logging messages during the execution of other
-  actions. It supports three logging levels including ``ERROR``, ``WARNING``,
-  and ``INFO``. ANSI colors are used to report the different levels. This allows
-  to quickly identify those in the GitHub actions logs.
+description: |
+  This process creates a ``robots.txt`` file, which enhances the search
+  engine's browsing experience of our documentation. The process is a private
+  composite action that is executed as a component of the PyAnsys documentation
+  deployment strategies.
 
 inputs:
 
   # Required inputs
 
-  level:
+  cname:
     description: >
-      Logging level of the message. Supported levels are ``ERROR``, ``WARNING``
-      and ``INFO``.
-    required: true
-    type: string
-
-  message:
-    description: >
-      The message to save in the logging report.
+      The canonical name (CNAME) containing the documentation.
     required: true
     type: string
 
@@ -50,20 +43,36 @@ runs:
   using: "composite"
   steps:
 
-    - name: "Report error message"
-      shell: bash
-      if: ${{ inputs.level == 'ERROR' }}
-      run: |
-        echo -e "\033[1;91m[ERROR]: ${{ inputs.message }}\033[0m"
+    # ------------------------------------------------------------------------
 
-    - name: "Report warning message"
-      shell: bash
-      if: ${{ inputs.level == 'WARNING' }}
-      run: |
-        echo -e "\033[1;93m[WARNING]: ${{ inputs.message }}\033[0m"
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generating the "robots.txt" file.
 
-    - name: "Report info message"
+    - name: "Generate the robots.txt file"
       shell: bash
-      if: ${{ inputs.level == 'INFO' }}
       run: |
-        echo -e "\033[1;92m[INFO]: ${{ inputs.message }}\033[0m"
+        rm robots.txt && touch robots.txt
+
+    - name: "Allow all agents to crawl the website"
+      shell: bash
+      run: |
+        echo "User-agent: *\n" > robots.txt
+
+    - name: "Iterate over all versions except the "
+      shell:
+      run: |
+        for version in $(ls version |
+                    grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
+                    sort -r --version-sort | \
+                    # Do not include the first version
+                    tail -n +2); do
+            echo "Disallow: /version/${version}" >> robots.txt
+        done
+
+    - name: "Include the location of the sitemap.xml file"
+      shell: bash
+      run: |
+        echo "\nSitemap: https://${{ inputs.cname }}/sitemap.xml" >> robots.txt

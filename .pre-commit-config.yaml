@@ -31,3 +31,12 @@ repos:
   rev: 0.22.0
   hooks:
     - id: check-github-workflows
+
+- repo: https://github.com/ansys/pre-commit-hooks
+  rev: v0.2.9
+  hooks:
+    - id: add-license-headers
+      files: '/.*\.(yml)$'
+      args:
+      - --start_year=2022
+      exclude: '^(.github|doc)/.*'
