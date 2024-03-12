@@ -3,14 +3,14 @@
 Doc-changelog action setup
 ==========================
 
-To set up your repository to use ``ansys/actions/doc-changelog``, see the
+To set up your repository to use the ``ansys/actions/doc-changelog`` action, see
 `changelog implementation in PyAnsys-Geometry <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_
 or follow these steps:
 
 
-1. Add the following lines to the pyproject.toml file, replacing ``{repo-name}`` with the name of the repository. For example, ``pyansys-geometry``.
+1. Add the following lines to the ``pyproject.toml`` file, replacing ``{repo-name}`` with the name of the repository. For example, ``pyansys-geometry``.
 
-.. code:: python
+.. code:: toml
 
     [tool.towncrier]
     directory = "doc/changelog.d"
@@ -48,7 +48,7 @@ or follow these steps:
 
 |
 
-2. Create the ``doc/changelog.d`` folders, and add a file within ``changelog.d`` named ``changelog_template.jinja`` containing the following lines:
+2. Create the ``doc/changelog.d`` directory and then within it add a file named ``changelog_template.jinja`` that contains the following lines:
 
 .. code:: jinja
 
@@ -81,8 +81,8 @@ or follow these steps:
 
 .. note::
 
-    If ``CHANGELOG.md`` already has sections for previous releases, make sure to put the
-    ``"towncrier release notes start"`` comment preceding the release sections. For example:
+    If the ``CHANGELOG.md`` file already has sections for previous releases, make sure to put the
+    ``"towncrier release notes start"`` comment before the release sections. For example:
 
     .. code:: md
 
@@ -92,9 +92,9 @@ or follow these steps:
 
 |
 
-4. Update ``.github/workflows/label.yml`` to use the changelog action.
+4. Update the ``.github/workflows/label.yml`` file to use the changelog action.
 
-Change the ``pull_request`` trigger at the top of the preceding ``.yml`` file, so it lists the pull request actions that cause the workflows to run.
+Change the ``pull_request`` trigger at the top of the preceding ``.yml`` file so that it lists the pull request actions that cause the workflows to run:
 
 .. code:: yaml
 
@@ -105,7 +105,7 @@ Change the ``pull_request`` trigger at the top of the preceding ``.yml`` file, s
         # labeled - when labels are added to PR
         types: [opened, reopened, synchronize, edited, labeled]
 
-At the bottom of ``.github/workflows/label.yml``, add the following lines for the changelog action:
+At the end of the ``.github/workflows/label.yml`` file, add the following lines for the changelog action:
 
 .. code:: yaml
 
@@ -126,20 +126,20 @@ Towncrier commands
 ------------------
 
 These commands are helpful for creating changelog fragment files manually, as well as building your ``CHANGELOG.md`` file
-with the fragments in ``doc/changelog.d``.
+with the fragments in the ``doc/changelog.d`` directory.
 
 Create a changelog file manually:
 
 .. code:: bash
 
-    towncrier create -c "Added a feature!" 1.added.md
+    towncrier create -c "Added a feature" 1.added.md
 
 .. note::
 
-    "Added a feature!" adds the content of the file named 1.added.md.
-    The number one in "1.added.md" is the pull request number and "added" is a subsection
+    "Added a feature" adds the content of the file named ``1.added.md``.
+    The number one in the "1.added.md" file is the pull request number, and "added" is a subsection
     under the released version. For example, ``CHANGELOG.md`` would look like this if
-    the preceding ``.md`` file only existed in changelog.d:
+    the preceding MD file only existed in the ``changelog.d`` directory:
 
     .. code:: md
 
@@ -147,13 +147,13 @@ Create a changelog file manually:
 
         ### Added
 
-        - Added a feature! [#1](https://github.com/ansys/{repo-name}/pull/1)
+        - Added a feature [#1](https://github.com/ansys/{repo-name}/pull/1)
 
 |
 
 When you are ready to do a release for your repository, run the following command to
-update ``CHANGELOG.md`` with the files in changelog.d, replacing ``{version}`` with your
-release number. For example, 0.10.8 - do not include "v" in the version:
+update the ``CHANGELOG.md`` file with the files in the ``changelog.d`` directory, replacing ``{version}`` with your
+release number. For example, ``0.10.8``. Do not include "v" in the version:
 
 .. code:: bash
 
@@ -161,7 +161,7 @@ release number. For example, 0.10.8 - do not include "v" in the version:
 
 |
 
-If you want to update ``CHANGELOG.md``, but keep the changelog.d files, run the following command:
+If you want to update the ``CHANGELOG.md`` file but keep the files in the ``changelog.d`` directory, run this command:
 
 .. code:: bash
 
@@ -169,7 +169,7 @@ If you want to update ``CHANGELOG.md``, but keep the changelog.d files, run the 
 
 |
 
-If you only want to preview the changelog, but don't want to make changes to ``CHANGELOG.md``,
+If you only want to preview the changelog and not make changes to the ``CHANGELOG.md`` file,
 run the following command:
 
 .. code:: bash

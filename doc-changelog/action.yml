@@ -114,7 +114,7 @@ runs:
           "enhancement": "added",
           "bug": "fixed",
           "dependencies": "dependencies",
-          "maintenence": "changed"
+          "maintenance": "changed"
         }
 
         def get_changelog_section(pr_labels, existing_labels):
