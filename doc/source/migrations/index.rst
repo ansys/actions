@@ -13,7 +13,7 @@ Development version
 **New features:**
 
 - Added the ``ansys/actions/check-vulnerabilities`` action to check for third-party and first-party vulnerabilities.
-This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
+  This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
 - Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
 - Create a changelog fragment file for each pull request using ``towncrier`` in the ``ansys/actions/doc-changelog`` action.
 
