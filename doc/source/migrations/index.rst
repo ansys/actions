@@ -12,17 +12,18 @@ Development version
 
 **New features:**
 
-- Obscuring vulnerabilities results in ``ansys/action/check-vulnerabilities``. This is useful when you want to hide the
-  vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
-- Avoid creating issues by default if vulnerabilities are found in ``ansys/action/check-vulnerabilities``.
+- Added the ``ansys/actions/check-vulnerabilities`` action to check for third-party and first-party vulnerabilities.
+  This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
+- Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
+- Create a changelog fragment file for each pull request using ``towncrier`` in the ``ansys/actions/doc-changelog`` action.
 
-**Breaking Changes:**
-
-- N/A
-
-**Migration Steps:**
+**Breaking changes:**
 
 - N/A
+
+**Migration steps:**
+
+- To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`doc_changelog_action_setup`.
 
 Version ``v5``
 --------------
@@ -64,11 +65,17 @@ Version ``v5``
 Version ``v4``
 --------------
 
-**Breaking Changes:**
+**Breaking changes:**
 
 - Multi-version documentation deployment using ``ansys/actions/doc-deploy-stable`` and ``ansys/actions/doc-deploy-dev``.
 
-**Migration Steps:**
+**Migration steps:**
 
 - Visit `Multi-version migration from ansys/actions@v3 to ansys/actions@v4 <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-ansys-actions-v3-to-ansys-actions-v4>`_
   for a detailed migration guide.
+
+.. toctree::
+   :hidden:
+   :maxdepth: 3
+
+   doc_changelog_setup
