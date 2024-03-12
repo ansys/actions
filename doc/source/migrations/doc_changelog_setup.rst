@@ -122,8 +122,8 @@ At the end of the ``.github/workflows/label.yml`` file, add the following lines 
             token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 
 
-Towncrier commands
-------------------
+``towncrier`` commands
+----------------------
 
 These commands are helpful for creating changelog fragment files manually, as well as building your ``CHANGELOG.md`` file
 with the fragments in the ``doc/changelog.d`` directory.
