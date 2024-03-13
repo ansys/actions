@@ -5,4 +5,5 @@ dev
 GitHub
 pytest
 PyPI
+towncrier
 TXT

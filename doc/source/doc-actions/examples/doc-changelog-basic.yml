@@ -1,0 +1,22 @@
+# Add these lines to .github/workflows/label.yml so the changelog fragment
+# is updated when the PR is labeled & the title changes:
+# on:
+#   pull_request:
+#     # opened, reopened, and synchronize are default for pull_request
+#     # edited - when PR title or body is changed
+#     # labeled - when labels are added to PR
+#     types: [opened, reopened, synchronize, edited, labeled]
+
+# Put changelog-fragment action in .github/workflows/label.yml
+# Don't forget to add pyansys-ci-bot as a member of your repository
+changelog-fragment:
+  name: "Create changelog fragment"
+  needs: [labeler]
+  permissions:
+    contents: write
+    pull-requests: write
+  runs-on: ubuntu-latest
+  steps:
+    - uses: ansys/actions/doc-changelog@{{ version }}
+      with:
+        token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
