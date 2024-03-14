@@ -26,7 +26,7 @@ name: >
 description: |
   This process creates and updates the canonical link tags found in the HTML
   documentation of a project. These tags are required to ensure that the pages
-  of hte documentation are indexed by web crawlers.
+  of the documentation are indexed by web crawlers.
 
 inputs:
 
