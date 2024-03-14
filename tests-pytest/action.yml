@@ -106,6 +106,8 @@ runs:
         python -m pip install --upgrade pip
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           # For projects using poetry, do not use a virtual environment.
+          # Poetry uses virtual environments to install its dependencies, but this might
+          # lead to problems if it is not activated prior to executing poetry commands.
           # Store POETRY_VIRTUALENVS_CREATE=false in the GitHub environment to prevent
           # poetry from creating a virtual environment.
           #
