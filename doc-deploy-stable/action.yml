@@ -468,6 +468,20 @@ runs:
       with:
         level: "INFO"
         message: >
+          Include a link canonical tag in old versions if not present.
+
+    - name: "Include link canonical tag in pages"
+      uses: ansys/actions/_doc-gen-canonical
+      with:
+        cname: ${{ inputs.cname }}
+        html-directory: version/stable
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
           For deploying the documentation, a GitHub token or a deployment token
           is required. The GitHub token is used when deploying to the current
           repository while the deployment token is used to deploy to an external

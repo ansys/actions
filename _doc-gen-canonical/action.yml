@@ -1,0 +1,94 @@
+# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: >
+  Include and update canonical link tags in HTML pages of documentation.
+
+description: |
+  This process creates and updates the canonical link tags found in the HTML
+  documentation of a project. These tags are required to ensure that the pages
+  of hte documentation are indexed by web crawlers.
+
+inputs:
+
+  # Required inputs
+
+  cname:
+    description: >
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
+
+  html-directory:
+    description: >
+      Name of the directory containing the HTML files of the website.
+    required: true
+    type: string
+
+
+runs:
+  using: "composite"
+  steps:
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Creating and updating required canonical link tags.
+
+    - name: "Generate the sitemap.xml file"
+      shell: bash
+      run: |
+
+        has_canonical_tag() {
+            local file=$1
+            grep -q "<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/version/stable/" "$file"
+        }
+
+        add_canonical_tag() {
+            local file=$1
+            local filename=$(basename "$file")
+            local relative_path=${file#*version/*/}
+            local baseurl="https://{{ inputs.cname }}/version/stable"
+            local canonical_url="${baseurl}/${relative_path}"
+
+            if ! has_canonical_tag "${file}"; then
+                link_tag="\ \ <link rel=\"canonical\" href=\"$canonical_url\" />"
+                sed -i "/<\/head>/i$link_tag" "$file"
+                echo "Canonical link added to $file"
+            fi
+        }
+
+        export -f has_canonical_tag
+        export -f add_canonical_tag
+
+        find_html_files() {
+            local directory=$1
+            find "$directory" -type f -name "*.html" \
+                ! \( -name "announcement.html" -o -name "webpack-macros.html" \) \
+                -exec bash -c 'add_canonical_tag "$0"' {} \;
+        }
+
+        find_html_files ${{ inputs.html-directory }}
+
