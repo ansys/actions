@@ -197,7 +197,9 @@ runs:
     - name: Set up Miktex
       shell: bash
       run: |
-        mpm --update
+        miktex --admin packages update-package-database
+        miktex --admin packages update
+        miktex packages update
         initexmf --set-config-value [MPM]AutoInstall=1
 
     # ------------------------------------------------------------------------
@@ -271,17 +273,14 @@ runs:
     - name: Build HTML, PDF, and JSON documentation
       shell: pwsh
       run: |
-        cd doc
-        if [[ ${{ inputs.check-links }} == 'true' ]];
-        then
+        if ("${{ inputs.check-links }}" -eq 'true' ) {
           ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
-        fi
+        }
         ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
         ${{ env.SPHINX_BUILD_MAKE }} pdf
-        if [[ ${{ inputs.skip-json-build }} == 'false' ]];
-        then
+        if ("${{ inputs.skip-json-build }}" -eq 'false' ) {
           ${{ env.SPHINX_BUILD_MAKE }} json SPHINXOPTS="${{ inputs.sphinxopts }}"
-        fi
+        }
 
     # ------------------------------------------------------------------------
 
