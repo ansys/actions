@@ -133,6 +133,18 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
 
+  windows-doc-build:
+    name: "Windows Doc build"
+    runs-on: windows-latest
+    needs: doc-style
+    steps:
+      - name: "Build documentation"
+        uses: ansys/actions/doc-build@main
+        with:
+          skip-install: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+
   tests:
     name: "Tests"
     runs-on: ubuntu-latest
