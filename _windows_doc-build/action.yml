@@ -145,6 +145,7 @@ runs:
 
     - name: Download script and install Chocolatey
       if: ${{ inputs.dependencies }} != ''
+      shell: bash
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
@@ -175,6 +176,7 @@ runs:
 
     - name: Install packages with Chocolatey
       if: steps.cache.outputs.cache-hit != 'true' && env.NEEDED_DEPS != ''
+      shell: bash
       run: choco install ${{ env.NEEDED_DEPS }} -y
 
     - name: Install Miktex with Chocolatey
