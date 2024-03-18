@@ -145,9 +145,9 @@ runs:
 
     - name: Download script and install Chocolatey
       if: ${{ inputs.dependencies }} != ''
-      shell: bash
+      shell: pwsh
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
+        Set-ExecutionPolicy Bypass -Scope Process -Forcepwsh
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
