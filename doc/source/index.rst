@@ -4,11 +4,11 @@
 
 .. note:: Adapting to a new version?
 
-   If you are adapting to a new version of the actions, please refer to the
-   :ref:`migration guide <migration_guide>`.
+   If you are adapting to a new version of the actions, see the
+   :ref:`migration_guide`.
 
 For more information on available actions and how to use them,
-see each card below:
+see each of these cards:
 
 .. grid:: 1 1 2 2
     :gutter: 2
@@ -74,4 +74,4 @@ see each card below:
    release-actions/index
    housekeeping-actions/index
    vulnerability-actions/index
-   migration_guide
+   migrations/index

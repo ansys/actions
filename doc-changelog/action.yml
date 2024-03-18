@@ -1,0 +1,187 @@
+# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: >
+  Documentation Changelog
+
+description: |
+  Adds a newsfragment to the target repository using ``towncrier``
+  containing the title and number of the pull request.
+
+  This action will only work on Linux/macOS runners.
+
+inputs:
+  # Required inputs
+
+  token:
+    description: >
+      Use the PYANSYS_CI_BOT_TOKEN to do a git commit & push.
+      The "contents: write" and "pull-requests: write" permissions
+      are required for this action.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  python-version:
+    description: >
+      Python version used for setting up Python.
+    default: '3.10'
+    required: false
+    type: string
+
+  use-python-cache:
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Git and clone project"
+      env:
+        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+      uses: actions/checkout@v4
+      with:
+        # Required to checkout branch from origin rather than remote
+        ref: ${{ env.PR_BRANCH }}
+        token: ${{ inputs.token }}
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+        PYTHON_CACHE: ${{ inputs.use-python-cache }}
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        use-cache: ${{ env.PYTHON_CACHE }}
+
+    - name: "Install towncrier"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip towncrier
+
+    - name: "Get labels in the pull request"
+      env:
+        OWNER: ${{ github.repository_owner }}
+        REPO_NAME: ${{ github.event.repository.name }}
+        PR_NUMBER: ${{ github.event.number }}
+        GH_TOKEN: ${{ inputs.token }}
+      shell: bash
+      run: |
+        # Get the labels in the pull request
+        pr_labels=$(gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name')
+
+        # Save the labels to an environment variable
+        # For example, LABELS="enhancement maintenance"
+        echo LABELS='"'$pr_labels'"' >> $GITHUB_ENV
+
+    - name: "Set PR label environment variable"
+      shell: python
+      run: |
+        import os
+
+        # Create a list of labels found in the pull request
+        # For example, "enhancement maintenance".split() -> ["enhancement", "maintenance"]
+        existing_labels = ${{ env.LABELS }}.split()
+
+        # Dictionary with the key as a label from .github/workflows/label.yml and
+        # value as the corresponding section in the changelog
+        pr_labels = {
+          "enhancement": "added",
+          "bug": "fixed",
+          "dependencies": "dependencies",
+          "maintenance": "changed"
+        }
+
+        def get_changelog_section(pr_labels, existing_labels):
+          """Find the changelog section corresponding to the label in the PR."""
+          label_type = ""
+
+          for key, value in pr_labels.items():
+              if key in existing_labels:
+                  label_type = value
+                  return label_type
+
+          # If no labels are in the PR, it goes into the miscellaneous category
+          label_type = "miscellaneous"
+          return label_type
+
+        # Get the GITHUB_ENV variable
+        github_env = os.getenv('GITHUB_ENV')
+
+        # Append the PR_LABEL with its value to GITHUB_ENV
+        # For example, PR_LABEL="added" if the PR had an "enhancement" label
+        with open(github_env, "a") as f:
+            f.write(f"PR_LABEL={get_changelog_section(pr_labels, existing_labels)}")
+
+    - name: "Remove PR fragment file if it already exists"
+      env:
+        PR_NUMBER: ${{ github.event.number }}
+      shell: bash
+      run: |
+        # Find files containing the PR number
+        # For example, 20.*.md
+        file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
+
+        # If the fragment file exists, then delete the file
+        if [ ! -z "$file" ]; then
+          echo "Removing $file"
+          rm $file
+        fi
+
+    - name: "Create and commit towncrier fragment"
+      env:
+        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+        PR_TITLE: "${{ github.event.pull_request.title }}"
+        PR_NUMBER: ${{ github.event.number }}
+      shell: bash
+      run: |
+        # Changelog fragment file in the following format
+        # For example, 20.added.md
+        fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
+
+        # Create changelog fragment with towncrier
+        # Fragment file contains the title of the PR
+        towncrier create -c "${{ env.PR_TITLE }}" $fragment
+
+        # Configure git username & email
+        git config user.name 'pyansys-ci-bot'
+        git config user.email 'pyansys.github.bot@ansys.com'
+
+        # Add towncrier fragment
+        git add .
+
+        # Check if file was modified
+        modified=`git diff HEAD --name-only`
+
+        # If the file was modified, commit & push it to the branch
+        if [ ! -z "$modified" ]; then
+          echo "modified: $modified"
+          # Commit and push fragment
+          git commit -m "Adding changelog entry: $fragment"
+          git push
+        fi
