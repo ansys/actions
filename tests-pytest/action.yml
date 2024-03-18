@@ -85,6 +85,14 @@ inputs:
     required: false
     type: boolean
 
+  skip-install:
+    description: >
+      Whether to skip install. 
+      Should be false with poetry as build-backend.
+      The default value is ``false``.
+    default: false
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
