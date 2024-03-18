@@ -263,13 +263,13 @@ runs:
       shell: bash
       run: |
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- .\make.bat')" >> $GITHUB_ENV
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" >> $GITHUB_ENV
         else
-          echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" >> $GITHUB_ENV
+          echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" >> $GITHUB_ENV
         fi
 
     - name: Build HTML, PDF, and JSON documentation
-      shell: bash
+      shell: pwsh
       run: |
         cd doc
         if [[ ${{ inputs.check-links }} == 'true' ]];
