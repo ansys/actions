@@ -384,6 +384,18 @@ runs:
           Copy the index.html from the stable version and update all
           local href and source links to point to either the stable or dev version.
 
+    - name: "Update the canonical link tags in the 'index.html' file"
+      shell: bash
+      run: |
+        if [[ -f 'version/stable/index.html' ]]; then
+          sed -i 's|<link rel="canonical" href="https://${{ inputs.cname }}/version/stable/|<link rel="canonical" href="https://${{ inputs.cname }}/|g' version/stable/index.html
+        elif [[ -f 'version/dev/index.html' ]]; then
+          sed -i 's|<link rel="canonical" href="https://${{ inputs.cname }}/version/dev/|<link rel="canonical" href="https://${{ inputs.cname }}/|g' version/dev/index.html
+        else
+          echo "Error: The 'index.html' file does not exist." >&2
+          exit 1
+        fi
+
     - name: "Use the latest 'index.html' in base index.html page"
       shell: bash
       run: |

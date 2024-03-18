@@ -64,7 +64,7 @@ runs:
         has_canonical_tag() {
             local file=$1
             grep -q "<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/version/stable/" "$file"
-        }
+            }
 
         add_canonical_tag() {
             local file=$1
