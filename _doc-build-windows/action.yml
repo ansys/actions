@@ -144,7 +144,7 @@ runs:
           Install Chocolatey to install dependencies.
 
     - name: Download script and install Chocolatey
-      if: ${{ inputs.dependencies != '' }}
+      if: inputs.dependencies != ''
       shell: pwsh
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force

@@ -157,7 +157,7 @@ runs:
   steps:
 
     - name: Documentation build (Linux)
-      if: ${{ inputs.os == 'linux' }}
+      if: inputs.os == 'linux'
       uses: SMoraisAnsys/actions/_doc-build-linux@feat/doc-build-os-compatible
       with:
         python-version: ${{ inputs.python-version }}
@@ -173,7 +173,7 @@ runs:
         check-links: ${{ inputs.check-links }}
 
     - name: Check input (Windows)
-      if: ${{ inputs.os == 'windows' }} and ${{ inputs.requires-xvfb == 'true' }}
+      if: inputs.os == 'windows' && inputs.requires-xvfb == 'true'
       uses: ansys/actions/_logging@main
       with:
         level: "WARNING"
@@ -181,7 +181,7 @@ runs:
           X virtual framebuffer is not used when building with Windows.
 
     - name: Documentation build (Windows)
-      if: ${{ inputs.os == 'windows' }}
+      if: inputs.os == 'windows'
       uses: SMoraisAnsys/actions/_doc-build-linux@feat/doc-build-os-compatible
       with:
         python-version: ${{ inputs.python-version }}
