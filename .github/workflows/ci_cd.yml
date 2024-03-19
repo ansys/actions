@@ -80,9 +80,22 @@ jobs:
             - [maintenance](https://github.com/ansys/actions/pulls?q=label%3Amaintenance+)
             - [release](https://github.com/ansys/actions/pulls?q=label%3Arelease+)
 
+  commit-and-branch-style:
+    name: "Commit and branch style"
+    runs-on: ubuntu-latest
+    needs: labeler
+    steps:
+
+      - uses: ansys/actions/commit-style@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ansys/actions/branch-name-style@main
+
   code-style:
     name: "Code style"
     runs-on: ubuntu-latest
+    needs: commit-and-branch-style
     steps:
       - name: "Run code style checks"
         uses: ansys/actions/code-style@main
@@ -101,6 +114,7 @@ jobs:
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
+    needs: commit-and-branch-style
     steps:
       - name: "Run documentation style checks"
         uses: ansys/actions/doc-style@main
@@ -119,14 +133,156 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
 
-  windows-doc-build:
-    name: "Windows Doc build"
-    runs-on: windows-latest
-    needs: doc-style
+  tests:
+    name: "Tests"
+    runs-on: ubuntu-latest
+    needs: code-style
     steps:
-      - name: "Build documentation"
-        uses: SMoraisAnsys/actions/_windows_doc-build@refact/doc-build
+
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v4
+
+    - name: "Set up Python"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ env.MAIN_PYTHON_VERSION }}
+        use-cache: false
+
+    - name: "Isolate testing library"
+      run: mv .ci/${{ env.test-library-name }} ~/
+
+    - name: "Install build and twine"
+      shell: bash
+      run: |
+        python -m pip install build twine
+
+    - name: "Build distribution artifacts and check their health"
+      shell: bash
+      run: |
+        cd ~/${{ env.test-library-name }}
+        ls -R && python -m build && python -m twine check dist/*
+
+    - name: "Upload distribution artifacts to GitHub artifacts"
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.test-library-name }}-artifacts
+        path: ~/${{ env.test-library-name }}/dist/
+        retention-days: 7
+
+    - name: "Release to the test PyPI repository"
+      uses: ansys/actions/release-pypi-test@main
+      with:
+        library-name: ${{ env.test-library-name }}
+        twine-username: "__token__"
+        twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+
+  doc-deploy-dev:
+    name: "Deploy developers documentation"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && !contains(github.ref, 'refs/tags')
+    needs: [doc-build, tests]
+    steps:
+      - uses: ansys/actions/doc-deploy-dev@main
         with:
-          skip-install: true
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-python-cache: false
+            cname: ${{ env.DOCUMENTATION_CNAME }}
+            token: ${{ secrets.GITHUB_TOKEN }}
+
+  doc-index-dev:
+    name: "Deploy dev index docs"
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: doc-deploy-dev
+    steps:
+      - name: "Deploy the latest documentation index"
+        uses: ansys/actions/doc-deploy-index@main
+        with:
+          cname: ${{ env.DOCUMENTATION_CNAME }}/version/dev
+          index-name: "actions-vdev"
+          host-url: ${{ vars.MEILISEARCH_HOST_URL }}
+          api-key: ${{ env.MEILISEARCH_API_KEY }}
+
+  release:
+    name: "Release to GitHub"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+    needs: [doc-build, tests]
+    steps:
+
+    - name: "Download HTML documentation"
+      uses: actions/download-artifact@v4
+      with:
+        name: documentation-html
+        path: documentation-html
+
+    - name: "Zip HTML documentation"
+      uses: vimtor/action-zip@v1.2
+      with:
+        files: documentation-html
+        dest: documentation-html.zip
+
+    - name: "Download PDF documentation"
+      uses: actions/download-artifact@v4
+      with:
+        name: documentation-pdf
+        path: documentation-pdf
+
+    - name: "Zip PDF documentation"
+      uses: vimtor/action-zip@v1.2
+      with:
+        files: documentation-pdf
+        dest: documentation-pdf.zip
+
+    - name: "Display the structure of downloaded files"
+      shell: bash
+      run: ls -R
+
+    - name: "Release to GitHub"
+      uses: softprops/action-gh-release@v2
+      with:
+        generate_release_notes: true
+        files: |
+          documentation-html.zip
+          documentation-pdf.zip
+
+  doc-deploy-stable:
+    name: "Deploy stable documentation"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+    needs: release
+    steps:
+      - uses: ansys/actions/doc-deploy-stable@main
+        with:
+            cname: ${{ env.DOCUMENTATION_CNAME }}
+            token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  doc-index-stable:
+    name: "Deploy stable docs index"
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    needs: doc-deploy-stable
+    steps:
+      - name: "Install Git and clone project"
+        uses: actions/checkout@v4
+
+      - name: "get version of library"
+        shell: bash
+        run: |
+          echo "FULL_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
+      - name: Scrape the stable documentation to PyMeilisearch
+        run: |
+          VERSION=$(python -c "import os; version=os.environ['FULL_VERSION']; print('.'.join(version.split('.')[:2]))")
+          VERSION_MEILI=$(python -c "import os; version=os.environ['FULL_VERSION']; print('-'.join(version.split('.')[:2]))")
+          echo "Calculated VERSION: $VERSION"
+          echo "Calculated VERSION_MEILI: $VERSION_MEILI"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION_MEILI=$VERSION_MEILI" >> $GITHUB_ENV
+
+      - name: "Deploy the latest documentation index"
+        uses: ansys/actions/doc-deploy-index@main
+        with:
+          cname: ${{ env.DOCUMENTATION_CNAME }}/version/${{ env.VERSION }}
+          index-name: actions-v${{ env.VERSION_MEILI }}
+          host-url: ${{ vars.MEILISEARCH_HOST_URL }}
+          api-key: ${{ env.MEILISEARCH_API_KEY }}
