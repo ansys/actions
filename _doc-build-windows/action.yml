@@ -144,7 +144,7 @@ runs:
           Install Chocolatey to install dependencies.
 
     - name: Download script and install Chocolatey
-      if: inputs.dependencies != ''
+      if: ${{ inputs.dependencies != '' }}
       shell: pwsh
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -168,14 +168,14 @@ runs:
     - name: Cache Chocolatey packages
       id: cache
       uses: actions/cache@v2
-      if: inputs.skip-dependencies-cache == 'false' && env.NEEDED_DEPS != ''
+      if: ${{ (inputs.skip-dependencies-cache == 'false') && (env.NEEDED_DEPS != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
         key: choco-${{ env.NEEDED_DEPS }}
         restore-keys: choco
 
     - name: Install packages with Chocolatey
-      if: steps.cache.outputs.cache-hit != 'true' && env.NEEDED_DEPS != ''
+      if: ${{ (steps.cache.outputs.cache-hit != 'true') && (env.NEEDED_DEPS != '') }}
       shell: bash
       run: choco install ${{ env.NEEDED_DEPS }} -y
 
@@ -232,19 +232,19 @@ runs:
 
     - name: Install documentation dependencies from requirements file
       shell: bash
-      if: env.EXISTS_DOC_REQUIREMENTS == 'true'
+      if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
         python -m pip install -r ${{ inputs.requirements-file }}
 
     - name: Install Python library
       shell: bash
-      if: inputs.skip-install == 'false'
+      if: ${{ inputs.skip-install == 'false' }}
       run: |
         python -m pip install .
 
     - name: Install documentation dependencies from pyproject.toml
       shell: bash
-      if: env.EXISTS_DOC_REQUIREMENTS == 'false'
+      if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'false' }}
       run: |
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           python -m pip install poetry
