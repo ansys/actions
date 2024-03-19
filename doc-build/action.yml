@@ -178,7 +178,7 @@ runs:
       with:
         level: "WARNING"
         message: >
-          Input requires-xvfb is not leveraged when building with Windows.
+          X virtual framebuffer is not used when building with Windows.
 
     - name: Documentation build (Windows)
       if: ${{ inputs.os }} == 'windows'
