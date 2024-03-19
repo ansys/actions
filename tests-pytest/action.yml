@@ -87,9 +87,8 @@ inputs:
 
   skip-install:
     description: >
-description: >
-  Skip installation process. This should be set to `false` when using poetry as the build-backend because...
-      Should be false with poetry as build-backend.
+      Skip installation process. This should be set to `false` when using poetry
+      as the build-backend because it should be false with poetry as build-backend.
       The default value is ``false``.
     default: false
     type: boolean
