@@ -156,6 +156,14 @@ runs:
   using: "composite"
   steps:
 
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          The value of os is ${{ inputs.os }}
+
     - name: Documentation build (Linux)
       if: ${{ inputs.os == 'linux' }}
       uses: SMoraisAnsys/actions/_doc-build-linux@feat/doc-build-os-compatible
