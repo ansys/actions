@@ -101,10 +101,14 @@ runs:
         if [[ ! -f ${{ inputs.safety-report }} ]]; then
           echo "The safety report file does not exist."
           exit 1
+        else
+          echo "Safety report file exists at location: ${{ inputs.safety-report }}."
         fi
         if [[ ! -f ${{ inputs.bandit-report }} ]]; then
           echo "The bandit report file does not exist."
           exit 1
+        else
+          echo "Bandit report file exists at location: ${{ inputs.bandit-report }}."
         fi
 
     - name: "Verify that the PyAnsys Dashboard token and database credentials are available"
@@ -118,6 +122,33 @@ runs:
           echo "The PyAnsys Dashboard credentials are not available."
           exit 1
         fi
+
+    - name: "Install drivers"
+      shell: bash
+      run: |
+        # Install the Microsoft ODBC Driver for SQL Server on Linux
+        #
+        # Script from https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15&tabs=ubuntu18-install%2Calpine17-install%2Cdebian8-install%2Credhat7-13-install%2Crhel7-offline#18
+        #
+        if ! [[ "18.04 20.04 22.04 23.04" == *"$(lsb_release -rs)"* ]];
+        then
+            echo "Ubuntu $(lsb_release -rs) is not currently supported.";
+            exit;
+        fi
+
+        curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+
+        curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+
+        sudo apt-get update
+        sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+        # optional: for bcp and sqlcmd
+        sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18
+        echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
+        source ~/.bashrc
+        # optional: for unixODBC development headers
+        sudo apt-get install -y unixodbc-dev
+
 
     - name: "Clone the PyAnsys Dashboard repository"
       uses: actions/checkout@v4
@@ -148,6 +179,7 @@ runs:
         if [[ ${{ inputs.hide-log }} == "true" ]]; then
           echo "HIDE_LOG= > /dev/null 2>&1" >> $GITHUB_ENV
         fi
+
 
     - name: "Upload the vulnerability reports"
       shell: bash
