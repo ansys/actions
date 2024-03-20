@@ -157,10 +157,18 @@ inputs:
     default: false
     required: false
     type: boolean
-  
+
   pyansys-dashboard-token:
     description: >
       Token with read permissions on the PyAnsys dashboard repository.
+    required: false
+    type: string
+
+  pyansys-dashboard-credentials:
+    description: >
+      Credentials to access the PyAnsys dashboard database. They
+      are available as a secret inside the ``ansys`` and ``ansys-internal``
+      organizations.
     required: false
     type: string
 
@@ -534,14 +542,15 @@ runs:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
-    
+
     - name: "Upload to PyAnsys dashboard"
       uses: ansys/actions/_pyansys-dashboard-vulnerabilities-upload@main
       if: ${{ inputs.pyansys-dashboard-upload == 'true' }}
       with:
-        pyansys-dashboard-upload: ${{ inputs.pyansys-dashboard-upload }}
         pyansys-dashboard-token: ${{ inputs.pyansys-dashboard-token }}
+        pyansys-dashboard-credentials: ${{ inputs.pyansys-dashboard-credentials }}
         dry-run: ${{ inputs.dry-run }}
         repository: ${{ env.DEPENDENCY_CHECK_REPOSITORY }}
         safety-report: ${{ github.workspace }}/info_safety.json
         bandit-report: ${{ github.workspace }}/info_bandit.json
+        hide-log: ${{ inputs.hide-log }}
