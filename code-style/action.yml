@@ -101,28 +101,24 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
-    - name: "Create virtual environment"
+    - name: "Upgrade pip and disable virtual environment (for poetry only)"
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        python -m venv .venv
-
-    - name: "Store venv activation mechanism depending on OS"
-      shell: bash
-      run: |
-        if [[ "$RUNNER_OS" == "Linux" ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
-        elif [[ "$RUNNER_OS" == "macOS" ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
-        elif [[ "$RUNNER_OS" == "Windows" ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/Scripts/activate')" >> $GITHUB_ENV
+        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          # For projects using poetry, do not use a virtual environment.
+          # Poetry uses virtual environments to install its dependencies, but this might
+          # lead to problems if it is not activated prior to executing poetry commands.
+          # Store POETRY_VIRTUALENVS_CREATE=false in the GitHub environment to prevent
+          # poetry from creating a virtual environment.
+          #
+          echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
         fi
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
       shell: bash
       run: |
-        ${{ env.ACTIVATE_VENV }}
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           python -m pip install poetry
           python -m poetry install
@@ -133,14 +129,12 @@ runs:
     - name: "Install pre-commit"
       shell: bash
       run: |
-        ${{ env.ACTIVATE_VENV }}
         python -m pip install pre-commit
         pre-commit install
 
     - name: "Run pre-commit"
       shell: bash
       run: |
-        ${{ env.ACTIVATE_VENV }}
         pre-commit run --all-files --show-diff-on-failure
 
     # ------------------------------------------------------------------------
