@@ -49,10 +49,8 @@ inputs:
 
   dry-run:
     description: >
-      Whether to run or not this action in testing mode. Testing mode executes
-      all the action steps except the releasing artifacts one. This allows
-      developers to verify the health of the action once integrated in their
-      CI/CD pipelines without actually publishing artifacts.
+      Whether to run or not this action in dry run mode or not.
+      Dry run does not upload the vulnerability reports to the database.
     required: true
     type: boolean
 
@@ -76,9 +74,10 @@ inputs:
 
   hide-log:
     description: >
-      Whether to hide the output log of the GitHub action.
-      By default, the log is available to anyone for public repositories.
-      This would disclose any potential vulnerabilities to anyone.
+      Whether to hide the output log of the GitHub action or not.
+      if set to true, the output log will be redirected to /dev/null.
+      If set to false, the output log will be displayed. This would
+      disclose any potential vulnerabilities to anyone.
     required: true
     type: boolean
 
