@@ -155,6 +155,7 @@ runs:
       with:
         repository: "ansys-internal/pyansys-dashboard"
         token: ${{ inputs.pyansys-dashboard-token }}
+        path: queries
         sparse-checkout: |
           queries
 
