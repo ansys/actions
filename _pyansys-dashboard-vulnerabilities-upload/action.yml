@@ -75,7 +75,7 @@ inputs:
   hide-log:
     description: >
       Whether to hide the output log of the GitHub action or not.
-      if set to true, the output log will be redirected to /dev/null.
+      If set to true, the output log will be redirected to /dev/null.
       If set to false, the output log will be displayed. This would
       disclose any potential vulnerabilities to anyone.
     required: true
