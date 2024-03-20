@@ -544,7 +544,7 @@ runs:
         retention-days: 7
 
     - name: "Upload to PyAnsys dashboard"
-      uses: ansys/actions/_pyansys-dashboard-vulnerabilities-upload@main
+      uses: ansys/actions/_pyansys-dashboard-vulnerabilities-upload@feat/upload-pyansys-dashboard
       if: ${{ inputs.pyansys-dashboard-upload == 'true' }}
       with:
         pyansys-dashboard-token: ${{ inputs.pyansys-dashboard-token }}
