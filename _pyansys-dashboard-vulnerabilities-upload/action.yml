@@ -149,7 +149,6 @@ runs:
         # optional: for unixODBC development headers
         sudo apt-get install -y unixodbc-dev
 
-
     - name: "Clone the PyAnsys Dashboard repository"
       uses: actions/checkout@v4
       with:
@@ -179,7 +178,6 @@ runs:
         if [[ ${{ inputs.hide-log }} == "true" ]]; then
           echo "HIDE_LOG= > /dev/null 2>&1" >> $GITHUB_ENV
         fi
-
 
     - name: "Upload the vulnerability reports"
       shell: bash
