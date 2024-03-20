@@ -43,7 +43,7 @@ description: |
     are created).
 
   .. note::
-  
+
       This action also allows you to upload the vulnerabilities detected to the
       PyAnsys dashboard. This is done by setting the ``pyansys-dashboard-upload``
       input to ``true``. However, this option is only available for the ``ansys``
