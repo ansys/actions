@@ -162,7 +162,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          The value of os is ${{ inputs.os }}
+          The value of os is ${{ inputs.os }} - ${{ inputs.os == 'linux' }}
 
     - name: Documentation build (Linux)
       if: ${{ inputs.os == 'linux' }}
