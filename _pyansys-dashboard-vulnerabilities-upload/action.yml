@@ -155,9 +155,8 @@ runs:
       with:
         repository: "ansys-internal/pyansys-dashboard"
         token: ${{ inputs.pyansys-dashboard-token }}
-        path: queries
-        sparse-checkout: |
-          queries
+        path: dashboard
+        sparse-checkout: queries
 
     - name: "Install the required Python packages"
       shell: bash
@@ -165,7 +164,7 @@ runs:
         python -m pip install --upgrade pip
         python -m venv .venv-dashboard
         source .venv-dashboard/bin/activate
-        python -m pip install -r queries/requirements.txt
+        python -m pip install -r dashboard/queries/requirements.txt
 
     - name: "Check if dry run flag should be enabled"
       shell: bash
@@ -188,7 +187,7 @@ runs:
         AZ_GH_SQL_PASS: ${{ inputs.pyansys-dashboard-credentials }}
       run: |
         source .venv-dashboard/bin/activate
-        python queries/update_advisories.py \
+        python dashboard/queries/update_advisories.py \
           --repository ${{ inputs.repository }} \
           --safety-report ${{ inputs.safety-report }} \
           --bandit-report ${{ inputs.bandit-report }} \
