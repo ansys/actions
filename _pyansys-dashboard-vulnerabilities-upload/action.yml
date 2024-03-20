@@ -84,7 +84,6 @@ inputs:
 
 runs:
   using: "composite"
-  if: github
   steps:
     - name: "Check whether the repository owner is 'ansys' or 'ansys-internal'"
       shell: bash
