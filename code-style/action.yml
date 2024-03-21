@@ -28,7 +28,7 @@ description: |
   <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
   ``pre-commit``. It is assumed that your project contains a
   ``.pre-commit-config.yaml`` file in the root directory. The action can also
-  be extended to lint docker files that are contained in the docker directory 
+  be extended to lint docker files that are contained in the docker directory
   and the .devcontainer directory.
 
   .. warning::
