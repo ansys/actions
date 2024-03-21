@@ -563,7 +563,7 @@ runs:
         retention-days: 7
 
     - name: "Upload to PyAnsys dashboard"
-      uses: ansys/actions/_pyansys-dashboard-vulnerabilities-upload@feat/upload-pyansys-dashboard
+      uses: ansys/actions/_pyansys-dashboard-vulnerabilities-upload@main
       # Only upload if the flag is set to true and we are not in dev-mode
       if: ${{ inputs.pyansys-dashboard-upload == 'true' }} && ${{ inputs.dev-mode == 'false' }}
       with:
