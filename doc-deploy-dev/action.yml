@@ -218,9 +218,9 @@ runs:
       shell: bash
       run: |
         if [[ -f 'version/stable/index.html' ]]; then
-          sed -i 's|<link rel="canonical" href="https://${{ inputs.cname }}/version/stable/|<link rel="canonical" href="https://${{ inputs.cname }}/|g' version/stable/index.html
+          sed -i "s|<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/version/stable/\"|<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/\"|g" version/stable/index.html
         elif [[ -f 'version/dev/index.html' ]]; then
-          sed -i 's|<link rel="canonical" href="https://${{ inputs.cname }}/version/dev/|<link rel="canonical" href="https://${{ inputs.cname }}/|g' version/dev/index.html
+          sed -i "s|<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/version/dev/\"|<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/\"|g" version/dev/index.html
         else
           echo "Error: The 'index.html' file does not exist." >&2
           exit 1
