@@ -23,7 +23,7 @@
 name: >
   Lint Dockerfile
 
-description: >
+description: |
   Evaluate the quality of your project Dockerfile(s) by using `hadolint
   <https://github.com/hadolint/hadolint/>`_. This action can be used to
   lint Dockerfile(s) from multiple directories, see input "directory"
