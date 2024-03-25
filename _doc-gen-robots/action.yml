@@ -59,7 +59,7 @@ runs:
     - name: "Allow all agents to crawl the website"
       shell: bash
       run: |
-        echo "User-agent: *\n" > robots.txt
+        echo -e "User-agent: *\n" >> robots.txt
 
     - name: "Iterate over all versions except the "
       shell:
@@ -75,4 +75,4 @@ runs:
     - name: "Include the location of the sitemap.xml file"
       shell: bash
       run: |
-        echo "\nSitemap: https://${{ inputs.cname }}/sitemap.xml" >> robots.txt
+        echo -e "\nSitemap: https://${{ inputs.cname }}/sitemap.xml" >> robots.txt
