@@ -10,14 +10,24 @@ have been updated.
 Development version
 -------------------
 
-**Breaking Changes:**
+**New features:**
+
+- Added the ``ansys/actions/check-vulnerabilities`` action to check for third-party and first-party vulnerabilities.
+  This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
+- Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
+- Create a changelog fragment file for each pull request using ``towncrier`` in the ``ansys/actions/doc-changelog`` action.
+- Vulnerability advisories can now be uploaded to the PyAnsys Dashboard using the ``ansys/actions/check-vulnerabilities`` action
+  by setting the ``pyansys-dashboard-upload`` input to ``true``, together with the necessary credentials.
+
+**Breaking changes:**
 
 - Upgrade default ``vale`` version from ``2.29.6`` to ``3.3.0`` in ``ansys/actions/doc-style`` action.
   Vale config file ``.vale.ini`` and ``Vocab/ANSYS`` has to be changed as per `Vale section <https://dev.docs.pyansys.com/doc-style/formatting-tools.html#vale>`_ in PyAnsys developer’s guide
 
-**Migration Steps:**
+**Migration steps:**
 
-- N/A
+- To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
+- To upload vulnerability advisories to the PyAnsys Dashboard, see the :ref:`pyansys_dashboard_upload`.
 
 Version ``v5``
 --------------
@@ -59,11 +69,18 @@ Version ``v5``
 Version ``v4``
 --------------
 
-**Breaking Changes:**
+**Breaking changes:**
 
 - Multi-version documentation deployment using ``ansys/actions/doc-deploy-stable`` and ``ansys/actions/doc-deploy-dev``.
 
-**Migration Steps:**
+**Migration steps:**
 
 - Visit `Multi-version migration from ansys/actions@v3 to ansys/actions@v4 <https://dev.docs.pyansys.com/how-to/documenting.html#multi-version-migration-from-ansys-actions-v3-to-ansys-actions-v4>`_
   for a detailed migration guide.
+
+.. toctree::
+   :hidden:
+   :maxdepth: 3
+
+   docs-changelog-setup
+   pyansys-dashboard-upload
