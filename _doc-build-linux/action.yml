@@ -57,7 +57,7 @@ inputs:
     type: boolean
 
   sphinxopts:
-    description: >
+    description: |
       Set of options to pass to the ``Sphinx`` builder. Default options include
       using the maximum number of cores in the CPU of the machine and treating
       warnings as errors.
@@ -86,7 +86,7 @@ inputs:
     type: boolean
 
   requires-xvfb:
-    description: >
+    description: |
       Whether to install `X Virtual Frame Buffer (XVFB)
       <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and run
       the whole test session using XVFB. The default value is ``false``.
