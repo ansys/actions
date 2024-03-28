@@ -298,13 +298,12 @@ runs:
       shell: powershell
       run: |
         if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
-          echo "Stage if"
-          echo "SPHINX_BUILD_MAKE='poetry run -- doc\make.bat'" >> $GITHUB_ENV
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         } else {
-          echo "Stage else"
-          echo "SPHINX_BUILD_MAKE='doc\make.bat'" >> $GITHUB_ENV
+          echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         }
         echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
+        echo "Sphinx build make value is ${{ env:SPHINX_BUILD_MAKE }}"
 
     - name: Build HTML, PDF, and JSON documentation
       shell: powershell
