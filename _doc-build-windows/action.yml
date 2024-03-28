@@ -212,6 +212,7 @@ runs:
     - name: Set up Miktex
       shell: powershell
       run: |
+        initexmf --set-config-value [MPM]AutoInstall=1
         miktex --admin packages update-package-database
         miktex --admin packages update
         miktex packages update
