@@ -148,7 +148,6 @@ runs:
         Write-Host "Install Chocolatey to install dependencies." -ForegroundColor Green
 
     - name: Download script and install Chocolatey
-      if: ${{ inputs.dependencies != '' }}
       shell: powershell
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force
