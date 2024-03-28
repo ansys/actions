@@ -215,15 +215,15 @@ runs:
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
 
-    - name: Update the package database of Miktex
-      shell: powershell
-      run: |
-        miktex --admin packages update-package-database
+    # - name: Update the package database of Miktex
+    #   shell: powershell
+    #   run: |
+    #     miktex --admin packages update-package-database
 
-    - name: Update all outdated packages of Miktex
-      shell: powershell
-      run: |
-        miktex --admin packages update
+    # - name: Update all outdated packages of Miktex
+    #   shell: powershell
+    #   run: |
+    #     miktex --admin packages update
 
     # ------------------------------------------------------------------------
 
