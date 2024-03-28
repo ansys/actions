@@ -143,13 +143,13 @@ runs:
     #     message: >
     #       Install Chocolatey to install dependencies.
     - name: Log
-      shell: pwsh
+      shell: powershell
       run: |
         Write-Host "Install Chocolatey to install dependencies." -ForegroundColor Green
 
     - name: Download script and install Chocolatey
       if: ${{ inputs.dependencies != '' }}
-      shell: pwsh
+      shell: powershell
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
@@ -165,13 +165,13 @@ runs:
     #       Miktex is installed to build the documentation.
 
     - name: Log
-      shell: pwsh
+      shell: powershell
       run: |
         Write-Host "Install system dependencies. Even if no dependencies are provided, " `
           "Miktex is installed to build the documentation." -ForegroundColor Green
 
     - name: Collect system dependencies
-      shell: bash
+      shell: powershell
       run: |
         echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }}')" >> $GITHUB_ENV
 
@@ -186,11 +186,11 @@ runs:
 
     - name: Install packages with Chocolatey
       if: ${{ (steps.cache.outputs.cache-hit != 'true') && (env.NEEDED_DEPS != '') }}
-      shell: bash
+      shell: powershell
       run: choco install ${{ env.NEEDED_DEPS }} -y
 
     - name: Install Miktex and update PATH with Miktex binaries
-      shell: bash
+      shell: powershell
       run: |
         choco install miktex -y
         echo "C:\Program Files\MiKTeX\miktex\bin\x64" >> $GITHUB_PATH  
@@ -204,13 +204,13 @@ runs:
     #       Set up Miktex to update installed packages and allow to download and install
     #       missing packages while building the documentation.
     - name: Log
-      shell: pwsh
+      shell: powershell
       run: |
         Write-Host "Set up Miktex to update installed packages and allow to download and " `
           "install Miktex is installed to build the documentation." -ForegroundColor Green
 
     - name: Set up Miktex
-      shell: bash
+      shell: powershell
       run: |
         miktex --admin packages update-package-database
         miktex --admin packages update
@@ -226,7 +226,7 @@ runs:
     #       Set up python to build the documentation.
 
     - name: Log
-      shell: pwsh
+      shell: powershell
       run: |
         Write-Host "Set up python to build the documentation." -ForegroundColor Green
 
@@ -237,33 +237,33 @@ runs:
         use-cache: ${{ inputs.use-python-cache }}
 
     - name: Update pip
-      shell: bash
+      shell: powershell
       run: python -m pip install -U pip
 
     - name: Check if requirements.txt file exists
-      shell: bash
+      shell: powershell
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f ${{ inputs.requirements-file }} ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
     - name: Print previous output
-      shell: bash
+      shell: powershell
       run: |
         echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
 
     - name: Install documentation dependencies from requirements file
-      shell: bash
+      shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
         python -m pip install -r ${{ inputs.requirements-file }}
 
     - name: Install Python library
-      shell: bash
+      shell: powershell
       if: ${{ inputs.skip-install == 'false' }}
       run: |
         python -m pip install .
 
     - name: Install documentation dependencies from pyproject.toml
-      shell: bash
+      shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'false' }}
       run: |
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
@@ -276,7 +276,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: Log
-      shell: pwsh
+      shell: powershell
       run: |
         Write-Host "Build HTML, PDF and JSON documentation." -ForegroundColor Green
 
@@ -287,7 +287,7 @@ runs:
     #       Build HTML, PDF and JSON documentation
 
     - name: Determine command context
-      shell: bash
+      shell: powershell
       run: |
         if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" >> $GITHUB_ENV
@@ -296,7 +296,7 @@ runs:
         fi
 
     - name: Build HTML, PDF, and JSON documentation
-      shell: pwsh
+      shell: powershell
       run: |
         if ("${{ inputs.check-links }}" -eq 'true' ) {
           ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
@@ -310,7 +310,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: Log
-      shell: pwsh
+      shell: powershell
       run: |
         Write-Host "Upload HTML, PDF and JSON documentation." -ForegroundColor Green
 
