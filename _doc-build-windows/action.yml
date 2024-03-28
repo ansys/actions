@@ -210,13 +210,20 @@ runs:
         Write-Host "Set up Miktex to update installed packages and allow to download and " `
           "install Miktex is installed to build the documentation." -ForegroundColor Green
 
-    - name: Set up Miktex
+    - name: Set up Miktex to automatically install packages
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
+
+    - name: Update the package database of Miktex
+      shell: powershell
+      run: |
         miktex --admin packages update-package-database
+
+    - name: Update all outdated packages of Miktex
+      shell: powershell
+      run: |
         miktex --admin packages update
-        miktex packages update
 
     # ------------------------------------------------------------------------
 
