@@ -137,11 +137,15 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Install Chocolatey to install dependencies.
+    # - uses: ansys/actions/_logging@main
+    #   with:
+    #     level: "INFO"
+    #     message: >
+    #       Install Chocolatey to install dependencies.
+    - name: Log
+      shell: pwsh
+      run: |
+        Write-Host "Install Chocolatey to install dependencies." -ForegroundColor Green
 
     - name: Download script and install Chocolatey
       if: ${{ inputs.dependencies != '' }}
@@ -153,12 +157,18 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Install system dependencies. Even if no dependencies are provided,
-          Miktex is installed to build the documentation.
+    # - uses: ansys/actions/_logging@main
+    #   with:
+    #     level: "INFO"
+    #     message: >
+    #       Install system dependencies. Even if no dependencies are provided,
+    #       Miktex is installed to build the documentation.
+
+    - name: Log
+      shell: pwsh
+      run: |
+        Write-Host "Install system dependencies. Even if no dependencies are provided, " `
+          "Miktex is installed to build the documentation." -ForegroundColor Green
 
     - name: Collect system dependencies
       shell: bash
@@ -187,12 +197,17 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Set up Miktex to update installed packages and allow to download and install
-          missing packages while building the documentation.
+    # - uses: ansys/actions/_logging@main
+    #   with:
+    #     level: "INFO"
+    #     message: >
+    #       Set up Miktex to update installed packages and allow to download and install
+    #       missing packages while building the documentation.
+    - name: Log
+      shell: pwsh
+      run: |
+        Write-Host "Set up Miktex to update installed packages and allow to download and " `
+          "install Miktex is installed to build the documentation." -ForegroundColor Green
 
     - name: Set up Miktex
       shell: bash
@@ -204,11 +219,16 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Set up python to build the documentation.
+    # - uses: ansys/actions/_logging@main
+    #   with:
+    #     level: "INFO"
+    #     message: >
+    #       Set up python to build the documentation.
+
+    - name: Log
+      shell: pwsh
+      run: |
+        Write-Host "Set up python to build the documentation." -ForegroundColor Green
 
     - name: Set up Python
       uses: ansys/actions/_setup-python@main
@@ -255,11 +275,16 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Build HTML, PDF and JSON documentation
+    - name: Log
+      shell: pwsh
+      run: |
+        Write-Host "Build HTML, PDF and JSON documentation." -ForegroundColor Green
+
+    # - uses: ansys/actions/_logging@main
+    #   with:
+    #     level: "INFO"
+    #     message: >
+    #       Build HTML, PDF and JSON documentation
 
     - name: Determine command context
       shell: bash
@@ -284,11 +309,16 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Upload HTML, PDF and JSON documentation
+    - name: Log
+      shell: pwsh
+      run: |
+        Write-Host "Upload HTML, PDF and JSON documentation." -ForegroundColor Green
+
+    # - uses: ansys/actions/_logging@main
+    #   with:
+    #     level: "INFO"
+    #     message: >
+    #       Upload HTML, PDF and JSON documentation
 
     - name: Upload HTML documentation artifact
       uses: actions/upload-artifact@v4
