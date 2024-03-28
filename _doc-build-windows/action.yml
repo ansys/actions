@@ -298,9 +298,9 @@ runs:
       shell: powershell
       run: |
         if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" >> $GITHUB_ENV
+          echo "SPHINX_BUILD_MAKE='poetry run -- doc\make.bat'" >> $GITHUB_ENV
         } else {
-          echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" >> $GITHUB_ENV
+          echo "SPHINX_BUILD_MAKE='doc\make.bat'" >> $GITHUB_ENV
         }
         echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
 
