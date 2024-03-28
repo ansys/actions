@@ -234,9 +234,8 @@ runs:
     #       Set up python to build the documentation.
 
     - name: Log
-      shell: powershell
       run: |
-        Write-Host "`e[32mSet up python to build the documentation.`e[0m"
+        echo "::debug::Set up python to build the documentation."
 
     - name: Set up Python
       uses: ansys/actions/_setup-python@main
@@ -302,10 +301,14 @@ runs:
         } else {
           echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" >> $GITHUB_ENV
         }
+        echo "Sphinx build make value is ${{ SPHINX_BUILD_MAKE }}"
+        echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
 
     - name: Build HTML, PDF, and JSON documentation
       shell: powershell
       run: |
+        echo "Sphinx build make value is ${{ SPHINX_BUILD_MAKE }}"
+        echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
         if ("${{ inputs.check-links }}" -eq 'true' ) {
           ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         }
