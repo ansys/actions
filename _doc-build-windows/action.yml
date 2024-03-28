@@ -228,7 +228,7 @@ runs:
     - name: Log
       shell: powershell
       run: |
-        Write-Host "Set up python to build the documentation." -ForegroundColor Green
+        Write-Host "`e[32mSet up python to build the documentation.`e[0m"
 
     - name: Set up Python
       uses: ansys/actions/_setup-python@main
