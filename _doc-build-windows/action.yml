@@ -216,7 +216,6 @@ runs:
         miktex --admin packages update-package-database
         miktex --admin packages update
         miktex packages update
-        initexmf --set-config-value [MPM]AutoInstall=1
 
     # ------------------------------------------------------------------------
 
@@ -244,7 +243,7 @@ runs:
     - name: Check if requirements.txt file exists
       shell: powershell
       run: |
-        echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f ${{ inputs.requirements-file }} ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+        echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path '${{ inputs.requirements-file }}') { echo 'true' } else { echo 'false' })" >> $env:GITHUB_ENV
 
     - name: Print previous output
       shell: powershell
@@ -267,12 +266,12 @@ runs:
       shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'false' }}
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          python -m pip install poetry
-          poetry install --with doc
-        else
-          python -m pip install .[doc]
-        fi
+        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
+            python -m pip install poetry
+            poetry install --with doc
+        } else {
+            python -m pip install .[doc]
+        }
 
     # ------------------------------------------------------------------------
 
@@ -290,11 +289,11 @@ runs:
     - name: Determine command context
       shell: powershell
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {  
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" >> $GITHUB_ENV
-        else
+        } else {
           echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" >> $GITHUB_ENV
-        fi
+        }
 
     - name: Build HTML, PDF, and JSON documentation
       shell: powershell
