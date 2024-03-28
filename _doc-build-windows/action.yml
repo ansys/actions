@@ -153,8 +153,8 @@ runs:
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-        echo "C:\ProgramData\chocolatey\bin" >> $GITHUB_PATH
-
+        # echo "C:\ProgramData\chocolatey\bin" >> $GITHUB_PATH
+        echo "C:\ProgramData\chocolatey\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
     # ------------------------------------------------------------------------
 
     # - uses: ansys/actions/_logging@main
@@ -193,7 +193,8 @@ runs:
       shell: powershell
       run: |
         choco install miktex -y
-        echo "C:\Program Files\MiKTeX\miktex\bin\x64" >> $GITHUB_PATH  
+        # echo "C:\Program Files\MiKTeX\miktex\bin\x64" >> $GITHUB_PATH
+        echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     # ------------------------------------------------------------------------
 
@@ -289,7 +290,7 @@ runs:
     - name: Determine command context
       shell: powershell
       run: |
-        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {  
+        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" >> $GITHUB_ENV
         } else {
           echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" >> $GITHUB_ENV
