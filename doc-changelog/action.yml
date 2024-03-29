@@ -195,5 +195,4 @@ runs:
             # Commit and push fragment
             git commit -m "Adding changelog entry: $fragment"
             git push
-          fi
         fi
