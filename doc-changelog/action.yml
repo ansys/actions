@@ -149,18 +149,13 @@ runs:
 
         # If the fragment file exists, then delete the file
         if [ ! -z "$file" ]; then
-          # Save content of original file
-          original_content=$(cat $file)
-          echo ORIGINAL_CONTENT='"'$original_content'"' >> $GITHUB_ENV
-
           echo "Removing $file"
           rm $file
-        else
-          echo ORIGINAL_CONTENT='"''"' >> $GITHUB_ENV
         fi
 
     - name: "Create and commit towncrier fragment"
       env:
+        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
         PR_TITLE: "${{ github.event.pull_request.title }}"
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
@@ -169,9 +164,12 @@ runs:
         # For example, 20.added.md
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
+        # Remove extra whitespace from PR title
+        clean_title=`echo ${{ env.PR_TITLE }} | xargs`
+
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "${{ env.PR_TITLE }}" $fragment
+        towncrier create -c "$clean_title" $fragment
 
         # Configure git username & email
         git config user.name 'pyansys-ci-bot'
@@ -183,12 +181,10 @@ runs:
         # Check if file was modified
         modified=`git diff HEAD --name-only`
 
-        # If the original content of the file is empty (no fragment file exists) or
-        # the file was modified and has different content from the original_content,
-        # commit & push the file to the branch
-        if [[ -z ${{ env.ORIGINAL_CONTENT }} || ! -z "$modified" && "${{ env.PR_TITLE }}" != *${{ env.ORIGINAL_CONTENT }}* ]]; then
-            echo "modified: $modified"
-            # Commit and push fragment
-            git commit -m "Adding changelog entry: $fragment"
-            git push
+        # If the file was modified, commit & push it to the branch
+        if [ ! -z "$modified" ]; then
+          echo "modified: $modified"
+          # Commit and push fragment
+          git commit -m "Adding changelog entry: $fragment"
+          git push
         fi
