@@ -156,7 +156,7 @@ runs:
           echo "Removing $file"
           rm $file
         else
-          echo ORIGINAL_CONTENT="" >> $GITHUB_ENV
+          echo ORIGINAL_CONTENT='"''"' >> $GITHUB_ENV
         fi
 
     - name: "Create and commit towncrier fragment"
@@ -183,14 +183,10 @@ runs:
         # Check if file was modified
         modified=`git diff HEAD --name-only`
 
-        echo "$modified"
-        echo "${{ env.PR_TITLE }}"
-        echo "${{ env.ORIGINAL_CONTENT }}"
-
         # If the original content of the file is empty (no fragment file exists) or
         # the file was modified and has different content from the original_content,
         # commit & push the file to the branch
-        if [[ -z "${{ env.ORIGINAL_CONTENT }}" || ! -z "$modified" && "${{ env.PR_TITLE }}" != *"${{ env.ORIGINAL_CONTENT }}"* ]]; then
+        if [[ -z ${{ env.ORIGINAL_CONTENT }} || ! -z "$modified" && "${{ env.PR_TITLE }}" != *${{ env.ORIGINAL_CONTENT }}* ]]; then
             echo "modified: $modified"
             # Commit and push fragment
             git commit -m "Adding changelog entry: $fragment"
