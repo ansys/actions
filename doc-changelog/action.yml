@@ -165,7 +165,7 @@ runs:
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
         # Remove extra whitespace from PR title
-        clean_title=`echo ${{ env.PR_TITLE }} | xargs`
+        clean_title=$(echo ${{ env.PR_TITLE }} | xargs)
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
