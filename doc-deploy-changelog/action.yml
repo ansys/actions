@@ -1,0 +1,159 @@
+# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: >
+  Build CHANGELOG from towncrier fragment files
+
+description: |
+  Builds the CHANGELOG using ``towncrier`` fragment files for the tagged version.
+  Creates a pull request into main with the CHANGELOG updates and deleted
+  towncrier fragment files.
+
+  This action will only work on Linux/macOS runners.
+
+inputs:
+  # Required inputs
+
+  token:
+    description: >
+      Use the PYANSYS_CI_BOT_TOKEN to do a git commit & push.
+      The "contents: write" and "pull-requests: write" permissions
+      are required for this action.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  python-version:
+    description: >
+      Python version used for setting up Python.
+    default: '3.10'
+    required: false
+    type: string
+
+  use-python-cache:
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v4
+      with:
+        token: ${{ inputs.token }}
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+        PYTHON_CACHE: ${{ inputs.use-python-cache }}
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        use-cache: ${{ env.PYTHON_CACHE }}
+
+    - name: Save tag version
+      run: |
+        # /refs/tags/v0.10.8 -> 0.10.8
+        echo "TAG_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+
+    - name: "Install towncrier"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip towncrier
+
+    - name: "Create new section in CHANGELOG and reupload tag"
+      shell: bash
+      run: |
+        # Get number of .md files in doc/changelog.d
+        # Figure out how to use towncrier's directory from pyproject.toml
+        count=$(find doc/changelog.d -type f -name "*.md" | wc -l)
+
+        if [ $count -gt 0 ]; then
+          # Checkout branch from tag
+          git checkout -b changelog-update-v${{ env.TAG_VERSION }}
+
+          # Update changelog with the tag version
+          towncrier build --yes --version ${{ env.TAG_VERSION }}
+
+          # Configure git username & email
+          git config user.name 'pyansys-ci-bot'
+          git config user.email 'pyansys.github.bot@ansys.com'
+
+          # Add CHANGELOG.md file and deleted doc/changelog.d/*.md files
+          git add .
+
+          # Commit changes and save commit SHA
+          git commit -m "Updating CHANGELOG for v${{ env.TAG_VERSION }}"
+          echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+          # Push CHANGELOG.md changes
+          git push -u origin changelog-update-v${{ env.TAG_VERSION }}
+
+          # Delete the tag
+          git tag -d v${{ env.TAG_VERSION }}
+
+          # Create the tag
+          git tag v${{ env.TAG_VERSION }}
+
+          # Delete the tag on remote
+          git push origin :v${{ env.TAG_VERSION }}
+
+          # Create the tag on remote
+          git push origin v${{ env.TAG_VERSION }}
+
+          echo "UPDATED_CHANGELOG=True" >> $GITHUB_ENV
+        else
+          echo "There are no changelog fragment files to update the CHANGELOG for v${{ env.TAG_VERSION }}"
+          echo "UPDATED_CHANGELOG=False" >> $GITHUB_ENV
+        fi
+
+    - name: "Create PR into main with CHANGELOG changes"
+      if: env.UPDATED_CHANGELOG == True
+      shell: bash
+      run: |
+        git pull
+
+        # Checkout main & create a branch
+        git checkout main
+        git pull
+        git checkout -b v${{ env.TAG_VERSION }}-changelog
+
+        # Cherry pick CHANGELOG changes commit from previous step
+        git cherry-pick ${{ env.COMMIT_SHA }}
+
+        # Change version in main's pyproject.toml?
+        # If it's a patch bump, bump the patch version using sed
+        # If it's a minor bump, bump the minor version and set patch to dev0
+
+        # Push CHANGELOG.md changes to v$version-changelog
+        git push -u origin v${{ env.TAG_VERSION }}-changelog
+
+        gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in doc/changelog.d"
+
+# check user who created tag, if it's not the pyansys-ci-bot then don't release
+# version is detected by __version__ in pyproject.toml

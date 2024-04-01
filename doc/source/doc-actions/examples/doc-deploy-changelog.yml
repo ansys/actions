@@ -1,0 +1,12 @@
+update-changelog:
+  name: "Update CHANGELOG for new tag and create PR into main"
+  if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+  needs: [package]
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write
+    pull-requests: write
+  steps:
+    - uses: ansys/actions/doc-deploy-changelog@{{ version }}
+      with:
+        token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
