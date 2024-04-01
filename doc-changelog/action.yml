@@ -156,7 +156,7 @@ runs:
     - name: "Create and commit towncrier fragment"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-        PR_TITLE: "${{ github.event.pull_request.title }}"
+        PR_TITLE: '${{ github.event.pull_request.title }}'
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
