@@ -164,9 +164,12 @@ runs:
         # For example, 20.added.md
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
+        # Remove extra whitespace from PR title
+        clean_title=`echo ${{ env.PR_TITLE }} | xargs`
+
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "${{ env.PR_TITLE }}" $fragment
+        towncrier create -c "$clean_title" $fragment
 
         # Configure git username & email
         git config user.name 'pyansys-ci-bot'
