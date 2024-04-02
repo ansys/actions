@@ -23,17 +23,18 @@
 name: >
   Code style
 
-description: >
+description: |
   This action evaluates the code quality of your project by using `pre-commit
   <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
   ``pre-commit``. It is assumed that your project contains a
   ``.pre-commit-config.yaml`` file in the root directory. The action can also
-  be extended to lint docker files that are contained in the docker directory and the .devcontainer directory.
+  be extended to lint docker files that are contained in the docker directory
+  and the .devcontainer directory.
 
-    .. warning::
+  .. warning::
 
-      If docker lint is enabled and directories docker or .devcontainer exist,
-      the action will fail if it doesn't find a Dockerfile.
+    If docker lint is enabled and directories docker or .devcontainer exist,
+    the action will fail if it doesn't find a Dockerfile.
 
 
 inputs:

@@ -100,6 +100,10 @@ master_doc = "index"
 # Generate section labels for up to four levels
 autosectionlabel_maxdepth = 2
 
+# Ignore the following patterns when accessing links
+linkcheck_ignore = [
+    r"https://github.com/ansys-internal/.*",
+]
 
 # Auxiliary routines for automatic documentation generation
 
