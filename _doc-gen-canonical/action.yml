@@ -61,34 +61,30 @@ runs:
       shell: bash
       run: |
 
-        has_canonical_tag() {
+        remove_canonical_tag() {
             local file=$1
-            grep -qP '<link\s+rel="canonical".*\/>' ${file}
+            grep -vP '<link\s+rel="canonical".*\/>' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
         }
 
         add_canonical_tag() {
             local file=$1
             local filename=$(basename "$file")
             local relative_path=${file#*version/*/}
-            local baseurl="https://${{ inputs.cname }}/version/stable"
+            local baseurl="https://geometry.docs.pyansys.com/version/stable"
             local canonical_url="${baseurl}/${relative_path}"
-
-            if ! has_canonical_tag "${file}"; then
-                link_tag="\ \ <link rel=\"canonical\" href=\"$canonical_url\" />"
-                sed -i "/<\/head>/i$link_tag" "$file"
-                echo "Canonical link added to $file"
-            fi
+            local link_tag="\ \ <link rel=\"canonical\" href=\"$canonical_url\" />"
+            sed -i "/<\/head>/i$link_tag" "$file"
+            echo "Canonical link added to $file"
         }
 
-        export -f has_canonical_tag
+        export -f remove_canonical_tag
         export -f add_canonical_tag
 
         find_html_files() {
             local directory=$1
             find "$directory" -type f -name "*.html" \
                 ! \( -name "announcement.html" -o -name "webpack-macros.html" \) \
-                -exec bash -c 'add_canonical_tag "$0"' {} \;
+                -exec bash -c 'remove_canonical_tag "$0" && add_canonical_tag "$0"' {} \;
         }
 
         find_html_files ${{ inputs.html-directory }}
-
