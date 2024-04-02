@@ -63,14 +63,14 @@ runs:
 
         has_canonical_tag() {
             local file=$1
-            grep -q "<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/version/stable/" "$file"
-            }
+            grep -qP '<link\s+rel="canonical".*\/>' ${file}
+        }
 
         add_canonical_tag() {
             local file=$1
             local filename=$(basename "$file")
             local relative_path=${file#*version/*/}
-            local baseurl="https://{{ inputs.cname }}/version/stable"
+            local baseurl="https://${{ inputs.cname }}/version/stable"
             local canonical_url="${baseurl}/${relative_path}"
 
             if ! has_canonical_tag "${file}"; then
