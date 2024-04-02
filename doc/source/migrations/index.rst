@@ -33,9 +33,9 @@ Version ``v5``
 
 **New features:**
 
-- Added ``ansys/action/check-vulnerabilities`` to check for third party and first party vulnerabilities.
-  This action uses ``bandit`` and ``safety`` to check for vulnerabilities in the code and dependencies, respectively.
-- Added ``ansys/actions/docker-style`` to check for Dockerfile style issues using ``hadolint``.
+- Added ``ansys/action/check-vulnerabilities`` to verify third party and first party vulnerabilities.
+  This action uses ``bandit`` and ``safety`` to detect vulnerabilities in the code and dependencies, respectively.
+- Added ``ansys/actions/docker-style`` to detect Dockerfile style issues using ``hadolint``.
 - Allow ``vale`` version input in ``ansys/actions/doc-style`` action. By default, ``2.29.6`` is used.
 - Allow using the twine ``--skip-existing`` flag in the ``ansys/actions/release-pypi-*`` actions.
 - Allow using the ``ansys/actions/doc-build`` action to build documentation using a dedicated requirements file (and

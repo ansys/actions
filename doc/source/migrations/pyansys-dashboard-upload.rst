@@ -3,7 +3,7 @@
 Uploading vulnerabilities to the PyAnsys Dashboard
 ==================================================
 
-The PyAnsys Dashboard is a web application that allows PyAnsys repository
+The PyAnsys Dashboard is a web app that allows PyAnsys repository
 maintainers to upload and view the vulnerabilities in their repository. This
 allows maintainers to track the vulnerabilities in their repository and
 determine if they are being addressed.
@@ -19,7 +19,7 @@ action.
     https://github.com/ansys-internal/pyansys-dashboard
 
 
-In order to upload vulnerabilities to the PyAnsys Dashboard, you will need to
+In order to upload vulnerabilities to the PyAnsys Dashboard, you need to
 configure your workflow as follows:
 
 .. code:: yaml
@@ -54,9 +54,9 @@ configure your workflow as follows:
             pyansys-dashboard-token: ${{ secrets.PYANSYS_DASHBOARD_TOKEN }}
             pyansys-dashboard-credentials: ${{ secrets.PYANSYS_DASHBOARD_DB_CREDENTIALS }}
 
-The above workflow will run the vulnerability check on every push and pull
-request to the repository. If the push is to the main branch, it will also
-upload the vulnerabilities to the PyAnsys Dashboard.
+The preceding workflow runs the vulnerability verification on every push and pull
+request to the repository. If the push is to the main branch, it also
+uploads the vulnerabilities to the PyAnsys Dashboard.
 
 For more information on how to configure the ``ansys/actions/check-vulnerabilities`` action, see the
 corresponding section in this documentation at :ref:`pyansys_check_vulnerabilities`.
