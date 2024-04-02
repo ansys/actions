@@ -486,7 +486,7 @@ runs:
       uses: ansys/actions/_doc-gen-canonical@feat/seo-improvements
       with:
         cname: ${{ inputs.cname }}
-        html-directory: version/stable
+        html-directory: version
 
     # ------------------------------------------------------------------------
 
