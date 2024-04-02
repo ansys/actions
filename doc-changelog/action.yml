@@ -82,7 +82,7 @@ runs:
     - name: "Install towncrier"
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier
+        python -m pip install --upgrade pip towncrier==23.11.0
 
     - name: "Get labels in the pull request"
       env:

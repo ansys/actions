@@ -84,7 +84,7 @@ runs:
     - name: "Install towncrier"
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier
+        python -m pip install --upgrade pip towncrier==23.11.0
 
     - name: "Create new section in CHANGELOG and reupload tag"
       shell: bash
@@ -95,10 +95,19 @@ runs:
 
         if [ $count -gt 0 ]; then
           # Checkout branch from tag
-          git checkout -b changelog-update-v${{ env.TAG_VERSION }}
+          git checkout -b maint/changelog-update-v${{ env.TAG_VERSION }}
 
-          # Update changelog with the tag version
-          towncrier build --yes --version ${{ env.TAG_VERSION }}
+          # Update the changelog with the package version from pyproject.toml
+          # The [tool.towncrier] section in pyproject.toml requires the following line
+          # for the command to work:
+          # package = "ansys.<product>.<library>"
+          buildcmd=$(towncrier build --yes)
+          retcode=$?
+
+          if[ $retcode -ne 0 ]; then
+            # Update changelog with the tag version
+            towncrier build --yes --version ${{ env.TAG_VERSION }}
+          fi
 
           # Configure git username & email
           git config user.name 'pyansys-ci-bot'
@@ -112,19 +121,7 @@ runs:
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
-          git push -u origin changelog-update-v${{ env.TAG_VERSION }}
-
-          # Delete the tag
-          git tag -d v${{ env.TAG_VERSION }}
-
-          # Create the tag
-          git tag v${{ env.TAG_VERSION }}
-
-          # Delete the tag on remote
-          git push origin :v${{ env.TAG_VERSION }}
-
-          # Create the tag on remote
-          git push origin v${{ env.TAG_VERSION }}
+          git push -u origin maint/changelog-update-v${{ env.TAG_VERSION }}
 
           echo "UPDATED_CHANGELOG=True" >> $GITHUB_ENV
         else
@@ -141,19 +138,32 @@ runs:
         # Checkout main & create a branch
         git checkout main
         git pull
-        git checkout -b v${{ env.TAG_VERSION }}-changelog
+        git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
 
         # Cherry pick CHANGELOG changes commit from previous step
         git cherry-pick ${{ env.COMMIT_SHA }}
 
-        # Change version in main's pyproject.toml?
-        # If it's a patch bump, bump the patch version using sed
-        # If it's a minor bump, bump the minor version and set patch to dev0
-
-        # Push CHANGELOG.md changes to v$version-changelog
-        git push -u origin v${{ env.TAG_VERSION }}-changelog
+        # Push CHANGELOG.md changes to maint/v$version-changelog
+        git push -u origin maint/v${{ env.TAG_VERSION }}-changelog
 
         gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in doc/changelog.d"
 
-# check user who created tag, if it's not the pyansys-ci-bot then don't release
-# version is detected by __version__ in pyproject.toml
+    - name: "Delete & Re-create tag"
+      if: env.UPDATED_CHANGELOG == True
+      shell: bash
+      run: |
+          # Checkout branch created from tag with CHANGELOG update & pull
+          git checkout maint/changelog-update-v${{ env.TAG_VERSION }}
+          git pull
+
+          # Delete the tag
+          git tag -d v${{ env.TAG_VERSION }}
+
+          # Create the tag
+          git tag v${{ env.TAG_VERSION }}
+
+          # Delete the tag on remote
+          git push origin --delete v${{ env.TAG_VERSION }}
+
+          # Create the tag on remote
+          git push origin v${{ env.TAG_VERSION }}
