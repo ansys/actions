@@ -57,7 +57,7 @@ runs:
         message: >
           Creating and updating required canonical link tags.
 
-    - name: "Generate the sitemap.xml file"
+    - name: "Create and update canonical links"
       shell: bash
       run: |
 
