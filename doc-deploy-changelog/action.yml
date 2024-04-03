@@ -102,7 +102,7 @@ runs:
           # The [tool.towncrier] section in pyproject.toml requires the following line
           # for the command to work:
           # package = "ansys.<product>.<library>"
-          buildcmd=$(towncrier build --yes)
+          buildcmd=$(towncrier build --yes 2> builderr.txt)
           retcode=$?
 
           if [ $retcode -ne 0 ]; then
