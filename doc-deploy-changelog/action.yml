@@ -102,10 +102,11 @@ runs:
           # The [tool.towncrier] section in pyproject.toml requires the following line
           # for the command to work:
           # package = "ansys.<product>.<library>"
-          buildcmd=$(towncrier build --yes 2> builderr.txt)
-          retcode=$?
+          buildcmd=$(towncrier build --yes >> builderr.txt 2>&1 || true)
+          greperr=$(grep "Error: '--version'" builderr.txt)
 
-          if [ $retcode -ne 0 ]; then
+          # If greperr contains the error message, run with the tag specified
+          if [ -n "$greperr" ]; then
             # Update changelog with the tag version
             towncrier build --yes --version ${{ env.TAG_VERSION }}
           fi
