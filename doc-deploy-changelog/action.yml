@@ -111,6 +111,9 @@ runs:
             towncrier build --yes --version ${{ env.TAG_VERSION }}
           fi
 
+          # Remove builderr.txt
+          rm builderr.txt
+
           # Configure git username & email
           git config user.name 'pyansys-ci-bot'
           git config user.email 'pyansys.github.bot@ansys.com'
@@ -133,6 +136,8 @@ runs:
 
     - name: "Create PR into main with CHANGELOG changes"
       if: contains(env.UPDATED_CHANGELOG, 'True')
+      env:
+        GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
         git pull
@@ -151,6 +156,8 @@ runs:
         gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in doc/changelog.d"
 
     - name: "Delete & Re-create tag"
+      env:
+        GH_TOKEN: ${{ inputs.token }}
       if: contains(env.UPDATED_CHANGELOG, 'True')
       shell: bash
       run: |
@@ -158,14 +165,14 @@ runs:
           git checkout maint/changelog-update-v${{ env.TAG_VERSION }}
           git pull
 
-          # Delete the tag
+          # Delete the tag locally
           git tag -d v${{ env.TAG_VERSION }}
-
-          # Create the tag
-          git tag v${{ env.TAG_VERSION }}
 
           # Delete the tag on remote
           git push origin --delete v${{ env.TAG_VERSION }}
+
+          # Create the tag locally
+          git tag v${{ env.TAG_VERSION }}
 
           # Create the tag on remote
           git push origin v${{ env.TAG_VERSION }}
