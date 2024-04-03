@@ -105,7 +105,7 @@ runs:
           buildcmd=$(towncrier build --yes)
           retcode=$?
 
-          if[ $retcode -ne 0 ]; then
+          if [ $retcode -ne 0 ]; then
             # Update changelog with the tag version
             towncrier build --yes --version ${{ env.TAG_VERSION }}
           fi
