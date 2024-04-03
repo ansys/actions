@@ -176,3 +176,6 @@ runs:
 
           # Create the tag on remote
           git push origin v${{ env.TAG_VERSION }}
+
+          # Delete branch created from deleted tag with CHANGELOG update
+          git push origin --delete maint/changelog-update-v${{ env.TAG_VERSION }}
