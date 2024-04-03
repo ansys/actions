@@ -77,6 +77,7 @@ runs:
         use-cache: ${{ env.PYTHON_CACHE }}
 
     - name: Save tag version
+      shell: bash
       run: |
         # /refs/tags/v0.10.8 -> 0.10.8
         echo "TAG_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
@@ -130,7 +131,7 @@ runs:
         fi
 
     - name: "Create PR into main with CHANGELOG changes"
-      if: env.UPDATED_CHANGELOG == True
+      if: contains(env.UPDATED_CHANGELOG, 'True')
       shell: bash
       run: |
         git pull
@@ -149,7 +150,7 @@ runs:
         gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in doc/changelog.d"
 
     - name: "Delete & Re-create tag"
-      if: env.UPDATED_CHANGELOG == True
+      if: contains(env.UPDATED_CHANGELOG, 'True')
       shell: bash
       run: |
           # Checkout branch created from tag with CHANGELOG update & pull
