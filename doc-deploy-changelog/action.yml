@@ -100,6 +100,7 @@ runs:
     - name: "Get towncrier directory"
       shell: python
       run: |
+        import os
         import toml
 
         # Load pyproject.toml
