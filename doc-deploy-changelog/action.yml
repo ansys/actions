@@ -195,7 +195,7 @@ runs:
         # Push CHANGELOG.md changes to maint/v$version-changelog
         git push -u origin maint/v${{ env.TAG_VERSION }}-changelog
 
-        gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --assignee ${{ github.actor }}
+        gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
 
     - name: "Delete & Re-create tag"
       env:
