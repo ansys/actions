@@ -64,7 +64,7 @@ inputs:
       Whether or not to update the CHANGELOG in the release branch.
       If ``true``, the branch used to update the CHANGELOG is "release/major.minor".
       If ``false``, the branch used to update the CHANGELOG is
-      "maint/changelog-update-v${{ env.TAG_VERSION }}" and will be deleted after use.
+      "maint/changelog-update-tag_version" and will be deleted after use.
     required: false
     default: true
     type: boolean
