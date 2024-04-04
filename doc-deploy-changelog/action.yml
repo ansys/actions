@@ -138,7 +138,12 @@ runs:
 
         if [ $count -gt 0 ]; then
           # Checkout branch from tag
-          git checkout -b ${{ env.UPDATE_BRANCH }}
+          if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
+            git checkout ${{ env.UPDATE_BRANCH }}
+            git pull
+          else
+            git checkout -b ${{ env.UPDATE_BRANCH }}
+          fi
 
           # Update the changelog with the package version from pyproject.toml
           # The [tool.towncrier] section in pyproject.toml requires the following line
@@ -168,7 +173,11 @@ runs:
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
-          git push -u origin ${{ env.UPDATE_BRANCH }}
+          if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
+            git push
+          else
+            git push -u origin ${{ env.UPDATE_BRANCH }}
+          fi
 
           echo "UPDATED_CHANGELOG=True" >> $GITHUB_ENV
         else
