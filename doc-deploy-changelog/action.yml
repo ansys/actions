@@ -204,9 +204,17 @@ runs:
 
         # If greperr contains the error message, run with the tag specified
         if [ -n "$greperr" ]; then
-          # Delete the changelog fragments
-          yes d | git mergetool -- maint/v${{ env.TAG_VERSION }}-changelog
-          git cherry-pick --continue
+          # Get list of deleted files
+          deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
+
+          # Delete files with conflicts (the fragment files being deleted)
+          for i in "${deleted_files[@]}"
+          do
+            git rm $i
+          done
+
+          # Continue Cherry pick without commit message
+          git -c core.editor=true cherry-pick --continue
         fi
 
         # Remove cherrypickerr.txt
