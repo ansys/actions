@@ -195,7 +195,7 @@ runs:
       shell: bash
       run: |
         # Checkout main & create a branch
-        git checkout origin/HEAD
+        git checkout main # origin/HEAD
         git pull
         git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
 
