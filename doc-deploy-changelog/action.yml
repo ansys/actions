@@ -74,11 +74,9 @@ runs:
   steps:
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
-      env:
-        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       with:
         # Specify branch to prevent detached HEAD state
-        ref: ${{ env.PR_BRANCH }}
+        ref: ${GITHUB_REF}
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
