@@ -211,6 +211,20 @@ runs:
       with:
         level: "INFO"
         message: >
+          Include a link canonical tag in old versions if not present.
+
+    - name: "Include link canonical tag in pages"
+      uses: ansys/actions/_doc-gen-canonical@feat/seo-improvements
+      with:
+        cname: ${{ inputs.cname }}
+        html-directory: version
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
           Copy the index.html from the stable version and update all
           local href and source links to point to either the stable or dev version.
 
@@ -275,20 +289,6 @@ runs:
       run: |
           touch .nojekyll CNAME
           echo "${{ inputs.cname }}" > CNAME
-
-    # ------------------------------------------------------------------------
-
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Include a link canonical tag in old versions if not present.
-
-    - name: "Include link canonical tag in pages"
-      uses: ansys/actions/_doc-gen-canonical@feat/seo-improvements
-      with:
-        cname: ${{ inputs.cname }}
-        html-directory: version
 
      # ------------------------------------------------------------------------
 
