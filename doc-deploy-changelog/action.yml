@@ -201,10 +201,12 @@ runs:
         git pull
         git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
 
-        git status
-
         # Cherry pick CHANGELOG changes commit from previous step
         git cherry-pick ${{ env.COMMIT_SHA }}
+
+        # Delete the changelog fragments
+        yes d | git mergetool -- maint/v${{ env.TAG_VERSION }}-changelog
+        git cherry-pick --continue
 
         # Push CHANGELOG.md changes to maint/v$version-changelog
         git push -u origin maint/v${{ env.TAG_VERSION }}-changelog
