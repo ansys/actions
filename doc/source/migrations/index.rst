@@ -16,8 +16,6 @@ Development version
   This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
 - Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
 - Create a changelog fragment file for each pull request using ``towncrier`` in the ``ansys/actions/doc-changelog`` action.
-- Vulnerability advisories can now be uploaded to the PyAnsys Dashboard using the ``ansys/actions/check-vulnerabilities`` action
-  by setting the ``pyansys-dashboard-upload`` input to ``true``, together with the necessary credentials.
 
 **Breaking changes:**
 
@@ -26,7 +24,6 @@ Development version
 **Migration steps:**
 
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
-- To upload vulnerability advisories to the PyAnsys Dashboard, see the :ref:`pyansys_dashboard_upload`.
 
 Version ``v5``
 --------------
@@ -82,4 +79,3 @@ Version ``v4``
    :maxdepth: 3
 
    docs-changelog-setup
-   pyansys-dashboard-upload
