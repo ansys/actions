@@ -202,6 +202,8 @@ runs:
         git pull
         git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
 
+        git status
+
         # Cherry pick CHANGELOG changes commit from previous step
         git cherry-pick ${{ env.COMMIT_SHA }}
 
