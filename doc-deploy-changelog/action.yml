@@ -75,9 +75,8 @@ runs:
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
       with:
-        # Specify branch to prevent detached HEAD state
-        ref: ${{ github.ref_name }}
         token: ${{ inputs.token }}
+        fetch-depth: 0
 
     - name: "Set up Python ${{ inputs.python-version }}"
       env:
