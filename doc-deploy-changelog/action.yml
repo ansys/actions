@@ -76,7 +76,7 @@ runs:
       uses: actions/checkout@v4
       with:
         # Specify branch to prevent detached HEAD state
-        ref: ${GITHUB_REF}
+        ref: ${{ github.ref_name }}
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
