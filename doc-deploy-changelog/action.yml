@@ -139,7 +139,7 @@ runs:
         if [ $count -gt 0 ]; then
           # Checkout branch from tag
           if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
-            git switch -c ${{ env.UPDATE_BRANCH }} --track refs/remotes/origin/${{ env.UPDATE_BRANCH }}
+            git checkout ${{ env.UPDATE_BRANCH }}
             git pull
           else
             git checkout -b ${{ env.UPDATE_BRANCH }}
@@ -174,7 +174,8 @@ runs:
 
           # Push CHANGELOG.md changes
           if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
-            git push
+            # git push
+            git push origin HEAD:refs/heads/${{ env.UPDATE_BRANCH }}
           else
             git push -u origin ${{ env.UPDATE_BRANCH }}
           fi
