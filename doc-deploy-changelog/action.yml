@@ -177,8 +177,7 @@ runs:
 
           # Push CHANGELOG.md changes
           if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
-            # git push
-            git push origin HEAD:refs/heads/${{ env.UPDATE_BRANCH }}
+            git push
           else
             git push -u origin ${{ env.UPDATE_BRANCH }}
           fi
