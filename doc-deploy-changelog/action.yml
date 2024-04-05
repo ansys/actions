@@ -194,19 +194,23 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
-        git pull
-
         # Checkout main & create a branch
-        git checkout main
+        git checkout origin/HEAD
         git pull
         git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
 
-        # Cherry pick CHANGELOG changes commit from previous step
-        git cherry-pick ${{ env.COMMIT_SHA }}
+        cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
+        greperr=$(grep "CONFLICT" cherrypickerr.txt)
 
-        # Delete the changelog fragments
-        yes d | git mergetool -- maint/v${{ env.TAG_VERSION }}-changelog
-        git cherry-pick --continue
+        # If greperr contains the error message, run with the tag specified
+        if [ -n "$greperr" ]; then
+          # Delete the changelog fragments
+          yes d | git mergetool -- maint/v${{ env.TAG_VERSION }}-changelog
+          git cherry-pick --continue
+        fi
+
+        # Remove cherrypickerr.txt
+        rm cherrypickerr.txt
 
         # Push CHANGELOG.md changes to maint/v$version-changelog
         git push -u origin maint/v${{ env.TAG_VERSION }}-changelog
