@@ -184,7 +184,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Set up python to build the documentation.$([char]27)[0m"
+          Set up python to build the documentation.
 
     - name: "Update pip"
       shell: powershell
