@@ -178,6 +178,10 @@ runs:
       run: |
         Write-Host "$([char]27)[32mSet up python to build the documentation.$([char]27)[0m"
 
+    - name: "Update pip"
+      shell: powershell
+      run: python -m pip install -U pip
+
     - name: Check if requirements.txt file exists
       shell: powershell
       run: |
