@@ -50,20 +50,42 @@ runs:
   using: "composite"
   steps:
 
+    # -------------------------------- Linux ---------------------------------
+
     - name: "Report error message"
       shell: bash
-      if: ${{ inputs.level == 'ERROR' }}
+      if: ${{ inputs.level == 'ERROR' && runner.os == 'Linux' }}
       run: |
         echo -e "\033[1;91m[ERROR]: ${{ inputs.message }}\033[0m"
 
     - name: "Report warning message"
       shell: bash
-      if: ${{ inputs.level == 'WARNING' }}
+      if: ${{ inputs.level == 'WARNING' && runner.os == 'Linux' }}
       run: |
         echo -e "\033[1;93m[WARNING]: ${{ inputs.message }}\033[0m"
 
     - name: "Report info message"
       shell: bash
-      if: ${{ inputs.level == 'INFO' }}
+      if: ${{ inputs.level == 'INFO' && runner.os == 'Linux' }}
       run: |
         echo -e "\033[1;92m[INFO]: ${{ inputs.message }}\033[0m"
+
+    # ------------------------------- Windows --------------------------------
+
+    - name: "Report error message"
+      shell: powershell
+      if: ${{ inputs.level == 'ERROR' && runner.os == 'Windows' }}
+      run: |
+        Write-Host "$([char]27)[91m[ERROR]: ${{ inputs.message }}$([char]27)[0m"
+
+    - name: "Report warning message"
+      shell: powershell
+      if: ${{ inputs.level == 'WARNING' && runner.os == 'Windows' }}
+      run: |
+        Write-Host "$([char]27)[93m[WARNING]: ${{ inputs.message }}$([char]27)[0m"
+
+    - name: "Report info message"
+      shell: powershell
+      if: ${{ inputs.level == 'INFO' && runner.os == 'Windows' }}
+      run: |
+        Write-Host "$([char]27)[92m[INFO]: ${{ inputs.message }}$([char]27)[0m"
