@@ -38,13 +38,12 @@ description: >
 
 inputs:
 
-  # Optional inputs
+  # Required inputs
 
   python-version:
     description: >
         Python version used for installing and running ``Sphinx``.
-    default: '3.10'
-    required: false
+    required: true
     type: string
 
   use-python-cache:
@@ -52,59 +51,47 @@ inputs:
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
-    required: false
-    default: true
+    required: true
     type: boolean
 
   sphinxopts:
     description: |
-      Set of options to pass to the ``Sphinx`` builder. Default options include
-      using the maximum number of cores in the CPU of the machine and treating
-      warnings as errors.
+      Set of options to pass to the ``Sphinx`` builder.
 
       .. note::
 
           This will override the ``SPHINXOPTS`` declared in your Makefile.
 
-    default: '-j auto -W --keep-going'
-    required: false
+    required: true
     type: string
 
   dependencies:
     description: >
       String of system dependencies to be installed before building the
       documentation of the project.
-    default: ''
-    required: false
+    required: true
     type: string
 
   skip-dependencies-cache:
     description: >
       Whether to ignore dependencies cache or not - for OS libraries.
     required: true
-    default: false
     type: boolean
 
   requires-xvfb:
     description: |
       Whether to install `X Virtual Frame Buffer (XVFB)
       <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and run
-      the whole test session using XVFB. The default value is ``false``.
-
-      If ``true``, installs `X Virtual Frame Buffer (XVFB)
-      <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
-      runs the whole test session using XVFB. Default value is ``false``.
-    default: false
-    required: false
+      the whole test session using XVFB.
+    required: true
     type: boolean
 
   skip-install:
     description: >
-      Whether to skip the installation of the project. The default is ``false``.
+      Whether to skip the installation of the project.
       Pure documentation projects require that this action be set to ``false``
       because there is no Python library associated with the project.
-    default: false
-    required: false
+    required: true
     type: boolean
 
   requirements-file:
@@ -112,41 +99,31 @@ inputs:
       Path to the requirements file in case it needs to be in a specific location.
       This is useful for non python projects, where you don't necessarily have a requirements
       file in the root of the project.
-    default: 'requirements/requirements_doc.txt'
-    required: false
+    required: true
     type: string
 
   checkout:
     description: >
-      Whether to clone the repository in the CI/CD machine. Default value is
-      ``true``.
-    default: true
-    required: false
+      Whether to clone the repository in the CI/CD machine.
+    required: true
     type: boolean
 
   skip-json-build:
     description: >
-      Whether to skip the generation of JSON documentation. Default value is
-      ``true``.
-    default: true
-    required: false
+      Whether to skip the generation of JSON documentation.
+    required: true
     type: boolean
 
   check-links:
     description: >
       Whether to perform external link checks during the generation of
-      documentation. Default value is ``true``.
-    default: true
-    required: false
+      documentation.
+    required: true
     type: boolean
 
 runs:
   using: "composite"
   steps:
-
-    - name: "Install Git and clone project"
-      uses: actions/checkout@v4
-      if: ${{ inputs.checkout == 'true' }}
 
     - name: "Collect system dependencies"
       shell: bash
@@ -178,16 +155,6 @@ runs:
       shell: bash
       run: |
         sudo apt-get install -y texlive-latex-extra latexmk
-
-    - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
-      with:
-        python-version: ${{ inputs.python-version }}
-        use-cache: ${{ inputs.use-python-cache }}
-
-    - name: "Update pip"
-      shell: bash
-      run: python -m pip install -U pip
 
     - name: "Check if requirements.txt file exists"
       shell: bash
