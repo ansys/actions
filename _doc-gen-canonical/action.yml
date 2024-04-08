@@ -88,3 +88,23 @@ runs:
         }
 
         find_html_files ${{ inputs.html-directory }}
+
+        # Ensure that 'version/{stable|dev}/index.html' uses as canonical the
+        # landing page of the documentation
+
+        replace_canonical_link() {
+            local file="$1"
+            sed -i "s|<link rel=\"canonical\".*>|<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/\">|g" "$file"
+        }
+
+        export -f replace_canonical_link
+
+        if [[ -f 'version/stable/index.html' ]]; then
+          replace_canonical_link 'version/stable/index.html'
+        elif [[ -f 'version/dev/index.html' ]]; then
+          replace_canonical_link 'version/dev/index.html'
+        else
+          echo "Error: The 'index.html' file does not exist." >&2
+          exit 1
+        fi
+
