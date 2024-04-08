@@ -398,7 +398,7 @@ runs:
           Copy the index.html from the stable version and update all
           local href and source links to point to either the stable or dev version.
 
-    - name: "Update the canonical link tags in the 'index.html' file"
+    - name: "Point canonical link to landing page the 'version/{stable,dev}/index.html' file"
       shell: bash
       run: |
         if [[ -f 'version/stable/index.html' ]]; then
