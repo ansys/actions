@@ -194,12 +194,12 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
-        git remote show .
-
-        git remote show
+        # Get main branch name
+        head_branch=$(git remote show origin | grep "HEAD branch:")
+        formatted_head_branch=${head_branch#*: }
 
         # Checkout main & create a branch
-        git checkout main # origin/HEAD
+        git checkout $formatted_head_branch
         git pull
         git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
 
