@@ -210,10 +210,12 @@ runs:
         if [ -n "$greperr" ]; then
           # Get list of deleted files
           deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
+          echo $deleted_files
 
           # Delete files with conflicts (the fragment files being deleted)
           for i in "${deleted_files[@]}"
           do
+            echo "Removing $i"
             git rm $i
           done
 
