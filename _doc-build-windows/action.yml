@@ -260,7 +260,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Upload HTML, PDF and JSON documentation.$([char]27)[0m"
+          Upload HTML, PDF and JSON documentation.
 
     - name: Upload HTML documentation artifact
       uses: actions/upload-artifact@v4
