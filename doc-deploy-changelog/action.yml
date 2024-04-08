@@ -204,6 +204,7 @@ runs:
         git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
+        cat cherrypickerr.txt
         greperr=$(grep "CONFLICT" cherrypickerr.txt)
 
         # If greperr contains the error message, run with the tag specified
