@@ -145,13 +145,6 @@ inputs:
     required: false
     type: boolean
 
-  os:
-    description: >
-      Operating system expected to build the documentation. Default value is `linux`.
-    default: 'linux'
-    required: false
-    type: string
-
 runs:
   using: "composite"
   steps:
@@ -171,7 +164,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: Documentation build (Linux)
-      if: ${{ inputs.os == 'linux' }}
+      if: ${{ runner.os == 'Linux' }}
       uses: SMoraisAnsys/actions/_doc-build-linux@feat/doc-build-os-compatible
       with:
         python-version: ${{ inputs.python-version }}
@@ -189,13 +182,15 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: Check input (Windows)
-      if: ${{ (inputs.os == 'windows') && (inputs.requires-xvfb == 'true') }}
-      shell: powershell
-      run: |
-        Write-Host "$([char]27)[33mX virtual framebuffer is not used when building with Windows.$([char]27)[0m"
+      if: ${{ (runner.os == 'Windows') && (inputs.requires-xvfb == 'true') }}
+      uses: ansys/actions/_logging@main
+      with:
+        level: "WARNING"
+        message: >
+          X virtual framebuffer is not used when building with Windows.
 
     - name: Documentation build (Windows)
-      if: ${{ inputs.os == 'windows' }}
+      if: ${{ runner.os == 'Windows' }}
       uses: SMoraisAnsys/actions/_doc-build-windows@feat/doc-build-os-compatible
       with:
         python-version: ${{ inputs.python-version }}
