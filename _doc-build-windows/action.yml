@@ -229,7 +229,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Build HTML, PDF and JSON documentation.$([char]27)[0m"
+          Build HTML, PDF and JSON documentation.
 
     - name: Determine command context
       shell: powershell
