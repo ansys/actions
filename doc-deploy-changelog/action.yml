@@ -201,7 +201,23 @@ runs:
         # Checkout main & create a branch
         git checkout $formatted_head_branch
         git pull
-        git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
+
+        # Set branch for PR
+        pr_branch=maint/v${{ env.TAG_VERSION }}-changelog
+
+        changelog_branch=$(git checkout -b $pr_branch >> brancherr.txt 2>&1 || true)
+        branch_err=$(grep "fatal" brancherr.txt)
+
+        if [ -n "$branch_err" ]; then
+          # Delete branch locally & on remote
+          git branch -D $pr_branch
+          git push origin --delete $pr_branch
+
+          # Checkout new branch
+          git checkout -b $pr_branch
+        fi
+
+        rm brancherr.txt
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
         greperr=$(grep "CONFLICT" cherrypickerr.txt)
@@ -225,7 +241,7 @@ runs:
         rm cherrypickerr.txt
 
         # Push CHANGELOG.md changes to maint/v$version-changelog
-        git push -u origin maint/v${{ env.TAG_VERSION }}-changelog
+        git push -u origin $pr_branch
 
         gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
 
