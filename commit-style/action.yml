@@ -38,12 +38,47 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
+  use-upper-case:
+    description: >
+      Use of uppercase letters in the "type" and "scope" fields of the commit.
+      For example, "FIX(SERVER)!: fix server crash issue" would be a valid commit.
+
+      .. note::
+
+          Expected type are upper cases of `conventional commit types
+          <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
 
     - name: "Check pull-request title follows conventional commits style"
-      if: ${{ (github.event_name == 'pull_request_target') || (github.event_name == 'pull_request') }}
+      if: ${{ ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) && inputs.use-upper-case == 'false' }}
       uses: amannn/action-semantic-pull-request@v5
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
+
+    - name: "Check pull-request title follows conventional commits style with upper case"
+      if: ${{ ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) && inputs.use-upper-case == 'true' }}
+      uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      with:
+        types: |
+          BUILD
+          CHORE
+          CI
+          DOCS
+          FEAT
+          FIX
+          PERF
+          REFACTOR
+          REVERT
+          STYLE
+          TEST
+
