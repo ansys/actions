@@ -49,6 +49,7 @@ inputs:
 
           Expected type are upper cases of `conventional commit types
           <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
+
     required: false
     default: false
     type: boolean
