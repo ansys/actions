@@ -194,6 +194,10 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
+        git remote show .
+
+        git remote show
+
         # Checkout main & create a branch
         git checkout main # origin/HEAD
         git pull
