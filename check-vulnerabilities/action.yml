@@ -193,8 +193,7 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        pip install "pygithub>=1.59,<2" "bandit>=1.7,<2" "safety>=2.3,<3"
-
+        pip install "pygithub>=1.59,<2" "bandit>=1.7,<2" "safety>=2.3,<4"
 
     - name: "Install library"
       shell: bash
@@ -233,6 +232,7 @@ runs:
         Script for detecting vulnerabilities on a given repo and creating
         associated security vulnerability advisories.
         """
+
         import hashlib
         import json
         import os
@@ -410,7 +410,12 @@ runs:
 
                 # Advisory info
                 summary = f"Bandit [{v_test_id}:{v_test_name}] on {v_filename} - Hash: {v_hash}"
-                vuln_adv = {"package": {"name": f"{v_package}", "ecosystem": "pip"}}
+                vuln_adv = {
+                    "package": {"name": f"{v_package}", "ecosystem": "pip"},
+                    "vulnerable_functions": [],
+                    "vulnerable_version_range": None,
+                    "patched_versions": None,
+                }
                 desc = f"""
         {v_desc}
 
