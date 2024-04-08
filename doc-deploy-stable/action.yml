@@ -469,11 +469,11 @@ runs:
           Generate the site-map for the latest development or stable
           documentation.
 
-    # - name: "Generate 'sitemap.xml' file"
-    #   uses: ansys/actions/_doc-gen-sitemap@main
-    #   with:
-    #     cname: ${{ inputs.cname }}
-    #     html-directory: version/stable
+    - name: "Generate 'sitemap.xml' file"
+      uses: ansys/actions/_doc-gen-sitemap@main
+      with:
+        cname: ${{ inputs.cname }}
+        html-directory: version/stable
 
     # ------------------------------------------------------------------------
 
