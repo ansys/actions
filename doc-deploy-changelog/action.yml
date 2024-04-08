@@ -206,12 +206,23 @@ runs:
         pr_branch=maint/v${{ env.TAG_VERSION }}-changelog
 
         changelog_branch=$(git checkout -b $pr_branch >> brancherr.txt 2>&1 || true)
-        branch_err=$(grep "fatal" brancherr.txt)
 
-        if [ -n "$branch_err" ]; then
-          # Delete branch locally & on remote
-          git branch -D $pr_branch
-          git push origin --delete $pr_branch
+        # fatal: a branch named $pr_branch already exists
+        fatal_err=$(grep "fatal: " brancherr.txt)
+
+        # error: unable to delete $pr_branch: remote ref does not exist
+        error=$(grep "error: " brancherr.txt)
+
+        if [ -n "$fatal_err" || -n "$error" ]; then
+          if [ -n "$fatal_err" ]; then
+            # Delete branch locally
+            git branch -D $pr_branch
+          fi
+
+          if [ -n "$error" ]; then
+            # Delete branch locally
+            git branch -D $pr_branch
+          fi
 
           # Checkout new branch
           git checkout -b $pr_branch
