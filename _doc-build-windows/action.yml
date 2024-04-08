@@ -117,9 +117,11 @@ runs:
   using: "composite"
   steps:
 
-    - shell: powershell
-      run: |
-        Write-Host "$([char]27)[32mInstall Chocolatey to install dependencies.$([char]27)[0m"
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install Chocolatey to install dependencies.
 
     - name: Download script and install Chocolatey
       shell: powershell
@@ -131,10 +133,12 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - shell: powershell
-      run: |
-        Write-Host "$([char]27)[32mInstall system dependencies. Even if no dependencies are provided, " `
-          "Miktex is installed to build the documentation.$([char]27)[0m"
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install system dependencies. Even if no dependencies are provided,
+          Miktex is installed to build the documentation.
 
     - name: Collect system dependencies
       shell: powershell
@@ -163,9 +167,11 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - shell: powershell
-      run: |
-        Write-Host "$([char]27)[32mSet up Miktex to allow downloading missing packages when building documentation.$([char]27)[0m"
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up Miktex to allow downloading missing packages when building documentation.
 
     - name: Set up Miktex to automatically install packages
       shell: powershell
@@ -174,9 +180,11 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - shell: powershell
-      run: |
-        Write-Host "$([char]27)[32mSet up python to build the documentation.$([char]27)[0m"
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to build the documentation.$([char]27)[0m"
 
     - name: "Update pip"
       shell: powershell
@@ -217,9 +225,11 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - shell: powershell
-      run: |
-        Write-Host "$([char]27)[32mBuild HTML, PDF and JSON documentation.$([char]27)[0m"
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build HTML, PDF and JSON documentation.$([char]27)[0m"
 
     - name: Determine command context
       shell: powershell
@@ -246,10 +256,11 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - name: Log
-      shell: powershell
-      run: |
-        Write-Host "$([char]27)[32mUpload HTML, PDF and JSON documentation.$([char]27)[0m"
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Upload HTML, PDF and JSON documentation.$([char]27)[0m"
 
     - name: Upload HTML documentation artifact
       uses: actions/upload-artifact@v4
