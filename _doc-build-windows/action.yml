@@ -117,12 +117,12 @@ runs:
   using: "composite"
   steps:
 
-    - shell: pwsh
+    - shell: powershell
       run: |
         Write-Host "$([char]27)[32mInstall Chocolatey to install dependencies.$([char]27)[0m"
 
     - name: Download script and install Chocolatey
-      shell: pwsh
+      shell: powershell
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
