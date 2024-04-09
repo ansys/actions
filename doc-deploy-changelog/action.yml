@@ -235,10 +235,16 @@ runs:
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
         cat cherrypickerr.txt
-        greperr=$(grep "CONFLICT" cherrypickerr.txt || true)
+        content_conflict=$(grep "CONFLICT (content)" cherrypickerr.txt || true)
+        delete_conflict=$(grep "CONFLICT (modify/delete)" cherrypickerr.txt || true)
 
-        # If greperr contains the cherry-pick conflict message, delete the fragment files
-        if [ -n "$greperr" ]; then
+        # If content_conflict isn't empty, cat the CHANGELOG.md file
+        if [ -n "$content_conflict" ]; then
+          cat CHANGELOG.md
+        fi
+
+        # If delete_conflict isn't empty, delete the fragment files
+        if [ -n "$delete_conflict" ]; then
           # Get list of deleted files
           deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
 
