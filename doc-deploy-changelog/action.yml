@@ -206,19 +206,20 @@ runs:
         pr_branch=maint/v${{ env.TAG_VERSION }}-changelog
 
         # Check if pr_branch exists on remote
-        remote_branch_exists=$(git ls-remote --heads origin refs/heads/maint/v${{ env.TAG_VERSION }}-changelog 2>&1)
+        remote_branch_exists=$(git ls-remote --heads origin refs/heads/$pr_branch 2>&1)
 
         # Delete the remote branch if it exists
         if [ -n "$remote_branch_exists" ]; then
-          echo "Deleting maint/v${{ env.TAG_VERSION }}-changelog from remote"
-          git push origin --delete maint/v${{ env.TAG_VERSION }}-changelog
+          echo "Deleting $pr_branch from remote"
+          git push origin --delete $pr_branch
         fi
 
-        # Create a new maint/v${{ env.TAG_VERSION }}-changelog
-        git checkout -b maint/v${{ env.TAG_VERSION }}-changelog
+        # Create a new $pr_branch
+        git checkout -b $pr_branch
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
         cat cherrypickerr.txt
+        grep "CONFLICT" cherrypickerr.txt
         greperr=$(grep "CONFLICT" cherrypickerr.txt)
         echo "greperr: $greperr"
 
@@ -246,8 +247,8 @@ runs:
         rm cherrypickerr.txt
 
         echo "before push"
-        # Push CHANGELOG.md changes to maint/v${{ env.TAG_VERSION }}-changelog
-        git push -u origin maint/v${{ env.TAG_VERSION }}-changelog
+        # Push CHANGELOG.md changes to $pr_branch
+        git push -u origin $pr_branch
         echo "after push"
 
         gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
