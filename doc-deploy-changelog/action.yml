@@ -210,6 +210,7 @@ runs:
 
         # Delete the remote branch if it exists
         if [ -n "$remote_branch_exists" ]; then
+          echo "Deleting $pr_branch from remote"
           git push origin --delete $pr_branch
           git pull
         fi
@@ -236,11 +237,14 @@ runs:
           git -c core.editor=true cherry-pick --continue
         fi
 
+        echo "removing cherrypickerr.txt"
         # Remove cherrypickerr.txt
         rm cherrypickerr.txt
 
+        echo "before push"
         # Push CHANGELOG.md changes to $pr_branch
         git push -u origin $pr_branch
+        echo "after push"
 
         gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
 
