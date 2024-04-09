@@ -171,14 +171,14 @@ runs:
           cat builderr.txt
           greperr=$(grep "Error: '--version'" builderr.txt || true)
 
+          # Remove builderr.txt
+          rm builderr.txt
+
           # If greperr contains the error message, run with the tag specified
           if [ -n "$greperr" ]; then
             # Update changelog with the tag version
             towncrier build --yes --version ${{ env.TAG_VERSION }}
           fi
-
-          # Remove builderr.txt
-          rm builderr.txt
 
           # Configure git username & email
           git config user.name 'pyansys-ci-bot'
@@ -237,6 +237,9 @@ runs:
         cat cherrypickerr.txt
         conflict=$(grep "CONFLICT" cherrypickerr.txt || true)
 
+        # Remove cherrypickerr.txt
+        rm cherrypickerr.txt
+
         if [ -n "$conflict" ]; then
           # Show which files are "theirs" from the cherry-pick
 
@@ -247,9 +250,6 @@ runs:
           # Continue the cherry-pick without a commit message
           git -c core.editor=true cherry-pick --continue
         fi
-
-        # Remove cherrypickerr.txt
-        rm cherrypickerr.txt
 
         # Push CHANGELOG.md changes to $pr_branch
         git push -u origin $pr_branch
