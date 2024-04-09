@@ -93,10 +93,11 @@ runs:
         # /refs/tags/v0.1.0 -> 0.1.0
         echo "TAG_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
 
-    - name: "Install towncrier and toml"
+    - name: "Install towncrier, toml, and the project"
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==23.11.0 toml==0.10.2
+        python -m pip install -e .
 
     - name: "Get towncrier directory"
       shell: python
@@ -233,6 +234,7 @@ runs:
         git checkout -b $pr_branch
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
+        cat cherrypickerr.txt
         greperr=$(grep "CONFLICT" cherrypickerr.txt || true)
 
         # If greperr contains the cherry-pick conflict message, delete the fragment files
