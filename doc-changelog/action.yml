@@ -156,7 +156,7 @@ runs:
     - name: "Create and commit towncrier fragment"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-        PR_TITLE: "${{ github.event.pull_request.title }}"
+        PR_TITLE: '${{ github.event.pull_request.title }}'
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
@@ -165,7 +165,7 @@ runs:
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
         # Remove extra whitespace from PR title
-        clean_title=`echo ${{ env.PR_TITLE }} | xargs`
+        clean_title=$(echo '${{ env.PR_TITLE }}' | xargs)
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR

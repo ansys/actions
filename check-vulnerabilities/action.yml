@@ -42,18 +42,6 @@ description: |
     being introduced by them on their feature branch (while no new advisories
     are created).
 
-  .. note::
-
-      This action also allows you to upload the vulnerabilities detected to the
-      PyAnsys dashboard. This is done by setting the ``pyansys-dashboard-upload``
-      input to ``true``. However, this option is only available for the ``ansys``
-      and ``ansys-internal`` GitHub organizations. If your repository
-      is not part of these organizations, the action will not upload the
-      vulnerabilities to the PyAnsys dashboard.
-
-      In case we are running in ``dev-mode``, the upload to the PyAnsys dashboard
-      is disabled.
-
 
   The following list of `safety`_ vulnerabilities are accepted:
 
@@ -100,7 +88,6 @@ inputs:
     description: >
       Whether to run or not this action in development mode. It will activate
       by default the ``dry-run`` and ``exit-with-error-on-new-advisory`` flags.
-      Upload of information to the PyAnsys dashboard is disabled in dev-mode.
     required: false
     default: false
     type: boolean
@@ -160,28 +147,6 @@ inputs:
     description: >
       Desired Python version.
     default: '3.10'
-    required: false
-    type: string
-
-  pyansys-dashboard-upload:
-    description: >
-      Whether to upload the vulnerabilities to the PyAnsys dashboard.
-      By default, the vulnerabilities are not uploaded to the PyAnsys dashboard.
-    default: false
-    required: false
-    type: boolean
-
-  pyansys-dashboard-token:
-    description: >
-      Token with read permissions on the PyAnsys dashboard repository.
-    required: false
-    type: string
-
-  pyansys-dashboard-credentials:
-    description: >
-      Credentials to access the PyAnsys dashboard database. They
-      are available as a secret inside the ``ansys`` and ``ansys-internal``
-      organizations.
     required: false
     type: string
 
@@ -560,16 +525,3 @@ runs:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
-
-    - name: "Upload to PyAnsys dashboard"
-      uses: ansys/actions/_pyansys-dashboard-vulnerabilities-upload@main
-      # Only upload if the flag is set to true and we are not in dev-mode
-      if: inputs.pyansys-dashboard-upload == 'true' && inputs.dev-mode == 'false'
-      with:
-        pyansys-dashboard-token: ${{ inputs.pyansys-dashboard-token }}
-        pyansys-dashboard-credentials: ${{ inputs.pyansys-dashboard-credentials }}
-        dry-run: ${{ inputs.dry-run }}
-        repository: ${{ env.DEPENDENCY_CHECK_REPOSITORY }}
-        safety-report: ${{ github.workspace }}/info_safety.json
-        bandit-report: ${{ github.workspace }}/info_bandit.json
-        hide-log: ${{ inputs.hide-log }}
