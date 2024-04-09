@@ -278,6 +278,21 @@ runs:
           touch .nojekyll CNAME
           echo "${{ inputs.cname }}" > CNAME
 
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate the site-map for the latest development or stable
+          documentation.
+
+    - name: "Generate 'sitemap.xml' file"
+      uses: ansys/actions/_doc-gen-sitemap@main
+      with:
+        cname: ${{ inputs.cname }}
+        html-directory: version/stable
+
      # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
