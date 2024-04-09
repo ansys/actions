@@ -282,7 +282,7 @@ runs:
 
     - uses: ansys/actions/_logging@main
       # Apply this step only if 'version/stable/' dir exists
-      if: ${{ hasFiles('version/stable/' != '') }}
+      if: ${{ hashFiles('version/stable/' != '') }}
       with:
         level: "INFO"
         message: >
@@ -292,7 +292,7 @@ runs:
     - name: "Generate 'sitemap.xml' file"
       uses: ansys/actions/_doc-gen-sitemap@main
       # Apply this step only if 'version/stable/' dir exists
-      if: ${{ hasFiles('version/stable/' != '') }}
+      if: ${{ hashFiles('version/stable/' != '') }}
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
