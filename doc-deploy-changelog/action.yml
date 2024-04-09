@@ -148,9 +148,6 @@ runs:
     - name: "Create new section in CHANGELOG and reupload tag"
       shell: bash
       run: |
-        # Add newline after command runs
-        PROMPT_COMMAND="echo"
-
         # Get number of .md files in ${{ env.TOWNCRIER_DIR }}
         # Figure out how to use towncrier's directory from pyproject.toml
         count=$(find ${{ env.TOWNCRIER_DIR }} -type f -name "*.md" | wc -l)
@@ -213,9 +210,6 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
-        # Add newline after command runs
-        PROMPT_COMMAND="echo"
-
         # Get main branch name
         head_branch=$(git remote show origin | grep "HEAD branch:")
         formatted_head_branch=${head_branch#*: }
@@ -269,9 +263,6 @@ runs:
       if: contains(env.UPDATED_CHANGELOG, 'True')
       shell: bash
       run: |
-          # Add newline after command runs
-          PROMPT_COMMAND="echo"
-
           # Checkout branch created from tag with CHANGELOG update & pull
           git checkout ${{ env.UPDATE_BRANCH }}
           git pull
