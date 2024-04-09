@@ -211,23 +211,20 @@ runs:
         # Delete the remote branch if it exists
         if [ -n "$remote_branch_exists" ]; then
           git push origin --delete $pr_branch
+          git pull
         fi
 
         # Create a new $pr_branch
         git checkout -b $pr_branch
 
-        echo "before cherry-pick"
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
         cat cherrypickerr.txt
         greperr=$(grep "CONFLICT" cherrypickerr.txt)
-        echo $greperr
-        echo "after greperr"
 
         # If greperr contains the error message, run with the tag specified
         if [ -n "$greperr" ]; then
           # Get list of deleted files
           deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
-          echo $deleted_files
 
           # Delete files with conflicts (the fragment files being deleted)
           for i in "${deleted_files[@]}"
@@ -242,7 +239,7 @@ runs:
         # Remove cherrypickerr.txt
         rm cherrypickerr.txt
 
-        # Push CHANGELOG.md changes to maint/v$version-changelog
+        # Push CHANGELOG.md changes to $pr_branch
         git push -u origin $pr_branch
 
         gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
