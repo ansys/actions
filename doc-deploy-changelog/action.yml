@@ -153,7 +153,7 @@ runs:
           # for the command to work:
           # package = "ansys.<product>.<library>"
           buildcmd=$(towncrier build --yes >> builderr.txt 2>&1 || true)
-          greperr=$(grep "Error: '--version'" builderr.txt)
+          greperr=$(grep "Error: '--version'" builderr.txt || true)
 
           # If greperr contains the error message, run with the tag specified
           if [ -n "$greperr" ]; then
@@ -218,38 +218,28 @@ runs:
         git checkout -b $pr_branch
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
-        cat cherrypickerr.txt
-        # grep "CONFLICT" cherrypickerr.txt
-        # greperr=$(grep "CONFLICT" cherrypickerr.txt)
-        # echo "greperr: $greperr"
+        greperr=$(grep "CONFLICT" cherrypickerr.txt || true)
 
-        # # If greperr contains the error message, run with the tag specified
-        # if [ -n "$greperr" ]; then
-        #   echo "greperr exists"
-        #   # Get list of deleted files
-        #   deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
-        #   echo $deleted_files
+        # If greperr contains the cherry-pick conflict message, delete the fragment files
+        if [ -n "$greperr" ]; then
+          # Get list of deleted files
+          deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
 
-        #   # Delete files with conflicts (the fragment files being deleted)
-        #   for i in "${deleted_files[@]}"
-        #   do
-        #     echo $i
-        #     git rm $i
-        #   done
+          # Delete files with conflicts (the fragment files being deleted)
+          for i in "${deleted_files[@]}"
+          do
+            git rm $i
+          done
 
-        #   echo "continue cherry pick"
-        #   # Continue Cherry pick without commit message
-        #   git -c core.editor=true cherry-pick --continue
-        # fi
+          # Continue Cherry pick without commit message
+          git -c core.editor=true cherry-pick --continue
+        fi
 
-        # echo "removing cherrypickerr.txt"
-        # # Remove cherrypickerr.txt
-        # rm cherrypickerr.txt
+        # Remove cherrypickerr.txt
+        rm cherrypickerr.txt
 
-        echo "before push"
         # Push CHANGELOG.md changes to $pr_branch
         git push -u origin $pr_branch
-        echo "after push"
 
         gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
 
