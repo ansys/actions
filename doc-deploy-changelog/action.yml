@@ -219,32 +219,32 @@ runs:
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
         cat cherrypickerr.txt
-        grep "CONFLICT" cherrypickerr.txt
-        greperr=$(grep "CONFLICT" cherrypickerr.txt)
-        echo "greperr: $greperr"
+        # grep "CONFLICT" cherrypickerr.txt
+        # greperr=$(grep "CONFLICT" cherrypickerr.txt)
+        # echo "greperr: $greperr"
 
-        # If greperr contains the error message, run with the tag specified
-        if [ -n "$greperr" ]; then
-          echo "greperr exists"
-          # Get list of deleted files
-          deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
-          echo $deleted_files
+        # # If greperr contains the error message, run with the tag specified
+        # if [ -n "$greperr" ]; then
+        #   echo "greperr exists"
+        #   # Get list of deleted files
+        #   deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
+        #   echo $deleted_files
 
-          # Delete files with conflicts (the fragment files being deleted)
-          for i in "${deleted_files[@]}"
-          do
-            echo $i
-            git rm $i
-          done
+        #   # Delete files with conflicts (the fragment files being deleted)
+        #   for i in "${deleted_files[@]}"
+        #   do
+        #     echo $i
+        #     git rm $i
+        #   done
 
-          echo "continue cherry pick"
-          # Continue Cherry pick without commit message
-          git -c core.editor=true cherry-pick --continue
-        fi
+        #   echo "continue cherry pick"
+        #   # Continue Cherry pick without commit message
+        #   git -c core.editor=true cherry-pick --continue
+        # fi
 
-        echo "removing cherrypickerr.txt"
-        # Remove cherrypickerr.txt
-        rm cherrypickerr.txt
+        # echo "removing cherrypickerr.txt"
+        # # Remove cherrypickerr.txt
+        # rm cherrypickerr.txt
 
         echo "before push"
         # Push CHANGELOG.md changes to $pr_branch
