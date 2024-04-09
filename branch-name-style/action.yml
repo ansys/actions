@@ -51,6 +51,12 @@ runs:
       run: |
         branch_name=${{ github.head_ref || github.ref }}
 
+        # Ignore pre-commit.ci branch name
+        if [[ $branch_name == "pre-commit-ci-update-config" ]]; then
+          echo "\033[1;92m[INFO]: Branch name is pre-commit-ci-update-config. Skipping branch name check."
+          exit 0
+        fi
+
         if [[ $branch_name != */* ]]; then
           echo "\033[1;91m[ERROR]: Branch name $branch_name does not contain a prefix and a backslash." >&2
           exit 1
