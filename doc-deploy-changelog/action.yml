@@ -235,37 +235,18 @@ runs:
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
         cat cherrypickerr.txt
-        content_conflict=$(grep "CONFLICT (content)" cherrypickerr.txt || true)
-        delete_conflict=$(grep "CONFLICT (modify/delete)" cherrypickerr.txt || true)
         conflict=$(grep "CONFLICT" cherrypickerr.txt || true)
 
         if [ -n "$conflict" ]; then
+          # Show which files are "theirs" from the cherry-pick
+
+          # Apply all of the changes from the cherry-pick
           git checkout --theirs .
           git add .
-          git status
 
+          # Continue the cherry-pick without a commit message
           git -c core.editor=true cherry-pick --continue
         fi
-
-        # # If content_conflict isn't empty, cat the CHANGELOG.md file
-        # if [ -n "$content_conflict" ]; then
-        #   cat CHANGELOG.md
-        # fi
-
-        # # If delete_conflict isn't empty, delete the fragment files
-        # if [ -n "$delete_conflict" ]; then
-        #   # Get list of deleted files
-        #   deleted_files=( $(git status --porcelain | awk 'match($1, "D"){print $2}') )
-
-        #   # Delete files with conflicts (the fragment files being deleted)
-        #   for i in "${deleted_files[@]}"
-        #   do
-        #     git rm $i
-        #   done
-
-        #   # Continue Cherry pick without commit message
-        #   git -c core.editor=true cherry-pick --continue
-        # fi
 
         # Remove cherrypickerr.txt
         rm cherrypickerr.txt
