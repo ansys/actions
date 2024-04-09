@@ -124,10 +124,24 @@ runs:
           # v0.1.0 (tag) -> release/0.1
           tag_version=${{ env.TAG_VERSION }}
           release_branch="release/${tag_version%.*}"
-          echo "UPDATE_BRANCH=$release_branch" >> $GITHUB_ENV
+
+          # Check release_branch exists on remote
+          release_branch_exists=$(git ls-remote --heads origin refs/heads/$release_branch 2>&1)
+
+          # If the release branch doesn't exist, then use the temporary branch
+          if [ -z "$release_branch_exists" ]; then
+            # maint/changelog-update-v0.1.0
+            echo "UPDATE_BRANCH=maint/changelog-update-v${{ env.TAG_VERSION }}" >> $GITHUB_ENV
+            echo "RELEASE_BRANCH_EXISTS=false" >> $GITHUB_ENV
+          else
+            echo "UPDATE_BRANCH=$release_branch" >> $GITHUB_ENV
+            echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
+          fi
+
         else
           # maint/changelog-update-v0.1.0
           echo "UPDATE_BRANCH=maint/changelog-update-v${{ env.TAG_VERSION }}" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH_EXISTS=false" >> $GITHUB_ENV
         fi
 
     - name: "Create new section in CHANGELOG and reupload tag"
@@ -139,7 +153,7 @@ runs:
 
         if [ $count -gt 0 ]; then
           # Checkout branch from tag
-          if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
+          if [[ ${{ inputs.update-release-branch }} == "true" ]] && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             echo "Using release branch"
             git checkout ${{ env.UPDATE_BRANCH }}
             git pull
@@ -176,7 +190,7 @@ runs:
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
-          if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
+          if [[ ${{ inputs.update-release-branch }} == "true" ]] && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             git push
           else
             git push -u origin ${{ env.UPDATE_BRANCH }}
@@ -265,7 +279,7 @@ runs:
           # Create the tag on remote
           git push origin v${{ env.TAG_VERSION }}
 
-          if [[ ${{ inputs.update-release-branch }} == "false" ]]; then
+          if [[ ${{ inputs.update-release-branch }} == "false" ]] || [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
             # Delete branch created from deleted tag with CHANGELOG update
             git push origin --delete ${{ env.UPDATE_BRANCH }}
           fi
