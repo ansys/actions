@@ -205,30 +205,16 @@ runs:
         # Set branch for PR
         pr_branch=maint/v${{ env.TAG_VERSION }}-changelog
 
-        changelog_branch=$(git checkout -b $pr_branch >> brancherr.txt 2>&1 || true)
+        # Check if pr_branch exists on remote
+        remote_branch_exists=$(git ls-remote --heads origin refs/heads/$pr_branch 2>&1)
 
-        # fatal: a branch named $pr_branch already exists
-        fatal_err=$(grep "fatal: " brancherr.txt)
-
-        # error: unable to delete $pr_branch: remote ref does not exist
-        error=$(grep "error: " brancherr.txt)
-
-        if [ -n "$fatal_err" || -n "$error" ]; then
-          if [ -n "$fatal_err" ]; then
-            # Delete branch locally
-            git branch -D $pr_branch
-          fi
-
-          if [ -n "$error" ]; then
-            # Delete branch locally
-            git branch -D $pr_branch
-          fi
-
-          # Checkout new branch
-          git checkout -b $pr_branch
+        # Delete the remote branch if it exists
+        if [ -n "$remote_branch_exists" ]; then
+          git push origin --delete $pr_branch
         fi
 
-        rm brancherr.txt
+        # Create a new $pr_branch
+        git checkout -b $pr_branch
 
         cherrypick=$(git cherry-pick ${{ env.COMMIT_SHA }} >> cherrypickerr.txt 2>&1 || true)
         greperr=$(grep "CONFLICT" cherrypickerr.txt)
