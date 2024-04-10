@@ -191,7 +191,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: SMoraisAnsys/actions/_doc-build-windows@feat/doc-build-os-compatible
+      uses: ansys/actions/_doc-build-windows@feat/doc-build-os-compatible
       with:
         python-version: ${{ inputs.python-version }}
         use-python-cache: ${{ inputs.use-python-cache }}
