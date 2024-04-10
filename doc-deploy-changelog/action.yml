@@ -149,7 +149,6 @@ runs:
       shell: bash
       run: |
         # Get number of .md files in ${{ env.TOWNCRIER_DIR }}
-        # Figure out how to use towncrier's directory from pyproject.toml
         count=$(find ${{ env.TOWNCRIER_DIR }} -type f -name "*.md" | wc -l)
 
         if [ $count -gt 0 ]; then
@@ -255,7 +254,7 @@ runs:
         # Push CHANGELOG.md changes to $pr_branch
         git push -u origin $pr_branch
 
-        gh pr create --title "Update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
+        gh pr create --title "chore: update CHANGELOG for v${{ env.TAG_VERSION }}" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
 
     - name: "Delete & Re-create tag"
       env:

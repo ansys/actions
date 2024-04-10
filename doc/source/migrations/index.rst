@@ -27,7 +27,6 @@ Development version
 **Migration steps:**
 
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
-- To upload vulnerability advisories to the PyAnsys Dashboard, see the :ref:`pyansys_dashboard_upload`.
 - To set up your repository to use the ``ansys/actions/doc-deploy-changelog`` action, see the :ref:`doc_deploy_changelog_action_setup`.
 
 Version ``v5``
