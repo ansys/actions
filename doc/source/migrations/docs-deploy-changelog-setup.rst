@@ -1,4 +1,4 @@
-.. _doc_deploy_changelog_action_setup:
+.. _docs_deploy_changelog_action_setup:
 
 Doc-deploy-changelog action setup
 =================================

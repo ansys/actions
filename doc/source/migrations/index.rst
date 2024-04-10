@@ -27,7 +27,7 @@ Development version
 **Migration steps:**
 
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
-- To set up your repository to use the ``ansys/actions/doc-deploy-changelog`` action, see the :ref:`doc_deploy_changelog_action_setup`.
+- To set up your repository to use the ``ansys/actions/doc-deploy-changelog`` action, see the :ref:`docs_deploy_changelog_action_setup`.
 
 Version ``v5``
 --------------
@@ -83,3 +83,4 @@ Version ``v4``
    :maxdepth: 3
 
    docs-changelog-setup
+   docs-deploy-changelog-setup
