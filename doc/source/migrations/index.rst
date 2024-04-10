@@ -25,6 +25,23 @@ Development version
 
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
 
+Version ``v6``
+--------------
+
+**New features:**
+- SEO improvements. These are implemented inside the `doc-deploy-dev
+  <https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-dev-action>`_
+  and the `doc-deploy-stable
+  <https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-stable-action>`_.
+  Users are not required to apply any changes to their ``conf.py`` or
+  ``.github/workflows/*.yml`` files. Noticable changes include:
+
+  - No more redirect from landing page to `version/stable/index.html`
+  - Generation of `robots.txt` file for avoiding indexing old documentation versions
+  - Generation of `sitemap.xml` file for quicker indexing of `version/stable/` pages
+  - Inclusion of `canonical` link tags in all HTML files for SEO purposes
+
+
 Version ``v5``
 --------------
 
