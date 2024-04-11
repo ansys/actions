@@ -99,6 +99,7 @@ inputs:
       .. warning::
 
           This option is not taken into account when runner ``os`` is ``'Windows'``.
+
     default: false
     required: false
     type: boolean
