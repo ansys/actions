@@ -23,7 +23,7 @@
 name: >
   Documentation build action
 
-description: >
+description: |
   Build library documentation using `Sphinx
   <https://www.sphinx-doc.org/en/master/>`_. The action installs and uses
   `sphinx-build <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_
