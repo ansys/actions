@@ -14,21 +14,11 @@ Development version
 
 - Added the ``ansys/actions/check-vulnerabilities`` action to check for third-party and first-party vulnerabilities.
   This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
+
 - Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
+
 - Create a changelog fragment file for each pull request using ``towncrier`` in the ``ansys/actions/doc-changelog`` action.
 
-**Breaking changes:**
-
-- N/A
-
-**Migration steps:**
-
-- To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
-
-Version ``v6``
---------------
-
-**New features:**
 - SEO improvements. These are implemented inside the `doc-deploy-dev
   <https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-dev-action>`_
   and the `doc-deploy-stable
@@ -41,6 +31,13 @@ Version ``v6``
   - Generation of `sitemap.xml` file for quicker indexing of `version/stable/` pages
   - Inclusion of `canonical` link tags in all HTML files for SEO purposes
 
+**Breaking changes:**
+
+- N/A
+
+**Migration steps:**
+
+- To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
 
 Version ``v5``
 --------------
