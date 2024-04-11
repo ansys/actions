@@ -13,6 +13,7 @@ or follow these steps:
 .. code:: toml
 
     [tool.towncrier]
+    package = "ansys.<product>.<library>"
     directory = "doc/changelog.d"
     filename = "CHANGELOG.md"
     start_string = "<!-- towncrier release notes start -->\n"
@@ -74,7 +75,7 @@ or follow these steps:
 
 .. code:: md
 
-    This project uses [towncrier](https://towncrier.readthedocs.io/) and the changes for the upcoming release can be found in <https://github.com/ansys/{repo-name}/tree/main/docs/changelog.d/>.
+    This project uses [towncrier](https://towncrier.readthedocs.io/) and the changes for the upcoming release can be found in <https://github.com/ansys/{repo-name}/tree/main/doc/changelog.d/>.
 
     <!-- towncrier release notes start -->
 

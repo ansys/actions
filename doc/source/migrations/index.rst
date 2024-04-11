@@ -16,8 +16,9 @@ Development version
   This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
 - Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
 - Create a changelog fragment file for each pull request using ``towncrier`` in the ``ansys/actions/doc-changelog`` action.
-- Vulnerability advisories can now be uploaded to the PyAnsys Dashboard using the ``ansys/actions/check-vulnerabilities`` action
-  by setting the ``pyansys-dashboard-upload`` input to ``true``, together with the necessary credentials.
+- Generate a new section in ``CHANGELOG.md`` if fragment files exist using ``towncrier`` in the ``ansys/actions/doc-deploy-changelog`` action.
+  By default, it updates the CHANGELOG in the release branch and creates a pull request into the main branch with the updated CHANGELOG and
+  deleted fragment files.
 
 **Breaking changes:**
 
@@ -27,16 +28,16 @@ Development version
 **Migration steps:**
 
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
-- To upload vulnerability advisories to the PyAnsys Dashboard, see the :ref:`pyansys_dashboard_upload`.
+- To set up your repository to use the ``ansys/actions/doc-deploy-changelog`` action, see the :ref:`docs_deploy_changelog_action_setup`.
 
 Version ``v5``
 --------------
 
 **New features:**
 
-- Added ``ansys/action/check-vulnerabilities`` to check for third party and first party vulnerabilities.
-  This action uses ``bandit`` and ``safety`` to check for vulnerabilities in the code and dependencies, respectively.
-- Added ``ansys/actions/docker-style`` to check for Dockerfile style issues using ``hadolint``.
+- Added ``ansys/action/check-vulnerabilities`` to verify third party and first party vulnerabilities.
+  This action uses ``bandit`` and ``safety`` to detect vulnerabilities in the code and dependencies, respectively.
+- Added ``ansys/actions/docker-style`` to detect Dockerfile style issues using ``hadolint``.
 - Allow ``vale`` version input in ``ansys/actions/doc-style`` action. By default, ``2.29.6`` is used.
 - Allow using the twine ``--skip-existing`` flag in the ``ansys/actions/release-pypi-*`` actions.
 - Allow using the ``ansys/actions/doc-build`` action to build documentation using a dedicated requirements file (and
@@ -83,4 +84,4 @@ Version ``v4``
    :maxdepth: 3
 
    docs-changelog-setup
-   pyansys-dashboard-upload
+   docs-deploy-changelog-setup

@@ -49,6 +49,13 @@ inputs:
     required: false
     type: string
 
+  towncrier-version:
+    description: >
+      Towncrier version used for creating fragment files.
+    default: '23.11.0'
+    required: false
+    type: string
+
   use-python-cache:
     description: >
       Whether to use the Python cache for installing previously downloaded
@@ -82,7 +89,7 @@ runs:
     - name: "Install towncrier"
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier
+        python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }}
 
     - name: "Get labels in the pull request"
       env:
@@ -156,7 +163,7 @@ runs:
     - name: "Create and commit towncrier fragment"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-        PR_TITLE: "${{ github.event.pull_request.title }}"
+        PR_TITLE: '${{ github.event.pull_request.title }}'
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
@@ -164,9 +171,12 @@ runs:
         # For example, 20.added.md
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
+        # Remove extra whitespace from PR title
+        clean_title=$(echo '${{ env.PR_TITLE }}' | xargs)
+
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "${{ env.PR_TITLE }}" $fragment
+        towncrier create -c "$clean_title" $fragment
 
         # Configure git username & email
         git config user.name 'pyansys-ci-bot'
