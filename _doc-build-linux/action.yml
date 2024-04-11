@@ -25,16 +25,18 @@ name: >
 
 description: |
   Build library documentation using `Sphinx
-  <https://www.sphinx-doc.org/en/master/>`_. The action installs and uses
-  `sphinx-build <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_
+  <https://www.sphinx-doc.org/en/master/>`_. The action installs documentation
+  dependencies provided either in a requirement file, e.g.
+  ``requirements/requirements_doc.txt``, or in the ``[doc]`` section of the
+  additional dependencies in the ``pyproject.toml`` file. Assuming that
+  `sphinx-build
+  <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ is available
+  after installing the documentation dependencies, the action uses it
   to generate documentation from the source. It requires that all the
-  documentation is contained in the ``doc/`` directory of a project.
-  Documentation dependencies need to be declared in a
-  ``requirements/requirements_doc.txt`` file or in the ``[doc]`` section of the
-  additional dependencies in the ``pyproject.toml`` file. The action locates the
-  ``doc/Makefile`` file and runs the ``make html`` and ``make pdf`` commands. If
-  desired, the ``make json`` command can also be executed to generate JSON
-  documentation.
+  documentation is contained in the ``doc/`` directory of a project. The
+  action locates the ``doc/Makefile`` and runs the ``make html`` and
+  ``make pdf`` commands. If desired, the ``make json`` command can
+  also be executed to generate JSON documentation.
 
 inputs:
 
