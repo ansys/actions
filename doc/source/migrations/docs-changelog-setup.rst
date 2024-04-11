@@ -13,6 +13,7 @@ or follow these steps:
 .. code:: toml
 
     [tool.towncrier]
+    package = "ansys.<product>.<library>"
     directory = "doc/changelog.d"
     filename = "CHANGELOG.md"
     start_string = "<!-- towncrier release notes start -->\n"

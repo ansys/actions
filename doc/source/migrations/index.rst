@@ -16,6 +16,9 @@ Development version
   This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
 - Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
 - Create a changelog fragment file for each pull request using ``towncrier`` in the ``ansys/actions/doc-changelog`` action.
+- Generate a new section in ``CHANGELOG.md`` if fragment files exist using ``towncrier`` in the ``ansys/actions/doc-deploy-changelog`` action.
+  By default, it updates the CHANGELOG in the release branch and creates a pull request into the main branch with the updated CHANGELOG and
+  deleted fragment files.
 
 **Breaking changes:**
 
@@ -24,6 +27,7 @@ Development version
 **Migration steps:**
 
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
+- To set up your repository to use the ``ansys/actions/doc-deploy-changelog`` action, see the :ref:`docs_deploy_changelog_action_setup`.
 
 Version ``v5``
 --------------
@@ -79,3 +83,4 @@ Version ``v4``
    :maxdepth: 3
 
    docs-changelog-setup
+   docs-deploy-changelog-setup
