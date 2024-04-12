@@ -170,7 +170,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@feat/doc-build-os-compatible
+      uses: ansys/actions/_doc-build-linux@main
       with:
         python-version: ${{ inputs.python-version }}
         use-python-cache: ${{ inputs.use-python-cache }}
@@ -196,7 +196,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@feat/doc-build-os-compatible
+      uses: ansys/actions/_doc-build-windows@main
       with:
         python-version: ${{ inputs.python-version }}
         use-python-cache: ${{ inputs.use-python-cache }}
