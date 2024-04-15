@@ -22,7 +22,7 @@ Development version
 
 **Breaking changes:**
 
-- Upgrade default ``vale`` version from ``2.29.6`` to ``3.3.0`` in ``ansys/actions/doc-style`` action.
+- Upgrade default ``vale`` version from ``2.29.6`` to ``3.4.1`` in ``ansys/actions/doc-style`` action.
   Vale config file ``.vale.ini`` and ``Vocab/ANSYS`` has to be changed as per `Vale section <https://dev.docs.pyansys.com/doc-style/formatting-tools.html#vale>`_ in PyAnsys developer’s guide
 
 **Migration steps:**
