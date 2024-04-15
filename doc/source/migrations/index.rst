@@ -23,10 +23,11 @@ Development version
 **Breaking changes:**
 
 - Upgrade default ``vale`` version from ``2.29.6`` to ``3.4.1`` in ``ansys/actions/doc-style`` action.
-  Vale config file ``.vale.ini`` and ``Vocab/ANSYS`` has to be changed as per `Vale section <https://dev.docs.pyansys.com/doc-style/formatting-tools.html#vale>`_ in PyAnsys developer’s guide
+- Vale config file ``.vale.ini`` and ``Vocab/ANSYS`` has to be changed.
 
 **Migration steps:**
 
+- To set up your repository to use the ``ansys/actions/doc-style`` action, see the :ref:`docs_style_vale_update`.
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
 - To set up your repository to use the ``ansys/actions/doc-deploy-changelog`` action, see the :ref:`docs_deploy_changelog_action_setup`.
 
@@ -80,8 +81,9 @@ Version ``v4``
   for a detailed migration guide.
 
 .. toctree::
-   :hidden:
-   :maxdepth: 3
+  :hidden:
+  :maxdepth: 3
 
-   docs-changelog-setup
-   docs-deploy-changelog-setup
+  docs-style-vale-version-update
+  docs-changelog-setup
+  docs-deploy-changelog-setup
