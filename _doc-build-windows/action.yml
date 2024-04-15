@@ -1,0 +1,287 @@
+# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: >
+  Documentation build action (Windows)
+
+description: |
+  Build library documentation using `Sphinx
+  <https://www.sphinx-doc.org/en/master/>`_. The action installs documentation
+  dependencies provided either in a requirement file, e.g.
+  ``requirements/requirements_doc.txt``, or in the ``[doc]`` section of the
+  additional dependencies in the ``pyproject.toml`` file. Assuming that
+  `sphinx-build
+  <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ is available
+  after installing the documentation dependencies, the action uses it
+  to generate documentation from the source. It requires that all the
+  documentation is contained in the ``doc/`` directory of a project. The
+  action locates the ``doc/make.bat`` and runs the ``make.bat html`` and
+  ``make.bat pdf`` commands. If desired, the ``make.bat json`` command can
+  also be executed to generate JSON documentation.
+
+inputs:
+
+  # Required inputs
+
+  python-version:
+    description: >
+        Python version used for installing and running ``Sphinx``.
+    required: true
+    type: string
+
+  use-python-cache:
+    description: >
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: true
+    type: boolean
+
+  sphinxopts:
+    description: >
+      Set of options to pass to the ``Sphinx`` builder.
+
+      .. note::
+
+          This will override the ``SPHINXOPTS`` declared in your Makefile.
+
+    required: true
+    type: string
+
+  dependencies:
+    description: >
+      String of system dependencies to be installed before building the
+      documentation of the project.
+    required: true
+    type: string
+
+  skip-dependencies-cache:
+    description: >
+      Whether to ignore dependencies cache or not for OS libraries.
+    required: true
+    type: boolean
+
+  skip-install:
+    description: >
+      Whether to skip the installation of the project.
+      Pure documentation projects require that this action be set to ``false``
+      because there is no Python library associated with the project.
+    required: true
+    type: boolean
+
+  requirements-file:
+    description: >
+      Path to the requirements file in case it needs to be in a specific location.
+      This is useful for non python projects, where you don't necessarily have a requirements
+      file in the root of the project.
+    required: true
+    type: string
+
+  checkout:
+    description: >
+      Whether to clone the repository in the CI/CD machine.
+    required: true
+    type: boolean
+
+  skip-json-build:
+    description: >
+      Whether to skip the generation of JSON documentation.
+    required: true
+    type: boolean
+
+  check-links:
+    description: >
+      Whether to perform external link checks during the generation of
+      documentation.
+    required: true
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install Chocolatey to install dependencies.
+
+    - name: Download script and install Chocolatey
+      shell: powershell
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        echo "C:\ProgramData\chocolatey\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install system dependencies. Even if no dependencies are provided,
+          Miktex is installed to build the documentation.
+
+    - name: Collect system dependencies
+      shell: powershell
+      run: |
+        echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }}')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Cache Chocolatey packages
+      id: cache
+      uses: actions/cache@v2
+      if: ${{ (inputs.skip-dependencies-cache == 'false') && (env.NEEDED_DEPS != '') }}
+      with:
+        path: ~\AppData\Local\Temp\chocolatey
+        key: choco-${{ env.NEEDED_DEPS }}
+        restore-keys: choco
+
+    - name: Install packages with Chocolatey
+      if: ${{ (steps.cache.outputs.cache-hit != 'true') && (env.NEEDED_DEPS != '') }}
+      shell: powershell
+      run: choco install ${{ env.NEEDED_DEPS }} -y
+
+    - name: Install Miktex and update PATH with Miktex binaries
+      shell: powershell
+      run: |
+        choco install miktex -y
+        echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up Miktex to allow downloading missing packages when building documentation.
+
+    - name: Set up Miktex to automatically install packages
+      shell: powershell
+      run: |
+        initexmf --set-config-value [MPM]AutoInstall=1
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to build the documentation.
+
+    - name: "Update pip"
+      shell: powershell
+      run: python -m pip install -U pip
+
+    - name: Check if requirements.txt file exists
+      shell: powershell
+      run: |
+        echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path '${{ inputs.requirements-file }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+
+    - name: Print previous output
+      shell: powershell
+      run: |
+        echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
+
+    - name: Install documentation dependencies from requirements file
+      shell: powershell
+      if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'true' }}
+      run: |
+        python -m pip install -r ${{ inputs.requirements-file }}
+
+    - name: Install Python library
+      shell: powershell
+      if: ${{ inputs.skip-install == 'false' }}
+      run: |
+        python -m pip install .
+
+    - name: Install documentation dependencies from pyproject.toml
+      shell: powershell
+      if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'false' }}
+      run: |
+        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
+            python -m pip install poetry
+            poetry install --with doc
+        } else {
+            python -m pip install .[doc]
+        }
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build HTML, PDF and JSON documentation.
+
+    - name: Determine command context
+      shell: powershell
+      run: |
+        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        } else {
+          echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }
+        echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
+
+    - name: Build HTML, PDF, and JSON documentation
+      shell: powershell
+      run: |
+        echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
+        if ("${{ inputs.check-links }}" -eq 'true' ) {
+          ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+        }
+        ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        ${{ env.SPHINX_BUILD_MAKE }} pdf
+        if ("${{ inputs.skip-json-build }}" -eq 'false' ) {
+          ${{ env.SPHINX_BUILD_MAKE }} json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        }
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Upload HTML, PDF and JSON documentation.
+
+    - name: Upload HTML documentation artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-html
+        path: doc/_build/html
+        retention-days: 7
+
+    - name: Upload PDF documentation artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-pdf
+        path: doc/_build/latex/*.pdf
+        retention-days: 7
+
+    - name: Upload JSON documentation artifact
+      uses: actions/upload-artifact@v4
+      if: inputs.skip-json-build == 'false'
+      with:
+        name: documentation-json
+        path: doc/_build/json
+        retention-days: 7
