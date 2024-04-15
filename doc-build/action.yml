@@ -25,15 +25,20 @@ name: >
 
 description: >
   Build library documentation using `Sphinx
-  <https://www.sphinx-doc.org/en/master/>`_. The action installs and uses
-  `sphinx-build <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_
+  <https://www.sphinx-doc.org/en/master/>`_. The action installs documentation
+  dependencies provided either in a requirement file, e.g.
+  ``requirements/requirements_doc.txt``, or in the ``[doc]`` section of the
+  additional dependencies in the ``pyproject.toml`` file. Assuming that
+  `sphinx-build
+  <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ is available
+  after installing the documentation dependencies, the action uses it
   to generate documentation from the source. It requires that all the
-  documentation is contained in the ``doc/`` directory of a project.
-  Documentation dependencies need to be declared in a
-  ``requirements/requirements_doc.txt`` file or in the ``[doc]`` section of the
-  additional dependencies in the ``pyproject.toml`` file. The action locates the
-  ``doc/Makefile`` file and runs the ``make html`` and ``make pdf`` commands. If
-  desired, the ``make json`` command can also be executed to generate JSON
+  documentation is contained in the ``doc/`` directory of a project. Depending
+  on the operating system, the action locates the ``doc/Makefile``
+  (resp. ``doc/make.bat``) file for Linux (resp. Windows) and runs the
+  ``make html`` (resp. ``make.bat html``) and ``make pdf``
+  (resp. ``make.bat pdf``) commands. If desired, the ``make json`` (resp.
+  ``make.bat json``) command can also be executed to generate JSON
   documentation.
 
 inputs:
@@ -94,6 +99,11 @@ inputs:
       If ``true``, installs `X Virtual Frame Buffer (XVFB)
       <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and
       runs the whole test session using XVFB. Default value is ``false``.
+
+      .. warning::
+
+          This option is not taken into account when runner ``os`` is ``'Windows'``.
+
     default: false
     required: false
     type: boolean
@@ -144,40 +154,7 @@ runs:
   using: "composite"
   steps:
 
-    - name: "Install Git and clone project"
-      uses: actions/checkout@v4
-      if: ${{ inputs.checkout == 'true' }}
-
-    - name: "Collect system dependencies"
-      shell: bash
-      run: |
-        if [[ ${{ inputs.requires-xvfb }} == 'true' ]]; then
-          echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }} xvfb')" >> $GITHUB_ENV
-        else
-          echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }}')" >> $GITHUB_ENV
-        fi
-
-    - name: "Cache apt packages needed"
-      uses: awalsh128/cache-apt-pkgs-action@v1.3.1
-      if: inputs.skip-dependencies-cache == 'false' && env.NEEDED_DEPS != ''
-      with:
-        packages: ${{ env.NEEDED_DEPS }}
-        version: 1.0
-
-    - name: "Update apt-get"
-      shell: bash
-      run: |
-        sudo apt-get update
-
-    - name: "Install system dependencies"
-      shell: bash
-      run: |
-        sudo apt-get install -y ${{ env.NEEDED_DEPS }}
-
-    - name: "Install LaTeX"
-      shell: bash
-      run: |
-        sudo apt-get install -y texlive-latex-extra latexmk
+    # --------------- Common to linux and windows doc-build ----------------
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -185,100 +162,49 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
-    - name: "Update pip"
-      shell: bash
-      run: python -m pip install -U pip
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v4
+      if: ${{ inputs.checkout == 'true' }}
 
-    - name: "Check if requirements.txt file exists"
-      shell: bash
-      run: |
-        echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f ${{ inputs.requirements-file }} ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+    # ------------------------------------------------------------------------
 
-    - name: "Print previous output"
-      shell: bash
-      run: |
-        echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
-
-    - name: "Install documentation dependencies from requirements file"
-      shell: bash
-      if: env.EXISTS_DOC_REQUIREMENTS == 'true'
-      run: |
-        python -m pip install -r ${{ inputs.requirements-file }}
-
-    - name: "Install Python library"
-      shell: bash
-      if: inputs.skip-install == 'false'
-      run: |
-        python -m pip install .
-
-    - name: "Install documentation dependencies from pyproject.toml"
-      shell: bash
-      if: env.EXISTS_DOC_REQUIREMENTS == 'false'
-      run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          python -m pip install poetry
-          poetry install --with doc
-        else
-          python -m pip install .[doc]
-        fi
-
-    - name: "Determine make command context"
-      shell: bash
-      run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
-        else
-          echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
-        fi
-
-    - name: "Build HTML, PDF, and JSON documentation"
-      if: inputs.requires-xvfb == 'false'
-      shell: bash
-      run: |
-        if [[ ${{ inputs.check-links }} == 'true' ]];
-        then
-          ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
-        fi
-        ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
-        if [[ ${{ inputs.skip-json-build }} == 'false' ]];
-        then
-          ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
-        fi
-
-    - name: "Build HTML, PDF, and JSON documentation using xvfb"
-      if: inputs.requires-xvfb == 'true'
-      shell: bash
-      run: |
-        if [[ ${{ inputs.check-links }} == 'true' ]];
-        then
-          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
-        fi
-        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
-        if [[ ${{ inputs.skip-json-build }} == 'false' ]];
-        then
-          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
-        fi
-
-    - name: "Upload HTML documentation artifact"
-      uses: actions/upload-artifact@v4
+    - name: Documentation build (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      uses: ansys/actions/_doc-build-linux@feat/doc-build-os-compatible
       with:
-        name: documentation-html
-        path: doc/_build/html
-        retention-days: 7
+        python-version: ${{ inputs.python-version }}
+        use-python-cache: ${{ inputs.use-python-cache }}
+        sphinxopts: ${{ inputs.sphinxopts }}
+        dependencies: ${{ inputs.dependencies }}
+        skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
+        requires-xvfb: ${{ inputs.requires-xvfb }}
+        skip-install: ${{ inputs.skip-install }}
+        requirements-file: ${{ inputs.requirements-file }}
+        checkout: ${{ inputs.checkout }}
+        skip-json-build: ${{ inputs.skip-json-build }}
+        check-links: ${{ inputs.check-links }}
 
-    - name: "Upload PDF documentation artifact"
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation-pdf
-        path: doc/_build/latex/*.pdf
-        retention-days: 7
+    # ------------------------------------------------------------------------
 
-    - name: "Upload JSON documentation artifact"
-      uses: actions/upload-artifact@v4
-      if: inputs.skip-json-build == 'false'
+    - name: Check input (Windows)
+      if: ${{ (runner.os == 'Windows') && (inputs.requires-xvfb == 'true') }}
+      uses: ansys/actions/_logging@main
       with:
-        name: documentation-json
-        path: doc/_build/json
-        retention-days: 7
+        level: "WARNING"
+        message: >
+          X virtual framebuffer is not used when building with Windows.
+
+    - name: Documentation build (Windows)
+      if: ${{ runner.os == 'Windows' }}
+      uses: ansys/actions/_doc-build-windows@feat/doc-build-os-compatible
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-python-cache: ${{ inputs.use-python-cache }}
+        sphinxopts: ${{ inputs.sphinxopts }}
+        dependencies: ${{ inputs.dependencies }}
+        skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
+        skip-install: ${{ inputs.skip-install }}
+        requirements-file: ${{ inputs.requirements-file }}
+        checkout: ${{ inputs.checkout }}
+        skip-json-build: ${{ inputs.skip-json-build }}
+        check-links: ${{ inputs.check-links }}

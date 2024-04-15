@@ -49,6 +49,13 @@ inputs:
     required: false
     type: string
 
+  towncrier-version:
+    description: >
+      Towncrier version used for creating fragment files.
+    default: '23.11.0'
+    required: false
+    type: string
+
   use-python-cache:
     description: >
       Whether to use the Python cache for installing previously downloaded
@@ -82,7 +89,7 @@ runs:
     - name: "Install towncrier"
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier
+        python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }}
 
     - name: "Get labels in the pull request"
       env:
