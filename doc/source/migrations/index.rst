@@ -30,7 +30,7 @@ Development version
   ``.github/workflows/*.yml`` files. Noticable changes include:
 
   - No more redirect from landing page to `version/stable/index.html`
-  - Generation of `robots.txt` file for avoiding indexing old documentation versions
+  - Generation of ``robots.txt`` file for avoiding indexing old documentation versions
   - Generation of `sitemap.xml` file for quicker indexing of `version/stable/` pages
   - Inclusion of `canonical` link tags in all HTML files for SEO purposes
 
