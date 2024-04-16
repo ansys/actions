@@ -82,13 +82,6 @@ runs:
 
         find_html_files() {
             local directory=$1
-            find "$directory" -type f -name "*.html" \
-                ! \( -name "announcement.html" -o -name "webpack-macros.html" -o -path "${directory}/index.html" \) \
-                -exec bash -c 'remove_canonical_tag "$0" && add_canonical_tag "$0"' {} \;
-        }
-
-        find_html_files() {
-            local directory=$1
             # Remove any canonical tags
             find "$directory" -type f -name "*.html" \
                 -exec bash -c 'remove_canonical_tag "$0"' {} \;
