@@ -9,6 +9,7 @@ or follow these steps:
 
 
 1. Add the following lines to the ``pyproject.toml`` file, replacing ``{repo-name}`` with the name of the repository. For example, ``pyansys-geometry``.
+Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.module``. For example, ``ansys.geometry.core``.
 
 .. code:: toml
 
