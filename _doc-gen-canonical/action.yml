@@ -38,9 +38,9 @@ inputs:
     required: true
     type: string
 
-  html-directory:
+  version-directory:
     description: >
-      Name of the directory containing the HTML files of the website.
+      Relative path to the directory containing the version pages of the website.
     required: true
     type: string
 
@@ -63,7 +63,7 @@ runs:
 
         remove_canonical_tag() {
             local file=$1
-            grep -vP '<link\s+rel="canonical".*\/>' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+            sed -i '/<link rel="canonical"/d' $file
         }
 
         add_canonical_tag() {
@@ -83,11 +83,22 @@ runs:
         find_html_files() {
             local directory=$1
             find "$directory" -type f -name "*.html" \
-                ! \( -name "announcement.html" -o -name "webpack-macros.html" \) \
+                ! \( -name "announcement.html" -o -name "webpack-macros.html" -o -path "${directory}/index.html" \) \
                 -exec bash -c 'remove_canonical_tag "$0" && add_canonical_tag "$0"' {} \;
         }
 
-        find_html_files ${{ inputs.html-directory }}
+        find_html_files() {
+            local directory=$1
+            # Remove any canonical tags
+            find "$directory" -type f -name "*.html" \
+                -exec bash -c 'remove_canonical_tag "$0"' {} \;
+            # Add new canonical tags
+            find "$directory" -type f -name "*.html" \
+                ! \( -name "announcement.html" -o -name "webpack-macros.html" -o -path "${directory}/index.html" \) \
+                -exec bash -c 'add_canonical_tag "$0"' {} \;
+        }
+
+        find_html_files ${{ inputs.version-directory }}
 
         # Ensure that 'version/{stable|dev}/index.html' uses as canonical the
         # landing page of the documentation
@@ -99,9 +110,9 @@ runs:
 
         export -f replace_canonical_link
 
-        if [[ -f 'version/stable/index.html' ]]; then
+        if [[ -f "${{ inputs.version-directory }}/stable/index.html" ]]; then
           replace_canonical_link 'version/stable/index.html'
-        elif [[ -f 'version/dev/index.html' ]]; then
+        elif [[ -f "${{ inputs.version-directory }}/dev/index.html" ]]; then
           replace_canonical_link 'version/dev/index.html'
         else
           echo "Error: The 'index.html' file does not exist." >&2
