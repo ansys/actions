@@ -11,12 +11,12 @@ as input for the ``doc-style`` action like below.
 .. code:: yaml
 
     doc-style:
-        name: Documentation Style Check
-        runs-on: ubuntu-latest
-        steps:
+      name: Documentation Style Check
+      runs-on: ubuntu-latest
+      steps:
         - name: PyAnsys documentation style checks
-            uses: ansys/actions/doc-style@v5
-            with:
+          uses: ansys/actions/doc-style@v5
+          with:
             token: ${{ secrets.GITHUB_TOKEN }}
             vale-version: "3.4.1"
 
@@ -42,7 +42,6 @@ In any of the preceding conditions there are two changes needs to implemented:
       [*.{rst}]
       BasedOnStyles = Vale, Google
       Vale.Terms = NO
-
 
 Finally, verify that the ``doc-style`` action is functioning correctly with the latest changes applied.
 Run the action and ensure that the documentation style checks are performed without any issues.
