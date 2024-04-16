@@ -8,3 +8,4 @@ PyPI
 towncrier
 TXT
 PyAnsys Dashboard
+robots.txt
