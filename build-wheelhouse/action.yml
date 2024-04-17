@@ -93,7 +93,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v6
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -172,7 +172,7 @@ runs:
         retention-days: 7
 
     - name: Check library's dependencies license
-      uses: ansys/actions/check-licenses@main
+      uses: ansys/actions/check-licenses@v6
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}

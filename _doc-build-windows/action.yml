@@ -119,7 +119,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -135,7 +135,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -169,7 +169,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -182,7 +182,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -227,7 +227,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -258,7 +258,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >

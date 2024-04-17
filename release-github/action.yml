@@ -68,7 +68,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -86,7 +86,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -115,7 +115,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -130,7 +130,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
@@ -144,7 +144,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -163,7 +163,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v6
       with:
         level: "INFO"
         message: >
