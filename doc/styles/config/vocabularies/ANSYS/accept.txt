@@ -1,0 +1,11 @@
+Ansys
+ansys
+CI
+dev
+GitHub
+pytest
+PyPI
+towncrier
+TXT
+PyAnsys Dashboard
+robots.txt
