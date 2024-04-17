@@ -14,11 +14,25 @@ Development version
 
 - Added the ``ansys/actions/check-vulnerabilities`` action to check for third-party and first-party vulnerabilities.
   This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
+
 - Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
+
 - Create a changelog fragment file for each pull request using ``towncrier`` in the ``ansys/actions/doc-changelog`` action.
 - Generate a new section in ``CHANGELOG.md`` if fragment files exist using ``towncrier`` in the ``ansys/actions/doc-deploy-changelog`` action.
   By default, it updates the CHANGELOG in the release branch and creates a pull request into the main branch with the updated CHANGELOG and
   deleted fragment files.
+
+- SEO improvements. These are implemented inside the `doc-deploy-dev
+  <https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-dev-action>`_
+  and the `doc-deploy-stable
+  <https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-stable-action>`_.
+  Users are not required to apply any changes to their ``conf.py`` or
+  ``.github/workflows/*.yml`` files. Noticable changes include:
+
+  - No more redirect from landing page to `version/stable/index.html`
+  - Generation of ``robots.txt`` file for avoiding indexing old documentation versions
+  - Generation of `sitemap.xml` file for quicker indexing of `version/stable/` pages
+  - Inclusion of `canonical` link tags in all HTML files for SEO purposes
 
 **Breaking changes:**
 

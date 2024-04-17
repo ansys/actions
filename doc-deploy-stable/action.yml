@@ -123,25 +123,6 @@ inputs:
     default: 'main-content'
     type: string
 
-  redirection-title:
-    description: >
-      Title to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will assign
-      "Redirecting to ``https://<CNAME>/version/stable/``" or
-      "Redirecting to ``https://<CNAME>/version/dev/``" depending on whether
-      there is a stable version released already or not.
-    required: false
-    default: ''
-    type: string
-
-  redirection-description:
-    description: >
-      Description to be inserted in the redirection index.html coming from the
-      multi-version mechanism implemented. By default, it will be empty.
-    required: false
-    default: ''
-    type: string
-
   independent-patch-release-docs:
     description: >
       Whether to generate documentation for independent patch releases. Default
@@ -400,32 +381,38 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generate the redirection link. Since this is the stable documentation
-          deployment action, there is always a 'version/stable' folder. Hence,
-          redirection link always points to this folder.
+          Include a link canonical tag in old versions if not present.
 
-    - name: "Generate the redirection URL"
+    - name: "Include link canonical tag in pages"
+      uses: ansys/actions/_doc-gen-canonical@main
+      with:
+        cname: ${{ inputs.cname }}
+        version-directory: version
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Copy the index.html from the stable version and update all
+          local href and source links to point to either the stable or dev version.
+
+    - name: "Use the latest 'version/{stable|dev}/index.html' in the landing page"
       shell: bash
       run: |
-        echo "REDIRECTION_URL=https://${{ inputs.cname }}/version/stable/" >> $GITHUB_ENV
-
-    - name: "Create the 'index.html' redirection file"
-      shell: bash
-      run: |
-        echo "<!DOCTYPE html>" > index.html
-        echo "<html>" >> index.html
-        echo "  <head>" >> index.html
-        echo "    <meta charset=\"utf-8\">" >> index.html
-        if [ -z "${{ inputs.redirection-title }}" ]; then
-          echo "    <title>Redirecting to ${{ env.REDIRECTION_URL }}</title>" >> index.html
+        if [[ -f 'version/stable/index.html' ]]; then
+          cp version/stable/index.html index.html
+          sed -i 's/href="\([^http]\)/href="version\/stable\/\1/g' index.html
+          sed -i 's/src="\([^http]\)/src="version\/stable\/\1/g' index.html
+        elif [[ -f 'version/dev/index.html' ]]; then
+          cp version/dev/index.html index.html
+          sed -i 's/href="\([^http]\)/href="version\/dev\/\1/g' index.html
+          sed -i 's/src="\([^http]\)/src="version\/dev\/\1/g' index.html
         else
-          echo "    <title>${{ inputs.redirection-title }}</title>" >> index.html
+          echo "Error: The 'index.html' file does not exist." >&2
+          exit 1
         fi
-        echo "    <meta name=\"description\" content=\"${{ inputs.redirection-description }}\">" >> index.html
-        echo "    <meta http-equiv=\"refresh\" content=\"0; URL=${{ env.REDIRECTION_URL }}\">" >> index.html
-        echo "    <link rel=\"canonical\" href=\"${{ env.REDIRECTION_URL }}\">" >> index.html
-        echo "  </head>" >> index.html
-        echo "</html>" >> index.html
 
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
@@ -475,6 +462,19 @@ runs:
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate the "robots.txt" file for guiding web crawlers (spiders)
+
+    - name: "Generate 'robots.txt' file"
+      uses: ansys/actions/_doc-gen-robots@main
+      with:
+        cname: ${{ inputs.cname }}
 
     # ------------------------------------------------------------------------
 
