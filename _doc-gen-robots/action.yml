@@ -54,7 +54,7 @@ runs:
     - name: "Generate the robots.txt file"
       shell: bash
       run: |
-        rm robots.txt && touch robots.txt
+        rm -rf robots.txt && touch robots.txt
 
     - name: "Allow all agents to crawl the website"
       shell: bash
