@@ -214,7 +214,7 @@ runs:
           Include a link canonical tag in old versions if not present.
 
     - name: "Include link canonical tag in pages"
-      uses: ansys/actions/_doc-gen-canonical@feat/seo-improvements
+      uses: ansys/actions/_doc-gen-canonical@main
       with:
         cname: ${{ inputs.cname }}
         version-directory: version

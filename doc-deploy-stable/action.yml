@@ -384,7 +384,7 @@ runs:
           Include a link canonical tag in old versions if not present.
 
     - name: "Include link canonical tag in pages"
-      uses: ansys/actions/_doc-gen-canonical@feat/seo-improvements
+      uses: ansys/actions/_doc-gen-canonical@main
       with:
         cname: ${{ inputs.cname }}
         version-directory: version
@@ -472,7 +472,7 @@ runs:
           Generate the "robots.txt" file for guiding web crawlers (spiders)
 
     - name: "Generate 'robots.txt' file"
-      uses: ansys/actions/_doc-gen-robots@feat/seo-improvements
+      uses: ansys/actions/_doc-gen-robots@main
       with:
         cname: ${{ inputs.cname }}
 
