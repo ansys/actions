@@ -233,12 +233,12 @@ runs:
       run: |
         if [[ -f 'version/stable/index.html' ]]; then
           cp version/stable/index.html index.html
-          sed -i 's/href="\([^http]\)/href="version\/stable\/\1/g' index.html
-          sed -i 's/src="\([^http]\)/src="version\/stable\/\1/g' index.html
+          sed -i 's/href="\([^:"]*\)"/href="version\/stable\/\1"/g' index.html
+          sed -i 's/src="\([^:"]*\)"/src="version\/stable\/\1"/g' index.html
         elif [[ -f 'version/dev/index.html' ]]; then
           cp version/dev/index.html index.html
-          sed -i 's/href="\([^http]\)/href="version\/dev\/\1/g' index.html
-          sed -i 's/src="\([^http]\)/src="version\/dev\/\1/g' index.html
+          sed -i 's/href="\([^:"]*\)"/href="version\/dev\/\1"/g' index.html
+          sed -i 's/src="\([^:"]*\)"/src="version\/dev\/\1"/g' index.html
         else
           echo "Error: The 'index.html' file does not exist." >&2
           exit 1
