@@ -12,6 +12,15 @@ Development version
 
 **New features:**
 
+**Breaking changes:**
+
+**Migration steps:**
+
+Version ``v6``
+--------------
+
+**New features:**
+
 - Added the ``ansys/actions/check-vulnerabilities`` action to check for third-party and first-party vulnerabilities.
   This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
 
