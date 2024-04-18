@@ -42,8 +42,8 @@ inputs:
 
   use-upper-case:
     description: >
-      Use of uppercase letters in the "type" and "scope" fields of the commit.
-      For example, "FIX(SERVER)!: fix server crash issue" would be a valid commit.
+      Use of uppercase letters in the "type" field of the commit.
+      For example, "FIX!: fix server crash issue" would be a valid commit.
 
       .. note::
 
