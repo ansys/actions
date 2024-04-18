@@ -20,7 +20,8 @@ as input for the ``doc-style`` action like below.
             token: ${{ secrets.GITHUB_TOKEN }}
             vale-version: "3.4.1"
 
-In any of the preceding conditions there are two changes needs to implemented:
+In any of the preceding conditions, there are two mandatory changes and one optional (depending on
+the repository setup) needs to implemented:
 
 1. Update ``Vocab/ANSYS`` path
 
@@ -42,6 +43,21 @@ In any of the preceding conditions there are two changes needs to implemented:
       [*.{rst}]
       BasedOnStyles = Vale, Google
       Vale.Terms = NO
+
+3. Update ``codespell`` hook
+
+   If your repository includes a ``codespell`` hook in the ``.pre-commit-config.yaml`` file,
+   utilizing the ``accept.txt`` file, it necessitates modification to reflect the new path
+   as provided below.
+
+   .. code:: yaml
+
+     - repo: https://github.com/codespell-project/codespell
+       rev: v2.2.6
+       hooks:
+       - id: codespell
+         args: ["--ignore-words", "doc/styles/config/vocabularies/ANSYS/accept.txt"]
+
 
 Finally, verify that the ``doc-style`` action is functioning correctly with the latest changes applied.
 Run the action and ensure that the documentation style checks are performed without any issues.
