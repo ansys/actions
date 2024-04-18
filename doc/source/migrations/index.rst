@@ -43,6 +43,13 @@ Version ``v6``
   - Generation of `sitemap.xml` file for quicker indexing of `version/stable/` pages
   - Inclusion of `canonical` link tags in all HTML files for SEO purposes
 
+- Extend ``ansys/actions/doc-build`` to be able to run in Windows runners.
+  To buid the documentation in a Windows runner, we install ``Chocolatey`` and ``Miktex``.
+
+- Allow ``ansys/actions/commit-style`` to work with upper case in the type field of a commit.
+  Expected types are upper cases of  `conventional commit types
+  <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
+
 **Breaking changes:**
 
 - Upgrade default ``vale`` version from ``2.29.6`` to ``3.4.1`` in ``ansys/actions/doc-style`` action.
