@@ -156,15 +156,15 @@ runs:
 
     # --------------- Common to linux and windows doc-build ----------------
 
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v4
+      if: ${{ inputs.checkout == 'true' }}
+
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@v6
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
-
-    - name: "Install Git and clone project"
-      uses: actions/checkout@v4
-      if: ${{ inputs.checkout == 'true' }}
 
     # ------------------------------------------------------------------------
 
