@@ -124,6 +124,84 @@ At the end of the ``.github/workflows/label.yml`` file, add the following lines 
             token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 
 
+Implementing the changelog as part of your documentation
+--------------------------------------------------------
+
+The previous steps set up the changelog for your repository. To implement the changelog in your documentation,
+some modifications have to be performed. Based on the PyAnsys libraries standards, this section assumes that
+the repository has a ``docs`` directory with a Sphinx documentation setup.
+
+1. Create a new file named ``changelog.rst`` in the ``docs`` directory. Add the following lines to the file:
+
+.. code:: rst
+
+    .. _ref_release_notes:
+
+    Release notes
+    #############
+
+    This document contains the release notes for the project.
+
+    .. vale off
+
+    .. towncrier release notes start
+
+2. Add the ``changelog.rst`` file to the ``index.rst`` file in the ``docs`` directory.
+
+.. code:: rst
+
+    .. toctree::
+       :hidden:
+       :maxdepth: 3
+
+       changelog
+       <other files>
+
+
+3. Add the following lines to the ``conf.py`` file in the ``docs`` directory, replacing ``{repo-name}``
+   and ``{org-name}`` with the name of the repository:
+
+.. code:: python
+
+    # If we are on a release, we have to ignore the "release" URLs, since it is not
+    # available until the release is published.
+    if switcher_version != "dev":
+        linkcheck_ignore.append(
+            f"https://github.com/{org-name}/{repo-name}/releases/tag/v{__version__}"
+        )
+
+4. Modify the ``pyproject.toml`` file to include the following lines, replacing ``{repo-name}``
+   and ``{org-name}`` with the name of the repository:
+
+.. code:: toml
+
+    [tool.towncrier]
+    package = "ansys.<product>.<library>"
+    directory = "doc/changelog.d"
+    filename = "doc/source/changelog.rst"
+    start_string = ".. towncrier release notes start\n"
+    template = "doc/changelog.d/changelog_template.jinja"
+    title_format = "`{version} <https://github.com/{org-name}/{repo-name}/releases/tag/v{version}>`_ - {project_date}"
+    issue_format = "`#{issue} <https://github.com/{org-name}/{repo-name}/pull/{issue}>`_"
+
+.. note::
+
+    The previous ``CHANGELOG.md`` file can be removed from the repository, as the changelog is now part of the documentation.
+
+    However, if the ``CHANGELOG.md`` file is kept, it can be adapted to include the link to the documentation changelog.
+
+    For example, the ``CHANGELOG.md`` file could look like this:
+
+    .. code:: md
+
+        This project uses [towncrier](https://towncrier.readthedocs.io/) and the
+        changes for the upcoming release can be found in
+        this [repository file](doc/changelog.d/changelog.rst).
+
+
+A reference pull request for the changes can be found in the `PyAnsys Geometry repository <https://github.com/ansys/pyansys-geometry/pull/1138>`_.
+This pull request includes some other changes, but the changelog implementation is the same as described in this document.
+
 ``towncrier`` commands
 ----------------------
 
