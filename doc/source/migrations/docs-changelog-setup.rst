@@ -167,9 +167,6 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
     # available until the release is published.
     if switcher_version != "dev":
         linkcheck_ignore.append(
-            rf"https://github.com/{org-name}/{repo-name}/releases/download/v{__version__}/.*"
-        )
-        linkcheck_ignore.append(
             f"https://github.com/{org-name}/{repo-name}/releases/tag/v{__version__}"
         )
 
