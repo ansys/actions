@@ -159,7 +159,7 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
 
 
 3. Add the following lines to the ``conf.py`` file in the ``docs`` directory, replacing ``{repo-name}``
-   and ``{org_name}`` with the name of the repository:
+   and ``{org-name}`` with the name of the repository:
 
 .. code:: python
 
@@ -167,14 +167,14 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
     # available until the release is published.
     if switcher_version != "dev":
         linkcheck_ignore.append(
-            rf"https://github.com/{org_name}/{repo_name}/releases/download/v{__version__}/.*"
+            rf"https://github.com/{org-name}/{repo-name}/releases/download/v{__version__}/.*"
         )
         linkcheck_ignore.append(
-            f"https://github.com/{org_name}/{repo_name}/releases/tag/v{__version__}"
+            f"https://github.com/{org-name}/{repo-name}/releases/tag/v{__version__}"
         )
 
 4. Modify the ``pyproject.toml`` file to include the following lines, replacing ``{repo-name}``
-   and ``{org_name}`` with the name of the repository:
+   and ``{org-name}`` with the name of the repository:
 
 .. code:: toml
 
@@ -184,8 +184,8 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
     filename = "doc/source/changelog.rst"
     start_string = ".. towncrier release notes start\n"
     template = "doc/changelog.d/changelog_template.jinja"
-    title_format = "`{version} <https://github.com/{org_name}/{repo_name}/releases/tag/v{version}>`_ - {project_date}"
-    issue_format = "`#{issue} <https://github.com/{org_name}/{repo_name}/pull/{issue}>`_"
+    title_format = "`{version} <https://github.com/{org-name}/{repo-name}/releases/tag/v{version}>`_ - {project_date}"
+    issue_format = "`#{issue} <https://github.com/{org-name}/{repo-name}/pull/{issue}>`_"
 
 .. note::
 
