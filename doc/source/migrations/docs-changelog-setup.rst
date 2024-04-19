@@ -124,8 +124,8 @@ At the end of the ``.github/workflows/label.yml`` file, add the following lines 
             token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 
 
-Implemeting the changelog as part of your documentation
--------------------------------------------------------
+Implementing the changelog as part of your documentation
+--------------------------------------------------------
 
 The previous steps set up the changelog for your repository. To implement the changelog in your documentation,
 some modifications have to be performed. Based on the PyAnsys libraries standards, this section assumes that
