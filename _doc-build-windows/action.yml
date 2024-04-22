@@ -282,20 +282,6 @@ runs:
         message: >
           Set environment variable PACKAGE_PDF_FILENAME.
 
-    # - name: Determine pdf filename
-    #   if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-    #   shell: powershell
-    #   run: |
-    #     python -m pip install toml
-    #     $PDF_FILENAME=$(python -c ""
-    #       import toml;\
-    #       pyproject = toml.load('pyproject.toml');\
-    #       name = pyproject.get('tool', {}).get('poetry', {}).get('name')\
-    #             or pyproject.get('tool', {}).get('flit', {}).get('module', {}).get('name');\
-    #       pdf_name = name + '.pdf';\
-    #       print(pdf_name)")
-    #     echo "PDF_FILENAME=${PDF_FILENAME} | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
     - name: Install toml
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
