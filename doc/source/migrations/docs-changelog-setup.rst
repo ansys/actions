@@ -119,7 +119,7 @@ At the end of the ``.github/workflows/label.yml`` file, add the following lines 
           pull-requests: write
         runs-on: ubuntu-latest
         steps:
-        - uses: ansys/actions/doc-changelog@main
+        - uses: ansys/actions/doc-changelog@{{ version }}
           with:
             token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 

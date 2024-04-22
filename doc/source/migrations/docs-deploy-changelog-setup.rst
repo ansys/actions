@@ -45,6 +45,11 @@ Once the ``doc-changelog`` action is done being set up, continue with the ``doc-
           with:
             library-name: ${{ '{{ env.PACKAGE_NAME }}' }}
 
+.. warning::
+
+    `PyAnsys CI Bot <https://github.com/pyansys-ci-bot>`_ needs to be an Admin of the repository to run the `doc-deploy-changelog` action.
+
+
 2. Optional - Add the ``package`` line to the ``tool.towncrier`` section of the ``pyproject.toml``. This is the same as the name under ``tool.flit.module``:
 
 .. code:: toml
