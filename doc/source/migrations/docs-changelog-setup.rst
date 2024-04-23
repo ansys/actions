@@ -146,6 +146,9 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
 
     .. towncrier release notes start
 
+
+    .. vale on
+
 2. Add the ``changelog.rst`` file to the ``index.rst`` file in the ``docs`` directory.
 
 .. code:: rst
