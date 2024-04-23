@@ -81,10 +81,10 @@ runs:
         # Add other URLs
         while IFS= read -r -d '' file; do
           if [[ $file == *"$input_dir"* ]]; then
-            url=${file%.html}
+            url=${file}
           else
             # $input_dir is not in the file path, add it to the beginning of the URL
-            url="$input_dir${file%.html}"
+            url="$input_dir${file}"
           fi
           echo "  <url>" >> $output
           echo "    <loc>$website/$url</loc>" >> $output
