@@ -73,7 +73,7 @@ runs:
             local baseurl="https://${{ inputs.cname }}/version/stable"
             local canonical_url="${baseurl}/${relative_path}"
             local link_tag="\ \ <link rel=\"canonical\" href=\"$canonical_url\" />"
-            sed -i "/<\/head>/i$link_tag" "$file"
+            sed -i "/^ *<\/head>/i$link_tag" "$file"
             echo "Canonical link added to $file"
         }
 
