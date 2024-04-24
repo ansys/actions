@@ -37,7 +37,7 @@ description: |
       - ``maint``
       - ``docs``
       - ``no-ci``
-      - ``testing or test``
+      - ``testing`` or ``test``
       - ``release``
       - ``dependabot``
 
