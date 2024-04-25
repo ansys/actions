@@ -84,10 +84,16 @@ runs:
         version=${{ inputs.vale-version }}
         vale_major_version=$( echo $version | cut -d '.' -f 1)
         echo "VALE_MAJOR_VERSION=$(echo $major)" >> $GITHUB_ENV
+        echo "VALE_MAJOR_VERSION set to $vale_major_version"  # Add this line for debugging
 
     - name: "Verify Vale's configuration layout according to selected version"
       shell: bash
       run: |
+        if [ -z "$VALE_MAJOR_VERSION" ]; then
+          echo "VALE_MAJOR_VERSION is not set."
+          exit 1
+        fi
+
         if [ $VALE_MAJOR_VERSION -ge 3 ]; then
           if [ ! -d ./doc/styles/config/vocabularies ]; then
             echo "Projects using Vale >=v3 require a doc/styles/config/vocabularies directory."
