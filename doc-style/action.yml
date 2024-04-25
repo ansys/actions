@@ -89,14 +89,14 @@ runs:
       shell: bash
       run: |
         if [ $VALE_MAJOR_VERSION -ge 3 ]; then
-          if [ ! -d ./doc/styles/config/vocabularies/ANSYS ]; then
-            echo "Projects using Vale >=v3 require a doc/styles/config/vocabularies/ANSYS directory."
+          if [ ! -d ./doc/styles/config/vocabularies ]; then
+            echo "Projects using Vale >=v3 require a doc/styles/config/vocabularies directory."
             echo "See migration guide https://actions.docs.ansys.com/version/stable/migrations/docs-style-vale-version-update.html"
             exit 1
           fi
         else
-          if [ ! -d ./doc/styles/Vocab/ANSYS ]
-            echo "Projects using Vale <=v2 require a doc/styles/Vocab/ANSYS directory. Consider updating your Vale version to v3."
+          if [ ! -d ./doc/styles/Vocab ]
+            echo "Projects using Vale <=v2 require a doc/styles/Vocab directory. Consider updating your Vale version to v3."
             echo "See migration guide https://actions.docs.ansys.com/version/stable/migrations/docs-style-vale-version-update.html"
             exit 1
           fi
