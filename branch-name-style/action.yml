@@ -31,15 +31,15 @@ description: |
 
       Branch names must start with one of the following prefixes:
 
-      - fix
-      - feat
-      - junk
-      - maint
-      - docs
-      - no-ci
-      - testing or test
-      - release
-      - dependabot
+      - ``fix``
+      - ``feat``
+      - ``junk``
+      - ``maint``
+      - ``docs``
+      - ``no-ci``
+      - ``testing`` or ``test``
+      - ``release``
+      - ``dependabot``
 
 runs:
   using: "composite"

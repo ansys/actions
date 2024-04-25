@@ -12,6 +12,10 @@ Development version
 
 **New features:**
 
+- Added an optional input to the ``ansys/actions/build-library`` action to disable library build
+  validation on demand using the ``validate-build: false`` argument. This is useful when you want to
+  skip the library build validation step in the action.
+
 **Breaking changes:**
 
 **Migration steps:**
