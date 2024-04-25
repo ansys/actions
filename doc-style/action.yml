@@ -71,6 +71,43 @@ runs:
       uses: actions/checkout@v4
       if: inputs.checkout == 'true'
 
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Ensure Vale configuration follows the right layout for the specified
+          version of Vale.
+
+    - name: "Check Vale's version"
+      shell: bash
+      run: |
+        version=${{ inputs.vale-version }}
+        vale_major_version=$( echo $version | cut -d '.' -f 1)
+        echo "VALE_MAJOR_VERSION=$(echo $vale_major_version)" >> $GITHUB_ENV
+        echo "VALE_MAJOR_VERSION set to $vale_major_version"  # Add this line for debugging
+
+    - name: "Verify Vale's configuration layout according to selected version"
+      shell: bash
+      run: |
+        if [ -z "$VALE_MAJOR_VERSION" ]; then
+          echo "VALE_MAJOR_VERSION is not set."
+          exit 1
+        fi
+
+        if [ $VALE_MAJOR_VERSION -ge 3 ]; then
+          if [ ! -d ./doc/styles/config/vocabularies ]; then
+            echo "Projects using Vale >=v3 require a doc/styles/config/vocabularies directory."
+            echo "See migration guide https://actions.docs.ansys.com/version/stable/migrations/docs-style-vale-version-update.html"
+            exit 1
+          fi
+        else
+          if [ ! -d ./doc/styles/Vocab ]; then
+            echo "Projects using Vale <=v2 require a doc/styles/Vocab directory. Consider updating your Vale version to v3."
+            echo "See migration guide https://actions.docs.ansys.com/version/stable/migrations/docs-style-vale-version-update.html"
+            exit 1
+          fi
+        fi
+
     - name: "Run Vale"
       uses: errata-ai/vale-action@reviewdog
       env:
