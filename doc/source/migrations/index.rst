@@ -12,10 +12,6 @@ Development version
 
 **New features:**
 
-- Added an optional input to the ``ansys/actions/build-library`` action to disable library build
-  validation on demand using the ``validate-build: false`` argument. This is useful when you want to
-  skip the library build validation step in the action.
-
 **Breaking changes:**
 
 **Migration steps:**
@@ -53,6 +49,10 @@ Version ``v6``
 - Allow ``ansys/actions/commit-style`` to work with upper case in the type field of a commit.
   Expected types are upper cases of  `conventional commit types
   <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
+
+- Added an optional input to the ``ansys/actions/build-library`` action to disable library build
+  validation on demand using the ``validate-build: false`` argument. This is useful when you want to
+  skip the library build validation step in the action.
 
 **Breaking changes:**
 
