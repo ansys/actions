@@ -95,7 +95,7 @@ runs:
             exit 1
           fi
         else
-          if [ ! -d ./doc/styles/Vocab ]
+          if [ ! -d ./doc/styles/Vocab ]; then
             echo "Projects using Vale <=v2 require a doc/styles/Vocab directory. Consider updating your Vale version to v3."
             echo "See migration guide https://actions.docs.ansys.com/version/stable/migrations/docs-style-vale-version-update.html"
             exit 1
