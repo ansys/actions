@@ -134,6 +134,8 @@ runs:
       if: contains('gh-pages', inputs.branch)
       shell: bash
       run: |
+        git ls-remote --heads origin refs/heads/gh-pages
+
         # Check the gh-pages branch exists on remote
         gh_pages_exists=$(git ls-remote --heads origin refs/heads/gh-pages 2>&1)
 
