@@ -130,6 +130,20 @@ runs:
           echo "REPOSITORY=${{ inputs.repository }}" >> $GITHUB_ENV
         fi
 
+    - name: "Check if gh-pages branch exists"
+      if: contains('gh-pages', inputs.branch)
+      shell: bash
+      run: |
+        # Check the gh-pages branch exists on remote
+        gh_pages_exists=$(git ls-remote --heads origin refs/heads/gh-pages 2>&1)
+
+        # If the gh-pages branch doesn't exist, then print error message and exit 1
+        if [ -z "$gh_pages_exists" ]; then
+          echo "The gh-pages branch does not exist."
+          echo "Please create an empty branch named 'gh-pages', and add the .nojekyll file to the branch."
+          exit 1
+        fi
+
     - name: "Checkout ${{ env.REPOSITORY }} repository"
       uses: actions/checkout@v4
       with:
