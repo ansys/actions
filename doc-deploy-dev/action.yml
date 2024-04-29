@@ -121,8 +121,7 @@ runs:
           Checkout the repository branch for deploying the documentation. If
           this step fails, then it means that the provided token is not valid or
           the "${{ inputs.branch }}" branch does not exist. If the branch does not exist,
-          create an empty branch named "${{ inputs.branch }}" and add the .nojekyll file to
-          the branch.
+          create an empty branch named "${{ inputs.branch }}" and add the .nojekyll file to it.
 
     - name: "Get the name of the repository"
       shell: bash
