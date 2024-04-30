@@ -141,7 +141,7 @@ runs:
         BRANCH: ${{ inputs.branch }}
       shell: bash
       run: |
-        # Check the gh-pages branch exists on remote
+        # Check the ${{ env.BRANCH }} branch exists on remote
         branch_exists=$(git ls-remote --heads origin refs/heads/${{ env.BRANCH }} 2>&1)
 
         # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
@@ -152,17 +152,13 @@ runs:
           git checkout --orphan ${{ env.BRANCH }}
 
           # Remove all files in staging area
-          git rm -rf .
+          git rm --cached -r .
 
           # Create .nojekyll file
           touch .nojekyll
 
-          # Configure git username & email
-          git config user.name 'pyansys-ci-bot'
-          git config user.email 'pyansys.github.bot@ansys.com'
-
           # Add .nojekyll file, commit, and push branch to origin
-          git add .
+          git add .nojekyll
           git commit -m "Create ${{ env.BRANCH }} branch with .nojekyll file"
           git push -u origin ${{ env.BRANCH }}
         else
