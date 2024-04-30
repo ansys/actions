@@ -210,8 +210,41 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: ${{ env.REPOSITORY }}
-        ref: ${{ inputs.branch }}
         token: ${{ inputs.token }}
+
+    - name: "Check if branch exists"
+      env:
+        BRANCH: ${{ inputs.branch }}
+      shell: bash
+      run: |
+        # Check the gh-pages branch exists on remote
+        branch_exists=$(git ls-remote --heads origin refs/heads/${{ env.BRANCH }} 2>&1)
+
+        # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
+        if [ -z "$branch_exists" ]; then
+          echo "The ${{ env.BRANCH }} branch does not exist. Creating ${{ env.BRANCH }}."
+
+          # Create orphan branch
+          git checkout --orphan ${{ env.BRANCH }}
+
+          # Remove all files in staging area
+          git rm -rf .
+
+          # Create .nojekyll file
+          touch .nojekyll
+
+          # Configure git username & email
+          git config user.name 'pyansys-ci-bot'
+          git config user.email 'pyansys.github.bot@ansys.com'
+
+          # Add .nojekyll file, commit, and push branch to origin
+          git add .
+          git commit -m "Create ${{ env.BRANCH }} branch with .nojekyll file"
+          git push -u origin ${{ env.BRANCH }}
+        else
+          git remote update
+          git checkout --track origin/${{ env.BRANCH }}
+        fi
 
     # ------------------------------------------------------------------------
 
