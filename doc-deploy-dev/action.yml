@@ -169,7 +169,8 @@ runs:
           git push -u origin ${{ env.BRANCH }}
         fi
 
-        git checkout origin/${{ env.BRANCH }}
+        git remote update
+        git checkout --track origin/${{ env.BRANCH }}
 
     # ------------------------------------------------------------------------
 
