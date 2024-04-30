@@ -136,7 +136,6 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: ${{ env.REPOSITORY }}
-        # ref: ${{ inputs.branch }}
         token: ${{ inputs.token }}
 
     - name: "Check if branch exists"
@@ -151,15 +150,21 @@ runs:
         if [ -z "$branch_exists" ]; then
           echo "The ${{ env.BRANCH }} branch does not exist. Creating ${{ env.BRANCH }}."
 
+          # Create orphan branch
           git checkout --orphan ${{ env.BRANCH }}
+
+          # Remove all files in staging area
+          git rm -rf .
+
+          # Create .nojekyll file
           touch .nojekyll
 
           # Configure git username & email
           git config user.name 'pyansys-ci-bot'
           git config user.email 'pyansys.github.bot@ansys.com'
 
-          # Add nojekyll file, commit, and push branch to origin
-          git add .nojekyll
+          # Add .nojekyll file, commit, and push branch to origin
+          git add .
           git commit -m "Create ${{ env.BRANCH }} branch with .nojekyll file"
           git push -u origin ${{ env.BRANCH }}
         fi
