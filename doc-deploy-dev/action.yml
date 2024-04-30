@@ -167,10 +167,10 @@ runs:
           git add .
           git commit -m "Create ${{ env.BRANCH }} branch with .nojekyll file"
           git push -u origin ${{ env.BRANCH }}
+        else
+          git remote update
+          git checkout --track origin/${{ env.BRANCH }}
         fi
-
-        git remote update
-        git checkout --track origin/${{ env.BRANCH }}
 
     # ------------------------------------------------------------------------
 
