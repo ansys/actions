@@ -157,6 +157,10 @@ runs:
           # Create .nojekyll file
           touch .nojekyll
 
+          # Configure git username & email
+          git config user.name 'pyansys-ci-bot'
+          git config user.email 'pyansys.github.bot@ansys.com'
+
           # Add .nojekyll file, commit, and push branch to origin
           git add .nojekyll
           git commit -m "Create ${{ env.BRANCH }} branch with .nojekyll file"
