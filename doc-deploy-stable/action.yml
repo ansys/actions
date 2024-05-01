@@ -241,8 +241,9 @@ runs:
           git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
           git push -u origin ${{ env.BRANCH }}
         else
-          git remote update
-          git checkout --track origin/${{ env.BRANCH }}
+          # Fetch and switch to ${{ env.BRANCH }}
+          git fetch origin ${{ env.BRANCH }}:${{ env.BRANCH }}
+          git switch ${{ env.BRANCH }}
         fi
 
     # ------------------------------------------------------------------------

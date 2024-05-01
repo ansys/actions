@@ -151,14 +151,21 @@ runs:
           # Create orphan branch
           git checkout --orphan ${{ env.BRANCH }}
 
+          # Unstage files to be committed
+          git rm --cached -r .
+
+          # Remove untracked files
+          git clean -fd
+
           # Configure git username & email
           git config user.name 'pyansys-ci-bot'
           git config user.email 'pyansys.github.bot@ansys.com'
 
-          # Empty commit & push branch to origin
+          # Commit ${{ env.BRANCH }} & push to origin
           git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
-          git push origin ${{ env.BRANCH }}:${{ env.BRANCH }}
+          git push -u origin ${{ env.BRANCH }}
         else
+          # Fetch and switch to ${{ env.BRANCH }}
           git fetch origin ${{ env.BRANCH }}:${{ env.BRANCH }}
           git switch ${{ env.BRANCH }}
         fi
