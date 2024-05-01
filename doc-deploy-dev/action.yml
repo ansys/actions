@@ -155,7 +155,8 @@ runs:
           git config user.name 'pyansys-ci-bot'
           git config user.email 'pyansys.github.bot@ansys.com'
 
-          # Push branch to origin
+          # Empty commit & push branch to origin
+          git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
           git push origin ${{ env.BRANCH }}:${{ env.BRANCH }}
         else
           git switch ${{ env.BRANCH }}
