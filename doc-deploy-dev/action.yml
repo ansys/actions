@@ -159,6 +159,7 @@ runs:
           git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
           git push origin ${{ env.BRANCH }}:${{ env.BRANCH }}
         else
+          git fetch origin ${{ env.BRANCH }}:${{ env.BRANCH }}
           git switch ${{ env.BRANCH }}
         fi
 
