@@ -126,5 +126,5 @@ runs:
         level: error
         filter_mode: nofilter
         fail_on_error: true
-        vale_flags: "--config=${{ inputs.vale-config }} --glob='${{ env.VALE_GLOB }}'"
+        vale_flags: "--config=${{ inputs.vale-config }} --glob=${{ env.VALE_GLOB }}"
         version: ${{ inputs.vale-version }}
