@@ -55,6 +55,13 @@ inputs:
     required: false
     type: string
 
+  toml-version:
+    description: >
+      Toml version used for retrieving the towncrier directory.
+    default: '0.10.2'
+    required: false
+    type: string
+
   ignore-changelogd:
     description: >
       Whether or not to ignore doc/changelog.d/*.md files.
