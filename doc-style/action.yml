@@ -55,6 +55,13 @@ inputs:
     required: false
     type: string
 
+  vale-glob:
+    description: >
+      Glob for vale to run in addition to .vale.ini.
+    default: '!doc/changelog.d/*.md'
+    required: false
+    type: string
+
   checkout:
       description: >
         Whether to clone the repository in the CI/CD machine. Default value is
@@ -112,11 +119,12 @@ runs:
       uses: errata-ai/vale-action@reviewdog
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
+        VALE_GLOB: ${{ inputs.vale-glob }}
       with:
         files: doc
         reporter: github-pr-check
         level: error
         filter_mode: nofilter
         fail_on_error: true
-        vale_flags: "--config=${{ inputs.vale-config }}"
+        vale_flags: "--config=${{ inputs.vale-config }} --glob='${{ env.VALE_GLOB }}'"
         version: ${{ inputs.vale-version }}
