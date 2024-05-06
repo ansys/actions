@@ -367,6 +367,28 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - name: Check build directory
+      uses: ansys/actions/_logging@main
+      if: inputs.add-pdf-html-docs-as-assets == 'true'
+      with:
+        level: "INFO"
+        message: >
+          Add PDF and HTML documentation as assets.
+
+    - name: Compress HTML documentation
+      uses: vimtor/action-zip@v1.2
+      with:
+        files: ${{ env.EXPECTED_BUILD_DIR }}/html
+        dest: documentation-html.zip
+
+    - name: Add assets to HTML docs
+      shell: powershell
+      run: |
+        mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
+        cp ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
+
+    # ------------------------------------------------------------------------
+
     - name: "Upload HTML documentation artifact"
       uses: actions/upload-artifact@v4
       with:
