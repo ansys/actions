@@ -340,7 +340,7 @@ runs:
       shell: bash
       run: |
         echo "EXPECTED_DOWNLOAD_DIR=$(echo '${{ env.EXPECTED_BUILD_DIR }}\html\_static\assets\download')" >> $GITHUB_ENV
-        echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d '${{ env.EXPECTED_DOWNLOAD_DIR }}' ] && echo "true" || echo "false" ) >> $GITHUB_ENV
+        echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d '${{ env.EXPECTED_DOWNLOAD_DIR }}' ] && echo 'true' || echo 'false' )" >> $GITHUB_ENV
 
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
