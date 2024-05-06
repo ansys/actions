@@ -326,7 +326,7 @@ runs:
       shell: bash
       run: |
         echo "EXPECTED_BUILD_DIR='doc\_build'" >> $GITHUB_ENV
-        echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d '${{ env.EXPECTED_BUILD_DIR }}' ] && echo "true" || echo "false" ) >> $GITHUB_ENV
+        echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d '${{ env.EXPECTED_BUILD_DIR }}' ] && echo 'true' || echo 'false' ) >> $GITHUB_ENV
 
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
