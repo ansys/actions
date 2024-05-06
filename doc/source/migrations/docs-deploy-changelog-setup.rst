@@ -25,7 +25,7 @@ Once the ``doc-changelog`` action is done being set up, continue with the ``doc-
       steps:
         - uses: ansys/actions/doc-deploy-changelog@{{ version }}
           with:
-            token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
+            token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 
     release:
       name: Release project
@@ -36,14 +36,14 @@ Once the ``doc-changelog`` action is done being set up, continue with the ``doc-
         - name: Release to the public PyPI repository
           uses: ansys/actions/release-pypi-public@{{ version }}
           with:
-            library-name: ${{ '{{ env.PACKAGE_NAME }}' }}
+            library-name: ${{ env.PACKAGE_NAME }}
             twine-username: "__token__"
-            twine-token: ${{ '{{ secrets.PYPI_TOKEN }}' }}
+            twine-token: ${{ secrets.PYPI_TOKEN }}
 
         - name: Release to GitHub
           uses: ansys/actions/release-github@{{ version }}
           with:
-            library-name: ${{ '{{ env.PACKAGE_NAME }}' }}
+            library-name: ${{ env.PACKAGE_NAME }}
 
 .. warning::
 
