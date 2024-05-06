@@ -134,15 +134,15 @@ runs:
         import toml
 
         if os.path.exists("pyproject.toml"):
-          # Load pyproject.toml
-          with open('pyproject.toml', 'r') as f:
-              config = toml.load(f)
-              try:
-                  # Get towncrier directory
-                  directory=config["tool"]["towncrier"]["directory"]
-              except KeyError:
-                  # If towncrier directory isn't specified in pyproject.toml
-                  directory=""
+            # Load pyproject.toml
+            with open('pyproject.toml', 'r') as f:
+                config = toml.load(f)
+                try:
+                    # Get towncrier directory
+                    directory=config["tool"]["towncrier"]["directory"]
+                except KeyError:
+                    # If towncrier directory isn't specified in pyproject.toml
+                    directory=""
         else:
             directory=""
 
