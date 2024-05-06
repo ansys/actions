@@ -314,6 +314,13 @@ runs:
         message: >
           Unable to determine PDF filename using pyproject.toml data.
 
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
+      with:
+        level: "INFO"
+        message: >
+          Environment variable PACKAGE_PDF_FILENAME setted to ${{ env.PDF_FILENAME }}.
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -357,9 +364,15 @@ runs:
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
-        level: "ERROR"
+        level: "WARNING"
         message: >
-          Expected build directory ${{ env.EXPECTED_DOWNLOAD_DIR }} does not exist.
+          Expected build directory ${{ env.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
+
+    - name: Create expected download directory
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      shell: powershell
+      run: |
+        New-Item -ItemType directory ${{ env.EXPECTED_DOWNLOAD_DIR }}
 
     # ------------------------------------------------------------------------
 
