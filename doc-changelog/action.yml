@@ -171,8 +171,17 @@ runs:
         # For example, 20.added.md
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
-        # Remove extra whitespace from PR title
-        clean_title=$(echo '${{ env.PR_TITLE }}' | xargs)
+        # Check for special characters in PR title
+        if [[ ${{ env.PR_TITLE }} == *'* ]] && [[ ${{ env.PR_TITLE }} == *`* ]]; then
+          echo "The pull request title cannot contain both a backtick and a single quote"
+          exit 1
+        elif [[ ${{ env.PR_TITLE }} == *[']* ]]; then
+          # If the title contains a single quote
+          clean_title=$(echo ${{ env.PR_TITLE }} | xargs -0)
+        else
+          # If the title contains a backtick, double quote, or no special character
+          clean_title=$(echo '${{ env.PR_TITLE }}' | xargs)
+        fi
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
