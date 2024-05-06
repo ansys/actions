@@ -64,7 +64,7 @@ inputs:
 
   ignore-changelogd:
     description: >
-      Whether or not to ignore doc/changelog.d/*.md files.
+      Whether or not to ignore markdown files in doc/changelog.d/.
     default: true
     required: false
     type: bool
