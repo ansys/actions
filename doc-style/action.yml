@@ -65,7 +65,7 @@ inputs:
   ignore-changelogd:
     description: >
       Whether or not to ignore doc/changelog.d/*.md files.
-    default: false
+    default: true
     required: false
     type: bool
 
