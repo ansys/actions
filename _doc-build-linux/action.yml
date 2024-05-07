@@ -329,7 +329,7 @@ runs:
 
     - name: Check expected build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      shell: powershell
+      shell: bash
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d ${{ env.EXPECTED_BUILD_DIR }} ] && echo 'true' || echo 'false' )" >> $GITHUB_ENV
 
