@@ -382,7 +382,7 @@ runs:
         dest: documentation-html.zip
 
     - name: Add assets to HTML docs
-      shell: powershell
+      shell: bash
       run: |
         mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
         cp ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
