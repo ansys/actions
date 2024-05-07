@@ -29,7 +29,18 @@ CREATE_ISSUES = (
 
 
 def dict_hash(dictionary: Dict[str, Any]) -> str:
-    """MD5 hash of a dictionary."""
+    """MD5 hash of a dictionary.
+
+    Parameters
+    ----------
+    dictionary : Dict[str, Any]
+        Dictionary to hash.
+
+    Returns
+    -------
+    str
+        MD5 hash of the dictionary.
+    """
     dhash = hashlib.md5()
     # We need to sort arguments so {'a': 1, 'b': 2} is
     # the same as {'b': 2, 'a': 1}
