@@ -13,6 +13,7 @@ import os
 import sys
 from typing import Any, Dict
 
+import click
 import github
 
 TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
@@ -274,7 +275,65 @@ once it has been verified (since it has been created in draft mode).
     return new_advisory_detected
 
 
-if __name__ == "__main__":
+def generate_advisory_files():
+    """
+    Generate advisory files for local purposes.
+
+    This function runs safety and bandit on the user's behalf at the current location
+    and generates the necessary advisory files for local testing.
+
+    Notes
+    -----
+    This function should ONLY be used for local purposes.
+    """
+    import bandit.cli.main as bandit
+    import safety.cli as safety
+
+    # Delete previous advisory files
+    if os.path.exists("info_safety.json"):
+        os.remove("info_safety.json")
+    if os.path.exists("info_bandit.json"):
+        os.remove("info_bandit.json")
+
+    # Safety check
+    try:
+        safety.cli.main(
+            ["check", "-o", "bare", "--save-json", "info_safety.json"],
+            standalone_mode=False,
+        )
+    except:
+        print("Safety check performed.")
+        pass
+
+    # Bandit check
+    try:
+        sys.argv.pop()
+        sys.argv.extend(["-r", "./src", "-o", "info_bandit.json", "-f", "json"])
+        bandit.main()
+    except:
+        pass
+    finally:
+        print("Bandit check performed.")
+        sys.argv = sys.argv[: len(sys.argv) - 5]
+        sys.argv.append("--run-local")
+
+    print("Advisory files generated successfully.")
+
+
+@click.command(short_help="Perform third-party and in-library vulnerability analysis.")
+@click.option(
+    "--run-local",
+    is_flag=True,
+    default=False,
+    help="Simulate the behavior of the synchronization without performing it.",
+)
+def main(run_local: bool):
+    """Main function."""
+    if run_local:
+        generate_advisory_files()
+        global DRY_RUN
+        DRY_RUN = True
+
     new_advisory_detected = check_vulnerabilities()
 
     if new_advisory_detected and ERROR_IF_NEW_ADVISORY:
@@ -283,3 +342,7 @@ if __name__ == "__main__":
     else:
         # No new advisories detected or no failure requested
         pass
+
+
+if __name__ == "__main__":
+    main()
