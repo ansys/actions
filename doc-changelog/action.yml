@@ -169,7 +169,7 @@ runs:
         pr_title = str(${{ env.PR_TITLE }})
 
         # Remove extra whitespace
-        clean_title = " ".join(pr_title.split())
+        clean_title = " ".join(fr"{pr_title}".split())
 
         # Add backslash in front of backtick and double quote
         clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
