@@ -172,7 +172,7 @@ runs:
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
         # Check for special characters in PR title
-        if [[ ${{ env.PR_TITLE }} == *'* ]] && [[ ${{ env.PR_TITLE }} == *`* ]]; then
+        if [[ ${{ env.PR_TITLE }} == *[']* ]] && [[ ${{ env.PR_TITLE }} == *[`]* ]]; then
           echo "The pull request title cannot contain both a backtick and a single quote"
           exit 1
         elif [[ ${{ env.PR_TITLE }} == *[']* ]]; then
