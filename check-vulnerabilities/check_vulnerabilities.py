@@ -301,7 +301,7 @@ def generate_advisory_files():
             ["check", "-o", "bare", "--save-json", "info_safety.json"],
             standalone_mode=False,
         )
-    except:
+    except:  # noqa: E722
         print("Safety check performed.")
         pass
 
@@ -310,7 +310,7 @@ def generate_advisory_files():
         sys.argv.pop()
         sys.argv.extend(["-r", "./src", "-o", "info_bandit.json", "-f", "json"])
         bandit.main()
-    except:
+    except:  # noqa: E722
         pass
     finally:
         print("Bandit check performed.")
