@@ -166,7 +166,7 @@ runs:
       shell: python
       run: |
         # Remove extra whitespace
-        clean_title = " ".join(str(${{ env.PR_TITLE }}.encode("unicode_escape")).split())
+        clean_title = " ".join(${{ env.PR_TITLE }}.replace("'", "''").split())
 
         # Add backslash in front of backtick and double quote
         clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
