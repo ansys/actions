@@ -210,8 +210,41 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: ${{ env.REPOSITORY }}
-        ref: ${{ inputs.branch }}
         token: ${{ inputs.token }}
+
+    - name: "Ensure that the desired branch exists"
+      env:
+        BRANCH: ${{ inputs.branch }}
+      shell: bash
+      run: |
+        # Check the ${{ env.BRANCH }} branch exists on remote
+        branch_exists=$(git ls-remote --heads origin refs/heads/${{ env.BRANCH }} 2>&1)
+
+        # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
+        if [ -z "$branch_exists" ]; then
+          echo "The ${{ env.BRANCH }} branch does not exist. Creating ${{ env.BRANCH }}."
+
+          # Create orphan branch
+          git checkout --orphan ${{ env.BRANCH }}
+
+          # Unstage files to be committed
+          git rm --cached -r .
+
+          # Remove untracked files
+          git clean -fd
+
+          # Configure git username & email
+          git config user.name 'pyansys-ci-bot'
+          git config user.email 'pyansys.github.bot@ansys.com'
+
+          # Commit ${{ env.BRANCH }} & push to origin
+          git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
+          git push -u origin ${{ env.BRANCH }}
+        else
+          # Fetch and switch to ${{ env.BRANCH }}
+          git fetch origin ${{ env.BRANCH }}:${{ env.BRANCH }}
+          git switch ${{ env.BRANCH }}
+        fi
 
     # ------------------------------------------------------------------------
 
