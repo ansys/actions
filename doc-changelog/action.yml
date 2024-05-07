@@ -165,11 +165,8 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
-        # Save PR_TITLE to variable
-        pr_title = ${{ env.PR_TITLE }}
-
         # Remove extra whitespace
-        clean_title = " ".join(pr_title.split())
+        clean_title = " ".join(${{ env.PR_TITLE }}.split())
 
         # Add backslash in front of backtick and double quote
         clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
