@@ -53,11 +53,19 @@ def check_vulnerabilities():
     """Check library and third-party vulnerabilities."""
     new_advisory_detected = False
     # Check that the needed environment variables are provided
-    if any([v is None for v in [TOKEN, REPOSITORY, PACKAGE]]):
+    if not TOKEN:
         raise RuntimeError(
-            "Required environment variables are not defined. Enter value for ",
-            "'DEPENDENCY_CHECK_TOKEN', 'DEPENDENCY_CHECK_PACKAGE_NAME', ",
-            "'DEPENDENCY_CHECK_REPOSITORY'.",
+            "Required environment variable 'DEPENDENCY_CHECK_TOKEN' is not defined."
+        )
+
+    if not REPOSITORY:
+        raise RuntimeError(
+            "Required environment variable 'DEPENDENCY_CHECK_REPOSITORY' is not defined."
+        )
+
+    if not PACKAGE:
+        raise RuntimeError(
+            "Required environment variable 'DEPENDENCY_CHECK_PACKAGE_NAME' is not defined."
         )
 
     # Check if DRY_RUN or not
