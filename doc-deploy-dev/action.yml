@@ -136,7 +136,7 @@ runs:
         repository: ${{ env.REPOSITORY }}
         token: ${{ inputs.token }}
 
-    - name: "Check if branch exists"
+    - name: "Ensure that the desired branch exists"
       env:
         BRANCH: ${{ inputs.branch }}
       shell: bash
