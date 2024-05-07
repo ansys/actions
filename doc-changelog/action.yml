@@ -160,10 +160,30 @@ runs:
           rm $file
         fi
 
+    - name: "Clean PR title"
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      shell: python
+      run: |
+        # Save PR_TITLE to variable
+        pr_title = ${{ env.PR_TITLE }}
+
+        # Remove extra whitespace
+        clean_title = " ".join(pr_title.split())
+
+        # Add backslash in front of backtick and double quote
+        clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
+
+        # Get the GITHUB_ENV variable
+        github_env = os.getenv('GITHUB_ENV')
+
+        # Append the CLEAN_TITLE with its value to GITHUB_ENV
+        with open(github_env, "a") as f:
+            f.write(f"CLEAN_TITLE={clean_title}")
+
     - name: "Create and commit towncrier fragment"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-        PR_TITLE: '${{ github.event.pull_request.title }}'
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
@@ -171,21 +191,9 @@ runs:
         # For example, 20.added.md
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
-        # Check for special characters in PR title
-        if [[ ${{ env.PR_TITLE }} == *[']* ]] && [[ ${{ env.PR_TITLE }} == *[`]* ]]; then
-          echo "The pull request title cannot contain both a backtick and a single quote"
-          exit 1
-        elif [[ ${{ env.PR_TITLE }} == *[']* ]]; then
-          # If the title contains a single quote
-          clean_title=$(echo ${{ env.PR_TITLE }} | xargs -0)
-        else
-          # If the title contains a backtick, double quote, or no special character
-          clean_title=$(echo '${{ env.PR_TITLE }}' | xargs)
-        fi
-
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "$clean_title" $fragment
+        towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
         # Configure git username & email
         git config user.name 'pyansys-ci-bot'
