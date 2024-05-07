@@ -165,6 +165,8 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
+        import os
+
         # Remove extra whitespace
         clean_title = " ".join("""${{ env.PR_TITLE }}""".split())
 
