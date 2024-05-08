@@ -167,8 +167,11 @@ runs:
       run: |
         import os
 
+        # Retrieve title
+        clean_title = os.getenv('PR_TITLE')
+
         # Remove extra whitespace
-        clean_title = " ".join("""${{ env.PR_TITLE }}""".split())
+        clean_title = clean_title.strip()
 
         # Add backslash in front of backtick and double quote
         clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
