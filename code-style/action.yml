@@ -62,7 +62,7 @@ inputs:
       Extend the workflow to lint Dockerfile(s).
     required: false
     default: false
-    type: bool
+    type: boolean
 
   docker-recursive:
     description: >
@@ -70,7 +70,7 @@ inputs:
       directories, i.e. docker and .devcontainer.
     required: false
     default: false
-    type: bool
+    type: boolean
 
   docker-error-level:
     description: >
