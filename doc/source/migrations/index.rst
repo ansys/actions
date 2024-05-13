@@ -111,7 +111,7 @@ Version ``v4``
 
 **Migration steps:**
 
-- Visit `Multi-version migration from ansys/actions@v3 to ansys/actions@v4 <https://dev.docs.pyansys.com/how-to/documenting.html#upgrade-to-ansys-actions-v4-or-later>`_
+- Visit `Enable multi-version documentation <https://dev.docs.pyansys.com/how-to/documenting.html#enable-multi-version-documentation>`_
   for a detailed migration guide.
 
 .. toctree::
