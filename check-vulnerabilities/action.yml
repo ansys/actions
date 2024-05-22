@@ -50,7 +50,9 @@ description: |
       .. jinja:: check-vulnerabilities
 
           {% for v_id in ignored_safety %}
+          {% if v_id != '' %}
           - `Vulnerability {{ v_id }} <https://pyup.io/v/{{ v_id }}/f17>`_
+          {% endif %}
           {% endfor %}
 
 inputs:
