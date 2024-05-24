@@ -40,19 +40,21 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
   twine-username:
     description: >
       User name used when uploading to the public Test PyPI index.
-    required: true
+    required: false
+    default: '__token__'
     type: string
 
   twine-token:
     description: >
       Password used when uploading to the public Test PyPI index.
-    required: true
+    required: false
+    default: ''
     type: string
-
-  # Optional inputs
 
   use-trusted-publisher:
     description: >
