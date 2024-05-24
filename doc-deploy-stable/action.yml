@@ -133,8 +133,8 @@ inputs:
 
   use-latest-index-in-landing-page:
     description: >
-      Use the latest 'version/{stable|dev}/index.html' in the landing page. Default 
-      value is ``true``. By default, the index.html is overwritten by version/{stable|dev}/index.html. 
+      Use the latest 'version/{stable|dev}/index.html' in the landing page. Default
+      value is ``true``. By default, the index.html is overwritten by version/{stable|dev}/index.html.
     required: false
     default: true
     type: string
