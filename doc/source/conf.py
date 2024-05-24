@@ -338,4 +338,3 @@ for var, file in zip(
 jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_file_lines_as_list(
     IGNORED_SAFETY
 )
-print(jinja_contexts["check-vulnerabilities"]["ignored_safety"])

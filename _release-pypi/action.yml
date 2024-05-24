@@ -81,6 +81,21 @@ inputs:
     required: true
     type: boolean
 
+  use-trusted-publisher:
+    description: >
+      Whether to use the OIDC token for releasing.
+      This is useful when you want to publish to PyPI through a CI/CD pipeline
+      as a Trusted Publisher. It is necessary that your repository has been authorized
+      to use Trusted Publisher's. For more information, see
+      `Using a Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_.
+
+      .. note::
+
+          ``permissions: id-token: write`` is mandatory for trusted publishing.
+
+    required: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -115,9 +130,9 @@ runs:
           echo "SKIP_EXISTING=$(echo '')" >> $GITHUB_ENV
         fi
 
-    - name: "Upload artifacts to private PyPi"
+    - name: "Upload artifacts to PyPi"
       shell: bash
-      if: inputs.dry-run == 'false'
+      if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'false'
       run: |
         python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.whl
         python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.tar.gz
@@ -125,3 +140,11 @@ runs:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
         TWINE_REPOSITORY_URL: ${{ inputs.index-name }}
+
+    - name: "Upload artifacts to PyPI using Trusted Publisher"
+      uses: pypa/gh-action-pypi-publish@v1.8.14
+      if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'true'
+      with:
+        repository-url: ${{ inputs.index-name }}
+        print-hash: true
+        packages-dir: ${{ inputs.library-name }}-artifacts

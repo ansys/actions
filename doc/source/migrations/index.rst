@@ -15,10 +15,16 @@ Development version
 - Added an optional input to the ``ansys/actions/build-library`` action to disable library build
   validation on demand using the ``validate-build: false`` argument. This is useful when you want to
   skip the library build validation step in the action.
+- Incorporated the usage of `Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_ in the
+  ``ansys/actions/release-pypi-*`` actions. This is useful when you want to sign the package before
+  uploading it to PyPI.
 
 **Breaking changes:**
 
 **Migration steps:**
+
+- To set up your repository to use the ``ansys/actions/release-pypi-*`` action with the `Trusted Publisher`_ approach,
+  see the :ref:`release_pypi_trusted_publisher`.
 
 Version ``v6``
 --------------
@@ -121,3 +127,4 @@ Version ``v4``
    docs-changelog-setup
    docs-deploy-changelog-setup
    docs-style-vale-version-update
+   release-pypi-trusted-publisher
