@@ -140,7 +140,7 @@ runs:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
         TWINE_REPOSITORY_URL: ${{ inputs.index-name }}
-    
+
     - name: "Upload artifacts to PyPI using Trusted Publisher"
       uses: pypa/gh-action-pypi-publish@v1.8.14
       if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'true'
