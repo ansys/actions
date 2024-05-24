@@ -103,7 +103,7 @@ runs:
   steps:
 
     - name: "Release to PyAnsys private index"
-      uses: ansys/actions/_release-pypi@feat/trusted-publisher
+      uses: ansys/actions/_release-pypi@main
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"
