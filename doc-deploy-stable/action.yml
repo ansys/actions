@@ -131,6 +131,14 @@ inputs:
     default: false
     type: boolean
 
+  use-latest-index-in-landing-page:
+    description: >
+      Use the latest 'version/{stable|dev}/index.html' in the landing page. Default 
+      value is ``true``. By default, the index.html is overwritten by version/{stable|dev}/index.html. 
+    required: false
+    default: true
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -423,6 +431,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       with:
         level: "INFO"
         message: >
@@ -430,6 +439,7 @@ runs:
           local href and source links to point to either the stable or dev version.
 
     - name: "Use the latest 'version/{stable|dev}/index.html' in the landing page"
+      if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       shell: bash
       run: |
         if [[ -f 'version/stable/index.html' ]]; then
@@ -448,7 +458,12 @@ runs:
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
       run: |
+        if [[ -f 'index.html' ]]; then
           cat index.html
+        else
+          echo "Error: The 'index.html' file does not exist." >&2
+          exit 1
+        fi
 
     # ------------------------------------------------------------------------
 
