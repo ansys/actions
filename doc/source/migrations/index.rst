@@ -54,6 +54,10 @@ Version ``v6``
   validation on demand using the ``validate-build: false`` argument. This is useful when you want to
   skip the library build validation step in the action.
 
+- Incorporated the usage of `Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_ in the
+  ``ansys/actions/release-pypi-*`` actions. This is useful when you want to sign the package before
+  uploading it to PyPI.
+
 **Breaking changes:**
 
 - Upgrade default ``vale`` version from ``2.29.6`` to ``3.4.1`` in ``ansys/actions/doc-style`` action.
@@ -64,6 +68,8 @@ Version ``v6``
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
 - To set up your repository to use the ``ansys/actions/doc-deploy-changelog`` action, see the :ref:`docs_deploy_changelog_action_setup`.
 - To set up your repository to use the ``ansys/actions/doc-style`` action, see the :ref:`docs_style_vale_update`.
+- To set up your repository to use the ``ansys/actions/release-pypi-*`` action with the `Trusted Publisher`_ approach,
+  see the :ref:`release_pypi_trusted_publisher`.
 
 Version ``v5``
 --------------
@@ -121,3 +127,4 @@ Version ``v4``
    docs-changelog-setup
    docs-deploy-changelog-setup
    docs-style-vale-version-update
+   release-pypi-trusted-publisher
