@@ -64,9 +64,8 @@ inputs:
       to use Trusted Publisher's. For more information, see
       `Using a Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_.
 
-      .. note::
-
-         ``permissions: id-token: write`` is mandatory for trusted publishing.
+      ``permissions: id-token: write`` is mandatory for trusted publishing - see
+      example for more information.
 
     required: false
     default: false
