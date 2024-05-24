@@ -57,15 +57,16 @@ inputs:
     type: string
 
   use-trusted-publisher:
-    description: >
+    description: |
       Whether to use the OIDC token for releasing. Default value is ``false``.
       This is useful when you want to publish to PyPI through a CI/CD pipeline
       as a Trusted Publisher. It is necessary that your repository has been authorized
       to use Trusted Publisher's. For more information, see
       `Using a Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_.
 
-      ``permissions: id-token: write`` is mandatory for trusted publishing - see
-      example for more information.
+      .. note::
+
+          ``permissions: id-token: write`` is mandatory for trusted publishing.
 
     required: false
     default: false
