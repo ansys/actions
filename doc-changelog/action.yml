@@ -160,10 +160,32 @@ runs:
           rm $file
         fi
 
+    - name: "Clean PR title"
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      shell: python
+      run: |
+        import os
+
+        # Retrieve title
+        clean_title = os.getenv('PR_TITLE')
+
+        # Remove extra whitespace
+        clean_title = clean_title.strip()
+
+        # Add backslash in front of backtick and double quote
+        clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
+
+        # Get the GITHUB_ENV variable
+        github_env = os.getenv('GITHUB_ENV')
+
+        # Append the CLEAN_TITLE with its value to GITHUB_ENV
+        with open(github_env, "a") as f:
+            f.write(f"CLEAN_TITLE={clean_title}")
+
     - name: "Create and commit towncrier fragment"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-        PR_TITLE: '${{ github.event.pull_request.title }}'
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
@@ -171,12 +193,9 @@ runs:
         # For example, 20.added.md
         fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
 
-        # Remove extra whitespace from PR title
-        clean_title=$(echo '${{ env.PR_TITLE }}' | xargs)
-
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "$clean_title" $fragment
+        towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
         # Configure git username & email
         git config user.name 'pyansys-ci-bot'

@@ -99,8 +99,6 @@ Branch name style action
 
     {{ description }}
 
-    {{ inputs_table }}
-
     Examples
     ++++++++
 

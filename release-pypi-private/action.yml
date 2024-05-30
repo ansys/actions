@@ -40,19 +40,37 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
   twine-username:
     description: >
       User name used when uploading to the PyAnsys private index.
-    required: true
+    required: false
+    default: '__token__'
     type: string
 
   twine-token:
     description: >
       Password used when uploading to the PyAnsys private index.
-    required: true
+    required: false
+    default: ''
     type: string
 
-  # Optional inputs
+  use-trusted-publisher:
+    description: |
+      Whether to use the OIDC token for releasing. Default value is ``false``.
+      This is useful when you want to publish to PyPI through a CI/CD pipeline
+      as a Trusted Publisher. It is necessary that your repository has been authorized
+      to use Trusted Publisher's. For more information, see
+      `Using a Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_.
+
+      .. note::
+
+          ``permissions: id-token: write`` is mandatory for trusted publishing.
+
+    required: false
+    default: false
+    type: boolean
 
   dry-run:
     description: >
@@ -95,3 +113,4 @@ runs:
         python-version: ${{ inputs.python-version }}
         dry-run: ${{ inputs.dry-run }}
         skip-existing: ${{ inputs.skip-existing }}
+        use-trusted-publisher: ${{ inputs.use-trusted-publisher }}
