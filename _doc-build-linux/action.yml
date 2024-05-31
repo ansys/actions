@@ -127,8 +127,8 @@ inputs:
     description: |
       Whether to add PDF and HTML documentation as assets of the HTML
       documentation. The HTML documentation is compressed before being added.
-      The PDF file name is expected to be the same as the project name defined
-      in the pyproject.toml file. Default value is ``false``.
+      The PDF file name is expected to be retrieved through the documentation's
+      configuration file 'conf.py' in 'doc/source'.
 
       .. warning::
 
@@ -258,60 +258,27 @@ runs:
       with:
         level: "INFO"
         message: >
-          Set environment variable PACKAGE_PDF_FILENAME.
+          Set environment variable PDF_FILENAME.
 
-#     - name: Determine pdf filename
-#       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-#       shell: bash
-#       run: |
-#         python -m pip install toml
-#         PDF_FILENAME=$(python -c "
-# import toml;\
-# pyproject = toml.load('pyproject.toml');\
-# name = pyproject.get('tool', {}).get('poetry', {}).get('name')\
-#       or pyproject.get('tool', {}).get('flit', {}).get('module', {}).get('name');\
-# pdf_name = name + '.pdf';\
-# print(pdf_name)")
-#         echo "PDF_FILENAME=${PDF_FILENAME}" >> $GITHUB_ENV
-
-    - name: Install toml
+    - name: Parse PDF file name
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: bash
       run: |
-        python -m pip install toml
-
-    - name: Determine PDF filename
-      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      shell: python
-      run: |
-        import os
-        import toml
-
-        pyproject = toml.load('pyproject.toml')
-        name = pyproject.get('tool', {}).get('poetry', {}).get('name') \
-            or pyproject.get('tool', {}).get('flit', {}).get('module', {}).get('name')
-        pdf_name = name + '.pdf'
-
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
-
-        # Append the PDF_FILENAME with its value to GITHUB_ENV
-        with open(github_env, "a") as f:
-            f.write(f"PDF_FILENAME={pdf_name}")
+        python ${{ github.action_path }}/../doc-build/parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
       with:
         level: "ERROR"
         message: >
-          Unable to determine PDF filename using pyproject.toml data.
+          Unable to determine PDF filename using conf.py file.
 
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
       with:
         level: "INFO"
         message: >
-          Environment variable PACKAGE_PDF_FILENAME setted to ${{ env.PDF_FILENAME }}.
+          Environment variable PDF_FILENAME setted to ${{ env.PDF_FILENAME }}.
 
     # ------------------------------------------------------------------------
     - uses: ansys/actions/_logging@main
@@ -385,7 +352,13 @@ runs:
       shell: bash
       run: |
         mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
-        cp ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
+        if [ -e  "${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }}" ]; then
+            cp ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
+            echo "File ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} has been copied."
+        else
+            cp ${{ env.EXPECTED_BUILD_DIR }}/latex/*.pdf ${{ env.EXPECTED_DOWNLOAD_DIR }}
+            echo "Couldn't find ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }}, every existing PDF file has been copied."
+        fi
 
     # ------------------------------------------------------------------------
 
