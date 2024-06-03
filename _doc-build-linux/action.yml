@@ -292,7 +292,7 @@ runs:
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: bash
       run: |
-        echo "EXPECTED_BUILD_DIR='doc/_build'" >> $GITHUB_ENV
+        echo "EXPECTED_BUILD_DIR=doc/_build" >> $GITHUB_ENV
 
     - name: Check expected build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}

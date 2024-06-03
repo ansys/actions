@@ -372,10 +372,10 @@ runs:
         mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
         if (Test-Path $${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}) {
           cp ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
-          Write-Output "File ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} has been copied."
+          Write-Output "File ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} has been copied."
         } else {
-          cp ${{ env.EXPECTED_BUILD_DIR }}/latex/*.pdf ${{ env.EXPECTED_DOWNLOAD_DIR }}
-          Write-Output "Couldn't find ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }}, every existing PDF file has been copied."
+          cp ${{ env.EXPECTED_BUILD_DIR }}\latex\*.pdf ${{ env.EXPECTED_DOWNLOAD_DIR }}
+          Write-Output "Couldn't find ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}, every existing PDF file has been copied."
         }
 
     # ------------------------------------------------------------------------
