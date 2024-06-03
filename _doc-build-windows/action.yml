@@ -370,7 +370,7 @@ runs:
       run: |
         zip -r documentation-html.zip ${{ env.EXPECTED_BUILD_DIR }}\html
         mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
-        if (Test-Path $${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}) {
+        if (Test-Path ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}) {
           cp ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
           Write-Output "File ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} has been copied."
         } else {
