@@ -300,7 +300,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Environment variable PDF_FILENAME setted to ${{ env.PDF_FILENAME }}.
+          Environment variable PDF_FILENAME set to ${{ env.PDF_FILENAME }}.
 
     # ------------------------------------------------------------------------
 
