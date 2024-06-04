@@ -94,7 +94,7 @@ inputs:
 
 
       If ``false``, the title is "chore: ... CHANGELOG for v...".
-      If ``true``, the PR title is "CHORE: ... CHANGELOG for v...".
+      If ``true``, the title is "CHORE: ... CHANGELOG for v...".
     required: false
     default: false
     type: boolean
