@@ -85,9 +85,16 @@ inputs:
 
   use-upper-case:
     description: >
-      Use of uppercase letters in the "type" field of the PR.
-      If ``false``, the PR title is "chore: update CHANGELOG for v...".
-      If ``true``, the PR title is "CHORE: update CHANGELOG for v...".
+      Use of uppercase letters in the "type" field of:
+
+      - the PR created into main to add CHANGELOG changes;
+
+      - the commit created in the release branch to add the new
+        section in CHANGELOG.
+
+
+      If ``false``, the title is "chore: ... CHANGELOG for v...".
+      If ``true``, the PR title is "CHORE: ... CHANGELOG for v...".
     required: false
     default: false
     type: boolean
@@ -210,7 +217,11 @@ runs:
           git add .
 
           # Commit changes and save commit SHA
-          git commit -m "Updating CHANGELOG for v${{ env.TAG_VERSION }}"
+          if [[ ${{ inputs.use-upper-case }} == "false" ]] ; then
+            git commit -m "chore: updating CHANGELOG for v${{ env.TAG_VERSION }}"
+          else
+            git commit -m "CHORE: updating CHANGELOG for v${{ env.TAG_VERSION }}"
+          fi
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
