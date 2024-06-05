@@ -87,9 +87,9 @@ inputs:
     description: >
       Use of uppercase letters in the "type" field of:
 
-      - the PR created into main to add CHANGELOG changes;
+      - The PR created into main to add CHANGELOG changes.
 
-      - the commit created in the release branch to add the new
+      - The commit created in the release branch to add the new
         section in CHANGELOG.
 
 
