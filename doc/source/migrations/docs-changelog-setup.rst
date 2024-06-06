@@ -42,7 +42,7 @@ At the end of the ``.github/workflows/label.yml`` file, add the following lines 
 
 |
 
-Next, follow the instructions in the "Include the release notes in your documentation" or "Include the release notes in ``CHANGELOG.md``" sections depending on your preference.
+Next, follow the instructions to create release notes in your `documentation <#include-the-release-notes-in-your-documentation>`_ or `CHANGELOG.md file <#include-the-release-notes-in-changelog-md>`_ depending on your preference.
 
 Include the release notes in your documentation
 -----------------------------------------------
