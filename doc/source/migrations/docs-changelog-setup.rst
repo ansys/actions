@@ -4,7 +4,7 @@ Doc-changelog action setup
 ==========================
 
 The release notes for your project can either be in your documentation or the ``CHANGELOG.md`` file.
-Follow the instructions in the "Update the workflow" section to add the ``ansys/actions/doc-changelog`` action
+Follow the instructions in the `update the workflow <#update-the-workflow>`_ section to add the ``ansys/actions/doc-changelog`` action
 to your workflow, and then choose between adding the release notes in your documentation
 or the ``CHANGELOG.md`` file.
 
@@ -47,7 +47,98 @@ Next, follow the instructions to create release notes in your `documentation <#i
 Include the release notes in your documentation
 -----------------------------------------------
 
-1. Add the following lines to the ``pyproject.toml`` file, replacing ``{repo-name}`` with the name of the repository. For example, ``pyansys-geometry``.
+1. Create the ``doc/changelog.d`` directory and then within it add a file named ``changelog_template.jinja`` that contains the following lines:
+
+.. code:: jinja
+
+    {% if sections[""] %}
+    {% for category, val in definitions.items() if category in sections[""] %}
+
+    {{ definitions[category]['name'] }}
+    {% set underline = '^' * definitions[category]['name']|length %}
+    {{ underline }}
+
+    {% for text, values in sections[""][category].items() %}
+    - {{ text }} {{ values|join(', ') }}
+    {% endfor %}
+
+    {% endfor %}
+    {% else %}
+    No significant changes.
+
+
+    {% endif %}
+
+|
+
+2. Create a new file named ``changelog.rst`` in the ``doc/source`` directory. Add the following lines to the file:
+
+.. code:: rst
+
+    .. _ref_release_notes:
+
+    Release notes
+    #############
+
+    This document contains the release notes for the project.
+
+    .. vale off
+
+    .. towncrier release notes start
+
+
+    .. vale on
+
+.. note::
+
+    If your project previously used ``CHANGELOG.md`` to record the release notes, change the description under "Release notes", replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively, and ``{latest-version}`` with the most recent version in your ``CHANGELOG.md`` file:
+
+    .. code:: rst
+
+        This document contains the release notes for the project. See release notes for v{latest-version} and earlier
+        in `CHANGELOG.md <https://github.com/{org-name}/{repo-name}/blob/main/CHANGELOG.md>`_.
+
+|
+
+3. Add ``changelog`` to the toctree list in the ``doc/source/index.rst`` file. ``changelog`` is placed last in the ``toctree`` list, so the "Release notes" tab is last in the documentation.
+
+.. code:: rst
+
+    .. toctree::
+       :hidden:
+       :maxdepth: 3
+
+       <other files>
+       changelog
+
+|
+
+4. Add the following lines to the ``doc/source/conf.py`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively:
+
+.. code:: python
+
+    # If we are on a release, we have to ignore the "release" URLs, since it is not
+    # available until the release is published.
+    if switcher_version != "dev":
+        linkcheck_ignore.append(
+            f"https://github.com/{org-name}/{repo-name}/releases/tag/v{__version__}"
+        )
+
+.. note::
+
+  This assumes the following code already exists in the ``doc/source/conf.py`` file:
+
+  .. code:: python
+
+      from ansys_sphinx_theme import get_version_match
+      from ansys.<product>.<library> import __version__
+
+      release = version = __version__
+      switcher_version = get_version_match(version)
+
+|
+
+5. Add the following lines to the ``pyproject.toml`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively.
 Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.module``. For example, ``ansys.geometry.core``.
 
 .. code:: toml
@@ -101,16 +192,20 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
 
 |
 
-2. Create the ``doc/changelog.d`` directory and then within it add a file named ``changelog_template.jinja`` that contains the following lines:
+Reference pull requests for the changes can be found in the `PyAnsys Geometry <https://github.com/ansys/pyansys-geometry/pull/1138>`_ and `PyMechanical <https://github.com/ansys/pymechanical/pull/757/files>`_ repositories.
+The PyAnsys-Geometry pull request includes some other changes, but the changelog implementation is the same as described in this document.
+
+Include the release notes in ``CHANGELOG.md``
+---------------------------------------------
+
+1. Create the ``doc/changelog.d`` directory and then within it add a file named ``changelog_template.jinja`` that contains the following lines:
 
 .. code:: jinja
 
     {% if sections[""] %}
     {% for category, val in definitions.items() if category in sections[""] %}
 
-    {{ definitions[category]['name'] }}
-    {% set underline = '^' * definitions[category]['name']|length %}
-    {{ underline }}
+    ### {{ definitions[category]['name'] }}
 
     {% for text, values in sections[""][category].items() %}
     - {{ text }} {{ values|join(', ') }}
@@ -125,79 +220,29 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
 
 |
 
-3. Create a new file named ``changelog.rst`` in the ``doc/source`` directory. Add the following lines to the file:
+2. Add the following lines to the ``CHANGELOG.md`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively:
 
-.. code:: rst
+.. code:: md
 
-    .. _ref_release_notes:
+    This project uses [towncrier](https://towncrier.readthedocs.io/) and the changes for the upcoming release can be found in <https://github.com/{org-name}/{repo-name}/tree/main/doc/changelog.d/>.
 
-    Release notes
-    #############
+    <!-- towncrier release notes start -->
 
-    This document contains the release notes for the project.
-
-    .. vale off
-
-    .. towncrier release notes start
-
-
-    .. vale on
 
 .. note::
 
-    If your project previously used ``CHANGELOG.md`` to record the release notes, change the description under "Release notes", replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively, and ``{latest-version}`` with the most recent version in your ``CHANGELOG.md`` file:
+    If the ``CHANGELOG.md`` file already has sections for previous releases, make sure to put the
+    ``"towncrier release notes start"`` comment before the release sections. For example:
 
-    .. code:: rst
+    .. code:: md
 
-        This document contains the release notes for the project. See release notes for v{latest-version} or earlier in `CHANGELOG.md <https://github.com/{org-name}/{repo-name}/blob/main/CHANGELOG.md>`_.
+        <!-- towncrier release notes start -->
 
-|
-
-4. Add ``changelog`` to the toctree list in the ``doc/source/index.rst`` file. ``changelog`` is placed last in the ``toctree`` list, so the "Release notes" tab is last in the documentation.
-
-.. code:: rst
-
-    .. toctree::
-       :hidden:
-       :maxdepth: 3
-
-       <other files>
-       changelog
+        ## [0.10.7](https://github.com/ansys/pymechanical/releases/tag/v0.10.7) - February 13 2024
 
 |
 
-5. Add the following lines to the ``doc/source/conf.py`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively:
-
-.. code:: python
-
-    # If we are on a release, we have to ignore the "release" URLs, since it is not
-    # available until the release is published.
-    if switcher_version != "dev":
-        linkcheck_ignore.append(
-            f"https://github.com/{org-name}/{repo-name}/releases/tag/v{__version__}"
-        )
-
-.. note::
-
-  This assumes the following code already exists in the ``doc/source/conf.py`` file:
-
-  .. code:: python
-
-      from ansys_sphinx_theme import get_version_match
-      from ansys.<product>.<library> import __version__
-
-      release = version = __version__
-      switcher_version = get_version_match(version)
-
-|
-
-Reference pull requests for the changes can be found in the `PyAnsys Geometry <https://github.com/ansys/pyansys-geometry/pull/1138>`_ and `PyMechanical <https://github.com/ansys/pymechanical/pull/757/files>`_ repositories.
-The PyAnsys-Geometry pull request includes some other changes, but the changelog implementation is the same as described in this document.
-
-Include the release notes in ``CHANGELOG.md``
----------------------------------------------
-
-1. Add the following lines to the ``pyproject.toml`` file, replacing ``{repo-name}`` with the name of the repository. For example, ``pyansys-geometry``.
+3. Add the following lines to the ``pyproject.toml`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively.
 Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.module``. For example, ``ansys.geometry.core``.
 
 .. code:: toml
@@ -239,53 +284,8 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
 
 |
 
-2. Create the ``doc/changelog.d`` directory and then within it add a file named ``changelog_template.jinja`` that contains the following lines:
-
-.. code:: jinja
-
-    {% if sections[""] %}
-    {% for category, val in definitions.items() if category in sections[""] %}
-
-    ### {{ definitions[category]['name'] }}
-
-    {% for text, values in sections[""][category].items() %}
-    - {{ text }} {{ values|join(', ') }}
-    {% endfor %}
-
-    {% endfor %}
-    {% else %}
-    No significant changes.
-
-
-    {% endif %}
-
-|
-
-3. Add the following lines to the ``CHANGELOG.md`` file, replacing ``{repo-name}`` with the name of the repository:
-
-.. code:: md
-
-    This project uses [towncrier](https://towncrier.readthedocs.io/) and the changes for the upcoming release can be found in <https://github.com/ansys/{repo-name}/tree/main/doc/changelog.d/>.
-
-    <!-- towncrier release notes start -->
-
-
-.. note::
-
-    If the ``CHANGELOG.md`` file already has sections for previous releases, make sure to put the
-    ``"towncrier release notes start"`` comment before the release sections. For example:
-
-    .. code:: md
-
-        <!-- towncrier release notes start -->
-
-        ## [0.10.7](https://github.com/ansys/pymechanical/releases/tag/v0.10.7) - February 13 2024
-
-|
-
 A reference pull request for these changes can be found in the `PyAnsys-Geometry <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_ repository.
 
-|
 
 ``towncrier`` commands
 ----------------------
