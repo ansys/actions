@@ -91,7 +91,7 @@ Include the release notes in your documentation
 
 .. note::
 
-    If your project previously used ``CHANGELOG.md`` to record the release notes, change the description under "Release notes", replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively, and ``{latest-version}`` with the most recent version in your ``CHANGELOG.md`` file:
+    If your project previously used ``CHANGELOG.md`` to record the release notes, change the description under "Release notes," replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively, and ``{latest-version}`` with the most recent version in your ``CHANGELOG.md`` file:
 
     .. code:: rst
 
