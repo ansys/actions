@@ -73,6 +73,6 @@ if project_name:
 else:
     warnings.warn(
         "The name of the project is not specified in the documentation's"
-        "configuration file. Please, set variable 'project'",
+        "configuration file. Please, set variable 'project'.",
         UserWarning,
     )
