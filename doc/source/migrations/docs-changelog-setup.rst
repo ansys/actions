@@ -3,8 +3,13 @@
 Doc-changelog action setup
 ==========================
 
-To set up your repository to use the ``ansys/actions/doc-changelog`` action, see
-`changelog implementation in PyAnsys-Geometry <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_
+To set up your repository to use the ``ansys/actions/doc-changelog`` action, you can choose to have the release notes in your
+repository or documentation. 
+
+Implementing the changelog as part of your repository
+-----------------------------------------------------
+
+See the `changelog implementation in PyAnsys-Geometry <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_
 or follow these steps:
 
 
@@ -123,15 +128,14 @@ At the end of the ``.github/workflows/label.yml`` file, add the following lines 
           with:
             token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 
-
 Implementing the changelog as part of your documentation
 --------------------------------------------------------
 
 The previous steps set up the changelog for your repository. To implement the changelog in your documentation,
 some modifications have to be performed. Based on the PyAnsys libraries standards, this section assumes that
-the repository has a ``docs`` directory with a Sphinx documentation setup.
+the repository has a ``doc`` directory with a Sphinx documentation setup.
 
-1. Create a new file named ``changelog.rst`` in the ``docs`` directory. Add the following lines to the file:
+1. Create a new file named ``changelog.rst`` in the ``doc/source`` directory. Add the following lines to the file:
 
 .. code:: rst
 
@@ -149,7 +153,14 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
 
     .. vale on
 
-2. Add the ``changelog.rst`` file to the ``index.rst`` file in the ``docs`` directory.
+If your project previously used ``CHANGELOG.md`` to record the release notes, change the description under "Release notes". Replace ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively, and ``{latest-version}`` with the most recent version in your ``CHANGELOG.md`` file::
+
+  .. code:: rst
+
+    This document contains the release notes for the project. See release notes for v{latest-version} or earlier in `CHANGELOG.md <https://github.com/{org-name}/{repo-name}/blob/main/CHANGELOG.md>`_.
+  
+
+2. Add ``changelog`` to the toctree list in the ``doc/source/index.rst`` file. ``changelog`` is placed last in the ``toctree`` list, so the "Release notes" tab is last in the documentation. 
 
 .. code:: rst
 
@@ -157,12 +168,11 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
        :hidden:
        :maxdepth: 3
 
-       changelog
        <other files>
+       changelog
 
 
-3. Add the following lines to the ``conf.py`` file in the ``docs`` directory, replacing ``{repo-name}``
-   and ``{org-name}`` with the name of the repository:
+3. Add the following lines to the ``doc/source/conf.py`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively:
 
 .. code:: python
 
@@ -173,8 +183,19 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
             f"https://github.com/{org-name}/{repo-name}/releases/tag/v{__version__}"
         )
 
-4. Modify the ``pyproject.toml`` file to include the following lines, replacing ``{repo-name}``
-   and ``{org-name}`` with the name of the repository:
+.. note::
+
+  This assumes the following code already exists in the ``doc/source/conf.py`` file:
+
+  .. code:: python
+
+      from ansys_sphinx_theme import get_version_match
+      from ansys.<product>.<library> import __version__
+    
+      release = version = __version__
+      switcher_version = get_version_match(version)
+
+4. Modify the ``pyproject.toml`` file to include the following lines, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively:
 
 .. code:: toml
 
@@ -199,11 +220,11 @@ the repository has a ``docs`` directory with a Sphinx documentation setup.
 
         This project uses [towncrier](https://towncrier.readthedocs.io/) and the
         changes for the upcoming release can be found in
-        this [repository file](doc/changelog.d/changelog.rst).
+        this [repository file](doc/source/changelog.rst).
 
 
-A reference pull request for the changes can be found in the `PyAnsys Geometry repository <https://github.com/ansys/pyansys-geometry/pull/1138>`_.
-This pull request includes some other changes, but the changelog implementation is the same as described in this document.
+Reference pull requests for the changes can be found in the `PyAnsys Geometry <https://github.com/ansys/pyansys-geometry/pull/1138>`_ and `PyMechanical <https://github.com/ansys/pymechanical/pull/757/files>_` repositories.
+The PyAnsys-Geometry pull request includes some other changes, but the changelog implementation is the same as described in this document.
 
 ``towncrier`` commands
 ----------------------
