@@ -31,6 +31,7 @@ the PDF generated after building the documentation.
 
 import os
 import re
+import warnings
 from pathlib import Path
 
 CONF_PATH = Path("doc", "source", "conf.py")
@@ -57,9 +58,9 @@ def generate_pdf_name(project_name):
 
 
 project_name = get_project_name(CONF_PATH)
-print(f"Project name: {project_name}")
 
 if project_name:
+    print(f"Project name: {project_name}")
     pdf_file_name = generate_pdf_name(project_name)
     print(f"PDF file name: {pdf_file_name}")
 
@@ -69,3 +70,9 @@ if project_name:
     # Append PDF_FILENAME with its value to GITHUB_ENV
     with open(github_env, "a") as f:
         f.write(f"PDF_FILENAME={pdf_file_name}")
+else:
+    warnings.warn(
+        "The name of the project is not specified in the documentation's"
+        "configuration file. Please, set variable 'project'",
+        UserWarning,
+    )
