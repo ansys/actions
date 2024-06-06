@@ -324,7 +324,7 @@ runs:
       with:
         level: "WARNING"
         message: >
-          Expected build directory ${{ env.EXPECTED_DOWNLOAD_DIR }} does not exist.  Creating it...
+          Expected build directory ${{ env.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
 
     - name: Create expected download directory
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
