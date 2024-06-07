@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directories: 
+    directories:
       - "**/*"
     schedule:
       interval: "daily"
@@ -12,7 +12,7 @@ updates:
       - "dependencies"
 
   - package-ecosystem: "github-actions"
-    directories: 
+    directories:
       - "**/*"
     schedule:
       interval: "daily"
