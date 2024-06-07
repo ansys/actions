@@ -1,8 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directories:
-      - "**/*"
+    directory: "/requirements"
     schedule:
       interval: "daily"
     commit-message:
