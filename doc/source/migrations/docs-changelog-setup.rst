@@ -40,8 +40,6 @@ At the end of the ``.github/workflows/label.yml`` file, add the following lines 
           with:
             token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 
-|
-
 Next, follow the instructions to create release notes in your `documentation <#include-the-release-notes-in-your-documentation>`_ or `CHANGELOG.md file <#include-the-release-notes-in-changelog-md>`_ depending on your preference.
 
 Include the release notes in your documentation
@@ -68,8 +66,6 @@ Include the release notes in your documentation
 
 
     {% endif %}
-
-|
 
 2. Create a new file named ``changelog.rst`` in the ``doc/source`` directory. Add the following lines to the file:
 
@@ -98,8 +94,6 @@ Include the release notes in your documentation
         This document contains the release notes for the project. See release notes for v{latest-version} and earlier
         in `CHANGELOG.md <https://github.com/{org-name}/{repo-name}/blob/main/CHANGELOG.md>`_.
 
-|
-
 3. Add ``changelog`` to the toctree list in the ``doc/source/index.rst`` file. ``changelog`` is placed last in the ``toctree`` list, so the "Release notes" tab is last in the documentation.
 
 .. code:: rst
@@ -110,8 +104,6 @@ Include the release notes in your documentation
 
        <other files>
        changelog
-
-|
 
 4. Add the following lines to the ``doc/source/conf.py`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively:
 
@@ -135,8 +127,6 @@ Include the release notes in your documentation
 
       release = version = __version__
       switcher_version = get_version_match(version)
-
-|
 
 5. Add the following lines to the ``pyproject.toml`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively.
 Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.module``. For example, ``ansys.geometry.core``.
@@ -190,10 +180,8 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
         This project uses [towncrier](https://towncrier.readthedocs.io/). Changes for the upcoming release can be found in
         [changelog.rst](doc/source/changelog.rst).
 
-|
-
 Reference pull requests for the changes can be found in the `PyAnsys Geometry <https://github.com/ansys/pyansys-geometry/pull/1138>`_ and `PyMechanical <https://github.com/ansys/pymechanical/pull/757/files>`_ repositories.
-The PyAnsys-Geometry pull request includes some other changes, but the changelog implementation is the same as described in this document.
+The `PyAnsys Geometry`_ pull request includes some other changes, but the changelog implementation is the same as described in this document.
 
 Include the release notes in ``CHANGELOG.md``
 ---------------------------------------------
@@ -218,8 +206,6 @@ Include the release notes in ``CHANGELOG.md``
 
     {% endif %}
 
-|
-
 2. Add the following lines to the ``CHANGELOG.md`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively:
 
 .. code:: md
@@ -239,8 +225,6 @@ Include the release notes in ``CHANGELOG.md``
         <!-- towncrier release notes start -->
 
         ## [0.10.7](https://github.com/ansys/pymechanical/releases/tag/v0.10.7) - February 13 2024
-
-|
 
 3. Add the following lines to the ``pyproject.toml`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively.
 Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.module``. For example, ``ansys.geometry.core``.
@@ -282,9 +266,7 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
     name = "Miscellaneous"
     showcontent = true
 
-|
-
-A reference pull request for these changes can be found in the `PyAnsys-Geometry <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_ repository.
+A reference pull request for these changes can be found in the `PyAnsys Geometry #1023 <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_ pull request.
 
 
 ``towncrier`` commands
@@ -314,9 +296,8 @@ Create a changelog file manually:
 
         - Added a feature [#1](https://github.com/ansys/{repo-name}/pull/1)
 
-|
-
-When you are ready to do a release for your repository, run the following command to
+When you are ready to do a release for your repository, set up the ``ansys/actions/doc-deploy-changelog`` action
+to automate the process of generating the changelog. If you want to do it manually, run the following command to
 update the ``CHANGELOG.md`` file with the files in the ``changelog.d`` directory, replacing ``{version}`` with your
 release number. For example, ``0.10.8``. Do not include "v" in the version:
 
@@ -324,15 +305,11 @@ release number. For example, ``0.10.8``. Do not include "v" in the version:
 
     towncrier build --yes --version {version}
 
-|
-
 If you want to update the ``CHANGELOG.md`` file but keep the files in the ``changelog.d`` directory, run this command:
 
 .. code:: bash
 
     towncrier build --keep --version {version}
-
-|
 
 If you only want to preview the changelog and not make changes to the ``CHANGELOG.md`` file,
 run the following command:
