@@ -11,7 +11,8 @@ updates:
       - "dependencies"
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "**/*"
     schedule:
       interval: "daily"
     commit-message:
