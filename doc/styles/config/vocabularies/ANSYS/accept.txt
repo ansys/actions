@@ -5,6 +5,7 @@ dev
 GitHub
 pytest
 PyPI
+toctree
 towncrier
 TXT
 PyAnsys Dashboard
