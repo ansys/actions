@@ -85,11 +85,21 @@ inputs:
     default: true
     type: boolean
 
+  checkout:
+    description: >
+      Whether to do a checkout step or not. If ``true``, the checkout step is performed.
+      If ``false``, the checkout is skipped allowing the workspace from a prior step to
+      be used unaltered. By default it is set to ``true``.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
 
     - name: "Install Git and clone project"
+      if: checkout
       uses: actions/checkout@v4
 
     - name: "Set up Python ${{ inputs.python-version }}"
