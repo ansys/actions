@@ -127,7 +127,7 @@ jobs:
     needs: doc-style
     steps:
       - name: "Build documentation"
-        uses: ansys/actions/doc-build@main
+        uses: ansys/actions/doc-build@fix/upload-assets
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
