@@ -358,14 +358,15 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: Check build directory
-      uses: ansys/actions/_logging@main
       if: inputs.add-pdf-html-docs-as-assets == 'true'
+      uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
           Add PDF and HTML documentation as assets.
 
     - name: Add assets to HTML docs
+      if: inputs.add-pdf-html-docs-as-assets == 'true'
       shell: powershell
       run: |
         zip -r documentation-html.zip ${{ env.EXPECTED_BUILD_DIR }}\html
