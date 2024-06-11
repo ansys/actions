@@ -150,6 +150,24 @@ inputs:
     required: false
     type: boolean
 
+  add-pdf-html-docs-as-assets:
+    description: |
+      Whether to add PDF and HTML documentation as assets of the HTML
+      documentation. The HTML documentation is compressed before being added.
+      The PDF file name is expected to be the same as the project name defined
+      in the pyproject.toml file. Default value is ``false``.
+
+      .. warning::
+
+          The HTML files are expected to be contained in ``doc/_build`` and the
+          PDF file is copied in ``doc/_build/html/_static/assets/download``.
+          If such directories do not exist in your repo, the action will fail.
+
+    default: false
+    required: false
+    type: boolean
+
+
 runs:
   using: "composite"
   steps:
@@ -183,6 +201,7 @@ runs:
         checkout: ${{ inputs.checkout }}
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
+        add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
 
     # ------------------------------------------------------------------------
 
@@ -208,3 +227,4 @@ runs:
         checkout: ${{ inputs.checkout }}
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
+        add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}

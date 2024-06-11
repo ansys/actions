@@ -123,6 +123,23 @@ inputs:
     required: true
     type: boolean
 
+  add-pdf-html-docs-as-assets:
+    description: |
+      Whether to add PDF and HTML documentation as assets of the HTML
+      documentation. The HTML documentation is compressed before being added.
+      The PDF file name is expected to be retrieved through the documentation's
+      configuration file 'conf.py' in 'doc/source'.
+
+      .. warning::
+
+          The HTML files are expected to be contained in ``doc/_build`` and the
+          PDF file is copied in ``doc/_build/html/_static/assets/download``.
+          If such directories do not exist in your repo, the action will fail.
+
+    required: true
+    type: boolean
+
+
 runs:
   using: "composite"
   steps:
@@ -233,6 +250,117 @@ runs:
         then
           xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Set environment variable PDF_FILENAME.
+
+    - name: Parse PDF file name
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      shell: bash
+      run: |
+        python ${{ github.action_path }}/../doc-build/parse_doc_conf.py
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
+      with:
+        level: "ERROR"
+        message: >
+          Unable to determine PDF filename using conf.py file.
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
+      with:
+        level: "INFO"
+        message: >
+          Environment variable PDF_FILENAME set to ${{ env.PDF_FILENAME }}.
+
+    # ------------------------------------------------------------------------
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Check if expected directories exist.
+
+    - name: Set expected build directory
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      shell: bash
+      run: |
+        echo "EXPECTED_BUILD_DIR=doc/_build" >> $GITHUB_ENV
+
+    - name: Check expected build directory
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      shell: bash
+      run: |
+        echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d ${{ env.EXPECTED_BUILD_DIR }} ] && echo 'true' || echo 'false' )" >> $GITHUB_ENV
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
+      with:
+        level: "ERROR"
+        message: >
+          Expected build directory ${{ env.EXPECTED_BUILD_DIR }} does not exist.
+
+    - name: Set expected download directory
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      shell: bash
+      run: |
+        echo "EXPECTED_DOWNLOAD_DIR=$(echo '${{ env.EXPECTED_BUILD_DIR }}/html/_static/assets/download')" >> $GITHUB_ENV
+
+    - name: Check expected download directory
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      shell: bash
+      run: |
+        echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d '${{ env.EXPECTED_DOWNLOAD_DIR }}' ] && echo 'true' || echo 'false' )" >> $GITHUB_ENV
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      with:
+        level: "WARNING"
+        message: >
+          Expected build directory ${{ env.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
+
+    - name: Create expected download directory
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      shell: bash
+      run: |
+        mkdir -p ${{ env.EXPECTED_DOWNLOAD_DIR }}
+
+    # ------------------------------------------------------------------------
+
+    - name: Check build directory
+      uses: ansys/actions/_logging@main
+      if: inputs.add-pdf-html-docs-as-assets == 'true'
+      with:
+        level: "INFO"
+        message: >
+          Add PDF and HTML documentation as assets.
+
+    - name: Compress HTML documentation
+      uses: vimtor/action-zip@v1.2
+      with:
+        files: ${{ env.EXPECTED_BUILD_DIR }}/html
+        dest: documentation-html.zip
+
+    - name: Add assets to HTML docs
+      shell: bash
+      run: |
+        mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
+        if [ -e  "${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }}" ]; then
+            cp ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
+            echo "File ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} has been copied."
+        else
+            cp ${{ env.EXPECTED_BUILD_DIR }}/latex/*.pdf ${{ env.EXPECTED_DOWNLOAD_DIR }}
+            echo "Couldn't find ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }}, every existing PDF file has been copied."
+        fi
+
+    # ------------------------------------------------------------------------
 
     - name: "Upload HTML documentation artifact"
       uses: actions/upload-artifact@v4
