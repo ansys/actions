@@ -99,7 +99,7 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
-      if: inputs.checkout == 'true'
+      if: inputs.checkout == true
       uses: actions/checkout@v4
 
     - name: "Set up Python ${{ inputs.python-version }}"
