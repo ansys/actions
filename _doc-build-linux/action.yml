@@ -335,7 +335,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: Check build directory
-      if: inputs.add-pdf-html-docs-as-assets == 'true'
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       uses: ansys/actions/_logging@main
       with:
         level: "INFO"
@@ -343,14 +343,14 @@ runs:
           Add PDF and HTML documentation as assets.
 
     - name: Compress HTML documentation
-      if: inputs.add-pdf-html-docs-as-assets == 'true'
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       uses: vimtor/action-zip@v1.2
       with:
         files: ${{ env.EXPECTED_BUILD_DIR }}/html
         dest: documentation-html.zip
 
     - name: Add assets to HTML docs
-      if: inputs.add-pdf-html-docs-as-assets == 'true'
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: bash
       run: |
         mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
