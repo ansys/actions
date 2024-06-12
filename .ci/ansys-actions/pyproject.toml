@@ -5,16 +5,14 @@ build-backend = "flit_core.buildapi"
 [project]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
 name = "ansys-actions-core"
-version = "6.1.0"
+version = "6.1.1"
 description = "A demo library for testing Ansys actions"
 readme = "README.rst"
 requires-python = ">=3.7"
-license = {file = "LICENSE"}
-authors = [
-    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"},
-]
+license = { file = "LICENSE" }
+authors = [{ name = "ANSYS, Inc.", email = "pyansys.core@ansys.com" }]
 maintainers = [
-    {name = "PyAnsys developers", email = "pyansys.core@ansys.com"},
+    { name = "PyAnsys developers", email = "pyansys.core@ansys.com" },
 ]
 
 classifiers = [
@@ -23,9 +21,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = [
-    "importlib-metadata >=4.0",
-]
+dependencies = ["importlib-metadata >=4.0"]
 
 [tool.flit.module]
 name = "ansys.actions.core"
