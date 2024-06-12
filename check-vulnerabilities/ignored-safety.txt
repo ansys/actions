@@ -1,4 +1,4 @@
-52495
-62044
-67599
-70612
+52495 # `setuptools` vulnerability - for setuptools versions < 65.5.1
+62044 # `pip` vulnerability - installing a package from a Mercurial VCS URL
+67599 # `pip` vulnerability - using --extra-index-url option
+70612 # `jinja2` vulnerability
