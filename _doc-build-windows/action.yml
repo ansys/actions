@@ -264,11 +264,11 @@ runs:
       shell: powershell
       run: |
         echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
+        ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        ${{ env.SPHINX_BUILD_MAKE }} pdf
         if ("${{ inputs.check-links }}" -eq 'true' ) {
           ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         }
-        ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        ${{ env.SPHINX_BUILD_MAKE }} pdf
         if ("${{ inputs.skip-json-build }}" -eq 'false' ) {
           ${{ env.SPHINX_BUILD_MAKE }} json SPHINXOPTS="${{ inputs.sphinxopts }}"
         }
@@ -369,7 +369,8 @@ runs:
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
       run: |
-        zip -r documentation-html.zip ${{ env.EXPECTED_BUILD_DIR }}\html
+        cd ${{ env.EXPECTED_BUILD_DIR }}\html; zip -r documentation-html.zip *; cd ..\..\..
+        mv ${{ env.EXPECTED_BUILD_DIR }}\html\documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
         mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
         if (Test-Path ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}) {
           cp ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
