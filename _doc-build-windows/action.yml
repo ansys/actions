@@ -264,11 +264,11 @@ runs:
       shell: powershell
       run: |
         echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
+        ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        ${{ env.SPHINX_BUILD_MAKE }} pdf
         if ("${{ inputs.check-links }}" -eq 'true' ) {
           ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         }
-        ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        ${{ env.SPHINX_BUILD_MAKE }} pdf
         if ("${{ inputs.skip-json-build }}" -eq 'false' ) {
           ${{ env.SPHINX_BUILD_MAKE }} json SPHINXOPTS="${{ inputs.sphinxopts }}"
         }
