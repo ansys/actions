@@ -41,6 +41,13 @@ inputs:
 
   # Optional inputs
 
+  files:
+    description: >
+      Path to the directory containing the documentation files.
+    default: 'doc'
+    required: false
+    type: string
+
   vale-config:
     description: >
       Path to the Vale configuration file.
@@ -168,7 +175,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
-        files: doc
+        files: ${{ inputs.files }}
         reporter: github-pr-check
         level: error
         filter_mode: nofilter
