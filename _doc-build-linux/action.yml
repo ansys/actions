@@ -240,12 +240,12 @@ runs:
       if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
+        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
           xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
-        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
           xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
