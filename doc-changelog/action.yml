@@ -211,6 +211,6 @@ runs:
         if [ ! -z "$modified" ]; then
           echo "modified: $modified"
           # Commit and push fragment
-          git commit -m "Adding changelog entry: $fragment"
+          git commit -m "chore: adding changelog file $fragment"
           git push
         fi
