@@ -211,7 +211,7 @@ runs:
 
           # Configure git username & email
           git config user.name 'pyansys-ci-bot'
-          git config user.email 'pyansys.github.bot@ansys.com'
+          git config user.email 'pyansys.github@ansys.com'
 
           # Add CHANGELOG.md file and deleted ${{ env.TOWNCRIER_DIR }}/*.md files
           git add .
