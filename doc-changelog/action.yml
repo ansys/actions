@@ -199,7 +199,7 @@ runs:
 
         # Configure git username & email
         git config user.name 'pyansys-ci-bot'
-        git config user.email 'pyansys.github.bot@ansys.com'
+        git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
 
         # Add towncrier fragment
         git add .
