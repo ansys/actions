@@ -167,7 +167,7 @@ runs:
 
           # Configure git username & email
           git config user.name 'pyansys-ci-bot'
-          git config user.email 'pyansys.github@ansys.com'
+          git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
 
           # Commit ${{ env.BRANCH }} & push to origin
           git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
