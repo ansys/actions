@@ -140,8 +140,7 @@ runs:
       shell: bash
       run: |
         pr_title=${{ env.PR_TITLE }}
-        cc_type="${ ${{ env.PR_TITLE }}%%:* }"
-        # "${pr_title%%:*}"
+        cc_type=$(echo $pr_title | cut -d: -f1)
         echo CC_TYPE='"'$cc_type'"' >> $GITHUB_ENV
 
     - name: "Get labels in the pull request"
