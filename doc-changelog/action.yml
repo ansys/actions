@@ -136,7 +136,14 @@ runs:
 
     - name: "Check failures"
       if: steps.lowercase.outcome == 'failure' && steps.caps.outcome == 'failure'
+      shell: bash
       run: exit 1
+
+    - name: "Print good statement"
+      if: ${{ inputs.use-labels == 'true' }}
+      shell: bash
+      run: echo "good!"
+
 
     # - name: "Get labels in the pull request"
     #   if: ${{ inputs.use-labels == 'true' }}
