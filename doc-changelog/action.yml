@@ -275,12 +275,8 @@ runs:
         # Capitalize first letter of string, so it becomes True or False
         use_labels = use_labels[0].upper() + use_labels[1:]
 
-        print(use_labels)
-
-        print(bool(use_labels))
-
         # If not using label, remove conventional commit type from title
-        if not use_labels:
+        if use_labels == "False":
             colon_index = clean_title.index(":")
             clean_title = clean_title[colon_index:]
 
