@@ -137,10 +137,20 @@ runs:
       if: ${{ inputs.use-labels == 'false' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-      shell: bash
+      shell: python
       run: |
-        cc_type=$(echo ${{ env.PR_TITLE }} | cut -d: -f1)
-        echo CC_TYPE='"'$cc_type'"' >> $GITHUB_ENV
+        import os
+
+        pr_title = f"""{os.environ.get('PR_TITLE')}"""
+        colon_index = pr_title.index(":")
+        cc_type = pr_title[:4]
+        print(cc_type)
+
+        # Get the GITHUB_ENV variable
+        github_env = os.getenv('GITHUB_ENV')
+
+        with open(github_env, "a") as f:
+            f.write(f"CC_TYPE={cc_type}")
 
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-labels == 'true' }}
