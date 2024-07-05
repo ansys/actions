@@ -280,7 +280,7 @@ runs:
         # If not using label, remove conventional commit type from title
         if not use_labels:
             colon_index = clean_title.index(":")
-            clean_title = clean_title[4:]
+            clean_title = clean_title[colon_index:]
 
         print(clean_title)
 
