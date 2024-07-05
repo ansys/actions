@@ -141,7 +141,7 @@ runs:
       run: |
         pr_title="${{ env.PR_TITLE }}"
         cc_type="${pr_title%%:*}"
-        echo CC_TYPE=$cc_type >> $GITHUB_ENV
+        echo CC_TYPE='"$cc_type"' >> $GITHUB_ENV
 
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-labels == 'true' }}
