@@ -139,8 +139,9 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: bash
       run: |
-        # pr_title=${{ env.PR_TITLE }}
-        cc_type="${{env.PR_TITLE%%:*}}"
+        pr_title=${{ env.PR_TITLE }}
+        cc_type="${ ${{ env.PR_TITLE }}%%:* }"
+        # "${pr_title%%:*}"
         echo CC_TYPE='"'$cc_type'"' >> $GITHUB_ENV
 
     - name: "Get labels in the pull request"
