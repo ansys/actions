@@ -166,7 +166,9 @@ runs:
         import os
 
         # Get conventional commit type from env variable
-        cc_type = ${{ env.CC_TYPE }}
+        cc_type = "${{ env.CC_TYPE }}".lower()
+
+        print(cc_type)
 
         cc_type_changelog_dict = {
           "feat": "added",
@@ -178,8 +180,8 @@ runs:
           "chore": "changed",
           "perf": "changed",
           "ci": "changed",
-          "docs": "documentation"
-          "build": "dependencies"
+          "docs": "documentation",
+          "build": "dependencies",
         }
 
         changelog_section = cc_type_changelog_dict[cc_type]
