@@ -143,14 +143,13 @@ runs:
 
         pr_title = f"""{os.environ.get('PR_TITLE')}"""
         colon_index = pr_title.index(":")
-        cc_type = pr_title[:colon_index]
-        print(cc_type)
+        cc_type = '"'+pr_title[:colon_index]+'"'
 
         # Get the GITHUB_ENV variable
         github_env = os.getenv('GITHUB_ENV')
 
         with open(github_env, "a") as f:
-            f.write(f"CC_TYPE={cc_type}")
+            f.write(f'CC_TYPE={cc_type}')
 
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-labels == 'true' }}
