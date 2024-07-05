@@ -65,6 +65,14 @@ inputs:
     default: true
     type: boolean
 
+  use-labels:
+    description: >
+      Whether to use labels to categorize towncrier fragments or conventional
+      commits.
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -91,126 +99,159 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }}
 
-    - name: "Get labels in the pull request"
+    # - name: "Run commit style checks"
+    #   if: ${{ inputs.use-labels == 'false' }}
+    #   uses: ansys/actions/commit-style@v6
+    #   with:
+    #     token: ${{ inputs.token }}
+
+    - name: "Check pull-request title follows conventional commits style"
+      if: ${{ inputs.use-labels == 'false' && ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) }}
+      uses: amannn/action-semantic-pull-request@v5
       env:
-        OWNER: ${{ github.repository_owner }}
-        REPO_NAME: ${{ github.event.repository.name }}
-        PR_NUMBER: ${{ github.event.number }}
-        GH_TOKEN: ${{ inputs.token }}
-      shell: bash
-      run: |
-        # Get the labels in the pull request
-        pr_labels=$(gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name')
+        GITHUB_TOKEN: ${{ inputs.token }}
 
-        # Save the labels to an environment variable
-        # For example, LABELS="enhancement maintenance"
-        echo LABELS='"'$pr_labels'"' >> $GITHUB_ENV
-
-    - name: "Set PR label environment variable"
-      shell: python
-      run: |
-        import os
-
-        # Create a list of labels found in the pull request
-        # For example, "enhancement maintenance".split() -> ["enhancement", "maintenance"]
-        existing_labels = ${{ env.LABELS }}.split()
-
-        # Dictionary with the key as a label from .github/workflows/label.yml and
-        # value as the corresponding section in the changelog
-        pr_labels = {
-          "enhancement": "added",
-          "bug": "fixed",
-          "dependencies": "dependencies",
-          "maintenance": "changed"
-        }
-
-        def get_changelog_section(pr_labels, existing_labels):
-          """Find the changelog section corresponding to the label in the PR."""
-          label_type = ""
-
-          for key, value in pr_labels.items():
-              if key in existing_labels:
-                  label_type = value
-                  return label_type
-
-          # If no labels are in the PR, it goes into the miscellaneous category
-          label_type = "miscellaneous"
-          return label_type
-
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
-
-        # Append the PR_LABEL with its value to GITHUB_ENV
-        # For example, PR_LABEL="added" if the PR had an "enhancement" label
-        with open(github_env, "a") as f:
-            f.write(f"PR_LABEL={get_changelog_section(pr_labels, existing_labels)}")
-
-    - name: "Remove PR fragment file if it already exists"
+    - name: "Check pull-request title follows conventional commits style with upper case"
+      if: ${{ inputs.use-labels == 'false' && ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) && failure() }}
+      uses: amannn/action-semantic-pull-request@v5
       env:
-        PR_NUMBER: ${{ github.event.number }}
-      shell: bash
-      run: |
-        # Find files containing the PR number
-        # For example, 20.*.md
-        file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
+        GITHUB_TOKEN: ${{ inputs.token }}
+      with:
+        types: |
+          BUILD
+          CHORE
+          CI
+          DOCS
+          FEAT
+          FIX
+          PERF
+          REFACTOR
+          REVERT
+          STYLE
+          TEST
 
-        # If the fragment file exists, then delete the file
-        if [ ! -z "$file" ]; then
-          echo "Removing $file"
-          rm $file
-        fi
+    # - name: "Get labels in the pull request"
+    #   if: ${{ inputs.use-labels == 'true' }}
+    #   env:
+    #     OWNER: ${{ github.repository_owner }}
+    #     REPO_NAME: ${{ github.event.repository.name }}
+    #     PR_NUMBER: ${{ github.event.number }}
+    #     GH_TOKEN: ${{ inputs.token }}
+    #   shell: bash
+    #   run: |
+    #     # Get the labels in the pull request
+    #     pr_labels=$(gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name')
 
-    - name: "Clean PR title"
-      env:
-        PR_TITLE: ${{ github.event.pull_request.title }}
-      shell: python
-      run: |
-        import os
+    #     # Save the labels to an environment variable
+    #     # For example, LABELS="enhancement maintenance"
+    #     echo LABELS='"'$pr_labels'"' >> $GITHUB_ENV
 
-        # Retrieve title
-        clean_title = os.getenv('PR_TITLE')
+    # - name: "Set PR label environment variable"
+    #   if: ${{ inputs.use-labels == 'true' }}
+    #   shell: python
+    #   run: |
+    #     import os
 
-        # Remove extra whitespace
-        clean_title = clean_title.strip()
+    #     # Create a list of labels found in the pull request
+    #     # For example, "enhancement maintenance".split() -> ["enhancement", "maintenance"]
+    #     existing_labels = ${{ env.LABELS }}.split()
 
-        # Add backslash in front of backtick and double quote
-        clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
+    #     # Dictionary with the key as a label from .github/workflows/label.yml and
+    #     # value as the corresponding section in the changelog
+    #     pr_labels = {
+    #       "enhancement": "added",
+    #       "bug": "fixed",
+    #       "dependencies": "dependencies",
+    #       "maintenance": "changed"
+    #     }
 
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
+    #     def get_changelog_section(pr_labels, existing_labels):
+    #       """Find the changelog section corresponding to the label in the PR."""
+    #       label_type = ""
 
-        # Append the CLEAN_TITLE with its value to GITHUB_ENV
-        with open(github_env, "a") as f:
-            f.write(f"CLEAN_TITLE={clean_title}")
+    #       for key, value in pr_labels.items():
+    #           if key in existing_labels:
+    #               label_type = value
+    #               return label_type
 
-    - name: "Create and commit towncrier fragment"
-      env:
-        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-        PR_NUMBER: ${{ github.event.number }}
-      shell: bash
-      run: |
-        # Changelog fragment file in the following format
-        # For example, 20.added.md
-        fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
+    #       # If no labels are in the PR, it goes into the miscellaneous category
+    #       label_type = "miscellaneous"
+    #       return label_type
 
-        # Create changelog fragment with towncrier
-        # Fragment file contains the title of the PR
-        towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
+    #     # Get the GITHUB_ENV variable
+    #     github_env = os.getenv('GITHUB_ENV')
 
-        # Configure git username & email
-        git config user.name 'pyansys-ci-bot'
-        git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+    #     # Append the PR_LABEL with its value to GITHUB_ENV
+    #     # For example, PR_LABEL="added" if the PR had an "enhancement" label
+    #     with open(github_env, "a") as f:
+    #         f.write(f"PR_LABEL={get_changelog_section(pr_labels, existing_labels)}")
 
-        # Add towncrier fragment
-        git add .
+    # - name: "Remove PR fragment file if it already exists"
+    #   env:
+    #     PR_NUMBER: ${{ github.event.number }}
+    #   shell: bash
+    #   run: |
+    #     # Find files containing the PR number
+    #     # For example, 20.*.md
+    #     file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
 
-        # Check if file was modified
-        modified=`git diff HEAD --name-only`
+    #     # If the fragment file exists, then delete the file
+    #     if [ ! -z "$file" ]; then
+    #       echo "Removing $file"
+    #       rm $file
+    #     fi
 
-        # If the file was modified, commit & push it to the branch
-        if [ ! -z "$modified" ]; then
-          echo "modified: $modified"
-          # Commit and push fragment
-          git commit -m "chore: adding changelog file $fragment"
-          git push
-        fi
+    # - name: "Clean PR title"
+    #   env:
+    #     PR_TITLE: ${{ github.event.pull_request.title }}
+    #   shell: python
+    #   run: |
+    #     import os
+
+    #     # Retrieve title
+    #     clean_title = os.getenv('PR_TITLE')
+
+    #     # Remove extra whitespace
+    #     clean_title = clean_title.strip()
+
+    #     # Add backslash in front of backtick and double quote
+    #     clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
+
+    #     # Get the GITHUB_ENV variable
+    #     github_env = os.getenv('GITHUB_ENV')
+
+    #     # Append the CLEAN_TITLE with its value to GITHUB_ENV
+    #     with open(github_env, "a") as f:
+    #         f.write(f"CLEAN_TITLE={clean_title}")
+
+    # - name: "Create and commit towncrier fragment"
+    #   env:
+    #     PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+    #     PR_NUMBER: ${{ github.event.number }}
+    #   shell: bash
+    #   run: |
+    #     # Changelog fragment file in the following format
+    #     # For example, 20.added.md
+    #     fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
+
+    #     # Create changelog fragment with towncrier
+    #     # Fragment file contains the title of the PR
+    #     towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
+
+    #     # Configure git username & email
+    #     git config user.name 'pyansys-ci-bot'
+    #     git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+
+    #     # Add towncrier fragment
+    #     git add .
+
+    #     # Check if file was modified
+    #     modified=`git diff HEAD --name-only`
+
+    #     # If the file was modified, commit & push it to the branch
+    #     if [ ! -z "$modified" ]; then
+    #       echo "modified: $modified"
+    #       # Commit and push fragment
+    #       git commit -m "chore: adding changelog file $fragment"
+    #       git push
+    #     fi
