@@ -140,8 +140,8 @@ runs:
       shell: bash
       run: |
         pr_title="${{ env.PR_TITLE }}"
-        echo "${pr_title%%:*}"
-        echo CC_TYPE='"${pr_title%%:*}"' >> $GITHUB_ENV
+        cc_type="${pr_title%%:*}"
+        echo CC_TYPE=$cc_type >> $GITHUB_ENV
 
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-labels == 'true' }}
@@ -166,7 +166,7 @@ runs:
         import os
 
         # Get conventional commit type from env variable
-        cc_type = "${{ env.CC_TYPE }}".lower()
+        cc_type = ${{ env.CC_TYPE }}.lower()
 
         print(cc_type)
 
