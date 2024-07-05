@@ -139,7 +139,7 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: bash
       run: |
-        pr_title=${{ env.PR_TITLE }}
+        pr_title="${{ env.PR_TITLE }}"
         echo "${pr_title%%:*}"
         echo CC_TYPE='"${pr_title%%:*}"' >> $GITHUB_ENV
 
