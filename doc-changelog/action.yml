@@ -143,7 +143,7 @@ runs:
 
         pr_title = f"""{os.environ.get('PR_TITLE')}"""
         colon_index = pr_title.index(":")
-        cc_type = pr_title[:4]
+        cc_type = pr_title[:colon_index]
         print(cc_type)
 
         # Get the GITHUB_ENV variable
