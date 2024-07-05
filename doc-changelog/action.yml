@@ -105,7 +105,16 @@ runs:
     #   with:
     #     token: ${{ inputs.token }}
 
+    - name: "Check pull-request title follows conventional commits style"
+      id: lowercase
+      if: ${{ inputs.use-labels == 'false' && ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) }}
+      uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      continue-on-error: true
+
     - name: "Check pull-request title follows conventional commits style with upper case"
+      id: caps
       if: ${{ inputs.use-labels == 'false' && ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) }}
       uses: amannn/action-semantic-pull-request@v5
       env:
@@ -125,11 +134,9 @@ runs:
           TEST
       continue-on-error: true
 
-    - name: "Check pull-request title follows conventional commits style"
-      if: ${{ inputs.use-labels == 'false' && ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) }}
-      uses: amannn/action-semantic-pull-request@v5
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
+    - name: "Check failures"
+      if: steps.lowercase.outcome == 'failure' && steps.caps.outcome == 'failure'
+      run: exit 1
 
     # - name: "Get labels in the pull request"
     #   if: ${{ inputs.use-labels == 'true' }}
