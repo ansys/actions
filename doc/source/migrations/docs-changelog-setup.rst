@@ -247,8 +247,13 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
     showcontent = true
 
     [[tool.towncrier.type]]
-    directory = "changed"
-    name = "Changed"
+    directory = "dependencies"
+    name = "Dependencies"
+    showcontent = true
+
+    [[tool.towncrier.type]]
+    directory = "documentation"
+    name = "Documentation"
     showcontent = true
 
     [[tool.towncrier.type]]
@@ -257,13 +262,18 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
     showcontent = true
 
     [[tool.towncrier.type]]
-    directory = "dependencies"
-    name = "Dependencies"
+    directory = "maintenance"
+    name = "Maintenance"
     showcontent = true
 
     [[tool.towncrier.type]]
     directory = "miscellaneous"
     name = "Miscellaneous"
+    showcontent = true
+
+    [[tool.towncrier.type]]
+    directory = "test"
+    name = "Test"
     showcontent = true
 
 A reference pull request for these changes can be found in the `PyAnsys Geometry #1023 <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_ pull request.

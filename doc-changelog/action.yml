@@ -181,15 +181,15 @@ runs:
         cc_type_changelog_dict = {
           "feat": "added",
           "fix": "fixed",
-          "revert": "changed",
-          "style": "changed",
-          "refactor": "changed",
-          "test": "tests",
-          "chore": "changed",
-          "perf": "changed",
-          "ci": "changed",
           "docs": "documentation",
           "build": "dependencies",
+          "revert": "miscellaneous",
+          "style": "miscellaneous",
+          "refactor": "miscellaneous",
+          "perf": "miscellaneous",
+          "test": "test",
+          "chore": "maintenance",
+          "ci": "maintenance",
         }
 
         changelog_section = cc_type_changelog_dict[cc_type]
@@ -218,9 +218,10 @@ runs:
           "enhancement": "added",
           "bug": "fixed",
           "documentation": "documentation",
-          "tests": "tests",
+          "testing": "test",
           "dependencies": "dependencies",
-          "maintenance": "changed"
+          "CI/CD": "maintenance",
+          "maintenance": "maintenance"
         }
 
         def get_changelog_section(pr_labels, existing_labels):
