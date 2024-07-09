@@ -105,6 +105,10 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
+        import sys
+        # caution: path[0] is reserved for script path (or '' in REPL)
+        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+
         from parse_pr_title import get_first_letter_case
 
         pr_title = """${{ env.PR_TITLE }}"""
