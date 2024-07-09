@@ -16,6 +16,8 @@ def get_first_letter_case(pr_title):
     index = 0
     first_letter = pr_title[index]
 
+    print(pr_title)
+
     while first_letter == " ":
         index += 1
         try:
