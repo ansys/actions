@@ -99,34 +99,16 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }}
 
-    - name: "Add backslashes to PR_TITLE"
-      env:
-        PR_TITLE: ${{ github.event.pull_request.title }}
-      shell: python
-      run: |
-        import os
-        pr_title = """${{ env.PR_TITLE }}"""
-
-        # Add backslashes in front of double quotes
-        pr_title = pr_title.replace('"', '\\"')
-
-        # Add backslashes in front of backticks
-        pr_title = pr_title.replace("`", "\`")
-
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv("GITHUB_ENV")
-
-        # Save environment variable with its value
-        with open(github_env, "a") as f:
-            f.write(f"PR_TITLE={pr_title}")
-
     - name: "Get first letter of conventional commit type"
       if: ${{ inputs.use-labels == 'false' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-      shell: bash
+      shell: python
       run: |
-        python ${{ github.action_path }}/../doc-build/parse_pr_title.py --get-first-letter-case --pr-title "${{ env.PR_TITLE }}"
+        from parse_pr_title import get_first_letter_case
+
+        pr_title = """${{ env.PR_TITLE }}"""
+        get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ env.FIRST_LETTER == 'lowercase' }}
@@ -147,7 +129,10 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
-        python ${{ github.action_path }}/../doc-build/parse_pr_title.py --get-cc-type --pr-title ${{ env.PR_TITLE }}
+        from parse_pr_title import get_conventional_commit_type
+
+        pr_title = """${{ env.PR_TITLE }}"""
+        get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-labels == 'true' }}
@@ -169,13 +154,19 @@ runs:
       if: ${{ inputs.use-labels == 'false' }}
       shell: python
       run: |
-        python ${{ github.action_path }}/../doc-build/parse_pr_title.py --changelog-category-cc --cc-type ${{ env.CC_TYPE }}
+        from parse_pr_title import changelog_category_cc
+
+        cc_type = "${{ env.CC_TYPE }}"
+        get_conventional_commit_type(cc_type)
 
     - name: "Set PR label environment variable"
       if: ${{ inputs.use-labels == 'true' }}
       shell: python
       run: |
-        python ${{ github.action_path }}/../doc-build/parse_pr_title.py --changelog-category-labels --labels ${{ env.LABELS }}
+        from parse_pr_title import changelog_cateogry_labels
+
+        labels = "${{ env.LABELS }}"
+        changelog_cateogry_labels(labels)
 
     - name: "Remove PR fragment file if it already exists"
       env:
@@ -195,13 +186,18 @@ runs:
     - name: "Clean PR title"
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-      shell: bash
+      shell: python
       run: |
-        if [[ ${{ inputs.use-labels }} == "true" ]]; then
-          python ${{ github.action_path }}/../doc-build/parse_pr_title.py --clean-pr-title --use-labels
-        else
-          python ${{ github.action_path }}/../doc-build/parse_pr_title.py --clean-pr-title --no-use-labels
-        fi
+        from parse_pr_title import clean_pr_title
+
+        pr_title = """${{ env.PR_TITLE }}"""
+        use_labels = ${{ inputs.use-labels }}
+        use_labels = use_labels[0].upper() + use_labels[1:]
+
+        if use_labels == "True":
+          clean_pr_title(pr_title, use_labels)
+        else:
+          clean_pr_title(pr_title, use_labels)
 
     - name: "Create and commit towncrier fragment"
       env:

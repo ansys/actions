@@ -99,12 +99,9 @@ def changelog_cateogry_labels(labels):
     )
 
 
-def clean_pr_title(use_labels: bool):
+def clean_pr_title(pr_title, use_labels):
     # Retrieve title
-    clean_title = os.getenv("PR_TITLE")
-
-    # Capitalize first letter of string, so it becomes True or False
-    use_labels = use_labels[0].upper() + use_labels[1:]
+    clean_title = pr_title
 
     # If not using label, remove conventional commit type from title
     if use_labels == "False":
@@ -147,6 +144,7 @@ def main():
     parser.add_argument(
         "--pr-title",
         type=str,
+        nargs="+",
         help="The pull request title",
     )
     parser.add_argument(
