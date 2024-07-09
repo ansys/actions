@@ -99,39 +99,26 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }}
 
-    - name: "Check pull-request title follows conventional commits style"
-      id: lowercase
-      if: ${{ inputs.use-labels == 'false' && ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) }}
-      uses: amannn/action-semantic-pull-request@v5
+    - name: "Get first letter of conventional commit type"
+      if: ${{ inputs.use-labels == 'false' }}
       env:
-        GITHUB_TOKEN: ${{ inputs.token }}
-      continue-on-error: true
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      shell: python
+      run: |
+        python ${{ github.action_path }}/../doc-build/parse_pr_title.py --get-first-letter-case --pr-title ${{ env.PR_TITLE }}
+
+    - name: "Check pull-request title follows conventional commits style"
+      if: ${{ env.FIRST_LETTER == 'lowercase' }}
+      uses: ansys/actions/commit-style@v6
+      with:
+        token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
-      id: caps
-      if: ${{ inputs.use-labels == 'false' && ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) }}
-      uses: amannn/action-semantic-pull-request@v5
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
+      if: ${{ env.FIRST_LETTER == 'uppercase' }}
+      uses: ansys/actions/commit-style@v6
       with:
-        types: |
-          BUILD
-          CHORE
-          CI
-          DOCS
-          FEAT
-          FIX
-          PERF
-          REFACTOR
-          REVERT
-          STYLE
-          TEST
-      continue-on-error: true
-
-    - name: "Check failures"
-      if: steps.lowercase.outcome == 'failure' && steps.caps.outcome == 'failure'
-      shell: bash
-      run: exit 1
+        token: ${{ inputs.token }}
+        use-upper-case: true
 
     - name: "Get conventional commit type from title"
       if: ${{ inputs.use-labels == 'false' }}
@@ -139,17 +126,7 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
-        import os
-
-        pr_title = f"""{os.environ.get('PR_TITLE')}"""
-        colon_index = pr_title.index(":")
-        cc_type = '"'+pr_title[:colon_index]+'"'
-
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
-
-        with open(github_env, "a") as f:
-            f.write(f'CC_TYPE={cc_type}')
+        python ${{ github.action_path }}/../doc-build/parse_pr_title.py --get-cc-type --pr-title ${{ env.PR_TITLE }}
 
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-labels == 'true' }}
@@ -171,79 +148,13 @@ runs:
       if: ${{ inputs.use-labels == 'false' }}
       shell: python
       run: |
-        import os
-
-        # Get conventional commit type from env variable
-        cc_type = ${{ env.CC_TYPE }}.lower()
-
-        print(cc_type)
-
-        cc_type_changelog_dict = {
-          "feat": "added",
-          "fix": "fixed",
-          "docs": "documentation",
-          "build": "dependencies",
-          "revert": "miscellaneous",
-          "style": "miscellaneous",
-          "refactor": "miscellaneous",
-          "perf": "miscellaneous",
-          "test": "test",
-          "chore": "maintenance",
-          "ci": "maintenance",
-        }
-
-        changelog_section = cc_type_changelog_dict[cc_type]
-
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
-
-        # Append the CHANGELOG_SECTION with its value to GITHUB_ENV
-        # For example, CHANGELOG_SECTION="added" if the conventional commit title was "feat"
-        with open(github_env, "a") as f:
-            f.write(f"CHANGELOG_SECTION={changelog_section}")
+        python ${{ github.action_path }}/../doc-build/parse_pr_title.py --changelog-category-cc --cc-type ${{ env.CC_TYPE }}
 
     - name: "Set PR label environment variable"
       if: ${{ inputs.use-labels == 'true' }}
       shell: python
       run: |
-        import os
-
-        # Create a list of labels found in the pull request
-        # For example, "enhancement maintenance".split() -> ["enhancement", "maintenance"]
-        existing_labels = ${{ env.LABELS }}.split()
-
-        # Dictionary with the key as a label from .github/workflows/label.yml and
-        # value as the corresponding section in the changelog
-        pr_labels = {
-          "enhancement": "added",
-          "bug": "fixed",
-          "documentation": "documentation",
-          "testing": "test",
-          "dependencies": "dependencies",
-          "CI/CD": "maintenance",
-          "maintenance": "maintenance"
-        }
-
-        def get_changelog_section(pr_labels, existing_labels):
-          """Find the changelog section corresponding to the label in the PR."""
-          label_type = ""
-
-          for key, value in pr_labels.items():
-              if key in existing_labels:
-                  label_type = value
-                  return label_type
-
-          # If no labels are in the PR, it goes into the miscellaneous category
-          label_type = "miscellaneous"
-          return label_type
-
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
-
-        # Append the CHANGELOG_SECTION with its value to GITHUB_ENV
-        # For example, CHANGELOG_SECTION="added" if the PR had an "enhancement" label
-        with open(github_env, "a") as f:
-            f.write(f"CHANGELOG_SECTION={get_changelog_section(pr_labels, existing_labels)}")
+        python ${{ github.action_path }}/../doc-build/parse_pr_title.py --changelog-category-labels --labels ${{ env.LABELS }}
 
     - name: "Remove PR fragment file if it already exists"
       env:
@@ -263,38 +174,13 @@ runs:
     - name: "Clean PR title"
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-      shell: python
+      shell: bash
       run: |
-        import os
-
-        # Retrieve title
-        clean_title = os.getenv('PR_TITLE')
-
-        # Retrieve use-labels boolean
-        use_labels = "${{ inputs.use-labels }}"
-
-        # Capitalize first letter of string, so it becomes True or False
-        use_labels = use_labels[0].upper() + use_labels[1:]
-
-        # If not using label, remove conventional commit type from title
-        if use_labels == "False":
-            colon_index = clean_title.index(":")
-            clean_title = clean_title[colon_index+1:]
-
-        print(clean_title)
-
-        # Remove extra whitespace
-        clean_title = clean_title.strip()
-
-        # Add backslash in front of backtick and double quote
-        clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
-
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
-
-        # Append the CLEAN_TITLE with its value to GITHUB_ENV
-        with open(github_env, "a") as f:
-            f.write(f"CLEAN_TITLE={clean_title}")
+        if [[ ${{ inputs.use-labels }} == "true" ]]; then
+          python ${{ github.action_path }}/../doc-build/parse_pr_title.py --clean-pr-title --use-labels
+        else
+          python ${{ github.action_path }}/../doc-build/parse_pr_title.py --clean-pr-title --no-use-labels
+        fi
 
     - name: "Create and commit towncrier fragment"
       env:
