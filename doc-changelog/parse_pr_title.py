@@ -1,4 +1,3 @@
-import argparse
 import os
 
 
@@ -117,64 +116,3 @@ def clean_pr_title(pr_title, use_labels):
     clean_title = clean_title.replace("`", "\\`").replace('"', '\\"')
 
     save_env_variable("CLEAN_TITLE", clean_title)
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Parse pull request title.")
-    parser.add_argument(
-        "--get-cc-type", action=argparse.BooleanOptionalAction, default=False
-    )
-    parser.add_argument(
-        "--get-first-letter-case", action=argparse.BooleanOptionalAction, default=False
-    )
-    parser.add_argument(
-        "--changelog-category-cc", action=argparse.BooleanOptionalAction, default=False
-    )
-    parser.add_argument(
-        "--changelog-category-labels",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-    )
-    parser.add_argument(
-        "--clean_pr_title", action=argparse.BooleanOptionalAction, default=False
-    )
-    parser.add_argument(
-        "--use-labels", action=argparse.BooleanOptionalAction, default=True
-    )
-    parser.add_argument(
-        "--pr-title",
-        type=str,
-        nargs="+",
-        help="The pull request title",
-    )
-    parser.add_argument(
-        "--cc-type",
-        type=str,
-        help="The pull request title",
-    )
-    parser.add_argument(
-        "--labels",
-        type=str,
-        help="The pull request title",
-    )
-
-    args = parser.parse_args()
-    pr_title = f"""{args.pr_title}"""
-    cc_type = args.cc_type
-    labels = args.labels
-    use_labels = args.use_labels
-
-    if args.get_cc_type:
-        get_conventional_commit_type(pr_title)
-    if args.get_first_letter_case:
-        get_first_letter_case(pr_title)
-    if args.changelog_category_cc:
-        changelog_category_cc(cc_type)
-    if args.changelog_category_labels:
-        changelog_cateogry_labels(labels)
-    if args.clean_pr_title:
-        clean_pr_title(use_labels)
-
-
-if __name__ == "__main__":
-    main()
