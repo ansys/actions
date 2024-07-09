@@ -206,7 +206,7 @@ runs:
         from parse_pr_title import clean_pr_title
 
         pr_title = """${{ env.PR_TITLE }}"""
-        use_labels = ${{ inputs.use-labels }}
+        use_labels = "${{ inputs.use-labels }}"
         use_labels = use_labels[0].upper() + use_labels[1:]
 
         if use_labels == "True":
