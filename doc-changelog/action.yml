@@ -166,7 +166,7 @@ runs:
         from parse_pr_title import changelog_category_cc
 
         cc_type = ${{ env.CC_TYPE }}
-        get_conventional_commit_type(cc_type)
+        changelog_category_cc(cc_type)
 
     - name: "Set PR label environment variable"
       if: ${{ inputs.use-labels == 'true' }}
