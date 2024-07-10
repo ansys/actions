@@ -67,10 +67,24 @@ inputs:
 
   use-labels:
     description: >
-      Whether to use labels to categorize towncrier fragments or conventional
-      commits.
+      Use labels to cateogrize towncrier fragments.
+    required: false
+    default: true
+    type: boolean
+
+  use-conventional-commits:
+    description: >
+      Use conventional commits to categorize towncrier fragments.
     required: false
     default: false
+    type: boolean
+
+  web-release-notes:
+    description: >
+      Whether or not your documentation uses the release notes in
+      the documentation, the changelog.rst file.
+    required: false
+    default: true
     type: boolean
 
 runs:
@@ -100,7 +114,7 @@ runs:
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }}
 
     - name: "Get first letter of conventional commit type"
-      if: ${{ inputs.use-labels == 'false' }}
+      if: ${{ inputs.use-conventional-commits == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
@@ -114,20 +128,20 @@ runs:
         get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
-      if: ${{ env.FIRST_LETTER == 'lowercase' }}
+      if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'lowercase') }}
       uses: ansys/actions/commit-style@v6
       with:
         token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
-      if: ${{ env.FIRST_LETTER == 'uppercase' }}
+      if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'uppercase') }}
       uses: ansys/actions/commit-style@v6
       with:
         token: ${{ inputs.token }}
         use-upper-case: true
 
     - name: "Get conventional commit type from title"
-      if: ${{ inputs.use-labels == 'false' }}
+      if: ${{ inputs.use-conventional-commits == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
@@ -157,7 +171,7 @@ runs:
         echo LABELS='"'$pr_labels'"' >> $GITHUB_ENV
 
     - name: "Set CHANGELOG category based on conventional commit type"
-      if: ${{ inputs.use-labels == 'false' }}
+      if: ${{ inputs.use-conventional-commits == 'true' }}
       shell: python
       run: |
         import sys
@@ -213,6 +227,24 @@ runs:
           clean_pr_title(pr_title, use_labels)
         else:
           clean_pr_title(pr_title, use_labels)
+
+    - name: "Append towncrier categories to pyproject.toml"
+      env:
+        REPO_NAME: ${{ github.event.repository.name }}
+        ORG_NAME: ${{ github.event.repository.owner }}
+      shell: python
+      run: |
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+
+        from parse_pr_title import add_towncrier_config
+
+        repo_name = ${{ env.REPO_NAME }}
+        org_name = ${{ env.ORG_NAME }}
+
+        web_rel_notes = True if ${{ inputs.web-release-notes }} == "true" else False
+
+        add_towncrier_config(org_name, repo_name, web_rel_notes)
 
     - name: "Create and commit towncrier fragment"
       env:

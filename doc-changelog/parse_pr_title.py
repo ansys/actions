@@ -1,5 +1,7 @@
 import os
 
+import toml
+
 
 def save_env_variable(env_var_name, env_var_value):
     # Get the GITHUB_ENV variable
@@ -116,3 +118,87 @@ def clean_pr_title(pr_title, use_labels):
     clean_title = clean_title.replace("`", "\\`").replace('"', '\\"')
 
     save_env_variable("CLEAN_TITLE", clean_title)
+
+
+def add_towncrier_config(org_name, repo_name, web_release_notes):
+    # Load pyproject.toml file
+    with open("pyproject.toml", "a+") as file:
+        config = toml.load("pyproject.toml")
+        tool = config.get("tool", "DNE")
+        towncrier = tool.get("towncrier", "DNE")
+        changelog_sections = [
+            "added",
+            "dependencies",
+            "documentation",
+            "fixed",
+            "maintenance",
+            "miscellaneous",
+            "test",
+        ]
+
+        # Get the package name from [tool.flit.module]
+        flit = tool.get("flit", "DNE")
+        module = name = package = ""
+        if flit != "DNE":
+            module = flit.get("module", "DNE")
+            if module != ("DNE" or ""):
+                name = module.get("name", "DNE")
+
+        # If [tool.flit.module] name exists, create the package string
+        if name != ("DNE" and ""):
+            package = f'package = "{name}"'
+
+        # If the [tool.towncrier] section does not exist
+        if towncrier == "DNE":
+            # Append the tool.towncrier section
+            file.write("\n[tool.towncrier]\n")
+
+            # Write the package line if [tool.flit.module] name exists
+            if package:
+                file.write(f"{package}\n")
+
+            # Write general towncrier configuration
+            file.write(
+                """directory = "doc/changelog.d"
+underlines = ["", "", ""]
+template = "doc/changelog.d/changelog_template.jinja"\n"""
+            )
+
+            # Write configuration for changelog.rst release notes
+            if web_release_notes:
+                file.write(
+                    f"""filename = "doc/source/changelog.rst"
+start_string = ".. towncrier release notes start\\n"
+title_format = "`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"
+issue_format = "`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"\n"""
+                )
+
+            # Write configuration for CHANGELOG.md release notes
+            else:
+                file.write(
+                    f"""filename = "CHANGELOG.md"
+start_string = "<!-- towncrier release notes start -->\\n"
+title_format = "## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"
+issue_format = "[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"\n"""
+                )
+        # If [tool.towncrier] exists
+        else:
+            # Get the [[tool.towncrier.type]] sections
+            types = towncrier.get("type", "DNE")
+
+            # If the [[tool.towncrier.type]] sections exist
+            if types != "DNE":
+                for group in types:
+                    # Remove changelog section if it exists under [[tool.towncrier.type]] so that
+                    # only missing sections are appended to the pyproject.toml file
+                    changelog_sections.remove(group["directory"])
+
+        # Write each missing section to the pyproject.toml file
+        for section in changelog_sections:
+            file.write(
+                f"""
+[[tool.towncrier.type]]
+directory = "{section}"
+name = "{section.title()}"
+showcontent = true\n"""
+            )
