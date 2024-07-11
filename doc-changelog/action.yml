@@ -56,6 +56,13 @@ inputs:
     required: false
     type: string
 
+  toml-version:
+    description: >
+      Toml version used for retrieving the towncrier directory.
+    default: '0.10.2'
+    required: false
+    type: string
+
   use-python-cache:
     description: >
       Whether to use the Python cache for installing previously downloaded
@@ -81,7 +88,7 @@ inputs:
 
   use-default-towncrier-config:
     description: >
-      Use the default towncrier configuration in the pyproject.toml file
+      Use the default towncrier configuration in the pyproject.toml file.
     required: false
     default: false
     type: boolean
@@ -110,7 +117,7 @@ runs:
     - name: "Install towncrier"
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }}
+        python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
 
     - name: "Get first letter of conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
