@@ -42,20 +42,6 @@ inputs:
 
   # Required inputs
 
-  python-version:
-    description: >
-        Python version used for installing and running ``Sphinx``.
-    required: true
-    type: string
-
-  use-python-cache:
-    description: >
-      Whether to use the Python cache for installing previously downloaded
-      libraries. If ``true``, previously downloaded libraries are installed from the
-      Python cache. If ``false``, libraries are downloaded from the PyPI index.
-    required: true
-    type: boolean
-
   sphinxopts:
     description: |
       Set of options to pass to the ``Sphinx`` builder.
@@ -103,12 +89,6 @@ inputs:
       file in the root of the project.
     required: true
     type: string
-
-  checkout:
-    description: >
-      Whether to clone the repository in the CI/CD machine.
-    required: true
-    type: boolean
 
   skip-json-build:
     description: >
