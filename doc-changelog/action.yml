@@ -240,7 +240,7 @@ runs:
         from parse_pr_title import add_towncrier_config
 
         repo_name = "${{ github.event.repository.name }}"
-        org_name = "${{ github.event.repository.owner }}"
+        org_name = "${{ github.repository_owner }}"
 
         default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
 
