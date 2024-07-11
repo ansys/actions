@@ -54,13 +54,6 @@ inputs:
     required: false
     type: string
 
-  cibw-skip:
-    description: >
-      Desired conditions to skip when building the wheels.
-    default: "*-musllinux*"
-    required: false
-    type: string
-
   cibw-archs:
     description: >
       Desired build architecture.
