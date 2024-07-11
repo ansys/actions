@@ -91,30 +91,19 @@ runs:
         platforms: arm64
 
     - name: "Build wheels for CPython ${{ inputs.python-version }}"
-      if: ${{ inputs.cibw-build  != 'cp38-*' && inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@v2.16.2
+      if: ${{ inputs.requires-pypy == 'false' }}
+      uses: pypa/cibuildwheel@v2.19.2
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
-        CIBW_SKIP: ${{ inputs.cibw-skip }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_MANYLINUX_I686_IMAGE: manylinux2014
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
-    - name: "Build wheels for CPython 3.8"
-      if: ${{ inputs.cibw-build == 'cp38-*' && inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@v2.16.2
-      env:
-        CIBW_BUILD: ${{ inputs.cibw-build }}
-        CIBW_SKIP: ${{ inputs.cibw-skip }}
-        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
-        CIBW_MANYLINUX_I686_IMAGE: manylinux2010
-        CIBW_ARCHS: ${{ inputs.cibw-archs }}
-
     - name: "Build wheels for PyPy"
       if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
-      uses: pypa/cibuildwheel@v2.16.2
+      uses: pypa/cibuildwheel@v2.19.2
       env:
-        CIBW_BUILD: "pp38-* pp39-*"
+        CIBW_BUILD: "pp39-*"
         CIBW_SKIP: ${{ inputs.cibw-skip }}
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
