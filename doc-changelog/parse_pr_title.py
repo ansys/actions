@@ -196,7 +196,7 @@ def clean_pr_title(pr_title: str, use_labels: str):
     save_env_variable("CLEAN_TITLE", clean_title)
 
 
-def add_towncrier_config(org_name: str, repo_name: str, web_release_notes: bool):
+def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     """Append the missing towncrier information to the pyproject.toml file.
 
     Parameters
@@ -205,8 +205,8 @@ def add_towncrier_config(org_name: str, repo_name: str, web_release_notes: bool)
         The name of the organization.
     repo_name: str
         The name of the repository.
-    web_release_notes: bool
-        Whether or not the release notes are in the online documentation or the repository.
+    default_config: bool
+        Whether or not to use the default towncrier configuration for the pyproject.toml file.
     """
     # Load pyproject.toml file
     with open("pyproject.toml", "a+") as file:
@@ -224,14 +224,6 @@ def add_towncrier_config(org_name: str, repo_name: str, web_release_notes: bool)
             "miscellaneous",
             "test",
         ]
-
-        # Get the package name from [tool.flit.module]
-        flit = tool.get("flit", "DNE")
-        module = name = ""
-        if flit != "DNE":
-            module = flit.get("module", "DNE")
-            if module != ("DNE" or ""):
-                name = module.get("name", "DNE")
 
         # Dictionary containing [tool.towncrier] keys and values
         towncrier_config_sections = {
@@ -252,32 +244,28 @@ def add_towncrier_config(org_name: str, repo_name: str, web_release_notes: bool)
             },
         }
 
-        # If [tool.flit.module] name exists, create the package string
-        if name != ("DNE" and ""):
-            towncrier_config_sections["package"] = f'"{name}"'
+        # Get the package name from [tool.flit.module]
+        flit = tool.get("flit", "DNE")
+        module = name = ""
+        if flit != "DNE":
+            module = flit.get("module", "DNE")
+            if module != ("DNE" or ""):
+                name = module.get("name", "DNE")
+                # If [tool.flit.module] name exists, create the package string
+                if name != ("DNE" and ""):
+                    towncrier_config_sections["package"] = f'"{name}"'
 
-        if towncrier == "DNE":
+        if default_config:
             # Write the [tool.towncrier] and [[tool.towncrier.type]] sections
-            write_towncrier_config_section(
-                file, towncrier_config_sections, web_release_notes
-            )
+            write_towncrier_config_section(file, towncrier_config_sections, True)
             write_missing_types(changelog_sections, file)
         else:
             # Get the [[tool.towncrier.type]] sections
             types = towncrier.get("type", "DNE")
-
-            # Add missing [[tool.towncrier.type]] sections and entire [tool.towncrier] section
-            if len(towncrier) == 1 and (types != "DNE"):
+            if types != "DNE":
                 remove_existing_types(types, changelog_sections)
-                write_missing_types(changelog_sections, file)
-                write_towncrier_config_section(
-                    file, towncrier_config_sections, web_release_notes
-                )
-            else:
-                # Add missing [[tool.towncrier.type]]
-                remove_existing_types(types, changelog_sections)
-                write_missing_types(changelog_sections, file)
-                # Add missing lines of [tool.towncrier] section?
+            # Add missing [[tool.towncrier.type]] sections
+            write_missing_types(changelog_sections, file)
 
 
 def write_towncrier_config_section(
@@ -339,7 +327,8 @@ def write_missing_types(changelog_sections: list, file):
     ----------
     changelog_sections: list
         List containing changelog sections under each release.
-    file
+    file: _io.TextIOWrapper
+        File to write to.
     """
     # Write each missing section to the pyproject.toml file
     for section in changelog_sections:

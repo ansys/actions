@@ -79,12 +79,11 @@ inputs:
     default: false
     type: boolean
 
-  web-release-notes:
+  use-default-towncrier-config:
     description: >
-      Whether or not your documentation uses the release notes in
-      the documentation, the changelog.rst file.
+      Use the default towncrier configuration in the pyproject.toml file
     required: false
-    default: true
+    default: false
     type: boolean
 
 runs:
@@ -239,9 +238,9 @@ runs:
         repo_name = ${{ env.REPO_NAME }}
         org_name = ${{ env.ORG_NAME }}
 
-        web_rel_notes = True if ${{ inputs.web-release-notes }} == "true" else False
+        default_config = True if ${{ inputs.use-default-towncrier-config }} == "true" else False
 
-        add_towncrier_config(org_name, repo_name, web_rel_notes)
+        add_towncrier_config(org_name, repo_name, default_config)
 
     - name: "Create and commit towncrier fragment"
       env:
