@@ -45,6 +45,20 @@ inputs:
     required: true
     type: string
 
+  library-name:
+    description: >
+      Name of the Python library. This is the name used when uploading the wheel
+      and source distribution as artifacts. The name should be the same one used
+      in the PyPI index.
+    required: true
+    type: string
+
+  operating-system:
+    description: >
+      Name of the operating system where the library is installed.
+    required: true
+    type: string
+
   # Optional inputs
 
   cibw-build:
@@ -103,6 +117,6 @@ runs:
     - name: "Upload wheel"
       uses: actions/upload-artifact@v4
       with:
-        name: wheels
+        name: ${{ inputs.library-name }}-{{ inputs.operating-system }}-{{ inputs.python-version }}-wheels
         path: ./wheelhouse/*.whl
         retention-days: 7
