@@ -262,10 +262,12 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
                 # Write the [tool.towncrier] section
                 write_towncrier_config_section(file, towncrier_config_sections, True)
 
-        # Get the [[tool.towncrier.type]] sections
-        types = towncrier.get("type", "DNE")
-        if types != "DNE":
-            remove_existing_types(types, changelog_sections)
+        if towncrier != "DNE":
+            # Get the existing [[tool.towncrier.type]] sections
+            types = towncrier.get("type", "DNE")
+            if types != "DNE":
+                remove_existing_types(types, changelog_sections)
+
         # Add missing [[tool.towncrier.type]] sections
         write_missing_types(changelog_sections, file)
 
