@@ -242,8 +242,8 @@ runs:
 
         from parse_pr_title import add_towncrier_config
 
-        repo_name = ${{ env.REPO_NAME }}
-        org_name = ${{ env.ORG_NAME }}
+        repo_name = "${{ env.REPO_NAME }}"
+        org_name = "${{ env.ORG_NAME }}"
 
         default_config = True if ${{ inputs.use-default-towncrier-config }} == "true" else False
 
