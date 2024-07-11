@@ -223,10 +223,7 @@ runs:
         use_labels = "${{ inputs.use-labels }}"
         use_labels = use_labels[0].upper() + use_labels[1:]
 
-        if use_labels == "True":
-          clean_pr_title(pr_title, use_labels)
-        else:
-          clean_pr_title(pr_title, use_labels)
+        clean_pr_title(pr_title, use_labels)
 
     - name: "Append towncrier categories to pyproject.toml"
       env:
