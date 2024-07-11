@@ -256,8 +256,12 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
                     towncrier_config_sections["package"] = f'"{name}"'
 
         if default_config:
-            # Write the [tool.towncrier] and [[tool.towncrier.type]] sections
-            write_towncrier_config_section(file, towncrier_config_sections, True)
+            # If there is no towncrier configuration information or if [[tool.towncrier.type]]
+            # is the only towncrier information in the pyproject.toml file
+            if towncrier == "DNE" or len(towncrier) == 1:
+                # Write the [tool.towncrier] section
+                write_towncrier_config_section(file, towncrier_config_sections, True)
+            # Write the [[tool.towncrier.type]] sections
             write_missing_types(changelog_sections, file)
         else:
             # Get the [[tool.towncrier.type]] sections
