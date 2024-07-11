@@ -20,4 +20,9 @@ changelog-fragment:
     - uses: ansys/actions/doc-changelog@{{ version }}
       with:
         token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
-        # use-labels: true  # uncomment this line to use labels instead of conventional commits
+        # uncomment this line to use conventional commits instead of labels
+        # use-conventional-commits: true
+        # uncomment this if your release notes are in your documentation (doc/source/changelog.rst)
+        # web-release-notes: true
+        # uncomment this if your release notes are in your repository (CHANGELOG.md)
+        # web-release-notes: false
