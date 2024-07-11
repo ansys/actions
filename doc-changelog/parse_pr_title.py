@@ -168,21 +168,21 @@ def get_changelog_section(pr_labels: dict, existing_labels: list) -> str:
     return changelog_section
 
 
-def clean_pr_title(pr_title: str, use_labels: str):
+def clean_pr_title(pr_title: str, use_cc: str):
     """Clean the pull request title.
 
     Parameters
     ----------
     pr_title: str
         The pull request title.
-    use_labels: str
-        Whether or not to use labels to get the changelog section.
+    use_cc: str
+        Whether or not to use conventional commits to get the changelog section.
     """
     # Retrieve title
     clean_title = pr_title
 
-    # If not using label, remove conventional commit type from title
-    if use_labels == "False":
+    # If using conventional commits, remove it from title
+    if use_cc:
         colon_index = clean_title.index(":")
         clean_title = clean_title[colon_index + 1 :]
 

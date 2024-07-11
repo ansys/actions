@@ -72,16 +72,9 @@ inputs:
     default: true
     type: boolean
 
-  use-labels:
-    description: >
-      Use labels to cateogrize towncrier fragments.
-    required: false
-    default: true
-    type: boolean
-
   use-conventional-commits:
     description: >
-      Use conventional commits to categorize towncrier fragments.
+      Use conventional commits to cateogrize towncrier fragments.
     required: false
     default: false
     type: boolean
@@ -161,7 +154,7 @@ runs:
         get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
-      if: ${{ inputs.use-labels == 'true' }}
+      if: ${{ inputs.use-conventional-commits == 'false' }}
       env:
         OWNER: ${{ github.repository_owner }}
         REPO_NAME: ${{ github.event.repository.name }}
@@ -189,7 +182,7 @@ runs:
         changelog_category_cc(cc_type)
 
     - name: "Set PR label environment variable"
-      if: ${{ inputs.use-labels == 'true' }}
+      if: ${{ inputs.use-conventional-commits == 'false' }}
       shell: python
       run: |
         import sys
@@ -226,10 +219,9 @@ runs:
         from parse_pr_title import clean_pr_title
 
         pr_title = """${{ env.PR_TITLE }}"""
-        use_labels = "${{ inputs.use-labels }}"
-        use_labels = use_labels[0].upper() + use_labels[1:]
+        use_cc = True if "${{ inputs.use-conventional-commits }}" == "true" else False
 
-        clean_pr_title(pr_title, use_labels)
+        clean_pr_title(pr_title, use_cc)
 
     - name: "Append towncrier categories to pyproject.toml"
       shell: python
