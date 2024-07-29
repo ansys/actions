@@ -257,7 +257,7 @@ runs:
         fi
 
     - name: "Create PR into main with CHANGELOG changes"
-      if: ${{ inputs.use-main-branch != 'true' }} && contains(env.UPDATED_CHANGELOG, 'True')
+      if: ${{ (inputs.use-main-branch != 'true' ) && (env.UPDATED_CHANGELOG == 'True') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
