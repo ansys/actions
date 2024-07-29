@@ -83,9 +83,9 @@ inputs:
     default: true
     type: boolean
 
-  use-main-branch:
+  update-main-branch:
     description: >
-      Whether or not to update the CHANGELOG & do the release in the main branch.
+      Whether or not to update the CHANGELOG in the main branch.
       If ``true``, the branch used to update the CHANGELOG is main.
       If ``false``, check the value of the update-release-branch input.
     required: false
@@ -167,7 +167,7 @@ runs:
     - name: "Set CHANGELOG update branch"
       shell: bash
       run: |
-        if [[ ${{ inputs.use-main-branch }} == "true" ]]; then
+        if [[ ${{ inputs.update-main-branch }} == "true" ]]; then
           echo "UPDATE_BRANCH=${{ env.MAIN_BRANCH }}" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
         elif [[ ${{ inputs.update-release-branch }} == "true" ]]; then
@@ -202,7 +202,7 @@ runs:
 
         if [ $count -gt 0 ]; then
           # Checkout branch from tag
-          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.use-main-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
+          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.update-main-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             echo "Using release branch"
             git checkout ${{ env.UPDATE_BRANCH }}
             git pull
@@ -244,7 +244,7 @@ runs:
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
-          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.use-main-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
+          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.update-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             git push
           else
             git push -u origin ${{ env.UPDATE_BRANCH }}
@@ -257,7 +257,7 @@ runs:
         fi
 
     - name: "Create PR into main with CHANGELOG changes"
-      if: ${{ (inputs.use-main-branch != 'true' ) && (env.UPDATED_CHANGELOG == 'True') }}
+      if: ${{ (inputs.update-main-branch != 'true' ) && (env.UPDATED_CHANGELOG == 'True') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
