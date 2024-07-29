@@ -45,19 +45,26 @@ inputs:
     required: true
     type: string
 
+  library-name:
+    description: >
+      Name of the Python library. This is the name used when uploading the wheel
+      and source distribution as artifacts. The name should be the same one used
+      in the PyPI index.
+    required: true
+    type: string
+
+  operating-system:
+    description: >
+      Name of the operating system where the library is installed.
+    required: true
+    type: string
+
   # Optional inputs
 
   cibw-build:
     description: >
       Desired build wheel CPython version.
     default: 'cp310-*'
-    required: false
-    type: string
-
-  cibw-skip:
-    description: >
-      Desired conditions to skip when building the wheels.
-    default: "*-musllinux*"
     required: false
     type: string
 
@@ -91,36 +98,25 @@ runs:
         platforms: arm64
 
     - name: "Build wheels for CPython ${{ inputs.python-version }}"
-      if: ${{ inputs.cibw-build  != 'cp38-*' && inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@v2.16.2
+      if: ${{ inputs.requires-pypy == 'false' }}
+      uses: pypa/cibuildwheel@v2.19.2
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
-        CIBW_SKIP: ${{ inputs.cibw-skip }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_MANYLINUX_I686_IMAGE: manylinux2014
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
-    - name: "Build wheels for CPython 3.8"
-      if: ${{ inputs.cibw-build == 'cp38-*' && inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@v2.16.2
-      env:
-        CIBW_BUILD: ${{ inputs.cibw-build }}
-        CIBW_SKIP: ${{ inputs.cibw-skip }}
-        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
-        CIBW_MANYLINUX_I686_IMAGE: manylinux2010
-        CIBW_ARCHS: ${{ inputs.cibw-archs }}
-
     - name: "Build wheels for PyPy"
       if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
-      uses: pypa/cibuildwheel@v2.16.2
+      uses: pypa/cibuildwheel@v2.19.2
       env:
-        CIBW_BUILD: "pp38-* pp39-*"
+        CIBW_BUILD: "pp39-*"
         CIBW_SKIP: ${{ inputs.cibw-skip }}
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: "Upload wheel"
       uses: actions/upload-artifact@v4
       with:
-        name: wheels
+        name: ${{ inputs.library-name }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-wheels
         path: ./wheelhouse/*.whl
         retention-days: 7
