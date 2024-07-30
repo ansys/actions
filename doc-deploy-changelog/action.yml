@@ -253,7 +253,7 @@ runs:
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
-          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.update-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
+          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.update-main-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             git push
           else
             git push -u origin ${{ env.UPDATE_BRANCH }}
