@@ -341,7 +341,7 @@ runs:
           # Create the tag on remote
           git push origin v${{ env.TAG_VERSION }}
 
-          if [[ ${{ inputs.update-release-branch }} == "false" ]] || [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
+          if [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
             # Delete branch created from deleted tag with CHANGELOG update
             git push origin --delete ${{ env.UPDATE_BRANCH }}
           fi
