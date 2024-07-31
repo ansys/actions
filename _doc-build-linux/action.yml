@@ -119,6 +119,14 @@ inputs:
     required: true
     type: boolean
 
+  add-cheatsheet:
+    description: >
+      Whether to add a Quarto cheatsheet to the documentation. Default value is
+      ``false``.
+    default: false
+    required: false
+    type: boolean
+
 
 runs:
   using: "composite"
@@ -154,6 +162,14 @@ runs:
       shell: bash
       run: |
         sudo apt-get install -y texlive-latex-extra latexmk
+
+    - name: "Setup quarto"
+      if: ${{ inputs.add-cheatsheet == 'true' }}
+      uses: quarto-dev/quarto-actions/setup@v2
+      with:
+        tinytex: true
+      run: |
+        quarto --version
 
     - name: "Check if requirements.txt file exists"
       shell: bash

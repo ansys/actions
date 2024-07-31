@@ -111,6 +111,14 @@ inputs:
     required: true
     type: boolean
 
+  add-cheatsheet:
+    description: >
+      Whether to add a Quarto cheatsheet to the documentation. Default value is
+      ``false``.
+    default: false
+    required: false
+    type: boolean
+
 
 runs:
   using: "composite"
@@ -176,6 +184,20 @@ runs:
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
+
+    # ------------------------------------------------------------------------
+
+    - uses : ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Setup quarto to build the cheatsheet.
+
+    - name: Install Quarto
+      if: ${{ inputs.add-cheatsheet == 'true' }}
+      uses: quarto-dev/quarto-actions/setup@v2
+      run:
+        quarto --version
 
     # ------------------------------------------------------------------------
 
