@@ -130,7 +130,7 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.update-release-branch }}" == "true" ] && [ "${{ inputs.update-main-branch }}" == "true" ]; then
-          echo "update-release-branch and update-main-branch cannot both be true."
+          echo "Inputs update-release-branch and update-main-branch cannot both be true."
           echo "To update the main branch, set update-release-branch to false and update-main-branch to true."
           exit 1
         fi
