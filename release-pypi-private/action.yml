@@ -99,6 +99,13 @@ inputs:
     default: '3.10'
     type: string
 
+  index-name:
+    description: >
+      The name of the index endpoint used for uploading the artifacts.
+    required: true
+    default: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -107,7 +114,7 @@ runs:
       uses: ansys/actions/_release-pypi@main
       with:
         library-name: ${{ inputs.library-name }}
-        index-name: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"
+        index-name: ${{ inputs.index-name }}
         twine-username: ${{ inputs.twine-username }}
         twine-token: ${{ inputs.twine-token }}
         python-version: ${{ inputs.python-version }}
