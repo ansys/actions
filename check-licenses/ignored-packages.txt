@@ -1,3 +1,4 @@
+aiohappyeyeballs
 ansys-corba
 ansys-turbogrid-api
 defusedxml
