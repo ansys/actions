@@ -312,7 +312,7 @@ def write_towncrier_config_section(
             file.write(f"{key} = {value}\n")
 
 
-def remove_existing_types(types, changelog_sections: list):
+def remove_existing_types(types: list, changelog_sections: list):
     """Remove the existing [[tool.towncrier.types]] from the changelog_sections list.
 
     Parameters
@@ -325,8 +325,9 @@ def remove_existing_types(types, changelog_sections: list):
     for group in types:
         # Remove changelog section if it exists under [[tool.towncrier.type]] so that
         # only missing sections are appended to the pyproject.toml file
-        if group["directory"] in changelog_sections:
-            changelog_sections.remove(group["directory"])
+        section = group["directory"]
+        if section in changelog_sections:
+            changelog_sections.remove(section)
 
 
 def write_missing_types(changelog_sections: list, file):
