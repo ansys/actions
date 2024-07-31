@@ -259,14 +259,14 @@ runs:
             git push -u origin ${{ env.UPDATE_BRANCH }}
           fi
 
-          echo "UPDATED_CHANGELOG=True" >> $GITHUB_ENV
+          echo "UPDATED_CHANGELOG=true" >> $GITHUB_ENV
         else
           echo "There are no changelog fragment files to update the CHANGELOG for v${{ env.TAG_VERSION }}"
-          echo "UPDATED_CHANGELOG=False" >> $GITHUB_ENV
+          echo "UPDATED_CHANGELOG=false" >> $GITHUB_ENV
         fi
 
     - name: "Create PR into main with CHANGELOG changes"
-      if: ${{ (inputs.update-main-branch != 'true' ) && (env.UPDATED_CHANGELOG == 'True') }}
+      if: ${{ (inputs.update-main-branch != 'true' ) && (env.UPDATED_CHANGELOG == 'true') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
@@ -322,7 +322,7 @@ runs:
     - name: "Delete & Re-create tag"
       env:
         GH_TOKEN: ${{ inputs.token }}
-      if: contains(env.UPDATED_CHANGELOG, 'True')
+      if: contains(env.UPDATED_CHANGELOG, 'true')
       shell: bash
       run: |
           # Checkout branch created from tag with CHANGELOG update & pull
