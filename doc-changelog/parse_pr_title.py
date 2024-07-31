@@ -268,6 +268,8 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
             # Get the existing [[tool.towncrier.type]] sections
             types = towncrier.get("type", "DNE")
             if types != "DNE":
+                print(types)
+                print(changelog_sections)
                 remove_existing_types(types, changelog_sections)
 
         # Add missing [[tool.towncrier.type]] sections
