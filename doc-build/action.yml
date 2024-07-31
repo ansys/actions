@@ -167,7 +167,7 @@ inputs:
     required: false
     type: boolean
 
-  add-cheatsheet:
+  add-quarto-cheatsheet:
     description: >
       Whether to add a Quarto cheatsheet to the documentation. Default value is
       ``false``.
@@ -206,7 +206,7 @@ runs:
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        add-cheatsheet: ${{ inputs.add-cheatsheet }}
+        add-quarto-cheatsheet: ${{ inputs.add-quarto-cheatsheet }}
 
     # ------------------------------------------------------------------------
 
@@ -230,4 +230,4 @@ runs:
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        add-cheatsheet: ${{ inputs.add-cheatsheet }}
+        add-quarto-cheatsheet: ${{ inputs.add-quarto-cheatsheet }}

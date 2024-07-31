@@ -111,7 +111,7 @@ inputs:
     required: true
     type: boolean
 
-  add-cheatsheet:
+  add-quarto-cheatsheet:
     description: >
       Whether to add a Quarto cheatsheet to the documentation. Default value is
       ``false``.
@@ -194,7 +194,7 @@ runs:
           Setup quarto to build the cheatsheet.
 
     - name: Install Quarto
-      if: ${{ inputs.add-cheatsheet == 'true' }}
+      if: ${{ inputs.add-quarto-cheatsheet == 'true' }}
       uses: quarto-dev/quarto-actions/setup@v2
       run:
         quarto --version

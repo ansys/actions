@@ -119,7 +119,7 @@ inputs:
     required: true
     type: boolean
 
-  add-cheatsheet:
+  add-quarto-cheatsheet:
     description: >
       Whether to add a Quarto cheatsheet to the documentation. Default value is
       ``false``.
@@ -164,7 +164,7 @@ runs:
         sudo apt-get install -y texlive-latex-extra latexmk
 
     - name: "Setup quarto"
-      if: ${{ inputs.add-cheatsheet == 'true' }}
+      if: ${{ inputs.add-quarto-cheatsheet == 'true' }}
       uses: quarto-dev/quarto-actions/setup@v2
       with:
         tinytex: true
