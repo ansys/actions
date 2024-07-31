@@ -101,8 +101,10 @@ def changelog_category_cc(cc_type: str):
         "ci": "maintenance",
     }
 
-    # Get the changelog section based on the conventional commit type
-    changelog_section = cc_type_changelog_dict[cc_type]
+    for key, value in cc_type_changelog_dict.items():
+        if key in cc_type:
+            # Get the changelog section based on the conventional commit type
+            changelog_section = cc_type_changelog_dict[key]
 
     # Save the changelog section to the CHANGELOG_SECTION environment variable
     save_env_variable("CHANGELOG_SECTION", changelog_section)
