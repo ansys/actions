@@ -101,8 +101,11 @@ def changelog_category_cc(cc_type: str):
         "ci": "maintenance",
     }
 
-    # Get the changelog section based on the conventional commit type
-    changelog_section = cc_type_changelog_dict[cc_type]
+    for key, value in cc_type_changelog_dict.items():
+        if key in cc_type:
+            # Get the changelog section based on the conventional commit type
+            changelog_section = value
+            break
 
     # Save the changelog section to the CHANGELOG_SECTION environment variable
     save_env_variable("CHANGELOG_SECTION", changelog_section)
@@ -308,7 +311,7 @@ def write_towncrier_config_section(
             file.write(f"{key} = {value}\n")
 
 
-def remove_existing_types(types, changelog_sections: list):
+def remove_existing_types(types: list, changelog_sections: list):
     """Remove the existing [[tool.towncrier.types]] from the changelog_sections list.
 
     Parameters
@@ -321,7 +324,9 @@ def remove_existing_types(types, changelog_sections: list):
     for group in types:
         # Remove changelog section if it exists under [[tool.towncrier.type]] so that
         # only missing sections are appended to the pyproject.toml file
-        changelog_sections.remove(group["directory"])
+        section = group.get("directory")
+        if section in changelog_sections:
+            changelog_sections.remove(section)
 
 
 def write_missing_types(changelog_sections: list, file):
