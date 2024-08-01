@@ -324,7 +324,7 @@ def remove_existing_types(types: list, changelog_sections: list):
     for group in types:
         # Remove changelog section if it exists under [[tool.towncrier.type]] so that
         # only missing sections are appended to the pyproject.toml file
-        section = group["directory"]
+        section = group.get("directory")
         if section in changelog_sections:
             changelog_sections.remove(section)
 
