@@ -83,6 +83,15 @@ inputs:
     default: true
     type: boolean
 
+  update-main-branch:
+    description: >
+      Whether or not to update the CHANGELOG in the main branch.
+      If ``true``, the branch used to update the CHANGELOG is main.
+      If ``false``, check the value of the update-release-branch input.
+    required: false
+    default: false
+    type: boolean
+
   use-upper-case:
     description: >
       Use of uppercase letters in the "type" field of:
@@ -117,6 +126,15 @@ runs:
         python-version: ${{ env.PYTHON_VERSION }}
         use-cache: ${{ env.PYTHON_CACHE }}
 
+    - name: Check inputs are not both true
+      shell: bash
+      run: |
+        if [ "${{ inputs.update-release-branch }}" == "true" ] && [ "${{ inputs.update-main-branch }}" == "true" ]; then
+          echo "Inputs update-release-branch and update-main-branch cannot both be true."
+          echo "To update the main branch, set update-release-branch to false and update-main-branch to true."
+          exit 1
+        fi
+
     - name: Save tag version
       shell: bash
       run: |
@@ -147,10 +165,21 @@ runs:
         with open(github_env, "a") as f:
             f.write(f"TOWNCRIER_DIR={directory}")
 
+    - name: "Get main branch name"
+      shell: bash
+      run: |
+        head_branch=$(git remote show origin | grep "HEAD branch:")
+        formatted_head_branch=${head_branch#*: }
+
+        echo "MAIN_BRANCH=$formatted_head_branch" >> $GITHUB_ENV
+
     - name: "Set CHANGELOG update branch"
       shell: bash
       run: |
-        if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
+        if [[ ${{ inputs.update-main-branch }} == "true" ]]; then
+          echo "UPDATE_BRANCH=${{ env.MAIN_BRANCH }}" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
+        elif [[ ${{ inputs.update-release-branch }} == "true" ]]; then
           # Assume release branch is "release/major.minor"
           # v0.1.0 (tag) -> release/0.1
           tag_version=${{ env.TAG_VERSION }}
@@ -168,7 +197,6 @@ runs:
             echo "UPDATE_BRANCH=$release_branch" >> $GITHUB_ENV
             echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
           fi
-
         else
           # maint/changelog-update-v0.1.0
           echo "UPDATE_BRANCH=maint/changelog-update-v${{ env.TAG_VERSION }}" >> $GITHUB_ENV
@@ -183,7 +211,7 @@ runs:
 
         if [ $count -gt 0 ]; then
           # Checkout branch from tag
-          if [[ ${{ inputs.update-release-branch }} == "true" ]] && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
+          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.update-main-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             echo "Using release branch"
             git checkout ${{ env.UPDATE_BRANCH }}
             git pull
@@ -225,30 +253,26 @@ runs:
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
-          if [[ ${{ inputs.update-release-branch }} == "true" ]] && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
+          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.update-main-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             git push
           else
             git push -u origin ${{ env.UPDATE_BRANCH }}
           fi
 
-          echo "UPDATED_CHANGELOG=True" >> $GITHUB_ENV
+          echo "UPDATED_CHANGELOG=true" >> $GITHUB_ENV
         else
           echo "There are no changelog fragment files to update the CHANGELOG for v${{ env.TAG_VERSION }}"
-          echo "UPDATED_CHANGELOG=False" >> $GITHUB_ENV
+          echo "UPDATED_CHANGELOG=false" >> $GITHUB_ENV
         fi
 
     - name: "Create PR into main with CHANGELOG changes"
-      if: contains(env.UPDATED_CHANGELOG, 'True')
+      if: ${{ (inputs.update-main-branch != 'true' ) && (env.UPDATED_CHANGELOG == 'true') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
-        # Get main branch name
-        head_branch=$(git remote show origin | grep "HEAD branch:")
-        formatted_head_branch=${head_branch#*: }
-
         # Checkout main & create a branch
-        git checkout $formatted_head_branch
+        git checkout ${{ env.MAIN_BRANCH }}
         git pull
 
         # Set branch for PR
@@ -298,7 +322,7 @@ runs:
     - name: "Delete & Re-create tag"
       env:
         GH_TOKEN: ${{ inputs.token }}
-      if: contains(env.UPDATED_CHANGELOG, 'True')
+      if: contains(env.UPDATED_CHANGELOG, 'true')
       shell: bash
       run: |
           # Checkout branch created from tag with CHANGELOG update & pull
@@ -317,7 +341,7 @@ runs:
           # Create the tag on remote
           git push origin v${{ env.TAG_VERSION }}
 
-          if [[ ${{ inputs.update-release-branch }} == "false" ]] || [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
+          if [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
             # Delete branch created from deleted tag with CHANGELOG update
             git push origin --delete ${{ env.UPDATE_BRANCH }}
           fi
