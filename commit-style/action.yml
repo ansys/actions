@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Commit style
 
-description: >
+description: |
   Action that checks if the title of the pull request is following the
   `conventional commits standard
   <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
@@ -33,7 +33,7 @@ inputs:
   # Required inputs
 
   token:
-    description: >
+    description: |
       The token value used to authorize Vale to add comments and suggestions in
       the file section.
     required: true
@@ -42,7 +42,7 @@ inputs:
   # Optional inputs
 
   use-upper-case:
-    description: >
+    description: |
       Use of uppercase letters in the "type" field of the commit.
       For example, "FIX!: fix server crash issue" would be a valid commit.
 

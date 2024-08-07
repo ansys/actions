@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Build wheelhouse action
 
 description: |
@@ -39,7 +39,7 @@ inputs:
   # Required inputs
 
   library-name:
-    description: >
+    description: |
       Name of the Python library. This is the name used when uploading the wheel
       and source distribution as artifacts. The name should be the same one used
       in the PyPI index.
@@ -47,13 +47,13 @@ inputs:
     type: string
 
   operating-system:
-    description: >
+    description: |
       Name of the operating system where the library is installed.
     required: true
     type: string
 
   python-version:
-    description: >
+    description: |
       Python version used for installing and execution of the build wheel process.
     required: true
     type: string
@@ -61,14 +61,14 @@ inputs:
   # Optional inputs
 
   target:
-    description: >
+    description: |
       Optional target used during the building process.
     required: false
     default: ''
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -77,7 +77,7 @@ inputs:
     type: boolean
 
   check-licenses:
-    description: >
+    description: |
       Whether to check the library's dependencies license or not. If ``true``. the licenses
       are checked. If ``false``, no license check is performed. By default it is set to
       ``true``.
@@ -86,7 +86,7 @@ inputs:
     type: boolean
 
   checkout:
-    description: >
+    description: |
       Whether to do a checkout step or not. If ``true``, the checkout step is performed.
       If ``false``, the checkout is skipped allowing the workspace from a prior step to
       be used unaltered. By default it is set to ``true``.
