@@ -86,11 +86,11 @@ jobs:
     needs: labeler
     steps:
 
-      - uses: ansys/actions/commit-style@main
+      - uses: ansys/actions/commit-style@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: ansys/actions/branch-name-style@main
+      - uses: ansys/actions/branch-name-style@v7
 
   code-style:
     name: "Code style"
@@ -98,7 +98,7 @@ jobs:
     needs: commit-and-branch-style
     steps:
       - name: "Run code style checks"
-        uses: ansys/actions/code-style@main
+        uses: ansys/actions/code-style@v7
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -117,7 +117,7 @@ jobs:
     needs: commit-and-branch-style
     steps:
       - name: "Run documentation style checks"
-        uses: ansys/actions/doc-style@main
+        uses: ansys/actions/doc-style@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -127,7 +127,7 @@ jobs:
     needs: doc-style
     steps:
       - name: "Build documentation"
-        uses: ansys/actions/doc-build@main
+        uses: ansys/actions/doc-build@v7
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -143,7 +143,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v7
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
@@ -170,7 +170,7 @@ jobs:
         retention-days: 7
 
     - name: "Release to the test PyPI repository"
-      uses: ansys/actions/release-pypi-test@main
+      uses: ansys/actions/release-pypi-test@v7
       with:
         library-name: ${{ env.test-library-name }}
         twine-username: "__token__"
@@ -182,7 +182,7 @@ jobs:
     if: github.event_name == 'push' && !contains(github.ref, 'refs/tags')
     needs: [doc-build, tests]
     steps:
-      - uses: ansys/actions/doc-deploy-dev@main
+      - uses: ansys/actions/doc-deploy-dev@v7
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
@@ -194,7 +194,7 @@ jobs:
     needs: doc-deploy-dev
     steps:
       - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@main
+        uses: ansys/actions/doc-deploy-index@v7
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/dev
           index-name: "actions-vdev"
@@ -250,7 +250,7 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: release
     steps:
-      - uses: ansys/actions/doc-deploy-stable@main
+      - uses: ansys/actions/doc-deploy-stable@v7
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
@@ -280,7 +280,7 @@ jobs:
           echo "VERSION_MEILI=$VERSION_MEILI" >> $GITHUB_ENV
 
       - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@main
+        uses: ansys/actions/doc-deploy-index@v7
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}/version/${{ env.VERSION }}
           index-name: actions-v${{ env.VERSION_MEILI }}

@@ -120,7 +120,7 @@ runs:
       env:
         PYTHON_VERSION: ${{ inputs.python-version }}
         PYTHON_CACHE: ${{ inputs.use-python-cache }}
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v7
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         use-cache: ${{ env.PYTHON_CACHE }}

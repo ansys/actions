@@ -233,7 +233,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v7
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -246,14 +246,14 @@ runs:
       run: |
         python ${{ github.action_path }}/../doc-build/parse_doc_conf.py
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v7
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
       with:
         level: "ERROR"
         message: >
           Unable to determine PDF filename using conf.py file.
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v7
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
       with:
         level: "INFO"
@@ -261,7 +261,7 @@ runs:
           Environment variable PDF_FILENAME set to ${{ env.PDF_FILENAME }}.
 
     # ------------------------------------------------------------------------
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v7
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -280,7 +280,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d ${{ env.EXPECTED_BUILD_DIR }} ] && echo 'true' || echo 'false' )" >> $GITHUB_ENV
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v7
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
@@ -299,7 +299,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d '${{ env.EXPECTED_DOWNLOAD_DIR }}' ] && echo 'true' || echo 'false' )" >> $GITHUB_ENV
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v7
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"
@@ -316,7 +316,7 @@ runs:
 
     - name: Check build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: ansys/actions/_logging@main
+      uses: ansys/actions/_logging@v7
       with:
         level: "INFO"
         message: >

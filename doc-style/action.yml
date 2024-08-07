@@ -92,7 +92,7 @@ runs:
       uses: actions/checkout@v4
       if: inputs.checkout == 'true'
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v7
       with:
         level: "INFO"
         message: >
