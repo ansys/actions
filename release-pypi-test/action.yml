@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Release to Test PyPI public index
 
-description: >
+description: |
   Release library artifacts to the Test PyPI public index. Use the
   ``PYANSYS_PYPI_TEST_PAT`` as the token. Artifacts get downloaded from the
   CI/CD pipeline and are assumed to be named ``<library-name>-artifacts``. This
@@ -35,7 +35,7 @@ inputs:
   # Required inputs
 
   library-name:
-    description: >
+    description: |
       Name of the Python library to be published.
     required: true
     type: string
@@ -43,14 +43,14 @@ inputs:
   # Optional inputs
 
   twine-username:
-    description: >
+    description: |
       User name used when uploading to the public Test PyPI index.
     required: false
     default: '__token__'
     type: string
 
   twine-token:
-    description: >
+    description: |
       Password used when uploading to the public Test PyPI index.
     required: false
     default: ''
@@ -73,7 +73,7 @@ inputs:
     type: boolean
 
   dry-run:
-    description: >
+    description: |
       Whether to run or not this action in testing mode. Testing mode executes
       all the action steps except the releasing artifacts one. This allows
       developers to verify the health of the action once integrated in their
@@ -84,7 +84,7 @@ inputs:
     type: boolean
 
   python-version:
-    description: >
+    description: |
       Python version for installing and using `twine
       <https://twine.readthedocs.io/en/stable/>`_.
     required: false
@@ -92,7 +92,7 @@ inputs:
     type: string
 
   skip-existing:
-    description: >
+    description: |
       Continue uploading files if one already exists. Only valid when uploading
       to PyPI. Other implementations may not support this.
     required: false

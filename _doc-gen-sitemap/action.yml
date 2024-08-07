@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Documentation sitemap generator
 
 description: |
@@ -34,13 +34,13 @@ inputs:
   # Required inputs
 
   cname:
-    description: >
+    description: |
       The canonical name (CNAME) containing the documentation.
     required: true
     type: string
 
   html-directory:
-    description: >
+    description: |
       Name of the directory containing the HTML files of the website.
     required: true
     type: string

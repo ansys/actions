@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Code style
 
 description: |
@@ -42,14 +42,14 @@ inputs:
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for installing and running ``pre-commit``.
     default: '3.10'
     required: false
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -58,14 +58,14 @@ inputs:
     type: boolean
 
   docker-lint:
-    description: >
+    description: |
       Extend the workflow to lint Dockerfile(s).
     required: false
     default: false
     type: bool
 
   docker-recursive:
-    description: >
+    description: |
       Search for Dockerfile(s) recursively. Only applies to allowed
       directories, i.e. docker and .devcontainer.
     required: false
@@ -73,7 +73,7 @@ inputs:
     type: bool
 
   docker-error-level:
-    description: >
+    description: |
       Fail docker-style action based on hadolint output (-1: never, 0: error,
       1: warning, 2: info)
     required: false
@@ -81,7 +81,7 @@ inputs:
     type: int
 
   skip-install:
-    description: >
+    description: |
       Whether to skip the installation of the project or not. If ``true``, the
       project is not installed. If ``false``, the project is installed. By
       default, the project is not installed.

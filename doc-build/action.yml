@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Documentation build action
 
-description: >
+description: |
   Build library documentation using `Sphinx
   <https://www.sphinx-doc.org/en/master/>`_. The action installs documentation
   dependencies provided either in a requirement file, e.g.
@@ -46,14 +46,14 @@ inputs:
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
         Python version used for installing and running ``Sphinx``.
     default: '3.10'
     required: false
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -62,7 +62,7 @@ inputs:
     type: boolean
 
   sphinxopts:
-    description: >
+    description: |
       Set of options to pass to the ``Sphinx`` builder. Default options include
       using the maximum number of cores in the CPU of the machine and treating
       warnings as errors.
@@ -76,7 +76,7 @@ inputs:
     type: string
 
   dependencies:
-    description: >
+    description: |
       String of system dependencies to be installed before building the
       documentation of the project.
     default: ''
@@ -84,14 +84,14 @@ inputs:
     type: string
 
   skip-dependencies-cache:
-    description: >
+    description: |
       Whether to ignore dependencies cache or not - for OS libraries.
     required: true
     default: false
     type: boolean
 
   requires-xvfb:
-    description: >
+    description: |
       Whether to install `X Virtual Frame Buffer (XVFB)
       <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and run
       the whole test session using XVFB. The default value is ``false``.
@@ -109,7 +109,7 @@ inputs:
     type: boolean
 
   skip-install:
-    description: >
+    description: |
       Whether to skip the installation of the project. The default is ``false``.
       Pure documentation projects require that this action be set to ``false``
       because there is no Python library associated with the project.
@@ -118,7 +118,7 @@ inputs:
     type: boolean
 
   requirements-file:
-    description: >
+    description: |
       Path to the requirements file in case it needs to be in a specific location.
       This is useful for non python projects, where you don't necessarily have a requirements
       file in the root of the project.
@@ -127,7 +127,7 @@ inputs:
     type: string
 
   checkout:
-    description: >
+    description: |
       Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true
@@ -135,7 +135,7 @@ inputs:
     type: boolean
 
   skip-json-build:
-    description: >
+    description: |
       Whether to skip the generation of JSON documentation. Default value is
       ``true``.
     default: true
@@ -143,7 +143,7 @@ inputs:
     type: boolean
 
   check-links:
-    description: >
+    description: |
       Whether to perform external link checks during the generation of
       documentation. Default value is ``true``.
     default: true
