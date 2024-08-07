@@ -23,7 +23,7 @@
 name: >
   Release to GitHub action
 
-description: >
+description: |
     Release library artifacts to the GitHub release section. Some minimum
     artifacts are required before running this action. These artifacts include
     ``documentation-html``, ``documentation-pdf``, and
@@ -35,7 +35,7 @@ inputs:
   # Required inputs
 
   library-name:
-    description: >
+    description: |
      Name of the Python library to be published.
     required: true
     type: string
@@ -43,7 +43,7 @@ inputs:
   # Optional inputs
 
   additional-artifacts:
-    description: >
+    description: |
         String containing a list of additional artifacts to be included in the
         GitHub release.
     required: false
@@ -51,7 +51,7 @@ inputs:
     type: string
 
   dry-run:
-    description: >
+    description: |
       Whether to run or not this action in testing mode. Testing mode executes
       all the action steps except the releasing artifacts one. This allows
       developers to verify the health of the action once integrated in their

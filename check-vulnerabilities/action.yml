@@ -57,13 +57,13 @@ description: |
 
 inputs:
   token:
-    description: >
+    description: |
       Token with write permissions on the repository.
     required: true
     type: string
 
   python-package-name:
-    description: >
+    description: |
       Python package name being evaluate as it is shown on PyPI.
     required: true
     type: string
@@ -71,7 +71,7 @@ inputs:
   # Optional inputs
 
   source-directory:
-    description: >
+    description: |
       The source folder of the repository to be evaluated by bandit.
       By default, it is set to ``src``
     default: 'src'
@@ -79,7 +79,7 @@ inputs:
     type: string
 
   repo-full-name:
-    description: >
+    description: |
       The repository to be evaluated. By default, it is extracted from the
       GitHub context.
     default: ''
@@ -87,7 +87,7 @@ inputs:
     type: string
 
   dev-mode:
-    description: >
+    description: |
       Whether to run or not this action in development mode. It will activate
       by default the ``dry-run`` and ``exit-with-error-on-new-advisory`` flags.
     required: false
@@ -95,7 +95,7 @@ inputs:
     type: boolean
 
   dry-run:
-    description: >
+    description: |
       Whether to run or not this action in dry run mode. Dry run mode executes
       all the action steps and prints on screen the results (if any).
     required: false
@@ -103,7 +103,7 @@ inputs:
     type: boolean
 
   exit-with-error-on-new-advisory:
-    description: >
+    description: |
       Whether to exit the action on error if a new advisory is detected.
       This mode is not recommended on ``main`` branches since it will cause the
       workflow to fail. To be used on ``feature`` branches in combination with
@@ -113,7 +113,7 @@ inputs:
     type: boolean
 
   hide-log:
-    description: >
+    description: |
       Whether to hide the output log of the GitHub action.
       By default, the log is available to anyone for public repositories.
       This would disclose any potential vulnerabilities to anyone.
@@ -122,7 +122,7 @@ inputs:
     type: boolean
 
   upload-reports:
-    description: >
+    description: |
       Whether to upload the artifacts containing the vulnerability report.
       By default, the report artifacts will not be uploaded to hide any potential vulnerabilities?
     default: false
@@ -130,7 +130,7 @@ inputs:
     type: boolean
 
   create-issues:
-    description: >
+    description: |
       Whether to create issues for new advisories detected.
       By default, issues are NOT created for new advisories detected.
     default: false
@@ -138,7 +138,7 @@ inputs:
     type: boolean
 
   checkout:
-    description: >
+    description: |
       Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true
@@ -146,7 +146,7 @@ inputs:
     type: boolean
 
   python-version:
-    description: >
+    description: |
       Desired Python version.
     default: '3.10'
     required: false

@@ -40,13 +40,13 @@ inputs:
   # Required inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for building the wheels.
     required: true
     type: string
 
   library-name:
-    description: >
+    description: |
       Name of the Python library. This is the name used when uploading the wheel
       and source distribution as artifacts. The name should be the same one used
       in the PyPI index.
@@ -54,7 +54,7 @@ inputs:
     type: string
 
   operating-system:
-    description: >
+    description: |
       Name of the operating system where the library is installed.
     required: true
     type: string
@@ -62,21 +62,21 @@ inputs:
   # Optional inputs
 
   cibw-build:
-    description: >
+    description: |
       Desired build wheel CPython version.
     default: 'cp310-*'
     required: false
     type: string
 
   cibw-archs:
-    description: >
+    description: |
       Desired build architecture.
     default: "auto"
     required: false
     type: string
 
   requires-pypy:
-      description: >
+      description: |
         Whether to generate wheels for wheel files for `PyPy
         <https://www.pypy.org/>`_ in addition to the wheel files for CPython.
         Default value is ``false``.

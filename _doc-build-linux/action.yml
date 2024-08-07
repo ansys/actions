@@ -54,14 +54,14 @@ inputs:
     type: string
 
   dependencies:
-    description: >
+    description: |
       String of system dependencies to be installed before building the
       documentation of the project.
     required: true
     type: string
 
   skip-dependencies-cache:
-    description: >
+    description: |
       Whether to ignore dependencies cache or not - for OS libraries.
     required: true
     type: boolean
@@ -75,7 +75,7 @@ inputs:
     type: boolean
 
   skip-install:
-    description: >
+    description: |
       Whether to skip the installation of the project.
       Pure documentation projects require that this action be set to ``false``
       because there is no Python library associated with the project.
@@ -83,7 +83,7 @@ inputs:
     type: boolean
 
   requirements-file:
-    description: >
+    description: |
       Path to the requirements file in case it needs to be in a specific location.
       This is useful for non python projects, where you don't necessarily have a requirements
       file in the root of the project.
@@ -91,13 +91,13 @@ inputs:
     type: string
 
   skip-json-build:
-    description: >
+    description: |
       Whether to skip the generation of JSON documentation.
     required: true
     type: boolean
 
   check-links:
-    description: >
+    description: |
       Whether to perform external link checks during the generation of
       documentation.
     required: true

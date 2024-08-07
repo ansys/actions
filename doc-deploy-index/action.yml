@@ -33,7 +33,7 @@ inputs:
   # Required inputs
 
   cname:
-    description: >
+    description: |
       The CNAME (canonical Name) that points to the documentation website for a specific version,
       specifically intended for scraping purposes.
 
@@ -44,19 +44,19 @@ inputs:
     type: string
 
   index-name:
-    description: >
+    description: |
       The identifier given to the documentation in pymeilisearch.
     required: true
     type: string
 
   api-key:
-    description: >
+    description: |
       The API key used to access the Meilisearch instance host.
     required: true
     type: string
 
   host-url:
-    description: >
+    description: |
       The URL where the Meilisearch instance is hosted.
     required: true
     type: string
@@ -64,14 +64,14 @@ inputs:
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for execution of the stable docs scraping.
     default: '3.10'
     required: false
     type: string
 
   doc-artifact-name:
-    description: >
+    description: |
       The name of the HTML documentation artifact. This artifact is expected to
       contain all the HTML and static files.The dafault value is ``documentation-html``.
     required: false
@@ -79,7 +79,7 @@ inputs:
     type: string
 
   template:
-    description: >
+    description: |
       The "template" parameter specifies the layout used for the HTML documentation.
       By default, it is set to ``sphinx_pydata`` which assumes that the document is
       constructed using the pydata-sphinx-theme or its associated theme,
@@ -89,7 +89,7 @@ inputs:
     type: string
 
   decompress-artifact:
-    description: >
+    description: |
       Whether to decompress the ``doc-artifact-name`` file using `ouch
       <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
       is ``false``.
@@ -98,7 +98,7 @@ inputs:
     type: string
 
   pymeilisearchopts:
-    description: >
+    description: |
       A list of pyemeilisearch options when scraping URLs. See
       `pymeilisearch user guide <https://pymeilisearch.docs.ansys.com/version/stable/user-guide/index.html>`_
       for available options

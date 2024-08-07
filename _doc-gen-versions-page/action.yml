@@ -39,13 +39,13 @@ inputs:
   # Required inputs
 
   cname:
-    description: >
+    description: |
       The canonical name (CNAME) containing the documentation.
     required: true
     type: string
 
   content-element-id:
-    description: >
+    description: |
       Identifier of the HTML tag that comprises all the content of the article
       or post.
     required: true
