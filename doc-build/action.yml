@@ -167,7 +167,7 @@ inputs:
     required: false
     type: boolean
 
-  add-quarto-cheatsheet:
+  needs-quarto:
     description: >
       Whether to add a Quarto cheatsheet to the documentation. Default value is
       ``false``.
@@ -195,7 +195,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@main
+      uses: ansys/actions/_doc-build-linux@feat/add-quarto-pyansys-actions
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -206,7 +206,7 @@ runs:
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        add-quarto-cheatsheet: ${{ inputs.add-quarto-cheatsheet }}
+        needs-quarto: ${{ inputs.needs-quarto }}
 
     # ------------------------------------------------------------------------
 
@@ -230,4 +230,4 @@ runs:
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        add-quarto-cheatsheet: ${{ inputs.add-quarto-cheatsheet }}
+        needs-quarto: ${{ inputs.needs-quarto }}
