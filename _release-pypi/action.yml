@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Release PyPI action
 
-description: >
+description: |
   Release library artifacts to the desired PyPI index. If a private index is
   used, a ``token`` is required to publish the artifacts. Artifacts are
   downloaded from the CI/CD pipeline and are assumed to be named
@@ -35,38 +35,38 @@ inputs:
   # Required inputs
 
   library-name:
-    description: >
+    description: |
       Name of the Python library to be published.
     required: true
     type: string
 
   index-name:
-    description: >
+    description: |
       The name of the index endpoint used for uploading the artifacts.
     required: true
     type: string
 
   twine-username:
-    description: >
+    description: |
       User name used when uploading the artifacts to the desired PyPI index.
     required: true
     type: string
 
   twine-token:
-    description: >
+    description: |
       Password used when uploading the artifacts to the desired PyPI index.
     required: true
     type: string
 
   python-version:
-    description: >
+    description: |
       Python version for installing and using `twine
       <https://twine.readthedocs.io/en/stable/>`_.
     required: true
     type: string
 
   dry-run:
-    description: >
+    description: |
       Whether to run or not this action in testing mode. Testing mode executes
       all the action steps except the releasing artifacts one. This allows
       developers to verify the health of the action once integrated in their
@@ -75,14 +75,14 @@ inputs:
     type: boolean
 
   skip-existing:
-    description: >
+    description: |
       Continue uploading files if one already exists. Only valid when uploading
       to PyPI. Other implementations may not support this.
     required: true
     type: boolean
 
   use-trusted-publisher:
-    description: >
+    description: |
       Whether to use the OIDC token for releasing.
       This is useful when you want to publish to PyPI through a CI/CD pipeline
       as a Trusted Publisher. It is necessary that your repository has been authorized
