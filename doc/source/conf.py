@@ -6,7 +6,7 @@ from datetime import datetime
 
 import jinja2
 import yaml
-from ansys_sphinx_theme import ansys_favicon, get_version_match, pyansys_logo_black
+from ansys_sphinx_theme import ansys_favicon, get_version_match
 from tabulate import tabulate as Table
 
 # Constants used for generating documentation
@@ -41,8 +41,6 @@ actions_version = (
     "main" if __version__.endswith("dev0") else f"v{get_version_match(__version__)}"
 )
 
-# Use the default pyansys logo
-html_logo = pyansys_logo_black
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 html_short_title = html_title = project  # necessary for proper breadcrumb title
@@ -56,6 +54,7 @@ html_context = {
 
 # Specify the location of your GitHub repo
 html_theme_options = {
+    "logo": "pyansys",
     "github_url": "https://github.com/ansys/actions",
     "use_edit_page_button": True,
     "additional_breadcrumbs": [
