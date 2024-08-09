@@ -31,13 +31,13 @@ description: |
 
   .. note::
 
-     **This action relies on PyPI metadata to identify the license for each package.**
+    **This action relies on PyPI metadata to identify the license for each package.**
 
-      If the metadata are flawed or not included, it may lead to
-      inconclusive results. In those cases, please perform a thorough review of the
-      package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
-      Even though packages may define their license as of a certain type, the
-      package could be not applying properly its licensing conditions.
+    If the metadata are flawed or not included, it may lead to
+    inconclusive results. In those cases, please perform a thorough review of the
+    package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
+    Even though packages may define their license as of a certain type, the
+    package could be not applying properly its licensing conditions.
 
   .. jinja:: check-licenses
 
@@ -58,11 +58,11 @@ description: |
 
   .. admonition:: Projects requiring additional licenses or packages
 
-      If a certain project requires a license or package that is not supported,
-      `open an issue <https://github.com/ansys/actions/issues>`_ in the
-      `official ansys/actions repository
-      <https://github.com/ansys/actions>`_. For additional support, please
-      contact the `PyAnsys support <mailto:support@pyansys.com>`_.
+    If a certain project requires a license or package that is not supported,
+    `open an issue <https://github.com/ansys/actions/issues>`_ in the
+    `official ansys/actions repository
+    <https://github.com/ansys/actions>`_. For additional support, please
+    contact the `PyAnsys support <mailto:support@pyansys.com>`_.
 
 inputs:
 
