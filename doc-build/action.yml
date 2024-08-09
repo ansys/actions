@@ -47,7 +47,7 @@ inputs:
 
   python-version:
     description: |
-        Python version used for installing and running ``Sphinx``.
+      Python version used for installing and running ``Sphinx``.
     default: '3.10'
     required: false
     type: string
@@ -69,7 +69,7 @@ inputs:
 
       .. note::
 
-          This will override the ``SPHINXOPTS`` declared in your Makefile.
+        This will override the ``SPHINXOPTS`` declared in your Makefile.
 
     default: '-j auto -W --keep-going'
     required: false
@@ -102,7 +102,7 @@ inputs:
 
       .. warning::
 
-          This option is not taken into account when runner ``os`` is ``'Windows'``.
+        This option is not taken into account when runner ``os`` is ``'Windows'``.
 
     default: false
     required: false
@@ -159,9 +159,9 @@ inputs:
 
       .. warning::
 
-          The HTML files are expected to be contained in ``doc/_build`` and the
-          PDF file is copied in ``doc/_build/html/_static/assets/download``.
-          If such directories do not exist in your repo, the action will fail.
+        The HTML files are expected to be contained in ``doc/_build`` and the
+        PDF file is copied in ``doc/_build/html/_static/assets/download``.
+        If such directories do not exist in your repo, the action will fail.
 
     default: false
     required: false

@@ -285,7 +285,7 @@ runs:
           sed -i 's/href="\([^:"]*\)"/href="version\/dev\/\1"/g' index.html
           sed -i 's/src="\([^:"]*\)"/src="version\/dev\/\1"/g' index.html
           sed -i 's/action="search.html"/action="version\/dev\/search.html"/g' index.html
-          sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/stable/_static/js/meilisearch_theme_wrap.js"|g' index.html
+          sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/dev/_static/js/meilisearch_theme_wrap.js"|g' index.html
         else
           echo "Error: The 'index.html' file does not exist." >&2
           exit 1
