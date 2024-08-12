@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Check licenses action
 
 description: |
@@ -31,13 +31,13 @@ description: |
 
   .. note::
 
-     **This action relies on PyPI metadata to identify the license for each package.**
+    **This action relies on PyPI metadata to identify the license for each package.**
 
-      If the metadata are flawed or not included, it may lead to
-      inconclusive results. In those cases, please perform a thorough review of the
-      package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
-      Even though packages may define their license as of a certain type, the
-      package could be not applying properly its licensing conditions.
+    If the metadata are flawed or not included, it may lead to
+    inconclusive results. In those cases, please perform a thorough review of the
+    package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
+    Even though packages may define their license as of a certain type, the
+    package could be not applying properly its licensing conditions.
 
   .. jinja:: check-licenses
 
@@ -58,25 +58,25 @@ description: |
 
   .. admonition:: Projects requiring additional licenses or packages
 
-      If a certain project requires a license or package that is not supported,
-      `open an issue <https://github.com/ansys/actions/issues>`_ in the
-      `official ansys/actions repository
-      <https://github.com/ansys/actions>`_. For additional support, please
-      contact the `PyAnsys support <mailto:support@pyansys.com>`_.
+    If a certain project requires a license or package that is not supported,
+    `open an issue <https://github.com/ansys/actions/issues>`_ in the
+    `official ansys/actions repository
+    <https://github.com/ansys/actions>`_. For additional support, please
+    contact the `PyAnsys support <mailto:support@pyansys.com>`_.
 
 inputs:
 
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for installing and executing licence check.
     default: '3.10'
     required: false
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -85,14 +85,14 @@ inputs:
     type: boolean
 
   target:
-    description: >
+    description: |
       Optional target used during the building process.
     required: false
     default: ''
     type: string
 
   skip-install:
-    description: >
+    description: |
       Whether to skip the installation of the project. The default is ``false``.
       If used in combination with other actions, it might not be needed to install
       the project.
@@ -101,7 +101,7 @@ inputs:
     type: boolean
 
   checkout:
-    description: >
+    description: |
       Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true

@@ -93,3 +93,45 @@ Doc deploy index action
           :language: yaml
 
     {% endfor %}
+
+Doc changelog action
+--------------------
+
+.. jinja:: doc-changelog
+
+    {{ description }}
+
+    {{ inputs_table }}
+
+    Examples
+    ++++++++
+
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
+
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
+
+    {% endfor %}
+
+Doc deploy changelog action
+---------------------------
+
+.. jinja:: doc-deploy-changelog
+
+    {{ description }}
+
+    {{ inputs_table }}
+
+    Examples
+    ++++++++
+
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
+
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
+
+    {% endfor %}

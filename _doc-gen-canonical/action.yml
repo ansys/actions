@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Include and update canonical link tags in HTML pages of documentation.
 
 description: |
@@ -33,13 +33,13 @@ inputs:
   # Required inputs
 
   cname:
-    description: >
+    description: |
       The canonical name (CNAME) containing the documentation.
     required: true
     type: string
 
   version-directory:
-    description: >
+    description: |
       Relative path to the directory containing the version pages of the website.
     required: true
     type: string

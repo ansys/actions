@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Doc deploy dev action
 
 description: |
@@ -33,13 +33,13 @@ inputs:
   # Required inputs
 
   cname:
-    description: >
+    description: |
       The canonical name (CNAME) containing the documentation.
     required: true
     type: string
 
   token:
-    description: >
+    description: |
       Required password, key or token with the correct credentials for deploying the
       documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token
       is enough. For workflows deploying to other repositories, `generate and
@@ -52,7 +52,7 @@ inputs:
   # Optional inputs
 
   doc-artifact-name:
-    description: >
+    description: |
         Name of the HTML documentation artifact. This artifact is expected to
         contain all the HTML and static files. If it contains a compressed file,
         make sure you enable the ``decompress-artifact`` option.
@@ -61,7 +61,7 @@ inputs:
     type: string
 
   decompress-artifact:
-    description: >
+    description: |
       Wether to decompress the artifact using `ouch
       <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
       is ``false``.
@@ -70,7 +70,7 @@ inputs:
     type: string
 
   repository:
-    description: >
+    description: |
       Repository name in the form of ``username/repository`` to be used for
       deploying the documentation. The current repository is assumed by default.
     required: false
@@ -78,7 +78,7 @@ inputs:
     type: string
 
   branch:
-    description: >
+    description: |
       Branch name for deploying the documentation. The ``gh-pages`` branch is
       used by default.
     required: false
@@ -86,14 +86,14 @@ inputs:
     type: string
 
   commit-message:
-    description: >
+    description: |
       Commit message used when deploying the documentation.
     required: false
     default: 'DOC: update development documentation'
     type: string
 
   force-orphan:
-    description: >
+    description: |
       Whether to force the deployment branch to be orphan with only the latest commit or not. Default value
       is ``true``.
     required: false
@@ -101,7 +101,7 @@ inputs:
     type: string
 
   content-element-id:
-    description: >
+    description: |
       Identifier of the HTML tag that comprises all the content of the article
       or post.
     required: false
@@ -279,11 +279,13 @@ runs:
           sed -i 's/href="\([^:"]*\)"/href="version\/stable\/\1"/g' index.html
           sed -i 's/src="\([^:"]*\)"/src="version\/stable\/\1"/g' index.html
           sed -i 's/action="search.html"/action="version\/stable\/search.html"/g' index.html
+          sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/stable/_static/js/meilisearch_theme_wrap.js"|g' index.html
         elif [[ -f 'version/dev/index.html' ]]; then
           cp version/dev/index.html index.html
           sed -i 's/href="\([^:"]*\)"/href="version\/dev\/\1"/g' index.html
           sed -i 's/src="\([^:"]*\)"/src="version\/dev\/\1"/g' index.html
           sed -i 's/action="search.html"/action="version\/dev\/search.html"/g' index.html
+          sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/dev/_static/js/meilisearch_theme_wrap.js"|g' index.html
         else
           echo "Error: The 'index.html' file does not exist." >&2
           exit 1

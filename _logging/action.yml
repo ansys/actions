@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Utils logging action
 
-description: >
+description: |
   This action is used to generate logging messages during the execution of other
   actions. It supports three logging levels including ``ERROR``, ``WARNING``,
   and ``INFO``. ANSI colors are used to report the different levels. This allows
@@ -34,14 +34,14 @@ inputs:
   # Required inputs
 
   level:
-    description: >
+    description: |
       Logging level of the message. Supported levels are ``ERROR``, ``WARNING``
       and ``INFO``.
     required: true
     type: string
 
   message:
-    description: >
+    description: |
       The message to save in the logging report.
     required: true
     type: string
