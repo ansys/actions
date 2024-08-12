@@ -210,6 +210,12 @@ runs:
       shell: bash
       run: python -m pip install -U pip
 
+    - name: "Install Jupyter for Quarto"
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: bash
+      run: |
+        python -m pip install jupyter nbformat
+
     - name: "Install documentation dependencies from requirements file"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'true'
