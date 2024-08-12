@@ -168,7 +168,7 @@ runs:
       shell: bash
       run: |
         # Download Quarto
-        wget --no-check-certificate https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.56/quarto-1.5.56-linux-arm64.deb -O quarto.deb
+        wget --no-check-certificate https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.56/quarto-1.5.56-linux-amd64.deb -O quarto.deb
         # Create a directory for Quarto
 
         # Unzip Quarto to the created directory
