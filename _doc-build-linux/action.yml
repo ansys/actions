@@ -170,13 +170,9 @@ runs:
         # Download Quarto
         wget --no-check-certificate https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.56/quarto-1.5.56-linux-arm64.deb -O quarto.deb
         # Create a directory for Quarto
-        mkdir -p ~/quarto
 
         # Unzip Quarto to the created directory
-        sudo dpkg -i quarto.deb --extract=~/quarto
-
-        # Add Quarto to the PATH
-        echo "$HOME/quarto" >> $GITHUB_PATH
+        sudo dpkg -i quarto.deb
 
         # install tinytex
         quarto install tinytex
