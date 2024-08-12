@@ -168,19 +168,18 @@ runs:
       shell: bash
       run: |
         # Download Quarto
-        wget https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.0/quarto-linux-amd64.zip -O quarto.zip
-
+        wget --no-check-certificate https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.55/quarto-1.5.55-linux-x86_64.deb -O quarto.deb
         # Create a directory for Quarto
         mkdir -p ~/quarto
 
         # Unzip Quarto to the created directory
-        unzip quarto.zip -d ~/quarto
-
-        # Make the Quarto binary executable
-        chmod +x ~/quarto/quarto
+        dpkg -i quarto.deb --extract=~/quarto
 
         # Add Quarto to the PATH
         echo "$HOME/quarto" >> $GITHUB_PATH
+
+        # install tinytex
+        quarto install tinytex
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}
