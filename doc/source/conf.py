@@ -105,6 +105,7 @@ autosectionlabel_maxdepth = 2
 # Ignore the following patterns when accessing links
 linkcheck_ignore = [
     r"https://github.com/ansys-internal/.*",
+    r"https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/*",
 ]
 
 # Auxiliary routines for automatic documentation generation
