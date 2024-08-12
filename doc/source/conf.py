@@ -71,7 +71,6 @@ html_theme_options = {
             f"actions-v{get_version_match(__version__).replace('.', '-')}": "Ansys-actions",
         },
     },
-    "logo": "ansys",
     "cheatsheet": {
         "file": "cheat_sheet.qmd",
         "title": "Actions cheat sheet",
