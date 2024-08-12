@@ -342,3 +342,51 @@ for var, file in zip(
 jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_file_lines_as_list(
     IGNORED_SAFETY
 )
+
+# with open("cheat_sheet.qmd.tpl", "r") as cheat_sheet_file:
+#     cheatsheet_content = cheat_sheet_file.read()
+#     cheatsheet_content = cheatsheet_content.replace("{{ version }}", actions_version)
+#     cheat_sheet_file.close()
+
+# with open("cheat_sheet.qmd", "w") as cheat_sheet_file_rendered:
+#     cheat_sheet_file_rendered.write(cheatsheet_content)
+#     cheat_sheet_file_rendered.close()
+
+
+def get_example_content_for_cheatsheet(example_file):
+    with open(example_file, "r") as yaml_file:
+        file_content = yaml.safe_load(yaml_file)
+        first_key = next(iter(file_content))
+        return file_content[first_key]["steps"]
+
+
+def get_example_description_for_cheatsheet(example_file):
+    with open(example_file, "r") as yaml_file:
+        file_content = yaml.safe_load(yaml_file)
+        first_key = next(iter(file_content))
+        return file_content[first_key]["steps"]["name"]
+
+
+for action_dir in public_actions:
+    action_name = action_dir.name
+    examples_files = collect_examples_from_action_name(action_name)
+    if not len(examples):
+        continue
+    for example_file in examples_files:
+        jinja_contexts[action_name]["examples_for_cheatsheet"] = [
+            [
+                get_example_file_title(file),
+                get_example_content_for_cheatsheet(file),
+                get_example_description_for_cheatsheet(file),
+            ]
+            for file in examples_files
+        ]
+
+# use this jinja context to render the cheat sheet file
+with open("cheat_sheet.qmd.tpl", "r") as cheat_sheet_file:
+    jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(cheat_sheet_file))
+    template = jinja2_env.get_template("cheat_sheet.qmd.tpl")
+    content = template.render(jinja_contexts)
+    with open("cheat_sheet.qmd", "w") as cheat_sheet_file_rendered:
+        cheat_sheet_file_rendered.write(content)
+        cheat_sheet_file_rendered.close()
