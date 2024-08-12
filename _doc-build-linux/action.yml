@@ -165,30 +165,15 @@ runs:
 
     - name: Install Quarto
       if: ${{ inputs.needs-quarto == 'true' }}
-      shell: bash
-      run: |
-        # Download Quarto
-        wget --no-check-certificate https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.56/quarto-1.5.56-linux-amd64.deb -O quarto.deb
-        # Create a directory for Quarto
-
-        # Unzip Quarto to the created directory
-        sudo dpkg -i quarto.deb
-
-        # install tinytex
-        quarto install tinytex
+      uses: quarto-dev/quarto-actions/setup@v2
+      with:
+        tinytex: true
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: bash
       run: |
-        QUARTO_PATH=$(which quarto)
-        if [ -z "$QUARTO_PATH" ]; then
-          echo "Quarto is not installed or not in PATH."
-          exit 1
-        else
-          echo "Quarto is installed at: $QUARTO_PATH"
-          quarto --version
-        fi
+        quarto --version
 
     - name: "Install Poppler for PDF to PNG conversion"
       shell: bash
