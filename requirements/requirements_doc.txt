@@ -1,4 +1,4 @@
-ansys-sphinx-theme @ git+https://github.com/ansys/ansys-sphinx-theme@main
+ansys-sphinx-theme==1.0.2
 pyyaml==6.0.2
 Sphinx==7.4.7
 sphinx-copybutton==0.5.2

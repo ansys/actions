@@ -41,7 +41,6 @@ actions_version = (
     "main" if __version__.endswith("dev0") else f"v{get_version_match(__version__)}"
 )
 
-# Use the default pyansys logo
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 html_short_title = html_title = project  # necessary for proper breadcrumb title
@@ -55,6 +54,7 @@ html_context = {
 
 # Specify the location of your GitHub repo
 html_theme_options = {
+    "logo": "pyansys",
     "github_url": "https://github.com/ansys/actions",
     "use_edit_page_button": True,
     "additional_breadcrumbs": [
