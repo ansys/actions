@@ -163,17 +163,37 @@ runs:
       run: |
         sudo apt-get install -y texlive-latex-extra latexmk
 
-    - name: "Setup quarto"
-      if: ${{ inputs.needs-quarto == 'true' }}
-      uses: quarto-dev/quarto-actions/setup@v2
-      with:
-        tinytex: true
-
-    - name: "check quarto version"
+    - name: Install Quarto
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: bash
       run: |
-        quarto --version
+        # Download Quarto
+        wget https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.0/quarto-linux-amd64.zip -O quarto.zip
+
+        # Create a directory for Quarto
+        mkdir -p ~/quarto
+
+        # Unzip Quarto to the created directory
+        unzip quarto.zip -d ~/quarto
+
+        # Make the Quarto binary executable
+        chmod +x ~/quarto/quarto
+
+        # Add Quarto to the PATH
+        echo "$HOME/quarto" >> $GITHUB_PATH
+
+    - name: Check Quarto Version
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: bash
+      run: |
+        QUARTO_PATH=$(which quarto)
+        if [ -z "$QUARTO_PATH" ]; then
+          echo "Quarto is not installed or not in PATH."
+          exit 1
+        else
+          echo "Quarto is installed at: $QUARTO_PATH"
+          quarto --version
+        fi
 
     - name: "Install Poppler for PDF to PNG conversion"
       shell: bash
