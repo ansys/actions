@@ -381,5 +381,3 @@ content = template.render(
 with open("cheat_sheet_new.qmd", "w") as cheat_sheet_file_rendered:
     cheat_sheet_file_rendered.write(content)
     cheat_sheet_file_rendered.close()
-
-exit(1)
