@@ -24,7 +24,7 @@ IGNORED_SAFETY = BASE_DIR / "check-vulnerabilities" / "ignored-safety.txt"
 project = "Ansys Actions"
 copyright = f"(c) 2022-{datetime.today().year} ANSYS, Inc. and/or its affiliates."
 author = "ANSYS, Inc."
-cname = os.getenv("DOCUMENTATION_CNAME", "nocname.com")
+cname = os.getenv("DOCUMENTATION_CNAME", "actions.docs.ansys.com")
 
 # Read version from VERSION file in base root directory
 source_dir = pathlib.Path(__file__).parent.resolve().absolute()
@@ -40,6 +40,7 @@ branch_name = (
 actions_version = (
     "main" if __version__.endswith("dev0") else f"v{get_version_match(__version__)}"
 )
+switcher_version = get_version_match(__version__)
 
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
@@ -63,16 +64,16 @@ html_theme_options = {
     ],
     "switcher": {
         "json_url": f"https://{cname}/versions.json",
-        "version_match": get_version_match(__version__),
+        "version_match": switcher_version,
     },
     "use_meilisearch": {
         "api_key": os.getenv("MEILISEARCH_PUBLIC_API_KEY", ""),
         "index_uids": {
-            f"actions-v{get_version_match(__version__).replace('.', '-')}": "Ansys-actions",
+            f"actions-v{switcher_version.replace('.', '-')}": "Ansys-actions",
         },
     },
     "cheatsheet": {
-        "file": "cheat_sheet.qmd",
+        "file": "cheat_sheet_new.qmd",
         "title": "Actions cheat sheet",
     },
 }
@@ -343,50 +344,42 @@ jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_file_lines_as_l
     IGNORED_SAFETY
 )
 
-# with open("cheat_sheet.qmd.tpl", "r") as cheat_sheet_file:
-#     cheatsheet_content = cheat_sheet_file.read()
-#     cheatsheet_content = cheatsheet_content.replace("{{ version }}", actions_version)
-#     cheat_sheet_file.close()
-
-# with open("cheat_sheet.qmd", "w") as cheat_sheet_file_rendered:
-#     cheat_sheet_file_rendered.write(cheatsheet_content)
-#     cheat_sheet_file_rendered.close()
-
 
 def get_example_content_for_cheatsheet(example_file):
     with open(example_file, "r") as yaml_file:
         file_content = yaml.safe_load(yaml_file)
         first_key = next(iter(file_content))
-        return file_content[first_key]["steps"]
+        file_content = file_content[first_key]["steps"]
+        return yaml.dump(file_content, default_flow_style=False)
 
 
-def get_example_description_for_cheatsheet(example_file):
-    with open(example_file, "r") as yaml_file:
-        file_content = yaml.safe_load(yaml_file)
-        first_key = next(iter(file_content))
-        return file_content[first_key]["steps"]["name"]
+def get_docs_link_for_action(action_file, action_name):
+    return f"https://{cname}/version/{switcher_version}/{action_file.parent.parent.name}/index.html#{action_name}-action"
 
 
-for action_dir in public_actions:
-    action_name = action_dir.name
-    examples_files = collect_examples_from_action_name(action_name)
-    if not len(examples):
-        continue
-    for example_file in examples_files:
-        jinja_contexts[action_name]["examples_for_cheatsheet"] = [
-            [
-                get_example_file_title(file),
-                get_example_content_for_cheatsheet(file),
-                get_example_description_for_cheatsheet(file),
-            ]
-            for file in examples_files
+actions_cheatsheet_jinja_contexts = {
+    action_dir.name: {
+        "examples_for_cheatsheet": [
+            {
+                "name": action_dir.name.replace("-", " "),
+                "title": get_example_file_title(file),
+                "code": get_example_content_for_cheatsheet(file),
+                "reference_url": get_docs_link_for_action(file, action_dir.name),
+            }
+            for file in collect_examples_from_action_name(action_dir.name)
         ]
+    }
+    for action_dir in public_actions
+}
 
-# use this jinja context to render the cheat sheet file
-with open("cheat_sheet.qmd.tpl", "r") as cheat_sheet_file:
-    jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(cheat_sheet_file))
-    template = jinja2_env.get_template("cheat_sheet.qmd.tpl")
-    content = template.render(jinja_contexts)
-    with open("cheat_sheet.qmd", "w") as cheat_sheet_file_rendered:
-        cheat_sheet_file_rendered.write(content)
-        cheat_sheet_file_rendered.close()
+jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(source_dir))
+template = jinja2_env.get_template("cheat_sheet.jinja")
+
+content = template.render(
+    version=actions_version, actions=actions_cheatsheet_jinja_contexts
+)
+with open("cheat_sheet_new.qmd", "w") as cheat_sheet_file_rendered:
+    cheat_sheet_file_rendered.write(content)
+    cheat_sheet_file_rendered.close()
+
+exit(1)

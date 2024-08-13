@@ -25,10 +25,19 @@ jupyter:
     language: python
     name: python3
 ---
-{% for example in examples %}
-# {{ example.title }}
-{{ example.description }}
+{%- for action_name, action_data in actions.items() %}
+{% for example in action_data.examples_for_cheatsheet %}
+# {{ example.name }}
+
+**{{ example.title }}**
+
 ```{python}
 {{ example.code }}
 ```
-{% endfor %}
+
+{% if example.reference_url -%}
+***Reference***: [{{ example.title }}]({{ example.reference_url }})
+{% endif -%}
+{% endfor -%}
+
+{% endfor -%}
