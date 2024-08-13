@@ -1,4 +1,4 @@
-ansys-sphinx-theme @ git+https://github.com/ansys/ansys-sphinx-theme@test/pdf-build-actions
+ansys-sphinx-theme==1.0.4
 pyyaml==6.0.2
 Sphinx==8.0.2
 sphinx-copybutton==0.5.2

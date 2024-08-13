@@ -346,6 +346,18 @@ jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_file_lines_as_l
 
 
 def get_example_content_for_cheatsheet(example_file):
+    """Get the content of an example file for the cheatsheet.
+
+    Parameters
+    ----------
+    example_file : ~pathlib.Path
+        The ``Path`` for the example file.
+
+    Returns
+    -------
+    str
+        A string representing the content of the example file.
+    """
     with open(example_file, "r") as yaml_file:
         file_content = yaml.safe_load(yaml_file)
         first_key = next(iter(file_content))
@@ -354,9 +366,11 @@ def get_example_content_for_cheatsheet(example_file):
 
 
 def get_docs_link_for_action(action_file, action_name):
+    """Get the link to the documentation for a specific action."""
     return f"https://{cname}/version/{switcher_version}/{action_file.parent.parent.name}/index.html#{action_name}-action"
 
 
+# Generate the cheatsheet content
 actions_cheatsheet_jinja_contexts = {
     action_dir.name: {
         "examples_for_cheatsheet": [
