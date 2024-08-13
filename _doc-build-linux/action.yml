@@ -120,7 +120,7 @@ inputs:
     type: boolean
 
   needs-quarto:
-    description: >
+    description: |
       Whether to add a Quarto cheatsheet to the documentation. Default value is
       ``false``.
     default: false
