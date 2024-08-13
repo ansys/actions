@@ -392,6 +392,6 @@ template = jinja2_env.get_template("cheat_sheet.jinja")
 content = template.render(
     version=actions_version, actions=actions_cheatsheet_jinja_contexts
 )
-with open("cheat_sheet_new.qmd", "w") as cheat_sheet_file_rendered:
+with open("cheat_sheet.qmd", "w") as cheat_sheet_file_rendered:
     cheat_sheet_file_rendered.write(content)
     cheat_sheet_file_rendered.close()

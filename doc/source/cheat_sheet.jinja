@@ -27,9 +27,9 @@ jupyter:
 ---
 {%- for action_name, action_data in actions.items() %}
 {% for example in action_data.examples_for_cheatsheet %}
-# {{ example.name }}
+# {{ example.name | capitalize }}
 
-**{{ example.title }}**
+**{{ example.title | capitalize }}**
 
 ```{python}
 {{ example.code }}
