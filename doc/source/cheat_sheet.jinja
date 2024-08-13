@@ -26,8 +26,8 @@ jupyter:
     name: python3
 ---
 {%- for action_name, action_data in actions.items() %}
+# {{ action_name | capitalize }}
 {% for example in action_data.examples_for_cheatsheet %}
-# {{ example.name | capitalize }}
 
 **{{ example.title | capitalize }}**
 
@@ -36,7 +36,7 @@ jupyter:
 ```
 
 {% if example.reference_url -%}
-***Reference***: [{{ example.title }}]({{ example.reference_url }})
+***Ref***: [{{ example.title }}]({{ example.reference_url }})
 {% endif -%}
 {% endfor -%}
 

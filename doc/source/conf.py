@@ -73,7 +73,7 @@ html_theme_options = {
         },
     },
     "cheatsheet": {
-        "file": "cheat_sheet_new.qmd",
+        "file": "cheat_sheet.qmd",
         "title": "Actions cheat sheet",
     },
 }
@@ -372,7 +372,7 @@ def get_docs_link_for_action(action_file, action_name):
 
 # Generate the cheatsheet content
 actions_cheatsheet_jinja_contexts = {
-    action_dir.name: {
+    action_dir.name.replace("-", " ").casefold(): {
         "examples_for_cheatsheet": [
             {
                 "name": action_dir.name.replace("-", " "),
