@@ -172,6 +172,12 @@ runs:
         choco install miktex -y
         echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
+    - name: "Install Poppler for PDF to PNG conversion"
+      shell: powershell
+      run: |
+        choco install poppler -y
+        echo "C:\Program Files\poppler\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -196,7 +202,13 @@ runs:
     - name: Install Quarto
       if: ${{ inputs.needs-quarto == 'true' }}
       uses: quarto-dev/quarto-actions/setup@v2
-      run:
+      with:
+        tinytex: true
+
+    - name: Check Quarto Version
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: bash
+      run: |
         quarto --version
 
     # ------------------------------------------------------------------------
@@ -210,6 +222,12 @@ runs:
     - name: "Update pip"
       shell: powershell
       run: python -m pip install -U pip
+
+    - name: "Install Jupyter for Quarto"
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: bash
+      run: |
+        python -m pip install jupyter nbformat
 
     - name: Check if requirements.txt file exists
       shell: powershell
