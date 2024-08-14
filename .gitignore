@@ -75,7 +75,7 @@ instance/
 
 # Sphinx documentation
 doc/_build/
-doc/source/_extensions/
+doc/source/cheat_sheet.qmd
 
 # PyBuilder
 .pybuilder/
