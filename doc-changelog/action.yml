@@ -40,6 +40,12 @@ inputs:
     required: true
     type: string
 
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the user email for a git commit & push.
+    required: true
+    type: string
+
   # Optional inputs
 
   python-version:
@@ -242,6 +248,7 @@ runs:
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
         PR_NUMBER: ${{ github.event.number }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
       shell: bash
       run: |
         # Changelog fragment file in the following format
@@ -254,7 +261,7 @@ runs:
 
         # Configure git username & email
         git config user.name 'pyansys-ci-bot'
-        git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+        git config user.email ${{ env.BOT_EMAIL }}
 
         # Add towncrier fragment
         git add .
