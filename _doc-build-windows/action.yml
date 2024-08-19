@@ -211,7 +211,7 @@ runs:
           Set up python to build the documentation.
 
     # If one wants to use the Python cache, the environment variable PYTHON_NO_CACHE_OPTION is an empty string.
-    - name: "Determine the disabling of the Python cache"
+    - name: Determine the disabling of the Python cache
       shell: powershell
       run: |
         if ("${{ inputs.use-python-cache }}" -eq 'false' ) {
@@ -226,7 +226,9 @@ runs:
 
     - name: "Update pip"
       shell: powershell
-      run: python -m pip install -U pip ${{ env.PYTHON_NO_CACHE_OPTION }}
+      run: |
+        .venv\Scripts\Activate.ps1
+        python -m pip install -U pip ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: Check if requirements.txt file exists
       shell: powershell
@@ -242,18 +244,21 @@ runs:
       shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
+        .venv\Scripts\Activate.ps1
         python -m pip install -r ${{ inputs.requirements-file }} ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: Install Python library
       shell: powershell
       if: ${{ inputs.skip-install == 'false' }}
       run: |
+        .venv\Scripts\Activate.ps1
         python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: Install documentation dependencies from pyproject.toml
       shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'false' }}
       run: |
+        .venv\Scripts\Activate.ps1
         if ("${{ env.EXISTS_DOC_REQUIREMENTS }}" -eq 'poetry' ) {
             python -m pip install poetry ${{ env.PYTHON_NO_CACHE_OPTION }}
             poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
@@ -272,6 +277,7 @@ runs:
     - name: Determine command context
       shell: powershell
       run: |
+        .venv\Scripts\Activate.ps1
         if ("${{ env.EXISTS_DOC_REQUIREMENTS }}" -eq 'poetry' ) {
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         } else {
@@ -282,6 +288,7 @@ runs:
     - name: Build HTML, PDF, and JSON documentation
       shell: powershell
       run: |
+        .venv\Scripts\Activate.ps1
         echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
         ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
         ${{ env.SPHINX_BUILD_MAKE }} pdf
@@ -305,6 +312,7 @@ runs:
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
       run: |
+        .venv\Scripts\Activate.ps1
         python ${{ github.action_path }}\..\doc-build\parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
