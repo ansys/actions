@@ -191,7 +191,7 @@ runs:
     - name: "Determine the disabling of the Python cache"
       shell: bash
       run: |
-        if [[ ${{ inputs.use-python-cache }} == 'true' ]]; then
+        if [[ ${{ inputs.use-python-cache }} == 'false' ]]; then
           if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
             echo "PYTHON_NO_CACHE_OPTION=$(echo '--no-cache')" >> $GITHUB_ENV
           else
