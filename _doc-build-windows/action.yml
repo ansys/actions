@@ -111,6 +111,14 @@ inputs:
     required: true
     type: boolean
 
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: true
+    type: boolean
+
 
 runs:
   using: "composite"
@@ -183,11 +191,42 @@ runs:
       with:
         level: "INFO"
         message: >
+          Determine build backend.
+
+    - name: "Determine the disabling of the Python cache"
+      shell: powershell
+      run: |
+        if ((Get-Content -Path .\project.toml) -match 'poetry\.core\.masonry\.api') {
+          echo "BUILD_BACKEND=$(echo 'poetry')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        } else {
+          echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
           Set up python to build the documentation.
+
+    # If one wants to use the Python cache, the environment variable PYTHON_NO_CACHE_OPTION is an empty string.
+    - name: "Determine the disabling of the Python cache"
+      shell: powershell
+      run: |
+        if ("${{ inputs.use-python-cache }}" -eq 'true' ) {
+          if ("${{ env.EXISTS_DOC_REQUIREMENTS }}" -eq 'poetry' ) {
+            echo "PYTHON_NO_CACHE_OPTION=$(echo '--no-cache')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          } else {
+            echo "PYTHON_NO_CACHE_OPTION=$(echo '--no-cache-dir')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          }
+        } else {
+          echo "PYTHON_NO_CACHE_OPTION=$(echo '')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }
 
     - name: "Update pip"
       shell: powershell
-      run: python -m pip install -U pip
+      run: python -m pip install -U pip ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: Check if requirements.txt file exists
       shell: powershell
@@ -203,23 +242,23 @@ runs:
       shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
-        python -m pip install -r ${{ inputs.requirements-file }}
+        python -m pip install -r ${{ inputs.requirements-file }} ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: Install Python library
       shell: powershell
       if: ${{ inputs.skip-install == 'false' }}
       run: |
-        python -m pip install .
+        python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: Install documentation dependencies from pyproject.toml
       shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'false' }}
       run: |
-        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
-            python -m pip install poetry
-            poetry install --with doc
+        if ("${{ env.EXISTS_DOC_REQUIREMENTS }}" -eq 'poetry' ) {
+            python -m pip install poetry ${{ env.PYTHON_NO_CACHE_OPTION }}
+            poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
         } else {
-            python -m pip install .[doc]
+            python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
         }
 
     # ------------------------------------------------------------------------
@@ -233,7 +272,7 @@ runs:
     - name: Determine command context
       shell: powershell
       run: |
-        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
+        if ("${{ env.EXISTS_DOC_REQUIREMENTS }}" -eq 'poetry' ) {
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         } else {
           echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append

@@ -119,6 +119,13 @@ inputs:
     required: true
     type: boolean
 
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: true
+    type: boolean
 
 runs:
   using: "composite"
@@ -165,37 +172,66 @@ runs:
       run: |
         echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
 
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Determine build backend.
+
+    - name: "Determine build backend"
+      shell: bash
+      run: |
+        echo "BUILD_BACKEND=$(if [ grep -q 'poetry\\.core\\.masonry\\.api' project.toml ]; then echo 'poetry'; else echo 'pip'; fi)" >> $GITHUB_ENV
+
+    # ------------------------------------------------------------------------
+
+    # If one wants to use the Python cache, the environment variable PYTHON_NO_CACHE_OPTION is an empty string.
+    - name: "Determine the disabling of the Python cache"
+      shell: bash
+      run: |
+        if [[ ${{ inputs.use-python-cache }} == 'true' ]]; then
+          if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+            echo "PYTHON_NO_CACHE_OPTION=$(echo '--no-cache')" >> $GITHUB_ENV
+          else
+            echo "PYTHON_NO_CACHE_OPTION=$(echo '--no-cache-dir')" >> $GITHUB_ENV
+          fi
+        else
+          echo "PYTHON_NO_CACHE_OPTION=''" >> $GITHUB_ENV
+        fi
+
     - name: "Update pip"
       shell: bash
-      run: python -m pip install -U pip
+      run: python -m pip install -U pip ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: "Install documentation dependencies from requirements file"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'true'
       run: |
-        python -m pip install -r ${{ inputs.requirements-file }}
+        python -m pip install -r ${{ inputs.requirements-file }} ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: "Install Python library"
       shell: bash
       if: inputs.skip-install == 'false'
       run: |
-        python -m pip install .
+        python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
 
     - name: "Install documentation dependencies from pyproject.toml"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'false'
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          python -m pip install poetry
-          poetry install --with doc
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          python -m pip install poetry ${{ env.PYTHON_NO_CACHE_OPTION }}
+          poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
         else
-          python -m pip install .[doc]
+          python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
         fi
 
     - name: "Determine make command context"
       shell: bash
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
         else
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV

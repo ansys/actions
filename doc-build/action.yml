@@ -199,6 +199,7 @@ runs:
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
+        use-python-cache: ${{ inputs.use-python-cache }}
 
     # ------------------------------------------------------------------------
 
@@ -222,3 +223,4 @@ runs:
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
+        use-python-cache: ${{ inputs.use-python-cache }}
