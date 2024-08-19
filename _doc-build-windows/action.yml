@@ -196,7 +196,7 @@ runs:
     - name: "Determine the disabling of the Python cache"
       shell: powershell
       run: |
-        if ((Get-Content -Path .\project.toml) -match 'poetry\.core\.masonry\.api') {
+        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
           echo "BUILD_BACKEND=$(echo 'poetry')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         } else {
           echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
