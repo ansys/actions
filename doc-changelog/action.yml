@@ -40,9 +40,15 @@ inputs:
     required: true
     type: string
 
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
   bot-email:
     description: |
-      Use the PYANSYS_CI_BOT_EMAIL as the user email for a git commit & push.
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
     required: true
     type: string
 
@@ -248,6 +254,7 @@ runs:
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
         PR_NUMBER: ${{ github.event.number }}
+        BOT_USER: ${{ inputs.bot-user }}
         BOT_EMAIL: ${{ inputs.bot-email }}
       shell: bash
       run: |
@@ -260,7 +267,7 @@ runs:
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
         # Configure git username & email
-        git config user.name 'pyansys-ci-bot'
+        git config user.name ${{ env.BOT_USER }}
         git config user.email ${{ env.BOT_EMAIL }}
 
         # Add towncrier fragment
