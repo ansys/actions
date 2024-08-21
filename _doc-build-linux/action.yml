@@ -197,8 +197,6 @@ runs:
           else
             echo "PYTHON_NO_CACHE_OPTION=$(echo '--no-cache-dir')" >> $GITHUB_ENV
           fi
-        else
-          echo "PYTHON_NO_CACHE_OPTION=''" >> $GITHUB_ENV
         fi
 
     - name: "Update pip"
