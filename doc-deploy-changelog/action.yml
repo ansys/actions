@@ -83,7 +83,7 @@ inputs:
 
       There are two options when making a release for your repository:
 
-      1. You pushed a tag from a release branch
+      1. You pushed a tag from a release branch (``release-from-main`` is ``false``)
 
         This is the most common case for PyAnsys repositories. The following steps are
         performed when ``release-from-main`` is ``false``:
@@ -106,9 +106,10 @@ inputs:
         on the remote, create the new tag locally, and push the tag on the remote.
         Delete the temporary branch if one was used to update the CHANGELOG file.
 
-        e) Exit on error if the CHANGELOG is updated.
+        e) Exit on error if the CHANGELOG is updated, so that the package is not released from
+        this instance of the workflow.
 
-      2. You pushed a tag from the main branch
+      2. You pushed a tag from the main branch (``release-from-main`` is ``true``)
 
         The following steps are performed when ``release-from-main`` is ``true``:
 
@@ -118,7 +119,8 @@ inputs:
         b) Checkout the main branch, delete the tag locally and on the remote,
         create the new tag locally, and push the new tag on the remote.
 
-        c) Exit on error if the CHANGELOG is updated.
+        c) Exit on error if the CHANGELOG is updated, so that the package is not released from
+        this instance of the workflow.
     required: false
     default: false
     type: boolean
