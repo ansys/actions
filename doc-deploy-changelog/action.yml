@@ -227,6 +227,7 @@ runs:
           else
             git checkout ${{ env.UPDATE_BRANCH }}
             git pull
+          fi
 
           # Update the changelog with the package version from pyproject.toml
           # The [tool.towncrier] section in pyproject.toml requires the following line
