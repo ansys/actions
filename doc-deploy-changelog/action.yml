@@ -253,7 +253,7 @@ runs:
           git add .
 
           # Commit changes and save commit SHA
-          if [[ ${{ inputs.use-upper-case }} == "false" ]] ; then
+          if [[ ${{ inputs.use-upper-case }} == "false" ]]; then
             git commit -m "chore: updating CHANGELOG for v${{ env.TAG_VERSION }}"
           else
             git commit -m "CHORE: updating CHANGELOG for v${{ env.TAG_VERSION }}"
