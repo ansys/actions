@@ -77,9 +77,10 @@ inputs:
     description: |
       Pushing a release tag results in this action running twice:
 
-      - Once to run ``towncrier`` and consolidate the changelog fragments into a
+      Once to run ``towncrier`` and consolidate the changelog fragments into a
       single update of the CHANGELOG file.
-      - Once to release the package after the CHANGELOG file has been updated.
+
+      Once to release the package after the CHANGELOG file has been updated.
 
       There are two options when making a release for your repository:
 
