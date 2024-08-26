@@ -121,6 +121,7 @@ inputs:
 
         c) Exit on error if the CHANGELOG is updated, so that the package is not released from
         this instance of the workflow.
+
     required: false
     default: false
     type: boolean
