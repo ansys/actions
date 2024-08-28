@@ -73,21 +73,56 @@ inputs:
     default: true
     type: boolean
 
-  update-release-branch:
+  release-from-main:
     description: |
-      Whether or not to update the CHANGELOG in the release branch.
-      If ``true``, the branch used to update the CHANGELOG is "release/major.minor".
-      If ``false``, the branch used to update the CHANGELOG is
-      "maint/changelog-update-tag_version" and will be deleted after use.
-    required: false
-    default: true
-    type: boolean
+      Pushing a release tag results in this action running twice:
 
-  update-main-branch:
-    description: |
-      Whether or not to update the CHANGELOG in the main branch.
-      If ``true``, the branch used to update the CHANGELOG is main.
-      If ``false``, check the value of the update-release-branch input.
+      Once to run ``towncrier`` and consolidate the changelog fragments into a
+      single update of the CHANGELOG file.
+
+      Once to release the package after the CHANGELOG file has been updated.
+
+      There are two options when making a release for your repository:
+
+      1. You pushed a tag from a release branch (``release-from-main`` is ``false``)
+
+        This is the most common case for PyAnsys repositories. The following steps are
+        performed when ``release-from-main`` is ``false``:
+
+        a) Find a release branch that has the same major and minor version of the
+        tag that was pushed. For example, if your tag was "v0.1.2", it looks for
+        a release branch named "release/0.1". If the release branch cannot be found, a
+        temporary branch is used named "maint/changelog-update-vTAG_VERSION".
+
+        b) Checkout the release or temporary branch, update the CHANGELOG file
+        using ``towncrier``, and push the updates to the respective branch.
+
+        c) Checkout the main branch and create a pull request branch named
+        "maint/vTAG_VERSION-changelog". Delete the pull request branch from the remote
+        if it exists, checkout the pull request branch, cherry pick the commit
+        containing the CHANGELOG file changes from the previous step, push the
+        pull request branch, and create a pull request from the branch into main.
+
+        d) Checkout the release or temporary branch, delete the tag locally and
+        on the remote, create the new tag locally, and push the tag on the remote.
+        Delete the temporary branch if one was used to update the CHANGELOG file.
+
+        e) Exit on error if the CHANGELOG is updated, so that the package is not released from
+        this instance of the workflow.
+
+      2. You pushed a tag from the main branch (``release-from-main`` is ``true``)
+
+        The following steps are performed when ``release-from-main`` is ``true``:
+
+        a) Checkout the main branch, update the CHANGELOG file using ``towncrier``,
+        and push the updates to the main branch.
+
+        b) Checkout the main branch, delete the tag locally and on the remote,
+        create the new tag locally, and push the new tag on the remote.
+
+        c) Exit on error if the CHANGELOG is updated, so that the package is not released from
+        this instance of the workflow.
+
     required: false
     default: false
     type: boolean
@@ -124,15 +159,6 @@ runs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         use-cache: ${{ env.PYTHON_CACHE }}
-
-    - name: Check inputs are not both true
-      shell: bash
-      run: |
-        if [ "${{ inputs.update-release-branch }}" == "true" ] && [ "${{ inputs.update-main-branch }}" == "true" ]; then
-          echo "Inputs update-release-branch and update-main-branch cannot both be true."
-          echo "To update the main branch, set update-release-branch to false and update-main-branch to true."
-          exit 1
-        fi
 
     - name: Save tag version
       shell: bash
@@ -172,13 +198,13 @@ runs:
 
         echo "MAIN_BRANCH=$formatted_head_branch" >> $GITHUB_ENV
 
-    - name: "Set CHANGELOG update branch"
+    - name: "Set the branch to update the CHANGELOG file on"
       shell: bash
       run: |
-        if [[ ${{ inputs.update-main-branch }} == "true" ]]; then
+        if [[ ${{ inputs.release-from-main }} == "true" ]]; then
           echo "UPDATE_BRANCH=${{ env.MAIN_BRANCH }}" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
-        elif [[ ${{ inputs.update-release-branch }} == "true" ]]; then
+        else
           # Assume release branch is "release/major.minor"
           # v0.1.0 (tag) -> release/0.1
           tag_version=${{ env.TAG_VERSION }}
@@ -196,27 +222,21 @@ runs:
             echo "UPDATE_BRANCH=$release_branch" >> $GITHUB_ENV
             echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
           fi
-        else
-          # maint/changelog-update-v0.1.0
-          echo "UPDATE_BRANCH=maint/changelog-update-v${{ env.TAG_VERSION }}" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH_EXISTS=false" >> $GITHUB_ENV
         fi
 
-    - name: "Create new section in CHANGELOG and reupload tag"
+    - name: "Create a new section in the CHANGELOG file and push the changes"
       shell: bash
       run: |
         # Get number of .md files in ${{ env.TOWNCRIER_DIR }}
         count=$(find ${{ env.TOWNCRIER_DIR }} -type f -name "*.md" | wc -l)
 
         if [ $count -gt 0 ]; then
-          # Checkout branch from tag
-          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.update-main-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
-            echo "Using release branch"
+          echo "Using ${{ env.UPDATE_BRANCH }} to update the CHANGELOG file"
+          if [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
+            git checkout -b ${{ env.UPDATE_BRANCH }}
+          else
             git checkout ${{ env.UPDATE_BRANCH }}
             git pull
-          else
-            echo "Using temporary branch"
-            git checkout -b ${{ env.UPDATE_BRANCH }}
           fi
 
           # Update the changelog with the package version from pyproject.toml
@@ -244,7 +264,7 @@ runs:
           git add .
 
           # Commit changes and save commit SHA
-          if [[ ${{ inputs.use-upper-case }} == "false" ]] ; then
+          if [[ ${{ inputs.use-upper-case }} == "false" ]]; then
             git commit -m "chore: updating CHANGELOG for v${{ env.TAG_VERSION }}"
           else
             git commit -m "CHORE: updating CHANGELOG for v${{ env.TAG_VERSION }}"
@@ -252,7 +272,7 @@ runs:
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
-          if ([[ ${{ inputs.update-release-branch }} == "true" ]] || [[ ${{ inputs.update-main-branch }} == "true" ]]) && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
+          if [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             git push
           else
             git push -u origin ${{ env.UPDATE_BRANCH }}
@@ -264,8 +284,8 @@ runs:
           echo "UPDATED_CHANGELOG=false" >> $GITHUB_ENV
         fi
 
-    - name: "Create PR into main with CHANGELOG changes"
-      if: ${{ (inputs.update-main-branch != 'true' ) && (env.UPDATED_CHANGELOG == 'true') }}
+    - name: "Create PR into main with the CHANGELOG file changes"
+      if: ${{ (inputs.release-from-main == 'false' ) && (env.UPDATED_CHANGELOG == 'true') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
