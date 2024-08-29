@@ -40,42 +40,42 @@ description: |
 
   1. You pushed a tag from a release branch (``release-from-main`` is ``false``)
 
-    This is the most common case for PyAnsys repositories. The following steps are
-    performed when ``release-from-main`` is ``false``:
+  This is the most common case for PyAnsys repositories. The following steps are
+  performed when ``release-from-main`` is ``false``:
 
-    a) Find a release branch that has the same major and minor version of the
-    tag that was pushed. For example, if your tag was "v0.1.2", it looks for
-    a release branch named "release/0.1". If the release branch cannot be found, a
-    temporary branch is used named "maint/changelog-update-vTAG_VERSION".
+  a) Find a release branch that has the same major and minor version of the
+  tag that was pushed. For example, if your tag was "v0.1.2", it looks for
+  a release branch named "release/0.1". If the release branch cannot be found, a
+  temporary branch is used named "maint/changelog-update-vTAG_VERSION".
 
-    b) Checkout the release or temporary branch, update the CHANGELOG file
-    using ``towncrier``, and push the updates to the respective branch.
+  b) Checkout the release or temporary branch, update the CHANGELOG file
+  using ``towncrier``, and push the updates to the respective branch.
 
-    c) Checkout the main branch and create a pull request branch named
-    "maint/vTAG_VERSION-changelog". Delete the pull request branch from the remote
-    if it exists, checkout the pull request branch, cherry pick the commit
-    containing the CHANGELOG file changes from the previous step, push the
-    pull request branch, and create a pull request from the branch into main.
+  c) Checkout the main branch and create a pull request branch named
+  "maint/vTAG_VERSION-changelog". Delete the pull request branch from the remote
+  if it exists, checkout the pull request branch, cherry pick the commit
+  containing the CHANGELOG file changes from the previous step, push the
+  pull request branch, and create a pull request from the branch into main.
 
-    d) Checkout the release or temporary branch, delete the tag locally and
-    on the remote, create the new tag locally, and push the tag on the remote.
-    Delete the temporary branch if one was used to update the CHANGELOG file.
+  d) Checkout the release or temporary branch, delete the tag locally and
+  on the remote, create the new tag locally, and push the tag on the remote.
+  Delete the temporary branch if one was used to update the CHANGELOG file.
 
-    e) Exit on error if the CHANGELOG is updated, so that the package is not released from
-    this instance of the workflow.
+  e) Exit on error if the CHANGELOG is updated, so that the package is not released from
+  this instance of the workflow.
 
   2. You pushed a tag from the main branch (``release-from-main`` is ``true``)
 
-    The following steps are performed when ``release-from-main`` is ``true``:
+  The following steps are performed when ``release-from-main`` is ``true``:
 
-    a) Checkout the main branch, update the CHANGELOG file using ``towncrier``,
-    and push the updates to the main branch.
+  a) Checkout the main branch, update the CHANGELOG file using ``towncrier``,
+  and push the updates to the main branch.
 
-    b) Checkout the main branch, delete the tag locally and on the remote,
-    create the new tag locally, and push the new tag on the remote.
+  b) Checkout the main branch, delete the tag locally and on the remote,
+  create the new tag locally, and push the new tag on the remote.
 
-    c) Exit on error if the CHANGELOG is updated, so that the package is not released from
-    this instance of the workflow.
+  c) Exit on error if the CHANGELOG is updated, so that the package is not released from
+  this instance of the workflow.
 
 
 inputs:
