@@ -226,6 +226,10 @@ runs:
         source .venv/bin/activate
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           python -m pip install poetry ${{ env.PYTHON_NO_CACHE_OPTION }}
+
+          # Configure poetry to not create a new virtual environment and ensure it uses the activated virtual environment.
+          poetry config virtualenvs.create false
+
           poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
         else
           python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
