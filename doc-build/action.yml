@@ -167,6 +167,13 @@ inputs:
     required: false
     type: boolean
 
+  needs-quarto:
+    description: >
+      Whether to add a Quarto cheatsheet to the documentation. Default value is
+      ``false``.
+    default: false
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
@@ -205,6 +212,7 @@ runs:
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         use-python-cache: ${{ inputs.use-python-cache }}
+        needs-quarto: ${{ inputs.needs-quarto }}
 
     # ------------------------------------------------------------------------
 
@@ -229,3 +237,4 @@ runs:
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         use-python-cache: ${{ inputs.use-python-cache }}
+        needs-quarto: ${{ inputs.needs-quarto }}

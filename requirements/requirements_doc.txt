@@ -1,4 +1,6 @@
-ansys-sphinx-theme==1.0.5
+ansys-sphinx-theme==1.0.7
+jupyter==1.1.1
+nbformat==5.10.4
 pyyaml==6.0.2
 Sphinx==8.0.2
 sphinx-copybutton==0.5.2
