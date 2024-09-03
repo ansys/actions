@@ -438,6 +438,12 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Upload HTML, PDF and JSON documentation.
+
     - name: "Upload HTML documentation artifact"
       uses: actions/upload-artifact@v4
       with:
