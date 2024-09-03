@@ -194,10 +194,11 @@ runs:
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f ${{ inputs.requirements-file }} ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
-    - name: "Print previous output"
-      shell: bash
-      run: |
-        echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Documentation requirements file found: ${{ env.EXISTS_DOC_REQUIREMENTS }}
 
     # ------------------------------------------------------------------------
 
@@ -211,6 +212,12 @@ runs:
       shell: bash
       run: |
         echo "BUILD_BACKEND=$(if grep -q 'poetry.core.masonry.api' pyproject.toml; then echo 'poetry'; else echo 'pip'; fi)" >> $GITHUB_ENV
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ env.BUILD_BACKEND }}
 
     # ------------------------------------------------------------------------
 
