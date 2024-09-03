@@ -236,6 +236,31 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         }
 
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ env.BUILD_BACKEND }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Check for documentation requirement file.
+
+    - name: Check if requirements.txt file exists
+      shell: powershell
+      run: |
+        echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path '${{ inputs.requirements-file }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Documentation requirements file found: ${{ env.EXISTS_DOC_REQUIREMENTS }}
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -264,15 +289,14 @@ runs:
         .venv\Scripts\Activate.ps1
         python -m pip install -U pip ${{ env.PYTHON_NO_CACHE_OPTION }}
 
-    - name: Check if requirements.txt file exists
+    - name: "Install and configure poetry"
       shell: powershell
+      if: env.BUILD_BACKEND == 'poetry'
       run: |
-        echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path '${{ inputs.requirements-file }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
-
-    - name: Print previous output
-      shell: powershell
-      run: |
-        echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
+        .venv\Scripts\Activate.ps1
+        python -m pip install poetry ${{ env.PYTHON_NO_CACHE_OPTION }}
+        # Configure poetry to not create a new virtual environment and ensure it uses the activated virtual environment.
+        poetry config virtualenvs.create false
 
     - name: Install documentation dependencies from requirements file
       shell: powershell
@@ -286,7 +310,11 @@ runs:
       if: ${{ inputs.skip-install == 'false' }}
       run: |
         .venv\Scripts\Activate.ps1
-        python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          poetry install ${{ env.PYTHON_NO_CACHE_OPTION }}
+        else
+          python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
+        fi
 
     - name: Install documentation dependencies from pyproject.toml
       shell: powershell
@@ -294,11 +322,6 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ("${{ env.BUILD_BACKEND }}" -eq 'poetry' ) {
-          python -m pip install poetry ${{ env.PYTHON_NO_CACHE_OPTION }}
-
-          # Configure poetry to not create a new virtual environment and ensure it uses the activated virtual environment.
-          poetry config virtualenvs.create false
-
           poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
         } else {
           python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}

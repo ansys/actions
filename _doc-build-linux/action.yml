@@ -221,6 +221,12 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to build the documentation.
+
     # If one wants to use the Python cache, the environment variable PYTHON_NO_CACHE_OPTION is an empty string.
     - name: "Determine the disabling of the Python cache"
       shell: bash
@@ -239,6 +245,15 @@ runs:
         source .venv/bin/activate
         python -m pip install -U pip ${{ env.PYTHON_NO_CACHE_OPTION }}
 
+    - name: "Install and configure poetry"
+      shell: bash
+      if: env.BUILD_BACKEND == 'poetry'
+      run: |
+        source .venv/bin/activate
+        python -m pip install poetry ${{ env.PYTHON_NO_CACHE_OPTION }}
+        # Configure poetry to not create a new virtual environment and ensure it uses the activated virtual environment.
+        poetry config virtualenvs.create false
+
     - name: "Install documentation dependencies from requirements file"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'true'
@@ -251,7 +266,11 @@ runs:
       if: inputs.skip-install == 'false'
       run: |
         source .venv/bin/activate
-        python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          poetry install ${{ env.PYTHON_NO_CACHE_OPTION }}
+        else
+          python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
+        fi
 
     - name: "Install documentation dependencies from pyproject.toml"
       shell: bash
@@ -259,11 +278,6 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          python -m pip install poetry ${{ env.PYTHON_NO_CACHE_OPTION }}
-
-          # Configure poetry to not create a new virtual environment and ensure it uses the activated virtual environment.
-          poetry config virtualenvs.create false
-
           poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
         else
           python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
