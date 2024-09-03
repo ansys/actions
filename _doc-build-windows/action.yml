@@ -310,11 +310,11 @@ runs:
       if: ${{ inputs.skip-install == 'false' }}
       run: |
         .venv\Scripts\Activate.ps1
-        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+        if ("${{ env.BUILD_BACKEND }}" -eq 'poetry' ) {
           poetry install ${{ env.PYTHON_NO_CACHE_OPTION }}
-        else
+        } else {
           python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
-        fi
+        }
 
     - name: Install documentation dependencies from pyproject.toml
       shell: powershell
