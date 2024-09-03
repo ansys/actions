@@ -311,7 +311,7 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ("${{ env.BUILD_BACKEND }}" -eq 'poetry' ) {
-          poetry install ${{ env.PYTHON_NO_CACHE_OPTION }}
+          poetry install ${{ env.PYTHON_NO_CACHE_OPTION }} -vvv
         } else {
           python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
         }
@@ -322,7 +322,7 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ("${{ env.BUILD_BACKEND }}" -eq 'poetry' ) {
-          poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
+          poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }} -vvv
         } else {
           python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
         }
