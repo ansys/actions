@@ -210,7 +210,7 @@ runs:
     - name: "Determine build backend"
       shell: bash
       run: |
-        echo "BUILD_BACKEND=$(if [ grep -q 'poetry\\.core\\.masonry\\.api' project.toml ]; then echo 'poetry'; else echo 'pip'; fi)" >> $GITHUB_ENV
+        echo "BUILD_BACKEND=$(if [ grep -q 'poetry\\.core\\.masonry\\.api' pyproject.toml ]; then echo 'poetry'; else echo 'pip'; fi)" >> $GITHUB_ENV
 
     # ------------------------------------------------------------------------
 
