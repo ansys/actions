@@ -21,7 +21,9 @@ Development version
 
 **Breaking changes:**
 
-- Use secrets for the PyAnsys CI Bot's username and email.
+- Use secrets for commit and push credentials within ``ansys/actions/doc-changelog``,
+  ``ansys/actions/doc-deploy-changelog``, ``ansys/actions/doc-deploy-dev``, and
+  ``ansys/actions/doc-deploy-stable``.
 
 **Migration steps:**
 
@@ -31,8 +33,10 @@ Development version
 - Add the following required inputs to ``ansys/actions/doc-changelog``, ``ansys/actions/doc-deploy-changelog``,
   ``ansys/actions/doc-deploy-dev``, and ``ansys/actions/doc-deploy-stable``:
 
-  bot-user: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
-  bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
+.. code:: yaml
+
+    bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+    bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
 Version ``v6``
 --------------
