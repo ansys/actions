@@ -280,6 +280,6 @@ runs:
         if [ ! -z "$modified" ]; then
           echo "modified: $modified"
           # Commit and push fragment
-          git commit -m "chore: adding changelog file $fragment"
+          git commit -m "chore: adding changelog file $fragment [dependabot-skip]"
           git push
         fi
