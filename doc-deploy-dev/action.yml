@@ -49,6 +49,18 @@ inputs:
     required: true
     type: string
 
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
   # Optional inputs
 
   doc-artifact-name:
@@ -147,6 +159,8 @@ runs:
     - name: "Ensure that the desired branch exists"
       env:
         BRANCH: ${{ inputs.branch }}
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
       shell: bash
       run: |
         # Check the ${{ env.BRANCH }} branch exists on remote
@@ -166,8 +180,8 @@ runs:
           git clean -fd
 
           # Configure git username & email
-          git config user.name 'pyansys-ci-bot'
-          git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+          git config user.name ${{ env.BOT_USER }}
+          git config user.email ${{ env.BOT_EMAIL }}
 
           # Commit ${{ env.BRANCH }} & push to origin
           git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
