@@ -21,10 +21,18 @@ Development version
 
 **Breaking changes:**
 
+- Use secrets for the PyAnsys CI Bot's username and email.
+
 **Migration steps:**
 
 - To set up your repository to use the ``ansys/actions/release-pypi-*`` action with the `Trusted Publisher`_ approach,
   see the :ref:`release_pypi_trusted_publisher`.
+
+- Add the following required inputs to ``ansys/actions/doc-changelog``, ``ansys/actions/doc-deploy-changelog``,
+  ``ansys/actions/doc-deploy-dev``, and ``ansys/actions/doc-deploy-stable``:
+
+  bot-user: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
+  bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
 
 Version ``v6``
 --------------
