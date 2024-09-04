@@ -119,6 +119,12 @@ inputs:
     required: true
     type: boolean
 
+  needs-quarto:
+    description: |
+      Whether to add a Quarto cheatsheet to the documentation.
+    required: true
+    type: boolean
+
 
 runs:
   using: "composite"
@@ -154,6 +160,24 @@ runs:
       shell: bash
       run: |
         sudo apt-get install -y texlive-latex-extra latexmk
+
+    - name: Install Quarto
+      if: ${{ inputs.needs-quarto == 'true' }}
+      uses: quarto-dev/quarto-actions/setup@v2
+      with:
+        tinytex: true
+
+    - name: Check Quarto Version
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: bash
+      run: |
+        quarto --version
+
+    - name: "Install Poppler for PDF to PNG conversion"
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y poppler-utils
 
     - name: "Check if requirements.txt file exists"
       shell: bash

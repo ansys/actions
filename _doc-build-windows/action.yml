@@ -111,6 +111,12 @@ inputs:
     required: true
     type: boolean
 
+  needs-quarto:
+    description: |
+      Whether to add a Quarto cheatsheet to the documentation.
+    required: true
+    type: boolean
+
 
 runs:
   using: "composite"
@@ -164,6 +170,12 @@ runs:
         choco install miktex -y
         echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
+    - name: "Install Poppler for PDF to PNG conversion"
+      shell: powershell
+      run: |
+        choco install poppler -y
+        echo "C:\Program Files\poppler\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -176,6 +188,26 @@ runs:
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
+
+    # ------------------------------------------------------------------------
+
+    - uses : ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Setup quarto to build the cheatsheet.
+
+    - name: Install Quarto
+      if: ${{ inputs.needs-quarto == 'true' }}
+      uses: quarto-dev/quarto-actions/setup@v2
+      with:
+        tinytex: true
+
+    - name: Check Quarto Version
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: bash
+      run: |
+        quarto --version
 
     # ------------------------------------------------------------------------
 
