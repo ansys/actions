@@ -191,11 +191,16 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
+    - name: Create virtual environment
+      shell:
+      run: |
+        python -m venv .venv
+
     # ------------------------------------------------------------------------
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@main
+      uses: ansys/actions/_doc-build-linux@fix/doc-build-without-python-cache
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -206,6 +211,7 @@ runs:
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
+        use-python-cache: ${{ inputs.use-python-cache }}
         needs-quarto: ${{ inputs.needs-quarto }}
 
     # ------------------------------------------------------------------------
@@ -220,7 +226,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@main
+      uses: ansys/actions/_doc-build-windows@fix/doc-build-without-python-cache
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -230,4 +236,5 @@ runs:
         skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
+        use-python-cache: ${{ inputs.use-python-cache }}
         needs-quarto: ${{ inputs.needs-quarto }}
