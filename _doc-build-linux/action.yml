@@ -219,7 +219,7 @@ runs:
     - name: "Determine make command context"
       shell: bash
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
         else
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
@@ -285,6 +285,7 @@ runs:
           Environment variable PDF_FILENAME set to ${{ env.PDF_FILENAME }}.
 
     # ------------------------------------------------------------------------
+
     - uses: ansys/actions/_logging@main
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:

@@ -265,12 +265,11 @@ runs:
     - name: Determine command context
       shell: powershell
       run: |
-        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
+        if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"')) {
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         } else {
           echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         }
-        echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
 
     - name: Build HTML, PDF, and JSON documentation
       shell: powershell
