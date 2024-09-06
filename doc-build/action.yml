@@ -191,6 +191,11 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
+    - name: Create virtual environment
+      shell:
+      run: |
+        python -m venv .venv
+
     # ------------------------------------------------------------------------
 
     - name: Documentation build (Linux)

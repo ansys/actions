@@ -179,56 +179,111 @@ runs:
         sudo apt-get update
         sudo apt-get install -y poppler-utils
 
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Determine context.
+
+    - name: "Determine Github environnement variables"
+      shell: bash
+      run: |
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_ENV
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
+        else
+          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
+          echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ env.BUILD_BACKEND }}
+          Sphinx build make: ${{ SPHINX_BUILD_MAKE }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to build the documentation.
+
+    - name: "Set poetry environment variable(s) (if required)"
+      shell: bash
+      if: env.BUILD_BACKEND == 'poetry'
+      run: |
+        # For projects using poetry, do not use a virtual environment.
+        # Poetry uses virtual environments to install its dependencies, but this might
+        # lead to problems if it is not activated prior to executing poetry commands.
+        # Store POETRY_VIRTUALENVS_CREATE=false in the GitHub environment to prevent
+        # poetry from creating a virtual environment.
+        #
+        echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+
+    - name: "Update pip"
+      shell: bash
+      run: |
+        source .venv/bin/activate
+        python -m pip install -U pip
+
     - name: "Check if requirements.txt file exists"
       shell: bash
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f ${{ inputs.requirements-file }} ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
-    - name: "Print previous output"
-      shell: bash
-      run: |
-        echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
-
-    - name: "Update pip"
-      shell: bash
-      run: python -m pip install -U pip
-
     - name: "Install documentation dependencies from requirements file"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'true'
       run: |
+        source .venv/bin/activate
         python -m pip install -r ${{ inputs.requirements-file }}
+
+    - name: "Install poetry (if required)"
+      shell: bash
+      if: env.BUILD_BACKEND == 'poetry'
+      run: |
+        source .venv/bin/activate
+        python -m pip install poetry
 
     - name: "Install Python library"
       shell: bash
       if: inputs.skip-install == 'false'
       run: |
-        python -m pip install .
+        source .venv/bin/activate
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          poetry install
+        else
+          python -m pip install .
+        fi
 
     - name: "Install documentation dependencies from pyproject.toml"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'false'
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          python -m pip install poetry
+        source .venv/bin/activate
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           poetry install --with doc
         else
-          python -m pip install .[doc]
+          python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
         fi
 
-    - name: "Determine make command context"
-      shell: bash
-      run: |
-        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_ENV
-        else
-          echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
-        fi
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build HTML, PDF and JSON documentation.
 
     - name: "Build HTML, PDF, and JSON documentation"
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
+        source .venv/bin/activate
         ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.check-links }} == 'true' ]];
@@ -244,6 +299,7 @@ runs:
       if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
+        source .venv/bin/activate
         xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
         xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.check-links }} == 'true' ]];
@@ -268,6 +324,7 @@ runs:
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: bash
       run: |
+        source .venv/bin/activate
         python ${{ github.action_path }}/../doc-build/parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
