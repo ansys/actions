@@ -205,7 +205,7 @@ runs:
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}
-      shell: bash
+      shell: powershell
       run: |
         quarto --version
 
