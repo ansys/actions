@@ -217,7 +217,7 @@ runs:
         message: >
           Determine context.
 
-    - name: "Determine Github environnement variables"
+    - name: "Determine GitHub environnement variables"
       shell: powershell
       run: |
         if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"')) {
