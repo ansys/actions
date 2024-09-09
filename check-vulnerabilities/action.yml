@@ -193,7 +193,8 @@ runs:
         message: >
           Determine context.
 
-    - name: "Determine Github environnement variables"
+    - name: "Determine GitHub environment variables"
+
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
