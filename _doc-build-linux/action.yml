@@ -268,7 +268,7 @@ runs:
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           poetry install --with doc
         else
-          python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
+          python -m pip install .[doc]
         fi
 
     # ------------------------------------------------------------------------
