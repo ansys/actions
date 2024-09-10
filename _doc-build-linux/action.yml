@@ -196,6 +196,7 @@ runs:
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
+        fi
 
     - uses: ansys/actions/_logging@main
       with:
