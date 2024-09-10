@@ -274,7 +274,7 @@ runs:
         python -m pip install -r ${{ inputs.requirements-file }}
 
     - name: "Install poetry (if required)"
-      shell: bash
+      shell: powershell
       if: env.BUILD_BACKEND == 'poetry'
       run: |
         .venv\Scripts\Activate.ps1
