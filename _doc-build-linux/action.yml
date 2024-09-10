@@ -203,7 +203,7 @@ runs:
         level: "INFO"
         message: >
           Build backend: ${{ env.BUILD_BACKEND }}
-          Sphinx build make: ${{ SPHINX_BUILD_MAKE }}
+          Sphinx build make: ${{ env.SPHINX_BUILD_MAKE }}
 
     # ------------------------------------------------------------------------
 
