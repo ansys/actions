@@ -157,21 +157,17 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Ensure that the desired branch exists"
-      env:
-        BRANCH: ${{ inputs.branch }}
-        BOT_USER: ${{ inputs.bot-user }}
-        BOT_EMAIL: ${{ inputs.bot-email }}
       shell: bash
       run: |
-        # Check the ${{ env.BRANCH }} branch exists on remote
-        branch_exists=$(git ls-remote --heads origin refs/heads/${{ env.BRANCH }} 2>&1)
+        # Check the ${{ inputs.branch }} branch exists on remote
+        branch_exists=$(git ls-remote --heads origin refs/heads/${{ inputs.branch }} 2>&1)
 
-        # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
+        # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
-          echo "The ${{ env.BRANCH }} branch does not exist. Creating ${{ env.BRANCH }}."
+          echo "The ${{ inputs.branch }} branch does not exist. Creating ${{ inputs.branch }}."
 
           # Create orphan branch
-          git checkout --orphan ${{ env.BRANCH }}
+          git checkout --orphan ${{ inputs.branch }}
 
           # Unstage files to be committed
           git rm --cached -r .
@@ -180,16 +176,16 @@ runs:
           git clean -fd
 
           # Configure git username & email
-          git config user.name ${{ env.BOT_USER }}
-          git config user.email ${{ env.BOT_EMAIL }}
+          git config user.name ${{ inputs.bot-user }}
+          git config user.email ${{ inputs.bot-email }}
 
-          # Commit ${{ env.BRANCH }} & push to origin
-          git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
-          git push -u origin ${{ env.BRANCH }}
+          # Commit ${{ inputs.branch }} & push to origin
+          git commit --allow-empty -m "Create ${{ inputs.branch }} branch"
+          git push -u origin ${{ inputs.branch }}
         else
-          # Fetch and switch to ${{ env.BRANCH }}
-          git fetch origin ${{ env.BRANCH }}:${{ env.BRANCH }}
-          git switch ${{ env.BRANCH }}
+          # Fetch and switch to ${{ inputs.branch }}
+          git fetch origin ${{ inputs.branch }}:${{ inputs.branch }}
+          git switch ${{ inputs.branch }}
         fi
 
     # ------------------------------------------------------------------------
