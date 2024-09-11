@@ -167,10 +167,12 @@ runs:
           'release/<MAJOR>.<MINOR>'.
 
     - name: "Collect version number from the tag"
+      env:
+        REF_NAME: ${{ github.ref_name }}
       shell: bash
       if: github.ref_type == 'tag'
       run: |
-        tag=${{ github.ref_name }}
+        tag=${{ env.REF_NAME }}
         version=$( echo $tag | cut -d 'v' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
@@ -181,10 +183,12 @@ runs:
         fi
 
     - name: "Collect version number from the release branch"
+      env:
+        REF_NAME: ${{ github.ref_name }}
       shell: bash
       if: github.ref_type == 'branch'
       run: |
-        tag=${{ github.ref_name }}
+        tag=${{ env.REF_NAME }}
         version=$( echo $tag | cut -d '/' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ ]]; then

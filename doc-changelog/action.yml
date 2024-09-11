@@ -102,10 +102,12 @@ runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
+      env:
+        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       uses: actions/checkout@v4
       with:
         # Required to checkout branch from origin rather than remote
-        ref: ${{ github.event.pull_request.head.ref }}
+        ref: ${{ env.PR_BRANCH }}
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
@@ -121,6 +123,8 @@ runs:
 
     - name: "Get first letter of conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
         import sys
@@ -128,7 +132,7 @@ runs:
 
         from parse_pr_title import get_first_letter_case
 
-        pr_title = """${{ github.event.pull_request.title }}"""
+        pr_title = """${{ env.PR_TITLE }}"""
         get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
@@ -146,6 +150,8 @@ runs:
 
     - name: "Get conventional commit type from title"
       if: ${{ inputs.use-conventional-commits == 'true' }}
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
         import sys
@@ -153,17 +159,18 @@ runs:
 
         from parse_pr_title import get_conventional_commit_type
 
-        pr_title = """${{ github.event.pull_request.title }}"""
+        pr_title = """${{ env.PR_TITLE }}"""
         get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-conventional-commits == 'false' }}
       env:
         GH_TOKEN: ${{ inputs.token }}
+        REPO_NAME: ${{ github.event.repository.name }}
       shell: bash
       run: |
         # Get the labels in the pull request
-        pr_labels=$(gh api repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/pulls/${{ github.event.number }} --jq '.labels.[].name')
+        pr_labels=$(gh api repos/${{ github.repository_owner }}/${{ env.REPO_NAME }}/pulls/${{ github.event.number }} --jq '.labels.[].name')
 
         # Save the labels to an environment variable
         # For example, LABELS="enhancement maintenance"
@@ -207,6 +214,8 @@ runs:
         fi
 
     - name: "Clean PR title"
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
         import sys
@@ -214,12 +223,14 @@ runs:
 
         from parse_pr_title import clean_pr_title
 
-        pr_title = """${{ github.event.pull_request.title }}"""
+        pr_title = """${{ env.PR_TITLE }}"""
         use_cc = True if "${{ inputs.use-conventional-commits }}" == "true" else False
 
         clean_pr_title(pr_title, use_cc)
 
     - name: "Append towncrier categories to pyproject.toml"
+      env:
+        REPO_NAME: ${{ github.event.repository.name }}
       shell: python
       run: |
         import sys
@@ -227,7 +238,7 @@ runs:
 
         from parse_pr_title import add_towncrier_config
 
-        repo_name = "${{ github.event.repository.name }}"
+        repo_name = "${{ env.REPO_NAME }}"
         org_name = "${{ github.repository_owner }}"
 
         default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
