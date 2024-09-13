@@ -9,3 +9,5 @@ doc-deploy-dev:
       with:
           cname: "<library>.docs.pyansys.com"
           token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
+          bot-user: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
+          bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
