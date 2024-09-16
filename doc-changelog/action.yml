@@ -121,6 +121,21 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
 
+    # TODO: remove this deprecation in ansys/actions@v9
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "WARNING"
+        message: >
+          Ansys Actions v8 will require bot username and email inputs in the
+          ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
+          ``doc-deploy-stable`` actions. Please add the bot-user and bot-email inputs
+          to the respective workflows and see
+          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
+          for more information.
+
+    # TODO: end
+
     - name: "Get first letter of conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
       env:
