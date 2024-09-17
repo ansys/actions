@@ -136,7 +136,7 @@ runs:
 
     - uses: ansys/actions/_logging@main
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
           Ansys Actions v8 will require bot username and email inputs in the
           ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
