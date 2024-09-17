@@ -11,4 +11,5 @@ reuse
 typing
 typing-extensions
 typing_extensions
+usd-core
 WMI
