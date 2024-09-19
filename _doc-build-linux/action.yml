@@ -272,11 +272,6 @@ runs:
           python -m pip install .[doc]
         fi
 
-    - name: "Move into doc foled"
-      shell: bash
-      run: |
-        cd doc
-
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -290,15 +285,15 @@ runs:
       shell: bash
       run: |
         source .venv/bin/activate
-        ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        ${{ env.SPHINX_BUILD_MAKE }} pdf
+        ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
-          ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+          ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
-          ${{ env.SPHINX_BUILD_MAKE }} json SPHINXOPTS="${{ inputs.sphinxopts }}"
+          ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
 
     - name: "Build HTML, PDF, and JSON documentation using xvfb"
@@ -306,15 +301,16 @@ runs:
       shell: bash
       run: |
         source .venv/bin/activate
-        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} pdf
+        cd doc
+        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
+        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
-          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
         if [[ ${{ inputs.skip-json-build }} == 'false' ]];
         then
-          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} json SPHINXOPTS="${{ inputs.sphinxopts }}"
+          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc json SPHINXOPTS="${{ inputs.sphinxopts }}"
         fi
 
     # ------------------------------------------------------------------------
@@ -360,7 +356,7 @@ runs:
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: bash
       run: |
-        echo "EXPECTED_BUILD_DIR=_build" >> $GITHUB_ENV
+        echo "EXPECTED_BUILD_DIR=doc/_build" >> $GITHUB_ENV
 
     - name: Check expected build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
@@ -436,14 +432,14 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: documentation-html
-        path: _build/html
+        path: doc/_build/html
         retention-days: 7
 
     - name: "Upload PDF documentation artifact"
       uses: actions/upload-artifact@v4
       with:
         name: documentation-pdf
-        path: _build/latex/*.pdf
+        path: doc/_build/latex/*.pdf
         retention-days: 7
 
     - name: "Upload JSON documentation artifact"
@@ -451,5 +447,5 @@ runs:
       if: inputs.skip-json-build == 'false'
       with:
         name: documentation-json
-        path: _build/json
+        path: doc/_build/json
         retention-days: 7

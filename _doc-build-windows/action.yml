@@ -302,11 +302,6 @@ runs:
           python -m pip install .[doc]
         }
 
-    - name: "Move into doc directory"
-      shell: powershell
-      run: |
-        cd doc
-
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -319,6 +314,7 @@ runs:
       shell: powershell
       run: |
         .venv\Scripts\Activate.ps1
+        cd doc
         ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
         ${{ env.SPHINX_BUILD_MAKE }} pdf
         if ("${{ inputs.check-links }}" -eq 'true' ) {
@@ -371,7 +367,7 @@ runs:
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
       run: |
-        echo "EXPECTED_BUILD_DIR=$(echo '_build')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "EXPECTED_BUILD_DIR=$(echo 'doc\_build')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Check expected build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
@@ -447,14 +443,14 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: documentation-html
-        path: _build/html
+        path: doc/_build/html
         retention-days: 7
 
     - name: Upload PDF documentation artifact
       uses: actions/upload-artifact@v4
       with:
         name: documentation-pdf
-        path: _build/latex/*.pdf
+        path: doc/_build/latex/*.pdf
         retention-days: 7
 
     - name: Upload JSON documentation artifact
@@ -462,5 +458,5 @@ runs:
       if: inputs.skip-json-build == 'false'
       with:
         name: documentation-json
-        path: _build/json
+        path: doc/_build/json
         retention-days: 7
