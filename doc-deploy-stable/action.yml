@@ -54,6 +54,18 @@ inputs:
     required: true
     type: string
 
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
   # Optional inputs
 
   doc-artifact-name:
@@ -143,6 +155,21 @@ runs:
   using: "composite"
   steps:
 
+    # TODO: remove this deprecation in ansys/actions@v9
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "ERROR"
+        message: >
+          Ansys Actions v8 will require bot username and email inputs in the
+          ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
+          ``doc-deploy-stable`` actions. Please add the bot-user and bot-email inputs
+          to the respective workflows and see
+          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
+          for more information.
+
+    # TODO: end
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -155,10 +182,12 @@ runs:
           'release/<MAJOR>.<MINOR>'.
 
     - name: "Collect version number from the tag"
+      env:
+        REF_NAME: ${{ github.ref_name }}
       shell: bash
       if: github.ref_type == 'tag'
       run: |
-        tag=${{ github.ref_name }}
+        tag=${{ env.REF_NAME }}
         version=$( echo $tag | cut -d 'v' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
@@ -169,10 +198,12 @@ runs:
         fi
 
     - name: "Collect version number from the release branch"
+      env:
+        REF_NAME: ${{ github.ref_name }}
       shell: bash
       if: github.ref_type == 'branch'
       run: |
-        tag=${{ github.ref_name }}
+        tag=${{ env.REF_NAME }}
         version=$( echo $tag | cut -d '/' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ ]]; then
@@ -219,19 +250,17 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Ensure that the desired branch exists"
-      env:
-        BRANCH: ${{ inputs.branch }}
       shell: bash
       run: |
-        # Check the ${{ env.BRANCH }} branch exists on remote
-        branch_exists=$(git ls-remote --heads origin refs/heads/${{ env.BRANCH }} 2>&1)
+        # Check the ${{ inputs.branch }} branch exists on remote
+        branch_exists=$(git ls-remote --heads origin refs/heads/${{ inputs.branch }} 2>&1)
 
-        # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
+        # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
-          echo "The ${{ env.BRANCH }} branch does not exist. Creating ${{ env.BRANCH }}."
+          echo "The ${{ inputs.branch }} branch does not exist. Creating ${{ inputs.branch }}."
 
           # Create orphan branch
-          git checkout --orphan ${{ env.BRANCH }}
+          git checkout --orphan ${{ inputs.branch }}
 
           # Unstage files to be committed
           git rm --cached -r .
@@ -240,16 +269,16 @@ runs:
           git clean -fd
 
           # Configure git username & email
-          git config user.name 'pyansys-ci-bot'
-          git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+          git config user.name ${{ inputs.bot-user }}
+          git config user.email ${{ inputs.bot-email }}
 
-          # Commit ${{ env.BRANCH }} & push to origin
-          git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
-          git push -u origin ${{ env.BRANCH }}
+          # Commit ${{ inputs.branch }} & push to origin
+          git commit --allow-empty -m "Create ${{ inputs.branch }} branch"
+          git push -u origin ${{ inputs.branch }}
         else
-          # Fetch and switch to ${{ env.BRANCH }}
-          git fetch origin ${{ env.BRANCH }}:${{ env.BRANCH }}
-          git switch ${{ env.BRANCH }}
+          # Fetch and switch to ${{ inputs.branch }}
+          git fetch origin ${{ inputs.branch }}:${{ inputs.branch }}
+          git switch ${{ inputs.branch }}
         fi
 
     # ------------------------------------------------------------------------

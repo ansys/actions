@@ -13,7 +13,7 @@ updates:
 
   - package-ecosystem: "github-actions"
     directories:
-      - "**/*"
+      - "!(requirements)/**/*"
     schedule:
       interval: "daily"
     commit-message:

@@ -113,7 +113,13 @@ inputs:
 
   needs-quarto:
     description: |
-      Whether to add a Quarto cheatsheet to the documentation.
+      Whether to add a Quarto cheatsheet to the documentation. Default value is
+      ``false``.
+
+      .. warning::
+
+        Quarto needs Jupyter to be installed. Make sure to add `Jupyter <https://pypi.org/project/jupyter/>` to
+        the requirements list.
     required: true
     type: boolean
 
@@ -176,6 +182,13 @@ runs:
         choco install poppler -y
         echo "C:\Program Files\poppler\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
+    - name: "Install quarto for cheatsheet"
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: powershell
+      run: |
+        choco install quarto -y
+        echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -190,18 +203,6 @@ runs:
         initexmf --set-config-value [MPM]AutoInstall=1
 
     # ------------------------------------------------------------------------
-
-    - uses : ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Setup quarto to build the cheatsheet.
-
-    - name: Install Quarto
-      if: ${{ inputs.needs-quarto == 'true' }}
-      uses: quarto-dev/quarto-actions/setup@v2
-      with:
-        tinytex: true
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}

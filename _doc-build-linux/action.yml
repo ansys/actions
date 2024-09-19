@@ -121,7 +121,13 @@ inputs:
 
   needs-quarto:
     description: |
-      Whether to add a Quarto cheatsheet to the documentation.
+      Whether to add a Quarto cheatsheet to the documentation. Default value is
+      ``false``.
+
+      .. warning::
+
+        Quarto needs Jupyter to be installed. Make sure to add `Jupyter <https://pypi.org/project/jupyter/>` to
+        the requirements list.
     required: true
     type: boolean
 
