@@ -261,7 +261,7 @@ runs:
         .venv\Scripts\Activate.ps1
         python -m pip install -U pip
 
-    - name: Check if requirements.txt file exists
+    - name: "Check if requirements.txt file exists"
       shell: powershell
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path '${{ inputs.requirements-file }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
