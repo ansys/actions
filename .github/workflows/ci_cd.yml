@@ -176,6 +176,7 @@ jobs:
         library-name: ${{ env.test-library-name }}
         twine-username: "__token__"
         twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+        skip-existing: true
 
   doc-deploy-dev:
     name: "Deploy developers documentation"
