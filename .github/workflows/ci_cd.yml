@@ -178,8 +178,17 @@ jobs:
       uses: ansys/actions/release-pypi-test@main
       with:
         library-name: ${{ env.test-library-name }}
+<<<<<<< HEAD
         use-trusted-publisher: true
         skip-existing: true
+||||||| parent of 9944a39 (fix: missing skip-existing option in trusted-publish action)
+        twine-username: "__token__"
+        twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+        skip-existing: true
+=======
+        twine-username: "__token__"
+        twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+>>>>>>> 9944a39 (fix: missing skip-existing option in trusted-publish action)
 
   doc-deploy-dev:
     name: "Deploy developers documentation"

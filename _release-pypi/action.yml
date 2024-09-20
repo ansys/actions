@@ -148,3 +148,4 @@ runs:
         repository-url: ${{ inputs.index-name }}
         print-hash: true
         packages-dir: ${{ inputs.library-name }}-artifacts
+        skip-existing: ${{ env.SKIP_EXISTING }}
