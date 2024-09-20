@@ -142,7 +142,7 @@ runs:
         TWINE_REPOSITORY_URL: ${{ inputs.index-name }}
 
     - name: "Upload artifacts to PyPI using Trusted Publisher"
-      uses: pypa/gh-action-pypi-publish@v1.8.14
+      uses: pypa/gh-action-pypi-publish@v1.10.1
       if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'true'
       with:
         repository-url: ${{ inputs.index-name }}
