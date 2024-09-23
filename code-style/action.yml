@@ -127,28 +127,52 @@ runs:
         message: >
           Set up python to check code style.
 
-    - name: "Set poetry environment variable(s) (if required)"
-      shell: bash
-      if: env.BUILD_BACKEND == 'poetry'
-      run: |
-        # For projects using poetry, do not use a virtual environment.
-        # Poetry uses virtual environments to install its dependencies, but this might
-        # lead to problems if it is not activated prior to executing poetry commands.
-        # Store POETRY_VIRTUALENVS_CREATE=false in the GitHub environment to prevent
-        # poetry from creating a virtual environment.
-        #
-        echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
-
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
-    - name: Create virtual environment
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENVs
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: |
+        python -m pip install pipx
+        python -m pipx install poetry
+        python -m venv .venv
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME : ${{ runner.temp }}/pipx/home
+
+    - name: "Create a virtual environment"
+      if: env.BUILD_BACKEND == 'pip'
       shell: bash
       run: |
         python -m venv .venv
+
+    # ------------------------------------------------------------------------
 
     - name: "Update pip"
       shell: bash
