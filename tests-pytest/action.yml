@@ -153,7 +153,7 @@ runs:
     - name: "Set poetry environment variable(s)"
       if: env.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENVs
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
 
     # NOTE: Install pipx in a location that can be used in following CICD jobs
     # but ensure that poetry is installed in a temporary folder cleaned before
