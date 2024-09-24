@@ -16,16 +16,14 @@ test session.
 
     {{ inputs_table }}
 
-Examples
-++++++++
+    Examples
+    ++++++++
 
-.. jinja:: tests-pytest
+    {% for filename, title in examples %}
+    .. dropdown:: {{ title }}
+       :animate: fade-in
 
-     {% for filename, title in examples %}
-     .. dropdown:: {{ title }}
-        :animate: fade-in
+       .. literalinclude:: examples/{{ filename }}
+          :language: yaml
 
-        .. literalinclude:: examples/{{ filename }}
-           :language: yaml
-
-     {% endfor %}
+    {% endfor %}
