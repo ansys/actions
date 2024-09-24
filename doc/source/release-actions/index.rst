@@ -11,23 +11,23 @@ Release PyPI private action
 ---------------------------
 
 .. jinja:: release-pypi-private
-    :file: _templates/action.rst
+    :file: _templates/action.rst.jinja
 
 Release PyPI test action
 ------------------------
 
 .. jinja:: release-pypi-test
-    :file: _templates/action.rst
+    :file: _templates/action.rst.jinja
 
 Release PyPI public action
 --------------------------
 
 .. jinja:: release-pypi-public
-    :file: _templates/action.rst
+    :file: _templates/action.rst.jinja
 
 Release GitHub action
 ---------------------
 
 .. jinja:: release-github
-    :file: _templates/action.rst
+    :file: _templates/action.rst.jinja
 

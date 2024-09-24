@@ -11,4 +11,4 @@ markers, options, and post arguments to be passed to pytest before executing the
 test session.
 
 .. jinja:: tests-pytest
-    :file: _templates/action.rst
+    :file: _templates/action.rst.jinja

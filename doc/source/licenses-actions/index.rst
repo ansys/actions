@@ -9,4 +9,4 @@ Check licenses action
 ---------------------
 
 .. jinja:: check-licenses
-    :file: _templates/action.rst
+    :file: _templates/action.rst.jinja
