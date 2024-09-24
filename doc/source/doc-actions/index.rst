@@ -12,126 +12,35 @@ Doc build action
 ----------------
 
 .. jinja:: doc-build
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
-
+    :file: _templates/action.rst
 
 Doc deploy dev action
 ---------------------
 
 .. jinja:: doc-deploy-dev
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
-
+    :file: _templates/action.rst
 
 Doc deploy stable action
 ------------------------
 
 .. jinja:: doc-deploy-stable
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
+    :file: _templates/action.rst
 
 Doc deploy index action
 ------------------------
 
 .. jinja:: doc-deploy-index
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
+    :file: _templates/action.rst
 
 Doc changelog action
 --------------------
 
 .. jinja:: doc-changelog
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
+    :file: _templates/action.rst
 
 Doc deploy changelog action
 ---------------------------
 
 .. jinja:: doc-deploy-changelog
+    :file: _templates/action.rst
 
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}

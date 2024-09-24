@@ -11,19 +11,4 @@ markers, options, and post arguments to be passed to pytest before executing the
 test session.
 
 .. jinja:: tests-pytest
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
+    :file: _templates/action.rst
