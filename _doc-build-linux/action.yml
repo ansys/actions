@@ -308,6 +308,15 @@ runs:
         message: >
           Build HTML, PDF and JSON documentation.
 
+    - name: "check quarto rendering"
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: bash
+      run: |
+        source .venv/bin/activate
+        cd doc/source
+        quarto add ansys/pyansys-quarto-cheatsheet@v1 --no-prompt
+        quarto render cheatsheet.qmd
+
     - name: "Build HTML, PDF, and JSON documentation"
       if: inputs.requires-xvfb == 'false'
       shell: bash

@@ -1,0 +1,438 @@
+---
+title: Ansys Actions
+format: cheat_sheet-pdf
+version: main
+footer: Getting started with Ansys Actions
+footerlinks:
+  - urls: 'https://actions.docs.ansys.com/version/stable/'
+    text: Ansys Actions documentation
+  - urls: 'https://github.com/ansys/actions/'
+    text: Ansys Actions GitHub
+execute:
+    # output: false
+    eval: false
+latex-auto-install: true
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.16.1
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+
+---
+# Build ci wheels
+
+
+**Build a c-extension library**
+
+```{yml}
+- name: Build a C-extension library wheel artifacts
+  uses: ansys/actions/build-ci-library@main
+
+```
+
+***Ref***: [Build a C-extension library](https://actions.docs.ansys.com/version/dev/build-actions/index.html#build-ci-wheels-action)
+
+# Build library
+
+
+**Build library basic example**
+
+```{yml}
+- name: Build library source and wheel artifacts
+  uses: ansys/actions/build-library@main
+  with:
+    library-name: ansys-<product>-<library>
+
+```
+
+***Ref***: [Build library basic example](https://actions.docs.ansys.com/version/dev/build-actions/index.html#build-library-action)
+
+# Build wheelhouse
+
+
+**Build wheelhouse for latest python versions**
+
+```{yml}
+- name: Build a wheelhouse of the Python library
+  uses: ansys/actions/build-wheelhouse@main
+  with:
+    library-name: <ansys-product-library>
+    operating-system: ${{ matrix.os }}
+    python-version: ${{ matrix.python-version }}
+
+```
+
+***Ref***: [Build wheelhouse for latest Python versions](https://actions.docs.ansys.com/version/dev/build-actions/index.html#build-wheelhouse-action)
+
+# Check licenses
+
+
+**Check library dependencies ship with valid licenses**
+
+```{yml}
+- name: Validate third party licenses
+  uses: ansys/actions/check-licenses@main
+  with:
+    python-version: ${{ env.MAIN_PYTHON_VERSION }}
+
+```
+
+***Ref***: [Check library dependencies ship with valid licenses](https://actions.docs.ansys.com/version/dev/licenses-actions/index.html#check-licenses-action)
+
+# Check pr title
+
+
+**Check pull-request title follows conventional commits**
+
+```{yml}
+- uses: ansys/actions/check-pr-title@main
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+```
+
+***Ref***: [Check pull-request title follows conventional commits](https://actions.docs.ansys.com/version/dev/style-actions/index.html#check-pr-title-action)
+
+# Check vulnerabilities
+
+
+**Check library vulnerabilities (default mode - only on main)**
+
+```{yml}
+- name: Check library vulnerabilities with default mode
+  uses: ansys/actions/check-vulnerabilities@main
+  with:
+    python-package-name: ansys-<product>-<library>
+    python-version: ${{ env.MAIN_PYTHON_VERSION }}
+    token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+
+```
+
+***Ref***: [Check library vulnerabilities (default mode - only on main)](https://actions.docs.ansys.com/version/dev/vulnerability-actions/index.html#check-vulnerabilities-action)
+
+
+**Check library vulnerabilities (development mode)**
+
+```{yml}
+- name: Check library vulnerabilities with development mode
+  uses: ansys/actions/check-vulnerabilities@main
+  with:
+    dev-mode: true
+    python-package-name: ansys-<product>-<library>
+    python-version: ${{ env.MAIN_PYTHON_VERSION }}
+    token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+
+```
+
+***Ref***: [Check library vulnerabilities (development mode)](https://actions.docs.ansys.com/version/dev/vulnerability-actions/index.html#check-vulnerabilities-action)
+
+# Code style
+
+
+**Running code style checks**
+
+```{yml}
+- name: Run PyAnsys code style checks
+  uses: ansys/actions/code-style@main
+
+```
+
+***Ref***: [Running code style checks](https://actions.docs.ansys.com/version/dev/style-actions/index.html#code-style-action)
+
+# Doc build
+
+
+**Building library documentation**
+
+```{yml}
+- name: Run Ansys documentation building action
+  uses: ansys/actions/doc-build@main
+
+```
+
+***Ref***: [Building library documentation](https://actions.docs.ansys.com/version/dev/doc-actions/index.html#doc-build-action)
+
+
+**Installing additional system dependencies for building documentation**
+
+```{yml}
+- name: Run Ansys documentation building action
+  uses: ansys/actions/doc-build@main
+  with:
+    dependencies: graphviz mermaid-cli
+
+```
+
+***Ref***: [Installing additional system dependencies for building documentation](https://actions.docs.ansys.com/version/dev/doc-actions/index.html#doc-build-action)
+
+
+**Building library documentation that using xvfb**
+
+```{yml}
+- name: Run Ansys documentation building action
+  uses: ansys/actions/doc-build@main
+  with:
+    requires-xvfb: true
+
+```
+
+***Ref***: [Building library documentation that using XVFB](https://actions.docs.ansys.com/version/dev/doc-actions/index.html#doc-build-action)
+
+# Doc changelog
+
+
+**Create changelog fragment**
+
+```{yml}
+- uses: ansys/actions/doc-changelog@main
+  with:
+    bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+    bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+    token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+
+```
+
+***Ref***: [Create changelog fragment](https://actions.docs.ansys.com/version/dev/doc-actions/index.html#doc-changelog-action)
+
+# Doc deploy changelog
+
+
+**Update changelog for new tag**
+
+```{yml}
+- uses: ansys/actions/doc-deploy-changelog@main
+  with:
+    bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+    bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+    token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+
+```
+
+***Ref***: [Update CHANGELOG for new tag](https://actions.docs.ansys.com/version/dev/doc-actions/index.html#doc-deploy-changelog-action)
+
+# Doc deploy dev
+
+
+**Deploy developers documentation**
+
+```{yml}
+- name: Deploy the latest documentation
+  uses: ansys/actions/doc-deploy-dev@main
+  with:
+    bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+    bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+    cname: <library>.docs.pyansys.com
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+```
+
+***Ref***: [Deploy developers documentation](https://actions.docs.ansys.com/version/dev/doc-actions/index.html#doc-deploy-dev-action)
+
+# Doc deploy stable
+
+
+**Deploy stable documentation**
+
+```{yml}
+- name: Deploy the stable documentation
+  uses: ansys/actions/doc-deploy-stable@main
+  with:
+    bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+    bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+    cname: <library>.docs.pyansys.com
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+```
+
+***Ref***: [Deploy stable documentation](https://actions.docs.ansys.com/version/dev/doc-actions/index.html#doc-deploy-stable-action)
+
+# Doc style
+
+
+**Running documentation style checks**
+
+```{yml}
+- name: Running documentation style checks
+  uses: ansys/actions/doc-style@main
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+```
+
+***Ref***: [Running documentation style checks](https://actions.docs.ansys.com/version/dev/style-actions/index.html#doc-style-action)
+
+# Docker style
+
+
+**Docker style**
+
+```{yml}
+- uses: ansys/actions/docker-style@main
+  with:
+    directory: docker
+    error-level: 1
+    recursive: true
+
+```
+
+***Ref***: [Docker style](https://actions.docs.ansys.com/version/dev/style-actions/index.html#docker-style-action)
+
+# Hk package clean except
+
+
+**Perform versions cleanup - except certain tags**
+
+```{yml}
+- name: Perform versions cleanup - except certain tags
+  uses: ansys/actions/hk-package-clean-except@main
+  with:
+    package-name: mypackage
+    tags-kept: latest, latest-unstable
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+```
+
+***Ref***: [Perform versions cleanup - except certain tags](https://actions.docs.ansys.com/version/dev/housekeeping-actions/index.html#hk-package-clean-except-action)
+
+# Hk package clean untagged
+
+
+**Perform untagged versions cleanup**
+
+```{yml}
+- name: Perform untagged versions cleanup
+  uses: ansys/actions/hk-package-clean-untagged@main
+  with:
+    package-name: mypackage
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+```
+
+***Ref***: [Perform untagged versions cleanup](https://actions.docs.ansys.com/version/dev/housekeeping-actions/index.html#hk-package-clean-untagged-action)
+
+# Release github
+
+
+**Release to github**
+
+```{yml}
+- name: Release to GitHub
+  uses: ansys/actions/release-github@main
+  with:
+    library-name: ansys-<product>-<library>
+
+```
+
+***Ref***: [Release to GitHub](https://actions.docs.ansys.com/version/dev/release-actions/index.html#release-github-action)
+
+# Release pypi private
+
+
+**Release to private pypi**
+
+```{yml}
+- name: Release to the private PyPI repository
+  uses: ansys/actions/release-pypi-private@main
+  with:
+    library-name: ansys-<product>-<library>
+    twine-token: ${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}
+    twine-username: __token__
+
+```
+
+***Ref***: [Release to private PyPI](https://actions.docs.ansys.com/version/dev/release-actions/index.html#release-pypi-private-action)
+
+# Release pypi public
+
+
+**Release to public pypi**
+
+```{yml}
+- name: Release to the public PyPI repository
+  uses: ansys/actions/release-pypi-public@main
+  with:
+    library-name: ansys-<product>-<library>
+    twine-token: ${{ secrets.PYPI_TOKEN }}
+    twine-username: __token__
+
+```
+
+***Ref***: [Release to public PyPI](https://actions.docs.ansys.com/version/dev/release-actions/index.html#release-pypi-public-action)
+
+
+**Release to public pypi using trusted publisher**
+
+```{yml}
+- name: Release to the public PyPI repository using Trusted Publisher
+  uses: ansys/actions/release-pypi-public@main
+  with:
+    library-name: ansys-<product>-<library>
+    use-trusted-publisher: true
+
+```
+
+***Ref***: [Release to public PyPI using Trusted Publisher](https://actions.docs.ansys.com/version/dev/release-actions/index.html#release-pypi-public-action)
+
+# Release pypi test
+
+
+**Release to test pypi**
+
+```{yml}
+- name: Release to the test PyPI repository
+  uses: ansys/actions/release-pypi-test@main
+  with:
+    library-name: ansys-<product>-<library>
+    twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+    twine-username: __token__
+
+```
+
+***Ref***: [Release to test PyPI](https://actions.docs.ansys.com/version/dev/release-actions/index.html#release-pypi-test-action)
+
+# Tests pytest
+
+
+**Testing library with different operating systems and python versions**
+
+```{yml}
+- name: Run pytest
+  uses: ansys/actions/tests-pytest@main
+  with:
+    pytest-extra-args: --cov=ansys.<library> --cov-report=term --cov-report=html:.cov/html
+    pytest-markers: -k 'mocked'
+
+```
+
+***Ref***: [Testing library with different operating systems and Python versions](https://actions.docs.ansys.com/version/dev/tests-actions/index.html#tests-pytest-action)
+
+
+**Optimized testing with different operating systems and python versions**
+
+```{yml}
+- name: Login into the GitHub container registry
+  uses: docker/login-action@v2.1.0
+  with:
+    password: ${{ secrets.GITHUB_TOKEN }}
+    registry: ghcr.io
+    username: ${{ secrets.GH_USERNAME }}
+- env:
+    LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
+  name: Pull, launch and verify desired Ansys service
+  run: '...'
+- name: Run pytest with desired markers and extra arguments
+  uses: ansys/actions/tests-pytest@main
+  with:
+    pytest-extra-args: ${{ matrix.cfg.extra-args }}
+    pytest-markers: ${{ matrix.cfg.markers }}
+    requires-xvfb: true
+
+```
+
+***Ref***: [Optimized testing with different operating systems and Python versions](https://actions.docs.ansys.com/version/dev/tests-actions/index.html#tests-pytest-action)
