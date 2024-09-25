@@ -26,12 +26,6 @@ Doc deploy stable action
 .. jinja:: doc-deploy-stable
     :file: _templates/action.rst.jinja
 
-Doc deploy index action
-------------------------
-
-.. jinja:: doc-deploy-index
-    :file: _templates/action.rst.jinja
-
 Doc changelog action
 --------------------
 
