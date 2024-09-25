@@ -8,8 +8,7 @@ updates:
     commit-message:
       prefix: "build"
     labels:
-      - "maintenance"
-      - "dependencies"
+      - "dependencies:requirements"
 
   - package-ecosystem: "github-actions"
     directories:
@@ -19,4 +18,4 @@ updates:
     commit-message:
       prefix: "build"
     labels:
-      - "maintenance"
+      - "dependencies:ci"

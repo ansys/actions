@@ -43,7 +43,7 @@
   description: Related with project dependencies
   color: fabed4
 
-- name: 'dependencies:pyproject'
+- name: 'dependencies:requirements'
   description: Related with project file dependencies
   color: fabed4
 
