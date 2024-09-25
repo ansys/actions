@@ -315,7 +315,7 @@ runs:
         source .venv/bin/activate
         cd doc/source
         quarto add ansys/pyansys-quarto-cheatsheet@v1 --no-prompt
-        quarto render cheatsheet.qmd
+        quarto render cheat_sheet.qmd
 
     - name: "Build HTML, PDF, and JSON documentation"
       if: inputs.requires-xvfb == 'false'
