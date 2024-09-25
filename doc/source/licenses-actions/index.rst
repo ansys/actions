@@ -9,24 +9,4 @@ Check licenses action
 ---------------------
 
 .. jinja:: check-licenses
-
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
-
-
-
-
+    :file: _templates/action.rst.jinja
