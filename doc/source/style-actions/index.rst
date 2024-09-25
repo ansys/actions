@@ -26,10 +26,3 @@ Commit style action
 
 .. jinja:: commit-style
     :file: _templates/action.rst.jinja
-
-Branch name style action
-------------------------
-
-.. jinja:: branch-name-style
-    :file: _templates/action.rst.jinja
-
