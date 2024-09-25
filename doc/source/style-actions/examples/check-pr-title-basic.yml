@@ -1,0 +1,7 @@
+check-pr-title:
+  name: "Check pull-request title follows conventional commits"
+  runs-on: ubuntu-latest
+  steps:
+    - uses: ansys/actions/check-pr-title@{{ version }}
+      with:
+        token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
