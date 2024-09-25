@@ -21,8 +21,8 @@ Docker style action
 .. jinja:: docker-style
     :file: _templates/action.rst.jinja
 
-Commit style action
--------------------
+Pull request title action
+-------------------------
 
-.. jinja:: commit-style
+.. jinja:: check-pr-title
     :file: _templates/action.rst.jinja
