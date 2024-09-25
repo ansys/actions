@@ -1,31 +1,91 @@
-- name: bug
-  description: Something isn't working
+# The labels declared in this file are the ones avialables
+# https://github.com/ansys/actions/labels
+
+# -- Defects and glitches labels----------------------------------------------
+
+- name: 'bug'
+  description: Defects or glitches reported by users or developers
   color: d42a34
 
-- name: blocked
-  description: Cannot address this till other issues are solved first
-  color: e0b063
+- name: 'fix'
+  description: Pull requests related to resolving problems or errors
+  color: d42a34
 
-- name: dependencies
-  description: Related with project dependencies
-  color: ffc0cb
+- name: 'spam'
+  description: Spammy request that must be ignored
+  color: d42a34
 
-- name: documentation
-  description: Improvements or additions to documentation
+- name: 'invalid'
+  description: Discarded contribution
+  color: d42a34
+
+# -- Style labels ------------------------------------------------------------
+
+- name: 'style'
+  description: Improvements related to general project style
+  color: dcbeff
+
+# -- Tests labels ------------------------------------------------------------
+
+- name: 'tests'
+  description: Related with improvements of the test suite
+  color: ffd8b1
+
+# -- Documentation labels ----------------------------------------------------
+
+- name: 'docs'
+  description: Issues related to documentation
   color: 0677ba
 
-- name: enhancement
-  description: New features or code improvements
-  color: ffD827
+# -- Dependencies labels -----------------------------------------------------
 
-- name: good first issue
-  description: Easy to solve for newcomers
-  color: 62ca50
+- name: 'dependencies'
+  description: Related with project dependencies
+  color: fabed4
 
-- name: maintenance
-  description: Package and maintenance related
-  color: f78c37
+- name: 'dependencies:requirements'
+  description: Related with project file dependencies
+  color: fabed4
 
-- name: release
+- name: 'dependencies:ci'
+  description: Related with pipelines dependencies
+  color: fabed4
+
+# -- CI/CD labels ------------------------------------------------------------
+
+- name: 'ci'
+  description: Pipelines maintenance related
+  color: a9a9a9
+
+# -- Other labels ------------------------------------------------------------
+
+- name: 'release'
   description: Anything related to an incoming release
   color: ffffff
+
+- name: 'good first issue'
+  description: Issues suitable for newcomers or those with less experience
+  color: 62ca50
+
+- name: 'enhancement'
+  description: General improvements to existing features
+  color: ffd827
+
+- name: 'maintenance'
+  description: Generic maintenance related
+  color: f78c37
+
+- name: 'docker'
+  description: Docker maintenance related
+  color: 000075
+
+# Hacktoberfest labels -------------------------------------------------------
+
+- name: 'hacktoberfest'
+  description: Hacktoberfest related
+  color: 62ca50
+
+- name: 'hacktoberfest-accepted'
+  description: Hacktoberfest accepted contribution
+  color: 62ca50
+
