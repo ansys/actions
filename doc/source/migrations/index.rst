@@ -25,6 +25,11 @@ Development version
   ``ansys/actions/doc-deploy-changelog``, ``ansys/actions/doc-deploy-dev``, and
   ``ansys/actions/doc-deploy-stable``.
 
+**Depricated features:**
+- The ``ansys/actions/doc-deploy-index`` action is deprecated and will be removed in the next release.
+  In favour of depricating ``pymeilisearch`` and use of static search index with ansys-sphinx-theme, the
+  ``ansys/actions/doc-deploy-index`` action is no longer required.
+
 **Migration steps:**
 
 - To set up your repository to use the ``ansys/actions/release-pypi-*`` action with the `Trusted Publisher`_ approach,
