@@ -21,7 +21,7 @@ Development version
   With the deprecation of ``pymeilisearch`` and the adoption of a static search index via the ``ansys-sphinx-theme``,
   the ``ansys/actions/doc-deploy-index`` action is no longer necessary.
 
-
+- The ``ansys/actions/commit-style`` action has been renamed to ``ansys/actions/check-pr-title``.
 **Migration steps:**
 
 - Add the following required inputs to ``ansys/actions/doc-changelog``, ``ansys/actions/doc-deploy-changelog``,
