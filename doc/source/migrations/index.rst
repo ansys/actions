@@ -9,16 +9,6 @@ have been updated.
 
 Development version
 -------------------
-
-**New features:**
-
-- Added an optional input to the ``ansys/actions/build-library`` action to disable library build
-  validation on demand using the ``validate-build: false`` argument. This is useful when you want to
-  skip the library build validation step in the action.
-- Incorporated the usage of `Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_ in the
-  ``ansys/actions/release-pypi-*`` actions. This is useful when you want to sign the package before
-  uploading it to PyPI.
-
 **Breaking changes:**
 
 - Use secrets for commit and push credentials within ``ansys/actions/doc-changelog``,
@@ -34,9 +24,6 @@ Development version
 
 **Migration steps:**
 
-- To set up your repository to use the ``ansys/actions/release-pypi-*`` action with the `Trusted Publisher`_ approach,
-  see the :ref:`release_pypi_trusted_publisher`.
-
 - Add the following required inputs to ``ansys/actions/doc-changelog``, ``ansys/actions/doc-deploy-changelog``,
   ``ansys/actions/doc-deploy-dev``, and ``ansys/actions/doc-deploy-stable``:
 
@@ -44,6 +31,23 @@ Development version
 
     bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
     bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
+Version ``v7``
+--------------
+
+**New features:**
+
+- Added an optional input to the ``ansys/actions/build-library`` action to disable library build
+  validation on demand using the ``validate-build: false`` argument. This is useful when you want to
+  skip the library build validation step in the action.
+- Incorporated the usage of `Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_ in the
+  ``ansys/actions/release-pypi-*`` actions. This is useful when you want to sign the package before
+  uploading it to PyPI.
+
+**Migration steps:**
+
+- To set up your repository to use the ``ansys/actions/release-pypi-*`` action with the `Trusted Publisher`_ approach,
+  see the :ref:`release_pypi_trusted_publisher`.
 
 Version ``v6``
 --------------
