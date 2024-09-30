@@ -22,6 +22,7 @@ Development version
   the ``ansys/actions/doc-deploy-index`` action is no longer necessary.
 
 - The ``ansys/actions/commit-style`` action has been renamed to ``ansys/actions/check-pr-title``.
+
 **Migration steps:**
 
 - Add the following required inputs to ``ansys/actions/doc-changelog``, ``ansys/actions/doc-deploy-changelog``,
@@ -40,6 +41,7 @@ Version ``v7``
 - Added an optional input to the ``ansys/actions/build-library`` action to disable library build
   validation on demand using the ``validate-build: false`` argument. This is useful when you want to
   skip the library build validation step in the action.
+
 - Incorporated the usage of `Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_ in the
   ``ansys/actions/release-pypi-*`` actions. This is useful when you want to sign the package before
   uploading it to PyPI.
