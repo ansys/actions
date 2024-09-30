@@ -25,10 +25,12 @@ Development version
   ``ansys/actions/doc-deploy-changelog``, ``ansys/actions/doc-deploy-dev``, and
   ``ansys/actions/doc-deploy-stable``.
 
-**Depricated features:**
-- The ``ansys/actions/doc-deploy-index`` action is deprecated and will be removed in the next release.
-  In favour of depricating ``pymeilisearch`` and use of static search index with ansys-sphinx-theme, the
-  ``ansys/actions/doc-deploy-index`` action is no longer required.
+**Deprecated features:**
+
+- The ``ansys/actions/doc-deploy-index`` action has been deprecated and will be removed in the next release.
+  With the deprecation of ``pymeilisearch`` and the adoption of a static search index via the ``ansys-sphinx-theme``,
+  the ``ansys/actions/doc-deploy-index`` action is no longer necessary.
+
 
 **Migration steps:**
 
