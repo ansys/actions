@@ -23,6 +23,9 @@ Version ``v8``
 
 - The ``ansys/actions/commit-style`` action has been renamed to ``ansys/actions/check-pr-title``.
 
+- The ``ansys/actions/branch-name-style`` actions has been removed in favor of
+  `GitHub rulesets <https://dev.docs.pyansys.com/how-to/repository-protection.html#branch-protection>`_.
+
 **Migration steps:**
 
 - Add the following required inputs to ``ansys/actions/doc-changelog``, ``ansys/actions/doc-deploy-changelog``,
