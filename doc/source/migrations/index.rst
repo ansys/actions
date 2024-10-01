@@ -7,8 +7,8 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
-Development version
--------------------
+Version ``v8``
+--------------
 **Breaking changes:**
 
 - Use secrets for commit and push credentials within ``ansys/actions/doc-changelog``,
