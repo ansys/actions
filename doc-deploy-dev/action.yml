@@ -134,7 +134,7 @@ runs:
 
     # TODO: remove this deprecation in ansys/actions@v9
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "ERROR"
         message: >
@@ -149,7 +149,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
@@ -205,7 +205,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
@@ -250,7 +250,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
@@ -273,21 +273,21 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
           Include a link canonical tag in old versions if not present.
 
     - name: "Include link canonical tag in pages"
-      uses: ansys/actions/_doc-gen-canonical@main
+      uses: ansys/actions/_doc-gen-canonical@v8
       with:
         cname: ${{ inputs.cname }}
         version-directory: version
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       with:
         level: "INFO"
@@ -332,7 +332,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
@@ -340,14 +340,14 @@ runs:
           no stable release is available, copy the 'dev/index.html' instead.
           Update all references to point to 'stable/_static' or 'dev/_static'.
 
-    - uses: ansys/actions/_doc-gen-versions-page@main
+    - uses: ansys/actions/_doc-gen-versions-page@v8
       with:
         cname: ${{ inputs.cname }}
         content-element-id: ${{ inputs.content-element-id }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
@@ -361,7 +361,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       # Apply this step only if 'version/stable/' dir exists
       if: ${{ hashFiles('version/stable/' != '') }}
       with:
@@ -371,7 +371,7 @@ runs:
           documentation.
 
     - name: "Generate 'sitemap.xml' file"
-      uses: ansys/actions/_doc-gen-sitemap@main
+      uses: ansys/actions/_doc-gen-sitemap@v8
       # Apply this step only if 'version/stable/' dir exists
       if: ${{ hashFiles('version/stable/' != '') }}
       with:
@@ -380,7 +380,7 @@ runs:
 
      # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >

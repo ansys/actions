@@ -187,7 +187,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
@@ -203,7 +203,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
@@ -211,14 +211,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: >
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v8
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
