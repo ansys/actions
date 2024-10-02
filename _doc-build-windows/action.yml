@@ -431,6 +431,24 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - name: Verify the docs have been generated properly
+      shell: powershell
+      run: |
+        # Check if the HTML files have been generated
+        if (Test-Path -Path "${{ env.EXPECTED_BUILD_DIR }}\html\index.html") {
+          Write-Host "Docs have been generated successfully"
+        } else {
+          Write-Error "Docs have not been generated properly"
+        }
+        # Check if the PDF files have been generated
+        if (Test-Path -Path "${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}") {
+          Write-Host "PDF has been generated successfully"
+        } else {
+          Write-Error "PDF has not been generated properly"
+        }
+
+    # ------------------------------------------------------------------------
+
     - name: Check build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       uses: ansys/actions/_logging@main
