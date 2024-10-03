@@ -176,16 +176,11 @@ runs:
       shell: bash
       run: |
         python -m venv .venv
-
-    - name: "Add virtual environment activation script to the GitHub environment (Linux and macOS only)"
-      if: ${{ runner.os != 'Windows' }}
-      shell: bash
-      run: echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
-
-    - name: "Add virtual environment activation script to the GitHub environment (Windows only)"
-      if: ${{ runner.os == 'Windows' }}
-      shell: bash
-      run: echo "ACTIVATE_VENV=$(echo '.venv\\Scripts\\activate')" >> $GITHUB_ENV
+        if [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo '.venv\\Scripts\\activate')" >> $GITHUB_ENV
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+        fi
 
     # ------------------------------------------------------------------------
 
