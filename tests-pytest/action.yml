@@ -176,6 +176,10 @@ runs:
       shell: bash
       run: |
         python -m venv .venv
+
+    - name: "Set up virtual environment activation command"
+      shell: bash
+      run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
           echo "ACTIVATE_VENV=$(echo '.venv\\Scripts\\activate')" >> $GITHUB_ENV
         else
