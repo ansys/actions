@@ -176,6 +176,7 @@ runs:
       shell: bash
       run: |
         python -m venv .venv
+        ls -lrt .venv
 
     # ------------------------------------------------------------------------
 
@@ -184,7 +185,6 @@ runs:
       run: |
         source .venv/bin/activate
         python -m pip install -U pip
-        ls -lrt .venv
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
