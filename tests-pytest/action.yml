@@ -177,19 +177,28 @@ runs:
       run: |
         python -m venv .venv
 
+    - name: "Set up virtual environment activation command"
+      shell: bash
+      run: |
+        if [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo '.venv\\Scripts\\activate')" >> $GITHUB_ENV
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+        fi
+
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         python -m pip install -U pip
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           python -m pip install poetry
           poetry install
@@ -218,14 +227,14 @@ runs:
       shell: bash
       if: env.EXISTS_TESTS_REQUIREMENTS == 'true'
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         python -m pip install -r requirements/requirements_tests.txt
 
     - name: "Install test dependencies from pyproject.toml"
       shell: bash
       if: env.EXISTS_TESTS_REQUIREMENTS == 'false'
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           poetry install --with tests
         else
@@ -236,12 +245,12 @@ runs:
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         pytest ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
 
     - name: "Executing test suite using xvfb"
       if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         xvfb-run pytest ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
