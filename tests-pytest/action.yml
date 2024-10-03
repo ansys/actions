@@ -184,6 +184,7 @@ runs:
       run: |
         source .venv/bin/activate
         python -m pip install -U pip
+        ls -lrt .venv
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
