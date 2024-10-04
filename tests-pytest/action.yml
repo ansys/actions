@@ -251,6 +251,7 @@ runs:
         fi
 
     - name: "Executing test suite"
+      if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
