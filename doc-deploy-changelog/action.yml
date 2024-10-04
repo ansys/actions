@@ -262,7 +262,7 @@ runs:
         if [ $count -gt 0 ]; then
           echo "Using ${{ env.UPDATE_BRANCH }} to update the CHANGELOG file"
           if [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
-            git checkout -b ${{ env.UPDATE_BRANCH }} ${{ env.MAIN_BRANCH }}
+            git checkout -b ${{ env.UPDATE_BRANCH }} ${{ env.UPDATE_BRANCH }}
           else
             git checkout ${{ env.UPDATE_BRANCH }}
             git pull
