@@ -173,10 +173,11 @@ runs:
       run: |
         if [[ -n "${{ inputs.whitelist-license-check }}" ]]; then
           echo "Whitelisted packages: ${{ inputs.whitelist-license-check }}"
-          # Split the input string by comma, trim value and append it to the ignored-packages.txt file
-          IFS=',' read -ra whitelist <<< ${{ inputs.whitelist-license-check }}
+          # Split the input string by comma, trim values and append them to the ignored-packages.txt file
+          IFS=',' read -ra whitelist <<< "${{ inputs.whitelist-license-check }}"
           for package in "${whitelist[@]}"; do
-            echo $package >> ignored-packages.txt
+            echo "Ignoring whitelisted package: $package"
+            echo "$package" >> ignored-packages.txt
           done
         fi
 
