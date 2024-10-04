@@ -89,6 +89,13 @@ inputs:
     default: true
     type: boolean
 
+  show-diff-on-failure:
+    description: |
+      Whether to show the diff when a pre-commit hook fails.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -164,7 +171,7 @@ runs:
         python -m venv .venv
       env:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
-        PIPX_HOME : ${{ runner.temp }}/pipx/home
+        PIPX_HOME: ${{ runner.temp }}/pipx/home
 
     - name: "Create a virtual environment"
       if: env.BUILD_BACKEND == 'pip'
@@ -203,7 +210,11 @@ runs:
       shell: bash
       run: |
         source .venv/bin/activate
-        pre-commit run --all-files --show-diff-on-failure
+        if [[ ${{ inputs.show-diff-on-failure }} == 'true' ]]; then
+          pre-commit run --all-files --show-diff-on-failure
+        else
+          pre-commit run --all-files
+        fi
 
     # ------------------------------------------------------------------------
 

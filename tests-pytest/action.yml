@@ -241,16 +241,25 @@ runs:
           python -m pip install .[tests]
         fi
 
-    - name: "Executing test suite without using xvfb"
+    - name: "Set up pytest run command"
+      shell: bash
+      run: |
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          echo "PYTEST_RUN=$(echo 'poetry run pytest')" >> $GITHUB_ENV
+        else
+          echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_ENV
+        fi
+
+    - name: "Executing test suite"
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
-        pytest ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
+        ${{ env.PYTEST_RUN }} ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
 
     - name: "Executing test suite using xvfb"
       if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
-        xvfb-run pytest ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
+        xvfb-run ${{ env.PYTEST_RUN }} ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
