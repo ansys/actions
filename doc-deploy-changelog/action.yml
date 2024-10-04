@@ -365,7 +365,7 @@ runs:
         else
           pr_title="CHORE: update CHANGELOG for v${{ env.TAG_VERSION }}"
         fi
-        gh pr create --title "$pr_title" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
+        gh pr create --title "$pr_title" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}\n\n> [!CAUTION]\n> Do not merge this pull request until the release has been successfully made." --reviewer ${{ github.actor }}
 
     - name: "Delete & Re-create tag"
       env:
