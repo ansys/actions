@@ -91,6 +91,13 @@ inputs:
     default: ''
     type: string
 
+  whitelist-license-check:
+    description: |
+      Optional list of packages to ignore during the license check. Separated by a comma.
+    required: false
+    default: ''
+    type: string
+
   skip-install:
     description: |
       Whether to skip the installation of the project. The default is ``false``.
@@ -160,6 +167,18 @@ runs:
       run: |
         wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/accepted-licenses.txt
         wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/ignored-packages.txt
+
+    - name: "Process whitelisted packages provided on input"
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.whitelist-license-check }}" ]]; then
+          echo "Whitelisted packages: ${{ inputs.whitelist-license-check }}"
+          # Split the input string by comma, trim value and append it to the ignored-packages.txt file
+          IFS=',' read -ra whitelist <<< ${{ inputs.whitelist-license-check }}
+          for package in "${whitelist[@]}"; do
+            echo $package >> ignored-packages.txt
+          done
+        fi
 
     - name: "Check licences of packages"
       shell: bash
