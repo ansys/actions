@@ -190,7 +190,7 @@ runs:
         retention-days: 7
 
     - name: Check library's dependencies license
-      uses: ansys/actions/check-licenses@main
+      uses: ansys/actions/check-licenses@feat/whitelist-packages
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}
