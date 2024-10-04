@@ -257,7 +257,6 @@ runs:
         ${{ env.ACTIVATE_VENV }}
         ${{ env.PYTEST_RUN }} ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
 
-
     - name: "Executing test suite using xvfb"
       if: inputs.requires-xvfb == 'true'
       shell: bash
