@@ -181,6 +181,33 @@ runs:
           done
         fi
 
+    - name: "Logging licenses and packages"
+      shell: bash
+      run: |
+        # Load accepted licenses
+        mapfile licenses_from_txt < accepted-licenses.txt
+        accepted_licenses='Accepted licenses:\n'
+        for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\n"; done
+        echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> $GITHUB_ENV
+
+        # Load accepted packages
+        mapfile ignored_packages_from_txt < ignored-packages.txt
+        ignored_packages='Ignored packages:\n'
+        for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg\n"; done
+        echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> $GITHUB_ENV
+
+    - name: Log ignored packages and accepted licenses
+      uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Licenses accepted and packages ignored
+          --------------------------------------
+
+          ${{ env.LOG_ACCEPTED_LICENSES }}
+
+          ${{ env.LOG_IGNORED_PACKAGES }}
+
     - name: "Check licences of packages"
       shell: bash
       run: |
@@ -188,15 +215,13 @@ runs:
         mapfile licenses_from_txt < accepted-licenses.txt
         accepted_licenses=''
         for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\|"; done
-          accepted_licenses=${accepted_licenses::-2}
-        echo "Accepted licenses: $accepted_licenses"
+        accepted_licenses=${accepted_licenses::-2}
 
         # Load accepted packages
         mapfile ignored_packages_from_txt < ignored-packages.txt
         ignored_packages=''
         for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg "; done
-          ignored_packages_from_txt=${ignored_packages_from_txt::-1}
-        echo "Ignored packages: $ignored_packages"
+        ignored_packages_from_txt=${ignored_packages_from_txt::-1}
 
         # Verify if the Python environment contains invalid licenses
         if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2) ]]; then
