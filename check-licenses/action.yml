@@ -197,7 +197,7 @@ runs:
         echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> $GITHUB_ENV
 
     - name: Log ignored packages and accepted licenses
-      uses: ansys/actions/_logging@main
+      uses: ansys/actions/_logging@v8
       with:
         level: "INFO"
         message: |
