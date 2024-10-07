@@ -202,7 +202,7 @@ runs:
         level: "INFO"
         message: |
           Licenses accepted and packages ignored
-          --------------------------------------
+          ----------------------------------------------
 
           ${{ env.LOG_ACCEPTED_LICENSES }}
 
