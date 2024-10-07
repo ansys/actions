@@ -85,6 +85,14 @@ inputs:
     default: true
     type: boolean
 
+  whitelist-license-check:
+    description: |
+      Optional list of packages to ignore during the license check. Separated by a comma.
+      Only used when ``check-licenses`` is set to ``true``.
+    required: false
+    default: ''
+    type: string
+
   checkout:
     description: |
       Whether to do a checkout step or not. If ``true``, the checkout step is performed.
@@ -188,3 +196,4 @@ runs:
         python-version: ${{ inputs.python-version }}
         skip-install: true
         checkout: false
+        whitelist-license-check: ${{ inputs.whitelist-license-check }}
