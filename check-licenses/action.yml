@@ -200,7 +200,7 @@ runs:
       uses: ansys/actions/_logging@main
       with:
         level: "INFO"
-        message: >
+        message: |
           Licenses accepted and packages ignored
           --------------------------------------
 
