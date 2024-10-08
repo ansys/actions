@@ -177,7 +177,6 @@ runs:
       with:
         files: ${{ inputs.files }}
         reporter: github-pr-check
-        level: error
         filter_mode: nofilter
         fail_on_error: true
         vale_flags: "${{ ENV.VALE_FLAGS }}"
