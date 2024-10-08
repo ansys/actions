@@ -262,24 +262,33 @@ runs:
       run: |
         python -m venv .venv
 
+    - name: "Set up virtual environment activation command"
+      shell: bash
+      run: |
+        if [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_ENV
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+        fi
+
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         python -m pip install -U pip
 
     - name: "Install requirements"
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         pip install -r ${{ github.action_path }}/requirements.txt
 
     - name: "Install library"
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           poetry install
         else
@@ -294,7 +303,7 @@ runs:
     - name: "Run safety and bandit"
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         # Load accepted safety vulnerabilities
         mapfile ignored_safety_vulnerabilities < ignored-safety.txt
         ignored_vulnerabilities=''
@@ -309,7 +318,7 @@ runs:
     - name: "Run safety advisory checks"
       shell: bash
       run: |
-        source .venv/bin/activate
+        ${{ env.ACTIVATE_VENV }}
         if [[ ${{ inputs.hide-log }} == 'true' ]]; then
           python ${{ github.action_path }}/check_vulnerabilities.py > /dev/null 2>&1
         else
