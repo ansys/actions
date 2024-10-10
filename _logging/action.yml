@@ -57,6 +57,7 @@ runs:
       if: ${{ inputs.level == 'ERROR' && runner.os == 'Linux' }}
       run: |
         echo -e "\033[1;91m[ERROR]: ${{ inputs.message }}\033[0m"
+        exit 1
 
     - name: "Report warning message"
       shell: bash
@@ -77,6 +78,7 @@ runs:
       if: ${{ inputs.level == 'ERROR' && runner.os == 'Windows' }}
       run: |
         Write-Host "$([char]27)[91m[ERROR]: ${{ inputs.message }}$([char]27)[0m"
+        Exit 1
 
     - name: "Report warning message"
       shell: powershell
