@@ -123,7 +123,7 @@ runs:
 
     # TODO: remove this deprecation in ansys/actions@v9
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/exit-error-logging
       if: github.event.inputs.bot-user == '' || github.event.inputs.bot-email == ''
       with:
         level: "ERROR"
