@@ -57,6 +57,13 @@ inputs:
     default: true
     type: boolean
 
+  pre-commit-version:
+    description: |
+      The version of pre-commit to install.
+    required: false
+    default: '3.8.0'
+    type: string
+
   docker-lint:
     description: |
       Extend the workflow to lint Dockerfile(s).
@@ -208,11 +215,11 @@ runs:
           python -m pip install .
         fi
 
-    - name: "Install pre-commit"
+    - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
-        python -m pip install pre-commit
+        python -m pip install 'pre-commit==${{ inputs.pre-commit-version }}'
         pre-commit install
 
     - name: "Run pre-commit"
