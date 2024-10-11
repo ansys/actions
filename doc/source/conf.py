@@ -104,6 +104,7 @@ linkcheck_ignore = [
 ]
 
 # Auxiliary routines for automatic documentation generation
+suppress_warnings = ["design.grid"]
 
 
 def is_valid_action_dir(path):
