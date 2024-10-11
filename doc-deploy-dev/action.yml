@@ -135,6 +135,7 @@ runs:
     # TODO: remove this deprecation in ansys/actions@v9
 
     - uses: ansys/actions/_logging@v8
+      if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
       with:
         level: "ERROR"
         message: >
