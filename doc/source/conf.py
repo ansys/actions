@@ -7,6 +7,7 @@ from datetime import datetime
 import jinja2
 import yaml
 from ansys_sphinx_theme import ansys_favicon, get_version_match
+from sphinx.builders.latex import LaTeXBuilder
 from tabulate import tabulate as Table
 
 # Constants used for generating documentation
@@ -103,10 +104,10 @@ linkcheck_ignore = [
     r"https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/*",
 ]
 
+LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
+
+
 # Auxiliary routines for automatic documentation generation
-suppress_warnings = ["design.grid"]
-
-
 def is_valid_action_dir(path):
     """Verify if a directory is a valid action directory.
 
