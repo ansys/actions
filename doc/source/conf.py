@@ -105,6 +105,9 @@ linkcheck_ignore = [
 ]
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
+latex_elements = {
+    "fvset": r"\\fvset{fontsize=\\small}",
+}
 
 
 # Auxiliary routines for automatic documentation generation
