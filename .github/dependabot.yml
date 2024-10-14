@@ -8,15 +8,14 @@ updates:
     commit-message:
       prefix: "build"
     labels:
-      - "maintenance"
-      - "dependencies"
+      - "dependencies:requirements"
 
   - package-ecosystem: "github-actions"
     directories:
-      - "**/*"
+      - "!(requirements)/**/*"
     schedule:
       interval: "daily"
     commit-message:
       prefix: "build"
     labels:
-      - "maintenance"
+      - "dependencies:ci"

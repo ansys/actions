@@ -40,6 +40,18 @@ inputs:
     required: true
     type: string
 
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
   # Optional inputs
 
   python-version:
@@ -99,18 +111,31 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      env:
-        PYTHON_VERSION: ${{ inputs.python-version }}
-        PYTHON_CACHE: ${{ inputs.use-python-cache }}
       uses: ansys/actions/_setup-python@main
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        use-cache: ${{ env.PYTHON_CACHE }}
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
 
     - name: "Install towncrier"
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
+
+    # TODO: remove this deprecation in ansys/actions@v9
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
+      with:
+        level: "ERROR"
+        message: >
+          Ansys Actions v8 will require bot username and email inputs in the
+          ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
+          ``doc-deploy-stable`` actions. Please add the bot-user and bot-email inputs
+          to the respective workflows and see
+          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
+          for more information.
+
+    # TODO: end
 
     - name: "Get first letter of conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
@@ -128,13 +153,13 @@ runs:
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'lowercase') }}
-      uses: ansys/actions/commit-style@v6
+      uses: ansys/actions/check-pr-title@v8
       with:
         token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
       if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'uppercase') }}
-      uses: ansys/actions/commit-style@v6
+      uses: ansys/actions/check-pr-title@v8
       with:
         token: ${{ inputs.token }}
         use-upper-case: true
@@ -156,14 +181,12 @@ runs:
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-conventional-commits == 'false' }}
       env:
-        OWNER: ${{ github.repository_owner }}
-        REPO_NAME: ${{ github.event.repository.name }}
-        PR_NUMBER: ${{ github.event.number }}
         GH_TOKEN: ${{ inputs.token }}
+        REPO_NAME: ${{ github.event.repository.name }}
       shell: bash
       run: |
         # Get the labels in the pull request
-        pr_labels=$(gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name')
+        pr_labels=$(gh api repos/${{ github.repository_owner }}/${{ env.REPO_NAME }}/pulls/${{ github.event.number }} --jq '.labels.[].name')
 
         # Save the labels to an environment variable
         # For example, LABELS="enhancement maintenance"
@@ -194,13 +217,11 @@ runs:
         changelog_cateogry_labels(labels)
 
     - name: "Remove PR fragment file if it already exists"
-      env:
-        PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
         # Find files containing the PR number
         # For example, 20.*.md
-        file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
+        file=`find . -type f -name "${{ github.event.number }}.*.md"`
 
         # If the fragment file exists, then delete the file
         if [ ! -z "$file" ]; then
@@ -224,6 +245,8 @@ runs:
         clean_pr_title(pr_title, use_cc)
 
     - name: "Append towncrier categories to pyproject.toml"
+      env:
+        REPO_NAME: ${{ github.event.repository.name }}
       shell: python
       run: |
         import sys
@@ -231,7 +254,7 @@ runs:
 
         from parse_pr_title import add_towncrier_config
 
-        repo_name = "${{ github.event.repository.name }}"
+        repo_name = "${{ env.REPO_NAME }}"
         org_name = "${{ github.repository_owner }}"
 
         default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
@@ -239,22 +262,19 @@ runs:
         add_towncrier_config(org_name, repo_name, default_config)
 
     - name: "Create and commit towncrier fragment"
-      env:
-        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-        PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
         # Changelog fragment file in the following format
         # For example, 20.added.md
-        fragment="${{ env.PR_NUMBER }}.${{ env.CHANGELOG_SECTION }}.md"
+        fragment="${{ github.event.number }}.${{ env.CHANGELOG_SECTION }}.md"
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
         # Configure git username & email
-        git config user.name 'pyansys-ci-bot'
-        git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+        git config user.name ${{ inputs.bot-user }}
+        git config user.email ${{ inputs.bot-email }}
 
         # Add towncrier fragment
         git add .
@@ -266,6 +286,6 @@ runs:
         if [ ! -z "$modified" ]; then
           echo "modified: $modified"
           # Commit and push fragment
-          git commit -m "chore: adding changelog file $fragment"
+          git commit -m "chore: adding changelog file $fragment [dependabot-skip]"
           git push
         fi

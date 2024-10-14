@@ -30,6 +30,54 @@ description: |
 
   This action will only work on Linux/macOS runners.
 
+  Pushing a release tag results in this action running twice:
+
+  - Once to run ``towncrier`` and consolidate the changelog fragment files
+    into a single update of the CHANGELOG file.
+  - Once to release the package after the CHANGELOG file has been updated.
+
+  There are two options when making a release for your repository:
+
+  1. You pushed a tag from a release branch (``release-from-main`` is ``false``)
+
+  This is the most common case for PyAnsys repositories. The following steps are
+  performed when ``release-from-main`` is ``false``:
+
+  a) Find a release branch that has the same major and minor version of the
+  tag that was pushed. For example, if your tag was "v0.1.2", it looks for
+  a release branch named "release/0.1". If the release branch cannot be found, a
+  temporary branch is used named "maint/changelog-update-vTAG_VERSION".
+
+  b) Checkout the release or temporary branch, update the CHANGELOG file
+  using ``towncrier``, and push the updates to the respective branch.
+
+  c) Checkout the main branch and create a pull request branch named
+  "maint/vTAG_VERSION-changelog". Delete the pull request branch from the remote
+  if it exists, checkout the pull request branch, cherry pick the commit
+  containing the CHANGELOG file changes from the previous step, push the
+  pull request branch, and create a pull request from the branch into main.
+
+  d) Checkout the release or temporary branch, delete the tag locally and
+  on the remote, create the new tag locally, and push the tag on the remote.
+  Delete the temporary branch if one was used to update the CHANGELOG file.
+
+  e) Exit on error if the CHANGELOG is updated, so that the package is not released from
+  this instance of the workflow.
+
+  2. You pushed a tag from the main branch (``release-from-main`` is ``true``)
+
+  The following steps are performed when ``release-from-main`` is ``true``:
+
+  a) Checkout the main branch, update the CHANGELOG file using ``towncrier``,
+  and push the updates to the main branch.
+
+  b) Checkout the main branch, delete the tag locally and on the remote,
+  create the new tag locally, and push the new tag on the remote.
+
+  c) Exit on error if the CHANGELOG is updated, so that the package is not released from
+  this instance of the workflow.
+
+
 inputs:
   # Required inputs
 
@@ -38,6 +86,18 @@ inputs:
       Use the PYANSYS_CI_BOT_TOKEN to do a git commit & push.
       The "contents: write" and "pull-requests: write" permissions
       are required for this action.
+    required: true
+    type: string
+
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
     required: true
     type: string
 
@@ -75,54 +135,11 @@ inputs:
 
   release-from-main:
     description: |
-      Pushing a release tag results in this action running twice:
+      If ``false``, you pushed a tag from a release branch. This is applicable for most
+      PyAnsys repositories.
+      If ``true``, you pushed a tag from the main branch.
 
-      Once to run ``towncrier`` and consolidate the changelog fragments into a
-      single update of the CHANGELOG file.
-
-      Once to release the package after the CHANGELOG file has been updated.
-
-      There are two options when making a release for your repository:
-
-      1. You pushed a tag from a release branch (``release-from-main`` is ``false``)
-
-        This is the most common case for PyAnsys repositories. The following steps are
-        performed when ``release-from-main`` is ``false``:
-
-        a) Find a release branch that has the same major and minor version of the
-        tag that was pushed. For example, if your tag was "v0.1.2", it looks for
-        a release branch named "release/0.1". If the release branch cannot be found, a
-        temporary branch is used named "maint/changelog-update-vTAG_VERSION".
-
-        b) Checkout the release or temporary branch, update the CHANGELOG file
-        using ``towncrier``, and push the updates to the respective branch.
-
-        c) Checkout the main branch and create a pull request branch named
-        "maint/vTAG_VERSION-changelog". Delete the pull request branch from the remote
-        if it exists, checkout the pull request branch, cherry pick the commit
-        containing the CHANGELOG file changes from the previous step, push the
-        pull request branch, and create a pull request from the branch into main.
-
-        d) Checkout the release or temporary branch, delete the tag locally and
-        on the remote, create the new tag locally, and push the tag on the remote.
-        Delete the temporary branch if one was used to update the CHANGELOG file.
-
-        e) Exit on error if the CHANGELOG is updated, so that the package is not released from
-        this instance of the workflow.
-
-      2. You pushed a tag from the main branch (``release-from-main`` is ``true``)
-
-        The following steps are performed when ``release-from-main`` is ``true``:
-
-        a) Checkout the main branch, update the CHANGELOG file using ``towncrier``,
-        and push the updates to the main branch.
-
-        b) Checkout the main branch, delete the tag locally and on the remote,
-        create the new tag locally, and push the new tag on the remote.
-
-        c) Exit on error if the CHANGELOG is updated, so that the package is not released from
-        this instance of the workflow.
-
+      See the description for more information about each of the options.
     required: false
     default: false
     type: boolean
@@ -152,13 +169,10 @@ runs:
         fetch-depth: 0
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      env:
-        PYTHON_VERSION: ${{ inputs.python-version }}
-        PYTHON_CACHE: ${{ inputs.use-python-cache }}
       uses: ansys/actions/_setup-python@main
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        use-cache: ${{ env.PYTHON_CACHE }}
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
 
     - name: Save tag version
       shell: bash
@@ -171,6 +185,22 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
         python -m pip install -e .
+
+    # TODO: remove this deprecation in ansys/actions@v9
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
+      with:
+        level: "ERROR"
+        message: >
+          Ansys Actions v8 will require bot username and email inputs in the
+          ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
+          ``doc-deploy-stable`` actions. Please add the bot-user and bot-email inputs
+          to the respective workflows and see
+          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
+          for more information.
+
+    # TODO: end
 
     - name: "Get towncrier directory"
       shell: python
@@ -257,8 +287,8 @@ runs:
           fi
 
           # Configure git username & email
-          git config user.name 'pyansys-ci-bot'
-          git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+          git config user.name ${{ inputs.bot-user }}
+          git config user.email ${{ inputs.bot-email }}
 
           # Add CHANGELOG.md file and deleted ${{ env.TOWNCRIER_DIR }}/*.md files
           git add .
@@ -336,7 +366,13 @@ runs:
         else
           pr_title="CHORE: update CHANGELOG for v${{ env.TAG_VERSION }}"
         fi
-        gh pr create --title "$pr_title" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
+
+        body_msg="Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}.
+
+        > [!CAUTION]
+        > Do not merge this pull request until the release has been successfully made."
+
+        gh pr create --title "$pr_title" --body "$body_msg" --reviewer ${{ github.actor }}
 
     - name: "Delete & Re-create tag"
       env:

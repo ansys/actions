@@ -11,8 +11,7 @@ footerlinks:
 execute:
     # output: false
     eval: false
-
-latex-clean: true
+latex-auto-install: true
 jupyter:
   jupytext:
     text_representation:
@@ -24,6 +23,7 @@ jupyter:
     display_name: Python 3 (ipykernel)
     language: python
     name: python3
+
 ---
 {%- for action_name, action_data in actions.items() %}
 # {{ action_name | capitalize }}

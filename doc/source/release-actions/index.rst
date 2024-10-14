@@ -11,85 +11,23 @@ Release PyPI private action
 ---------------------------
 
 .. jinja:: release-pypi-private
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
-
+    :file: _templates/action.rst.jinja
 
 Release PyPI test action
 ------------------------
 
 .. jinja:: release-pypi-test
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
+    :file: _templates/action.rst.jinja
 
 Release PyPI public action
 --------------------------
 
 .. jinja:: release-pypi-public
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
-
+    :file: _templates/action.rst.jinja
 
 Release GitHub action
 ---------------------
 
 .. jinja:: release-github
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
+    :file: _templates/action.rst.jinja
 

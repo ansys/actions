@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 name: |
-  Commit style
+  Pull-request title style
 
 description: |
   Action that checks if the title of the pull request is following the

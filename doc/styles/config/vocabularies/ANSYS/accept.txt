@@ -10,3 +10,4 @@ towncrier
 TXT
 PyAnsys Dashboard
 robots.txt
+rulesets
