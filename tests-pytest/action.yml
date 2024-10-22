@@ -246,9 +246,9 @@ runs:
       run: |
         ${{ env.ACTIVATE_VENV }}
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install --with ${{ input.install-target-or-dependency-group }}
+          poetry install --with ${{ inputs.install-target-or-dependency-group }}
         else
-          python -m pip install .[${{ input.install-target-or-dependency-group }}]
+          python -m pip install .[${{ inputs.install-target-or-dependency-group }}]
         fi
 
     - name: "Set up pytest run command"
