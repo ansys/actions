@@ -91,7 +91,17 @@ inputs:
       as the build-backend because it should be false with poetry as build-backend.
       The default value is ``false``.
     default: false
+    required: false
     type: boolean
+
+  install-target-or-dependency-group:
+    description: |
+      The install target or dependency group to be installed before running the tests.
+      The default value is ``'tests'`` but it can be any valid install target
+      or dependency group defined in the ``pyproject.toml`` file.
+    default: 'tests'
+    required: false
+    type: string
 
 runs:
   using: "composite"
@@ -236,9 +246,9 @@ runs:
       run: |
         ${{ env.ACTIVATE_VENV }}
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install --with tests
+          poetry install --with {{ input.install-target-or-dependency-group }}
         else
-          python -m pip install .[tests]
+          python -m pip install .[{{ input.install-target-or-dependency-group }}]
         fi
 
     - name: "Set up pytest run command"
