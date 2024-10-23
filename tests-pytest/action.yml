@@ -94,11 +94,13 @@ inputs:
     required: false
     type: boolean
 
-  install-target-or-dependency-group:
+  optional-dependencies-name:
     description: |
-      The install target or dependency group to be installed before running the tests.
-      The default value is ``'tests'`` but it can be any valid install target
-      or dependency group defined in the ``pyproject.toml`` file.
+      Any valid install target or dependency group defined in the ``pyproject.toml`` file,
+      or the suffix of a requirement file. The associated dependencies are installed
+      before running the tests.
+      The default value is ``'tests'``. Therefore, in case of a requirement file, the
+      default file is requirements/requirements_tests.txt
     default: 'tests'
     required: false
     type: string
@@ -226,7 +228,7 @@ runs:
     - name: "Check if requirements.txt file exists"
       shell: bash
       run: |
-        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${{ inputs.install-target-or-dependency-group }}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${{ inputs.optional-dependencies-name }}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
     - name: "Print previous output"
       shell: bash
@@ -238,7 +240,7 @@ runs:
       if: env.EXISTS_TESTS_REQUIREMENTS == 'true'
       run: |
         ${{ env.ACTIVATE_VENV }}
-        python -m pip install -r requirements/requirements_${{ inputs.install-target-or-dependency-group }}.txt
+        python -m pip install -r requirements/requirements_${{ inputs.optional-dependencies-name }}.txt
 
     - name: "Install test dependencies from pyproject.toml"
       shell: bash
@@ -246,9 +248,9 @@ runs:
       run: |
         ${{ env.ACTIVATE_VENV }}
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install --with ${{ inputs.install-target-or-dependency-group }}
+          poetry install --with ${{ inputs.optional-dependencies-name }}
         else
-          python -m pip install .[${{ inputs.install-target-or-dependency-group }}]
+          python -m pip install .[${{ inputs.optional-dependencies-name }}]
         fi
 
     - name: "Set up pytest run command"
