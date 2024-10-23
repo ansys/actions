@@ -100,7 +100,7 @@ inputs:
       or the suffix of a requirement file. The associated dependencies are installed
       before running the tests.
       The default value is ``'tests'``. Therefore, in case of a requirement file, the
-      default file is requirements/requirements_tests.txt
+      default file is ``requirements/requirements_tests.txt``.
     default: 'tests'
     required: false
     type: string
