@@ -226,7 +226,7 @@ runs:
     - name: "Check if requirements.txt file exists"
       shell: bash
       run: |
-        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_tests.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${{ inputs.install-target-or-dependency-group }}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
     - name: "Print previous output"
       shell: bash
@@ -238,7 +238,7 @@ runs:
       if: env.EXISTS_TESTS_REQUIREMENTS == 'true'
       run: |
         ${{ env.ACTIVATE_VENV }}
-        python -m pip install -r requirements/requirements_tests.txt
+        python -m pip install -r requirements/requirements_${{ inputs.install-target-or-dependency-group }}.txt
 
     - name: "Install test dependencies from pyproject.toml"
       shell: bash
