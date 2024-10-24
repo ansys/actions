@@ -131,6 +131,14 @@ inputs:
     required: true
     type: boolean
 
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: true
+    type: boolean
+
 
 runs:
   using: "composite"
@@ -204,6 +212,18 @@ runs:
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
         fi
 
+    # NOTE: If one wants to use the Python cache, the environment variable PYTHON_NO_CACHE_OPTION is an empty string.
+    - name: "Extend GitHub environment variables depending on inputs.use-python-cache"
+      shell: bash
+      run: |
+        if [[ ${{ inputs.use-python-cache }} == 'false' ]]; then
+          if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+            echo "PYTHON_NO_CACHE_OPTION=$(echo '--no-cache')" >> $GITHUB_ENV
+          else
+            echo "PYTHON_NO_CACHE_OPTION=$(echo '--no-cache-dir')" >> $GITHUB_ENV
+          fi
+        fi
+
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
@@ -264,19 +284,29 @@ runs:
       shell: bash
       run: |
         source .venv/bin/activate
-        python -m pip install -U pip
+        python -m pip install -U pip ${{ env.PYTHON_NO_CACHE_OPTION }}
+
+    # ------------------------------------------------------------------------
 
     - name: "Check if requirements.txt file exists"
       shell: bash
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f ${{ inputs.requirements-file }} ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Documentation requirements file found: ${{ env.EXISTS_DOC_REQUIREMENTS }}
+
     - name: "Install documentation dependencies from requirements file"
       shell: bash
       if: env.EXISTS_DOC_REQUIREMENTS == 'true'
       run: |
         source .venv/bin/activate
-        python -m pip install -r ${{ inputs.requirements-file }}
+        python -m pip install -r ${{ inputs.requirements-file }} ${{ env.PYTHON_NO_CACHE_OPTION }}
+
+    # ------------------------------------------------------------------------
 
     - name: "Install Python library"
       shell: bash
@@ -284,9 +314,9 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install
+          poetry install ${{ env.PYTHON_NO_CACHE_OPTION }}
         else
-          python -m pip install .
+          python -m pip install . ${{ env.PYTHON_NO_CACHE_OPTION }}
         fi
 
     - name: "Install documentation dependencies from pyproject.toml"
@@ -295,9 +325,9 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install --with doc
+          poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
         else
-          python -m pip install .[doc]
+          python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
         fi
 
     # ------------------------------------------------------------------------
