@@ -14,6 +14,7 @@ Version ``v8``
 - Use secrets for commit and push credentials within ``ansys/actions/doc-changelog``,
   ``ansys/actions/doc-deploy-changelog``, ``ansys/actions/doc-deploy-dev``, and
   ``ansys/actions/doc-deploy-stable``.
+- The token input is required in the ``ansys/actions/release-github`` action.
 
 **Deprecated features:**
 
@@ -35,6 +36,12 @@ Version ``v8``
 
     bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
     bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
+- Add the following input to the ``ansys/actions/release-github`` action:
+
+.. code:: yaml
+
+    token: ${{ secrets.GITHUB_TOKEN }}
 
 Version ``v7``
 --------------
