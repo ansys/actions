@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import toml
 
@@ -348,3 +349,42 @@ directory = "{section}"
 name = "{section.title()}"
 showcontent = true\n"""
         )
+
+
+def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
+    """Get the value of a category within the [tool.towncrier] section of the pyproject.toml file.
+
+    Parameters
+    -----------
+    category: str
+        The category name within the [tool.towncrier] section you want to obtain information about.
+        For example, "filename" or "directory".
+    pyproject_path: str
+        The path to the pyproject.toml file. By default, this is "pyproject.toml".
+
+    Returns
+    -------
+    str
+        The category value. If the category does not exist under [tool.towncrier], the string
+        is empty.
+    """
+    # Get path to pyproject.toml
+    pyproject_toml = Path(pyproject_path)
+    # Set the category value to an empty string
+    category_value = ""
+
+    if pyproject_toml.exists():
+        # Load pyproject.toml
+        with Path.open(pyproject_toml, "r") as pyproj:
+            config = toml.load(pyproj)
+            # Get the tool category in pyproject.toml
+            tool = config.get("tool", "")
+            if tool:
+                # Get the [tool.towncrier] section in pyproject.toml
+                towncrier = tool.get("towncrier", "")
+                if towncrier:
+                    # Get the category value under [tool.towncrier]
+                    # For example, "filename" or "directory"
+                    category_value = towncrier.get(category, "")
+
+    return category_value

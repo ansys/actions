@@ -1,4 +1,4 @@
-release-gitub:
+release-github:
   name: "Release to GitHub"
   runs-on: ubuntu-latest
   needs: [build-library]
