@@ -40,6 +40,17 @@ inputs:
     required: true
     type: string
 
+  token:
+    description: |
+      Required password, key or token with the correct credentials for deploying the
+      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token is
+      is enough. For workflows deploying to other repositories, `generate and
+      use a token with writing access
+      <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
+      to that repository.
+    required: true
+    type: string
+
   # Optional inputs
 
   additional-artifacts:
@@ -61,6 +72,12 @@ inputs:
     default: false
     type: boolean
 
+  toml-version:
+    description: |
+      Toml version used for retrieving the towncrier directory.
+    default: '0.10.2'
+    required: false
+    type: string
 
 runs:
   using: "composite"
@@ -173,12 +190,56 @@ runs:
       shell: bash
       run: ls -R dist/
 
+    - name: "Install toml"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip toml==${{ inputs.toml-version }}
+
+    - name: "Get CHANGELOG file location"
+      shell: python
+      run: |
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+
+        from parse_pr_title import get_towncrier_config_value, save_env_variable
+
+        changelog_loc = get_towncrier_config_value("filename")
+        save_env_variable("CHANGELOG_LOC", changelog_loc)
+
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
-      if: inputs.dry-run == 'false'
+      env:
+        REPO_NAME: ${{ github.event.repository.name }}
+      permissions:
+        contents: write
+      if: inputs.dry-run == 'false' && env.CHANGELOG_LOC != ""
       with:
         fail_on_unmatched_files: false
-        generate_release_notes: true 
+        generate_release_notes: true
+        body_path: ${{ env.CHANGELOG_LOC }}
+        repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
+        token: ${{ inputs.token }}
+        files: |
+          # Include wheel and source distribution artifacts
+          dist/${{ inputs.library-name }}-artifacts/*.whl
+          dist/${{ inputs.library-name }}-artifacts/*.tar.gz
+
+          # Include wheelhouse artifacts
+          dist/wheelhouse/**/*-wheelhouse-*.zip
+
+          # Include HTML and PDF documentation artifacts
+          dist/documentation/documentation-html.zip
+          dist/documentation/documentation-pdf.zip
+
+          # Include additional artifacts
+          dist/extra/**/*
+
+    - name: "Release to GitHub"
+      uses: softprops/action-gh-release@v1
+      if: inputs.dry-run == 'false' && env.CHANGELOG_LOC == ""
+      with:
+        fail_on_unmatched_files: false
+        generate_release_notes: true
         files: |
           # Include wheel and source distribution artifacts
           dist/${{ inputs.library-name }}-artifacts/*.whl
