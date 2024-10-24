@@ -26,14 +26,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Build documentation"
-        uses: ansys/actions/doc-build@main
+        uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: true
           needs-quarto: true
       - name: "Check cache use"
-        uses: ansys/actions/doc-build@main
+        uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -45,14 +45,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Build documentation"
-        uses: ansys/actions/doc-build@main
+        uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
           needs-quarto: true
       - name: "Check cache use"
-        uses: ansys/actions/doc-build@main
+        uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
