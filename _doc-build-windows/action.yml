@@ -511,24 +511,24 @@ runs:
         message: >
           Upload HTML, PDF and JSON documentation.
 
-    - name: Upload HTML documentation artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation-html
-        path: doc/_build/html
-        retention-days: 7
+    # - name: Upload HTML documentation artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: documentation-html
+    #     path: doc/_build/html
+    #     retention-days: 7
 
-    - name: Upload PDF documentation artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation-pdf
-        path: doc/_build/latex/*.pdf
-        retention-days: 7
+    # - name: Upload PDF documentation artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: documentation-pdf
+    #     path: doc/_build/latex/*.pdf
+    #     retention-days: 7
 
-    - name: Upload JSON documentation artifact
-      uses: actions/upload-artifact@v4
-      if: inputs.skip-json-build == 'false'
-      with:
-        name: documentation-json
-        path: doc/_build/json
-        retention-days: 7
+    # - name: Upload JSON documentation artifact
+    #   uses: actions/upload-artifact@v4
+    #   if: inputs.skip-json-build == 'false'
+    #   with:
+    #     name: documentation-json
+    #     path: doc/_build/json
+    #     retention-days: 7
