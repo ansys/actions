@@ -224,9 +224,7 @@ runs:
       uses: softprops/action-gh-release@v1
       env:
         REPO_NAME: ${{ github.event.repository.name }}
-      permissions:
-        contents: write
-      if: inputs.dry-run == 'false' && env.CHANGELOG_LOC != ""
+      if: inputs.dry-run == 'false' && env.CHANGELOG_LOC != ''
       with:
         fail_on_unmatched_files: false
         generate_release_notes: true
@@ -250,7 +248,7 @@ runs:
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
-      if: inputs.dry-run == 'false' && env.CHANGELOG_LOC == ""
+      if: inputs.dry-run == 'false' && env.CHANGELOG_LOC == ''
       with:
         fail_on_unmatched_files: false
         generate_release_notes: true
