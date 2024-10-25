@@ -218,7 +218,7 @@ runs:
 
         from parse_pr_title import get_towncrier_config_value, save_env_variable
 
-        pyproject_path = Path(${{ env.GITHUB_WORKSPACE }}) / "pyproject.toml"
+        pyproject_path = Path(${{ github.workspace }}) / "pyproject.toml"
         changelog_loc = get_towncrier_config_value("filename", pyproject_path)
         print(f"CHANGELOG_LOC: {changelog_loc}")
         save_env_variable("CHANGELOG_LOC", changelog_loc)
