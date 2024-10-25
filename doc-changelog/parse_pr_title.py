@@ -368,16 +368,16 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
         The category value. If the category does not exist under [tool.towncrier], the string
         is empty.
     """
-    print(Path.cwd())
     # Get path to pyproject.toml
     pyproject_toml = Path(pyproject_path)
     print(pyproject_toml)
+    print(pyproject_toml.is_file())
     # Set the category value to an empty string
     category_value = ""
 
-    if pyproject_toml.exists():
+    if pyproject_toml.is_file():
         # Load pyproject.toml
-        with Path.open(pyproject_toml, "r") as pyproj:
+        with pyproject_toml.open() as pyproj:
             config = toml.load(pyproj)
             # Get the tool category in pyproject.toml
             tool = config.get("tool", "")
