@@ -97,6 +97,9 @@ runs:
 
     # TODO: end
 
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -203,9 +206,6 @@ runs:
     - name: "Display the structure of the 'dist/' folder"
       shell: bash
       run: ls -R dist/
-
-    - name: "Checkout repository"
-      uses: actions/checkout@v4
 
     - name: "Install toml"
       shell: bash
