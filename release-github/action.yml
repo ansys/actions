@@ -218,40 +218,20 @@ runs:
         from parse_pr_title import get_towncrier_config_value, save_env_variable
 
         changelog_loc = get_towncrier_config_value("filename")
+        print(f"CHANGELOG_LOC: {changelog_loc}")
         save_env_variable("CHANGELOG_LOC", changelog_loc)
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
       env:
         REPO_NAME: ${{ github.event.repository.name }}
-      if: inputs.dry-run == 'false' && env.CHANGELOG_LOC != ''
+      if: inputs.dry-run == 'false'
       with:
         fail_on_unmatched_files: false
         generate_release_notes: true
         body_path: ${{ env.CHANGELOG_LOC }}
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
         token: ${{ inputs.token }}
-        files: |
-          # Include wheel and source distribution artifacts
-          dist/${{ inputs.library-name }}-artifacts/*.whl
-          dist/${{ inputs.library-name }}-artifacts/*.tar.gz
-
-          # Include wheelhouse artifacts
-          dist/wheelhouse/**/*-wheelhouse-*.zip
-
-          # Include HTML and PDF documentation artifacts
-          dist/documentation/documentation-html.zip
-          dist/documentation/documentation-pdf.zip
-
-          # Include additional artifacts
-          dist/extra/**/*
-
-    - name: "Release to GitHub"
-      uses: softprops/action-gh-release@v1
-      if: inputs.dry-run == 'false' && env.CHANGELOG_LOC == ''
-      with:
-        fail_on_unmatched_files: false
-        generate_release_notes: true
         files: |
           # Include wheel and source distribution artifacts
           dist/${{ inputs.library-name }}-artifacts/*.whl
