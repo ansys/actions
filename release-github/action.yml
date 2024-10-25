@@ -204,6 +204,9 @@ runs:
       shell: bash
       run: ls -R dist/
 
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
+
     - name: "Install toml"
       shell: bash
       run: |
