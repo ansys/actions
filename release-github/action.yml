@@ -213,6 +213,7 @@ runs:
       shell: python
       run: |
         import sys
+        from pathlib import Path
         sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
 
         from parse_pr_title import get_towncrier_config_value, save_env_variable
