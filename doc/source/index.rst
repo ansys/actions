@@ -13,7 +13,7 @@ Ansys actions
 For more information on available actions and how to use them,
 see each of these cards:
 
-.. grid:: 1 1 2 2
+.. grid:: 1 2 3 3
     :gutter: 2
 
     .. grid-item-card:: :octicon:`codescan-checkmark` Style actions
@@ -34,7 +34,7 @@ see each of these cards:
 
        Documentation actions build and deploy the documentation.
 
-    .. grid-item-card:: :octicon:`key` Licence actions
+    .. grid-item-card:: :octicon:`key` License actions
        :link: licenses-actions/index
        :link-type: doc
 
