@@ -46,12 +46,12 @@ jobs:
 
     - name: "Remove old tags"
       run: |
-        if git tag -l | grep -q "^${{ env.X }}$"; then 
+        if git tag -l | grep -q "^${{ env.X }}$"; then
           git push --delete origin ${{ env.X }}
         else
           echo -e "\033[1;92m[INFO]: Tag ${{ env.X }} does not exist, skipping deletion.\033[0m"
         fi
-        if git tag -l | grep -q "^${{ env.X }}$"; then 
+        if git tag -l | grep -q "^${{ env.X }}\.${{ env.Y }}$"; then
           git push --delete origin ${{ env.X }}.${{ env.Y }}
         else
           echo -e "\033[1;92m[INFO]: Tag ${{ env.X }}.${{ env.Y }} does not exist, skipping deletion.\033[0m"
