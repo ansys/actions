@@ -49,12 +49,12 @@ jobs:
         if git tag -l | grep -q "^${{ env.X }}$"; then
           git push --delete origin ${{ env.X }}
         else
-          echo -e "\033[1;92m[INFO]: Tag ${{ env.X }} does not exist, skipping deletion.\033[0m"
+          echo -e "Tag ${{ env.X }} does not exist, skipping deletion."
         fi
         if git tag -l | grep -q "^${{ env.X }}\.${{ env.Y }}$"; then
           git push --delete origin ${{ env.X }}.${{ env.Y }}
         else
-          echo -e "\033[1;92m[INFO]: Tag ${{ env.X }}.${{ env.Y }} does not exist, skipping deletion.\033[0m"
+          echo -e "Tag ${{ env.X }}.${{ env.Y }} does not exist, skipping deletion."
         fi
 
     - name: "Create new tags"
