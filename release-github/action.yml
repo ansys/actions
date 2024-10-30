@@ -30,6 +30,11 @@ description: |
     ``<library-name>-artifacts`` files. This last file must contain the wheels and
     source distribution files of the library.
 
+    If you are using the ``title_format`` and ``issue_format`` from the ``doc-changelog`` action
+    setup guide, https://actions.docs.ansys.com/version/dev/migrations/docs-changelog-setup.html,
+    the changelog for your release is included in the release notes on GitHub.
+
+
 inputs:
 
   # Required inputs
@@ -212,19 +217,32 @@ runs:
       run: |
         python -m pip install --upgrade pip toml==${{ inputs.toml-version }}
 
-    - name: "Get CHANGELOG file location"
+    - name: "Get the release notes body"
       shell: python
       run: |
         import sys
         from pathlib import Path
-        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import get_towncrier_config_value, save_env_variable
+        from release_github_utils import get_tag_section
 
+        # Get the path to your pyproject.toml file
         pyproject_path = Path("${{ github.workspace }}") / "pyproject.toml"
+
+        # Get the path to your changelog file: [tool.towncrier]'s filename configuration
         changelog_loc = get_towncrier_config_value("filename", pyproject_path)
         print(f"CHANGELOG_LOC: {changelog_loc}")
-        save_env_variable("CHANGELOG_LOC", changelog_loc)
+
+        # Set an empty string for the body of the release notes
+        body = ""
+
+        # If the changelog file exists, get the title and content for the release section
+        if changelog_loc:
+            body = get_tag_section(changelog_loc, body)
+
+        # Save the env variable
+        save_env_variable("RELEASE_NOTES_BODY", body)
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
@@ -234,7 +252,7 @@ runs:
       with:
         fail_on_unmatched_files: false
         generate_release_notes: true
-        body_path: ${{ env.CHANGELOG_LOC }}
+        body: ${{ env.RELEASE_NOTES_BODY }}
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
         token: ${{ inputs.token }}
         files: |

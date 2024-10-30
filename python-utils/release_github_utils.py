@@ -73,7 +73,7 @@ def rst_to_md(body: str):
     return body
 
 
-def get_tag_section(changelog_file):
+def get_tag_section(changelog_file, body):
     """Get the section title and content of the tag from the changelog file.
 
     Parameters
@@ -111,7 +111,7 @@ def get_tag_section(changelog_file):
             # Convert rst to markdown
             if file_type.lower() == "rst":
                 body = rst_to_md(body)
-
-            return body
         else:
             print("Cannot generate release notes from changelog file.")
+
+    return body
