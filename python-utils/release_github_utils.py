@@ -120,9 +120,11 @@ def get_tag_section(changelog_file, body):
 
             # Get the first section of the changelog
             first_section = matches[0]
+
             # The section title. For example:
             # `0.1.2 <https://github.com/ansys/.../releases/tag/v0.1.2>`_ - 2024-10-30
             title = first_section[0]
+
             # The section content. For example:
             # ========================================================================
             #
