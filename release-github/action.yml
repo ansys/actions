@@ -61,6 +61,13 @@ inputs:
     default: false
     type: boolean
 
+  only_code:
+    description: |
+      Only include the source code in the release. This can be helpful for
+      repositories that don't create wheels and/or documentation.
+    required: false
+    default: false
+    type: boolean
 
 runs:
   using: "composite"
@@ -87,6 +94,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: inputs.dry-run == 'false'
       with:
         level: "INFO"
         message: >
@@ -95,6 +103,7 @@ runs:
           Finally, compress both artifacts.
 
     - name: "Moving documentation artifacts to dist/documentation directory"
+      if: inputs.dry-run == 'false'
       shell: bash
       run: |
         mkdir -p dist/documentation
@@ -102,12 +111,14 @@ runs:
         mv /tmp/artifacts/documentation-pdf dist/documentation/documentation-pdf
 
     - name: "Compressing HTML documentation"
+      if: inputs.dry-run == 'false'
       uses: vimtor/action-zip@v1.2
       with:
         files: dist/documentation/documentation-html
         dest: dist/documentation/documentation-html.zip
 
     - name: "Compressing PDF documentation"
+      if: inputs.dry-run == 'false'
       uses: vimtor/action-zip@v1.2
       with:
         files: dist/documentation/documentation-pdf
@@ -116,6 +127,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: inputs.dry-run == 'false'
       with:
         level: "INFO"
         message: >
@@ -123,6 +135,7 @@ runs:
           inside this folder.
 
     - name: "Move wheelhouse artifacts to dist/wheelhouse directory"
+      if: inputs.dry-run == 'false'
       shell: bash
       run: |
         mkdir -p dist/wheelhouse
@@ -131,6 +144,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: inputs.dry-run == 'false'
       with:
         level: "INFO"
         message: >
@@ -138,6 +152,7 @@ runs:
           inside this folder.
 
     - name: "Move wheel artifacts to dist/${{ inputs.library-name }}-artifacts directory"
+      if: inputs.dry-run == 'false'
       shell: bash
       run: |
         mv /tmp/artifacts/${{ inputs.library-name }}-artifacts dist/${{ inputs.library-name }}-artifacts
