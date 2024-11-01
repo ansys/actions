@@ -84,6 +84,14 @@ inputs:
     required: false
     type: string
 
+  changelog-release-notes:
+    description: |
+      Whether or not to generate release notes using the changelog file from the
+      pyproject.toml file's [tool.towncrier] section.
+    default: true
+    required: false
+    type: boolean
+
   only-code:
     description: |
       Only include the source code in the release. This can be helpful for
@@ -234,31 +242,24 @@ runs:
         python -m pip install --upgrade pip toml==${{ inputs.toml-version }}
 
     - name: "Get the release notes body"
+      if: inputs.changelog-release-notes == 'true'
       shell: python
       run: |
         import sys
         from pathlib import Path
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import get_towncrier_config_value, save_env_variable
-        from release_github_utils import get_tag_section
+        from release_github_utils import get_release_notes
 
         # Get the path to your pyproject.toml file
         pyproject_path = Path("${{ github.workspace }}") / "pyproject.toml"
 
-        # Get the path to your changelog file: [tool.towncrier]'s filename configuration
-        changelog_loc = get_towncrier_config_value("filename", pyproject_path)
-        print(f"CHANGELOG_LOC: {changelog_loc}")
+        get_release_notes(pyproject_path)
 
-        # Set an empty string for the body of the release notes
-        body = ""
-
-        # If the changelog file exists, get the title and content for the release section
-        if changelog_loc:
-            body = get_tag_section(changelog_loc, body)
-
-        # Save the env variable
-        save_env_variable("RELEASE_NOTES_BODY", body)
+    - name: "Set RELEASE_NOTES_BODY env variable"
+      if: inputs.changelog-release-notes == 'false'
+      shell: bash
+      run: echo "RELEASE_NOTES_BODY=''" >> $GITHUB_ENV
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
