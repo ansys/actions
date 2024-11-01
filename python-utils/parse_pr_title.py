@@ -20,9 +20,9 @@ def save_env_variable(env_var_name: str, env_var_value: str):
     # Save environment variable with its value
     with open(github_env, "a") as file:
         if "\n" in env_var_value or "\r\n" in env_var_value:
-            file.write(f"{env_var_name}<<EOF")
+            file.write(f"{env_var_name}<<EOF\n")
             file.write(env_var_value)
-            file.write("EOF")
+            file.write("\nEOF\n")
         else:
             file.write(f"{env_var_name}={env_var_value}")
 
