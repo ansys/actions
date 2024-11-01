@@ -259,7 +259,7 @@ runs:
     - name: "Set RELEASE_NOTES_BODY env variable"
       if: inputs.changelog-release-notes == 'false'
       shell: bash
-      run: echo "RELEASE_NOTES_BODY=''" >> $GITHUB_ENV
+      run: echo "RELEASE_NOTES_BODY= " >> $GITHUB_ENV
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
