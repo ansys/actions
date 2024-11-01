@@ -42,10 +42,10 @@ def get_pattern(content: str, section_title_regex: str) -> str:
         if len(sections) == 1:
             if "vale on" in content:
                 # Get all text from the section title to the ".. vale on" line
-                pattern = rf"({section_title_regex})+([\W\w]*?){vale_regex}"
+                pattern = rf"({section_title_regex})+([\W\w]*?)(?={vale_regex})"
             else:
                 # Get all text from the section title to the end of the file
-                pattern = rf"({section_title_regex})+([\W\w]*?){eof_regex}"
+                pattern = rf"({section_title_regex})+([\W\w]*?)(?={eof_regex})"
         # If there is more than one section
         elif len(sections) > 1:
             # Get the section title and its content up to the next section title
