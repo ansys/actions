@@ -19,7 +19,12 @@ def save_env_variable(env_var_name: str, env_var_value: str):
 
     # Save environment variable with its value
     with open(github_env, "a") as file:
-        file.write(f'{env_var_name}="""{env_var_value}"""')
+        if "\n" in env_var_value or "\r\n" in env_var_value:
+            file.write(f"{env_var_name}<<EOF")
+            file.write(env_var_value)
+            file.write("EOF")
+        else:
+            file.write(f"{env_var_name}={env_var_value}")
 
 
 def get_first_letter_case(pr_title: str):
