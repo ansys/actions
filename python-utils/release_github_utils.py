@@ -13,7 +13,7 @@ SEMVER_REGEX = (
 )
 
 
-def get_pattern(content, section_title_regex):
+def get_pattern(content: str, section_title_regex: str) -> str:
     """Get the regex for locating section titles and content.
 
     Parameters
@@ -54,7 +54,9 @@ def get_pattern(content, section_title_regex):
     return pattern
 
 
-def rst_to_md_links(body, original_number, new_number, original_link, new_link):
+def rst_to_md_links(
+    body: str, original_number: str, new_number: str, original_link: str, new_link: str
+) -> str:
     """Convert reStructuredText, RST, links to Markdown, MD, links.
 
     Parameters
@@ -86,7 +88,7 @@ def rst_to_md_links(body, original_number, new_number, original_link, new_link):
     return body
 
 
-def rst_to_md(body: str):
+def rst_to_md(body: str) -> str:
     """Convert RST text to MD.
 
     Parameters
@@ -135,20 +137,22 @@ def rst_to_md(body: str):
     return body
 
 
-def get_tag_section(changelog_file, body):
+def get_tag_section(changelog_file: Path, body: str) -> str:
     """Get the section title and content of the tag from the changelog file.
 
     Parameters
     ----------
     changelog_file: pathlib.Path
         The complete path to the changelog.rst or CHANGELOG.md file.
+    body: str
+        An empty string to be updated with the section title and content of the tag.
 
     Returns
     -------
     str
         A string containing the section title and content of the tag.
     """
-    file_type = changelog_file.name.split(".")[-1]
+    file_type = Path(changelog_file).name.split(".")[-1]
 
     with Path(changelog_file).open(encoding="utf-8") as file:
         content_lines = file.readlines()
@@ -190,7 +194,14 @@ def get_tag_section(changelog_file, body):
     return body
 
 
-def get_release_notes(pyproject_path):
+def get_release_notes(pyproject_path: Path):
+    """Main function to create release notes from the changelog file.
+
+    Parameters
+    ----------
+    pyproject_path: pathlib.Path
+        The path to the pyproject.toml file.
+    """
     # Set an empty string for the body of the release notes
     body = ""
     # Get the path to your changelog file: [tool.towncrier]'s filename configuration
