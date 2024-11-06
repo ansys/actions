@@ -58,6 +58,22 @@ inputs:
 
   # Optional inputs
 
+  python-version:
+    description: |
+      Python version used for installing towncrier and retrieving the release notes.
+    default: '3.12'
+    required: false
+    type: string
+
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
   additional-artifacts:
     description: |
         String containing a list of additional artifacts to be included in the
@@ -111,7 +127,7 @@ runs:
       with:
         level: "ERROR"
         message: >
-          Ansys Actions v8 will require the token input in the ``release-github`` action.
+          Ansys Actions v9 will require the token input in the ``release-github`` action.
           Please add the token input to this action and see
           https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
           for more information.
@@ -235,6 +251,12 @@ runs:
     - name: "Display the structure of the 'dist/' folder"
       shell: bash
       run: ls -R dist/
+
+    - name: "Set up Python"
+      uses: ansys/actions/_setup-python@v8
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
 
     - name: "Install toml"
       shell: bash
