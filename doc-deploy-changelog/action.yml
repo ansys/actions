@@ -166,11 +166,11 @@ inputs:
 
       If ``false``, the date is formated YYYY-MM-DD. For example, 2024-11-06:
 
-        `{tag} <https://github.com/ansys/repo-name/releases/tag/v{tag}>`_ - 2024-11-06
+        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - 2024-11-06
 
       If ``true``, the date is "Month Day, Year". For example, "November 6, 2024":
 
-        `{tag} <https://github.com/ansys/repo-name/releases/tag/v{tag}>`_ - November 6, 2024
+        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - November 6, 2024
     required: false
     default: true
     type: boolean
