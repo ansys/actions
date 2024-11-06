@@ -164,13 +164,13 @@ inputs:
       Format the date in the title of the new section being added to
       the CHANGELOG file.
 
-      If ``false``, the date is formated YYYY-MM-DD. For example, 2024-11-06:
+      If ``false``, the date is formated YYYY-MM-DD. For example, 2024-12-31:
 
-        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - 2024-11-06
+        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - 2024-12-31
 
-      If ``true``, the date is "Month Day, Year". For example, "November 6, 2024":
+      If ``true``, the date is "Month Day, Year". For example, "December 31, 2024":
 
-        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - November 6, 2024
+        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - December 31, 2024
     required: false
     default: true
     type: boolean
