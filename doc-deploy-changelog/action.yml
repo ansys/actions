@@ -271,7 +271,6 @@ runs:
         fi
 
     - name: "Get current date"
-      if: ${{ inputs.format-date == 'true' }}
       shell: python
       run: |
         import datetime
