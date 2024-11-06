@@ -278,7 +278,7 @@ runs:
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
 
-        from parse_pr_title import get_first_letter_case
+        from parse_pr_title import save_env_variable
 
         format_date = "${{ inputs.format-date }}"
 
