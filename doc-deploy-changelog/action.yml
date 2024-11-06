@@ -280,9 +280,9 @@ runs:
 
         from parse_pr_title import get_first_letter_case
 
-        format_date = ${{ inputs.format-date }}
+        format_date = "${{ inputs.format-date }}"
 
-        if format_date:
+        if format_date == "true":
             current_date = datetime.date.today().strftime("%B %d, %Y")
         else:
             current_date = datetime.date.today().strftime("%Y-%m-%d")
