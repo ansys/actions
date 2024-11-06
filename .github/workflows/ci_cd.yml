@@ -30,7 +30,7 @@ jobs:
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-python-cache: true
+          use-python-cache: false
           needs-quarto: true
       - name: "Check cache use"
         uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
