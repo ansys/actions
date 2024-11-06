@@ -227,7 +227,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-linux@fix/doc-build-without-python-cache-new
+      uses: ansys/actions/_doc-build-windows@fix/doc-build-without-python-cache-new
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
