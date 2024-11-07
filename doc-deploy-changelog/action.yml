@@ -275,7 +275,7 @@ runs:
       run: |
         import datetime
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import save_env_variable
 
