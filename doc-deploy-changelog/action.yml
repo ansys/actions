@@ -279,12 +279,12 @@ runs:
 
         from parse_pr_title import save_env_variable
 
+        # Whether or not to format the date in the CHANGELOG file - "true" or "false"
         format_date = "${{ inputs.format-date }}"
 
-        if format_date == "true":
-            current_date = datetime.date.today().strftime("%B %d, %Y")
-        else:
-            current_date = datetime.date.today().strftime("%Y-%m-%d")
+        # Format the string depending on format_date being "true" or "false"
+        fmt_string = "%B %d, %Y" if format_date == "true" else "%Y-%m-%d"
+        current_date = datetime.date.today().strftime(fmt_string)
 
         save_env_variable("CURRENT_DATE", current_date)
 
