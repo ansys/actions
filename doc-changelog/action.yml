@@ -144,7 +144,7 @@ runs:
       shell: python
       run: |
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import get_first_letter_case
 
@@ -171,7 +171,7 @@ runs:
       shell: python
       run: |
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import get_conventional_commit_type
 
@@ -197,7 +197,7 @@ runs:
       shell: python
       run: |
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import changelog_category_cc
 
@@ -209,7 +209,7 @@ runs:
       shell: python
       run: |
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import changelog_cateogry_labels
 
@@ -235,7 +235,7 @@ runs:
       shell: python
       run: |
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import clean_pr_title
 
@@ -250,7 +250,7 @@ runs:
       shell: python
       run: |
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../doc-changelog/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import add_towncrier_config
 
