@@ -325,9 +325,9 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install --with doc ${{ env.PYTHON_NO_CACHE_OPTION }}
+          poetry install --with doc -vvv ${{ env.PYTHON_NO_CACHE_OPTION }}
         else
-          python -m pip install .[doc] ${{ env.PYTHON_NO_CACHE_OPTION }}
+          python -m pip install .[doc] -vvv ${{ env.PYTHON_NO_CACHE_OPTION }}
         fi
 
     # ------------------------------------------------------------------------
