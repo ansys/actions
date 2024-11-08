@@ -392,7 +392,7 @@ runs:
       shell: powershell
       run: |
         .venv\Scripts\Activate.ps1
-        python ${{ github.action_path }}\..\doc-build\parse_doc_conf.py
+        python ${{ github.action_path }}\..\python-utils\parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
