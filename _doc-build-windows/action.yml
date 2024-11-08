@@ -303,7 +303,7 @@ runs:
       uses: actions/cache@v4
       if: ${{ (env.BUILD_BACKEND == 'poetry') && (env.PYTHON_NO_CACHE_OPTION != '') }}
       with:
-        path: ~/.cache/pypoetry
+        path: ~\AppData\Local\pypoetry\Cache
         key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
         restore-keys: |
           ${{ runner.os }}-poetry-
