@@ -272,6 +272,15 @@ runs:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
+    - name: Cache poetry
+      uses: actions/cache@v4
+      if: ${{ (env.BUILD_BACKEND == 'poetry') && (env.PYTHON_NO_CACHE_OPTION != '') }}
+      with:
+        path: ~/.cache/pypoetry
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
     - name: "Create a virtual environment"
       if: env.BUILD_BACKEND == 'pip'
       shell: bash
