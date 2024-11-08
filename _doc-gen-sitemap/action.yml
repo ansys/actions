@@ -92,7 +92,7 @@ runs:
           echo "    <changefreq>weekly</changefreq>" >> $output
           echo "    <priority>0.5</priority>" >> $output
           echo "  </url>" >> $output
-        done < <(find "$input_dir" -type f -name "*.html" -print0)
+        done < <(find "$input_dir" -type f -name "*.html" ! -name "search.html" ! -name "genindex.html" -print0)
 
         # Close the sitemap
         echo "</urlset>" >> $output
