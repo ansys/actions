@@ -36,8 +36,13 @@ def get_first_letter_case(pr_title: str):
         The pull request title.
     """
     index = 0
+
     # Get the pull request title
-    pr_title = rf"""{pr_title}"""
+    if pr_title[-1] == '"':
+        pr_title = rf"""{pr_title} """
+    else:
+        pr_title = rf"""{pr_title}"""
+
     # Get the first letter of the pull request title
     first_letter = pr_title[index]
 
@@ -71,7 +76,11 @@ def get_conventional_commit_type(pr_title: str):
         The pull request title.
     """
     # Get the pull request title
-    pr_title = rf"""{pr_title}"""
+    if pr_title[-1] == '"':
+        pr_title = rf"""{pr_title} """
+    else:
+        pr_title = rf"""{pr_title}"""
+
     # Get the index where the first colon is found in the pull request title
     colon_index = pr_title.index(":")
     # Get the conventional commit type from the pull request title (everything before the colon)
