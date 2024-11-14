@@ -176,7 +176,7 @@ runs:
 
         from parse_pr_title import get_first_letter_case, get_pr_title_with_quotes
 
-        pr_title = get_pr_title_with_quotes(${{ env.QUOTE_TYPE }})
+        pr_title = get_pr_title_with_quotes("${{ env.QUOTE_TYPE }}")
         get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
@@ -203,7 +203,7 @@ runs:
 
         from parse_pr_title import get_conventional_commit_type, get_pr_title_with_quotes
 
-        pr_title = get_pr_title_with_quotes(${{ env.QUOTE_TYPE }})
+        pr_title = get_pr_title_with_quotes("${{ env.QUOTE_TYPE }}")
         get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
@@ -267,7 +267,7 @@ runs:
 
         from parse_pr_title import clean_pr_title, get_pr_title_with_quotes
 
-        pr_title = get_pr_title_with_quotes(${{ env.QUOTE_TYPE }})
+        pr_title = get_pr_title_with_quotes("${{ env.QUOTE_TYPE }}")
         use_cc = True if "${{ inputs.use-conventional-commits }}" == "true" else False
 
         clean_pr_title(pr_title, use_cc)
