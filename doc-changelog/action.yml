@@ -170,7 +170,7 @@ runs:
     - name: "Get conventional commit type from title"
       if: ${{ inputs.use-conventional-commits == 'true' }}
       env:
-        PR_TITLE: "${{ github.event.pull_request.title }} "
+        PR_TITLE: "${{ github.event.pull_request.title }}"
       shell: python
       run: |
         import sys
@@ -178,7 +178,7 @@ runs:
 
         from parse_pr_title import get_conventional_commit_type
 
-        pr_title = """${{ env.PR_TITLE }}"""
+        pr_title = """${{ env.PR_TITLE }} """
         get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
