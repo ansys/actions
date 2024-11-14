@@ -147,7 +147,7 @@ runs:
 
         from parse_pr_title import save_env_variable
 
-        pr_title = """${{ github.event.pull_request.title }}"""
+        pr_title = '"""${{ github.event.pull_request.title }}"""'
         save_env_variable("PR_TITLE", pr_title)
       continue-on-error: true
 
@@ -161,7 +161,7 @@ runs:
 
         from parse_pr_title import save_env_variable
 
-        pr_title = '''${{ github.event.pull_request.title }}'''
+        pr_title = "'''${{ github.event.pull_request.title }}'''"
         save_env_variable("PR_TITLE", pr_title)
       continue-on-error: true
 
