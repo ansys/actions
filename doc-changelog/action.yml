@@ -148,8 +148,11 @@ runs:
 
         from parse_pr_title import get_first_letter_case
 
-        # pr_title = """${{ env.PR_TITLE }}"""
-        get_first_letter_case(${{ env.PR_TITLE }})
+        # how do I parse the PR title without putting it into a string?
+
+        print(${{ env.PR_TITLE }}.split(''))
+        pr_title = """${{ env.PR_TITLE }}"""
+        get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'lowercase') }}
@@ -167,7 +170,7 @@ runs:
     - name: "Get conventional commit type from title"
       if: ${{ inputs.use-conventional-commits == 'true' }}
       env:
-        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_TITLE: "${{ github.event.pull_request.title }} "
       shell: python
       run: |
         import sys
