@@ -27,17 +27,6 @@ def save_env_variable(env_var_name: str, env_var_value: str):
             file.write(f"{env_var_name}={env_var_value}")
 
 
-def get_pr_title_with_quotes(quote_type):
-    if quote_type == "single":
-        pr_title = """${{ env.PR_TITLE }}"""
-    elif quote_type == "double":
-        pr_title = """${{ env.PR_TITLE }}"""
-    else:
-        raise Exception("Pull request title cannot be parsed.")
-
-    return pr_title
-
-
 def get_first_letter_case(pr_title: str):
     """Get the first letter of the pull request title and determine if it is uppercase or not.
 
