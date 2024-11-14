@@ -175,9 +175,9 @@ runs:
 
         from parse_pr_title import save_env_variable
 
-        if quote_type == "single":
+        if "${{ env.QUOTE_TYPE }}" == "single":
             pr_title = '''${{ env.PR_TITLE }}'''
-        elif quote_type == "double":
+        elif "${{ env.QUOTE_TYPE }}" == "double":
             pr_title = """${{ env.PR_TITLE }}"""
         else:
             raise Exception("Pull request title cannot be parsed.")
