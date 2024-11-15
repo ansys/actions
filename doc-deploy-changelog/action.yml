@@ -159,6 +159,22 @@ inputs:
     default: false
     type: boolean
 
+  format-date:
+    description: |
+      Format the date in the title of the new section being added to
+      the CHANGELOG file.
+
+      If ``false``, the date is formated YYYY-MM-DD. For example, 2024-12-31:
+
+        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - 2024-12-31
+
+      If ``true``, the date is "Month Day, Year". For example, "December 31, 2024":
+
+        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - December 31, 2024
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -254,6 +270,24 @@ runs:
           fi
         fi
 
+    - name: "Get current date"
+      shell: python
+      run: |
+        import datetime
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        from parse_pr_title import save_env_variable
+
+        # Whether or not to format the date in the CHANGELOG file - "true" or "false"
+        format_date = "${{ inputs.format-date }}"
+
+        # Format the string depending on format_date being "true" or "false"
+        fmt_string = "%B %d, %Y" if format_date == "true" else "%Y-%m-%d"
+        current_date = datetime.date.today().strftime(fmt_string)
+
+        save_env_variable("CURRENT_DATE", current_date)
+
     - name: "Create a new section in the CHANGELOG file and push the changes"
       shell: bash
       run: |
@@ -273,7 +307,7 @@ runs:
           # The [tool.towncrier] section in pyproject.toml requires the following line
           # for the command to work:
           # package = "ansys.<product>.<library>"
-          buildcmd=$(towncrier build --yes >> builderr.txt 2>&1 || true)
+          buildcmd=$(towncrier build --yes --date "${{ env.CURRENT_DATE }}" >> builderr.txt 2>&1 || true)
           cat builderr.txt
           greperr=$(grep "Error: '--version'" builderr.txt || true)
 
@@ -283,7 +317,7 @@ runs:
           # If greperr contains the error message, run with the tag specified
           if [ -n "$greperr" ]; then
             # Update changelog with the tag version
-            towncrier build --yes --version ${{ env.TAG_VERSION }}
+            towncrier build --yes --version ${{ env.TAG_VERSION }} --date "${{ env.CURRENT_DATE }}"
           fi
 
           # Configure git username & email

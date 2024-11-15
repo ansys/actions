@@ -101,6 +101,8 @@ autosectionlabel_maxdepth = 2
 linkcheck_ignore = [
     r"https://github.com/ansys-internal/.*",
     r"https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/*",
+    "https://opensource.org/blog/license/mit",  # 403 - protected from bots
+    r"https://github.com/ansys/.*",
 ]
 
 # Auxiliary routines for automatic documentation generation
