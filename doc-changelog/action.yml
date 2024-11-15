@@ -137,34 +137,6 @@ runs:
 
     # TODO: end
 
-    # - name: Check double quotes
-    #   env:
-    #     PR_TITLE: ${{ github.event.pull_request.title }}
-    #   shell: python
-    #   run: |
-    #     import sys
-    #     sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
-
-    #     from parse_pr_title import save_env_variable
-
-    #     # pr_title = """${{ github.event.pull_request.title }}"""
-    #     save_env_variable("QUOTE_TYPE", "double")
-    #   continue-on-error: true
-
-    # - name: Check single quotes
-    #   env:
-    #     PR_TITLE: ${{ github.event.pull_request.title }}
-    #   shell: python
-    #   run: |
-    #     import sys
-    #     sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
-
-    #     from parse_pr_title import save_env_variable
-
-    #     pr_title = '''${{ github.event.pull_request.title }}'''
-    #     save_env_variable("QUOTE_TYPE", "single")
-    #   continue-on-error: true
-
     - name: "Get first letter of conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
       env:
