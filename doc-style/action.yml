@@ -84,6 +84,13 @@ inputs:
       required: false
       type: boolean
 
+  level:
+      description: |
+        Report level used to control check results.
+      default: 'error'
+      required: false
+      type: string
+
 runs:
   using: "composite"
   steps:
@@ -171,12 +178,13 @@ runs:
         fi
 
     - name: "Run Vale"
-      uses: errata-ai/vale-action@reviewdog
+      uses: errata-ai/vale-action@reviewdog20
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
         files: ${{ inputs.files }}
         reporter: github-pr-check
+        level: ${{ inputs.level }}
         filter_mode: nofilter
         fail_on_error: true
         vale_flags: "${{ ENV.VALE_FLAGS }}"
