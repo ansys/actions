@@ -74,7 +74,7 @@ jobs:
     needs: pr-title-style
     steps:
       - name: "Run doc style checks"
-        uses: ansys/actions/doc-style@refactor/doc-style-level
+        uses: ansys/actions/doc-style@refactor/drop-removed-input-from-vale-action
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -84,7 +84,7 @@ jobs:
     needs: pr-title-style
     steps:
       - name: "Run code style checks"
-        uses: ansys/actions/doc-style@refactor/doc-style-level
+        uses: ansys/actions/doc-style@refactor/drop-removed-input-from-vale-action
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           level: warning
@@ -95,7 +95,7 @@ jobs:
     needs: pr-title-style
     steps:
       - name: "Run code style checks"
-        uses: ansys/actions/doc-style@refactor/doc-style-level
+        uses: ansys/actions/doc-style@refactor/drop-removed-input-from-vale-action
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           level: info
