@@ -137,45 +137,48 @@ runs:
 
     # TODO: end
 
-    - name: Check double quotes
-      env:
-        PR_TITLE: ${{ github.event.pull_request.title }}
-      shell: python
-      run: |
-        import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+    # - name: Check double quotes
+    #   env:
+    #     PR_TITLE: ${{ github.event.pull_request.title }}
+    #   shell: python
+    #   run: |
+    #     import sys
+    #     sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import save_env_variable
+    #     from parse_pr_title import save_env_variable
 
-        pr_title = """${{ github.event.pull_request.title }}"""
-        save_env_variable("QUOTE_TYPE", "double")
-      continue-on-error: true
+    #     # pr_title = """${{ github.event.pull_request.title }}"""
+    #     save_env_variable("QUOTE_TYPE", "double")
+    #   continue-on-error: true
 
-    - name: Check single quotes
-      env:
-        PR_TITLE: ${{ github.event.pull_request.title }}
-      shell: python
-      run: |
-        import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+    # - name: Check single quotes
+    #   env:
+    #     PR_TITLE: ${{ github.event.pull_request.title }}
+    #   shell: python
+    #   run: |
+    #     import sys
+    #     sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import save_env_variable
+    #     from parse_pr_title import save_env_variable
 
-        pr_title = '''${{ github.event.pull_request.title }}'''
-        save_env_variable("QUOTE_TYPE", "single")
-      continue-on-error: true
+    #     pr_title = '''${{ github.event.pull_request.title }}'''
+    #     save_env_variable("QUOTE_TYPE", "single")
+    #   continue-on-error: true
 
     - name: "Get first letter of conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
+        import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import get_first_letter_case, pr_title_quotes
+        from parse_pr_title import get_first_letter_case
 
-        pr_title = pr_title_quotes(quote_type, pr_title)
-        get_first_letter_case(pr_title, "${{ env.QUOTE_TYPE }}")
+        pr_title = os.environ.get("PR_TITLE")
+        get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'lowercase') }}
@@ -192,14 +195,18 @@ runs:
 
     - name: "Get conventional commit type from title"
       if: ${{ inputs.use-conventional-commits == 'true' }}
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
+        import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import get_conventional_commit_type
 
-        get_conventional_commit_type(${{ env.PR_TITLE }})
+        pr_title = os.environ.get("PR_TITLE")
+        get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
       if: ${{ inputs.use-conventional-commits == 'false' }}
@@ -253,16 +260,20 @@ runs:
         fi
 
     - name: "Clean PR title"
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
+        import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import clean_pr_title
 
+        pr_title = os.environ.get("PR_TITLE")
         use_cc = True if "${{ inputs.use-conventional-commits }}" == "true" else False
 
-        clean_pr_title(${{ env.PR_TITLE }}, use_cc)
+        clean_pr_title(pr_title, use_cc)
 
     - name: "Append towncrier categories to pyproject.toml"
       env:

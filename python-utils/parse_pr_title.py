@@ -27,18 +27,18 @@ def save_env_variable(env_var_name: str, env_var_value: str):
             file.write(f"{env_var_name}={env_var_value}")
 
 
-def pr_title_quotes(quote_type, pr_title):
-    if quote_type == "single":
-        pr_title = f"""{pr_title}"""
-    elif quote_type == "double":
-        pr_title = f"""{pr_title}"""
-    else:
-        raise Exception("Pull request title cannot be parsed.")
+# def pr_title_quotes(quote_type, pr_title):
+#     if quote_type == "single":
+#         pr_title = f"""{pr_title}"""
+#     elif quote_type == "double":
+#         pr_title = f"""{pr_title}"""
+#     else:
+#         raise Exception("Pull request title cannot be parsed.")
 
-    return pr_title
+#     return pr_title
 
 
-def get_first_letter_case(pr_title: str, quote_type: str):
+def get_first_letter_case(pr_title: str):
     """Get the first letter of the pull request title and determine if it is uppercase or not.
 
     Parameters
@@ -48,10 +48,10 @@ def get_first_letter_case(pr_title: str, quote_type: str):
     """
     index = 0
 
-    # Get the pull request title
-    pr_title = pr_title_quotes(quote_type, pr_title)
+    # # Get the pull request title
+    # pr_title = pr_title_quotes(quote_type, pr_title)
 
-    print(f"PULL REQUEST TITLE: {pr_title}")
+    # print(f"PULL REQUEST TITLE: {pr_title}")
 
     # Get the first letter of the pull request title
     first_letter = pr_title[index]
@@ -77,7 +77,7 @@ def get_first_letter_case(pr_title: str, quote_type: str):
         save_env_variable("FIRST_LETTER", "uppercase")
 
 
-def get_conventional_commit_type(pr_title: str, quote_type: str):
+def get_conventional_commit_type(pr_title: str):
     """Get the conventional commit type from the pull request title.
 
     Parameters
@@ -86,7 +86,7 @@ def get_conventional_commit_type(pr_title: str, quote_type: str):
         The pull request title.
     """
     # Get the pull request title
-    pr_title = pr_title_quotes(quote_type, pr_title)
+    # pr_title = pr_title_quotes(quote_type, pr_title)
 
     # Get the index where the first colon is found in the pull request title
     colon_index = pr_title.index(":")
