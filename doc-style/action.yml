@@ -84,12 +84,12 @@ inputs:
       required: false
       type: boolean
 
-  level:
-      description: |
-        Report level used to control check results.
-      default: 'error'
-      required: false
-      type: string
+  fail_level:
+    description: |
+      Report level used to control check results.
+    default: 'error'
+    required: false
+    type: string
 
 runs:
   using: "composite"
@@ -189,7 +189,7 @@ runs:
       with:
         files: ${{ inputs.files }}
         reporter: github-pr-check
-        level: ${{ inputs.level }}
+        fail_level: ${{ inputs.fail_level }}
         filter_mode: nofilter
         fail_on_error: true
         vale_flags: "${{ ENV.VALE_FLAGS }}"

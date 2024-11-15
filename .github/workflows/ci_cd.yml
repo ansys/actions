@@ -87,7 +87,7 @@ jobs:
         uses: ansys/actions/doc-style@refactor/drop-removed-input-from-vale-action
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          level: warning
+          fail_level: warning
 
   doc-style-info:
     name: "Info Doc style"
@@ -98,7 +98,7 @@ jobs:
         uses: ansys/actions/doc-style@refactor/drop-removed-input-from-vale-action
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          level: info
+          fail_level: info
 
   doc-build:
     name: "Doc build"
