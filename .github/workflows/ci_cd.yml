@@ -68,6 +68,41 @@ jobs:
             grep -q --exclude-dir={.git,.github,doc} "ansys\/actions\/.*\@main" -r .
           fi
 
+  code-style-default:
+    name: "Default Code style"
+    runs-on: ubuntu-latest
+    needs: pr-title-style
+    steps:
+      - name: "Run code style checks"
+        uses: ansys/actions/code-style@refactor/doc-style-level
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+
+  code-style-warning:
+    name: "Warning Code style"
+    runs-on: ubuntu-latest
+    needs: pr-title-style
+    steps:
+      - name: "Run code style checks"
+        uses: ansys/actions/code-style@refactor/doc-style-level
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+          level: warning
+
+  code-style-info:
+    name: "Info Code style"
+    runs-on: ubuntu-latest
+    needs: pr-title-style
+    steps:
+      - name: "Run code style checks"
+        uses: ansys/actions/code-style@refactor/doc-style-level
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+          level: info
+
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest

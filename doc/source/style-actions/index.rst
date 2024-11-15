@@ -26,3 +26,7 @@ Pull request title action
 
 .. jinja:: check-pr-title
     :file: _templates/action.rst.jinja
+
+This is a 'suggestion', the project isn't (contraction)
+
+This is 'warning', the project will (will)
