@@ -27,6 +27,8 @@ Pull request title action
 .. jinja:: check-pr-title
     :file: _templates/action.rst.jinja
 
-This is a 'suggestion', the project **is not**
+This is a 'suggestion', the project is not
 
-This is 'warning', the project **will**
+This is 'warning', the project will
+
+This is 'error', the project etc
