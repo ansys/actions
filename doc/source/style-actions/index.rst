@@ -31,4 +31,4 @@ This is a 'suggestion', the project is not
 
 This is 'warning', the project will
 
-This is 'error', the project etc
+This is 'error', the project ...

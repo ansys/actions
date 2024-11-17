@@ -191,6 +191,5 @@ runs:
         reporter: github-pr-check
         fail_level: ${{ inputs.fail_level }}
         filter_mode: nofilter
-        fail_on_error: true
         vale_flags: "${{ ENV.VALE_FLAGS }}"
         version: ${{ inputs.vale-version }}
