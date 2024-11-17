@@ -183,7 +183,7 @@ runs:
         fi
 
     - name: "Run Vale"
-      uses: errata-ai/vale-action@reviewdog20
+      uses: SMoraisAnsys/vale-action@reviewdog20
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
