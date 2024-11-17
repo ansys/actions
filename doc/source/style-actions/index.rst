@@ -31,4 +31,4 @@ This is a 'suggestion', the project is not
 
 This is 'warning', the project will
 
-This is 'error', the project 12km
+This is 'error', the project 02.12.2017
