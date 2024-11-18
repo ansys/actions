@@ -1,10 +1,6 @@
 Ansys actions
 =============
 
-.. include:: ../../README.rst
-   :start-after: .. readme_common_begins
-   :end-before: .. readme_common_ends
-
 .. note:: Adapting to a new version?
 
    If you are adapting to a new version of the actions, see the
