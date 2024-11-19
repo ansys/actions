@@ -12,7 +12,7 @@
 'docs':
   - all:
       - changed-files:
-          - any-glob-to-any-file: ['README.rst', 'doc/source/**/*.rst']
+          - any-glob-to-any-file: ['README.md', 'doc/source/**/*.rst']
           - all-globs-to-all-files: ['!doc/styles/**', '!doc/.vale.ini']
 
 ## -- Other labels ------------------------------------------------------------
