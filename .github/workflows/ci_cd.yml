@@ -68,42 +68,20 @@ jobs:
             grep -q --exclude-dir={.git,.github,doc} "ansys\/actions\/.*\@main" -r .
           fi
 
-  doc-style-default:
-    name: "Default Doc style"
+  doc-style:
+    name: "Doc style"
     runs-on: ubuntu-latest
     needs: pr-title-style
     steps:
-      - name: "Run doc style checks"
-        uses: ansys/actions/doc-style@refactor/drop-removed-input-from-vale-action
+      - name: "Run documentation style checks"
+        uses: ansys/actions/doc-style@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
-  doc-style-warning:
-    name: "Warning Doc style"
-    runs-on: ubuntu-latest
-    needs: pr-title-style
-    steps:
-      - name: "Run code style checks"
-        uses: ansys/actions/doc-style@refactor/drop-removed-input-from-vale-action
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fail-level: warning
-
-  doc-style-info:
-    name: "Info Doc style"
-    runs-on: ubuntu-latest
-    needs: pr-title-style
-    steps:
-      - name: "Run code style checks"
-        uses: ansys/actions/doc-style@refactor/drop-removed-input-from-vale-action
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fail-level: info
 
   doc-build:
     name: "Doc build"
     runs-on: ubuntu-latest
-    needs: doc-style-default
+    needs: doc-style
     steps:
       - name: "Build documentation"
         uses: ansys/actions/doc-build@main
