@@ -7,7 +7,7 @@ build-backend = "flit_core.buildapi"
 name = "ansys-actions-core"
 version = "7.1.dev0"
 description = "A demo library for testing Ansys actions"
-readme = "README.md"
+readme = "README.rst"
 requires-python = ">=3.7"
 license = { file = "LICENSE" }
 authors = [{ name = "ANSYS, Inc.", email = "pyansys.core@ansys.com" }]
