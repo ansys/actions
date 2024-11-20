@@ -310,26 +310,30 @@ runs:
           buildcmd=$(towncrier build --yes --date "${{ env.CURRENT_DATE }}" >> builderr.txt 2>&1 || true)
           cat builderr.txt
           version_err=$(grep "Error: '--version'" builderr.txt || true)
-          section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
 
           # Remove builderr.txt
           rm builderr.txt
 
-          if [ -n "$section_exists_err" ]; then
-            # Print error message on how to fix this
-            message="Your changelog file already contains section ${{ env.TAG_VERSION }} in
-            the ${{ env.UPDATE_BRANCH }} branch. Please checkout ${{ env.UPDATE_BRANCH }}, revert
-            the commit named 'chore: updating CHANGELOG for v${{ env.TAG_VERSION }}', and re-run
-            the workflow."
-
-            echo -e "\033[1;91m[ERROR]: $message\033[0m"
-            exit 1
-          fi
-
           # If version_err contains the error message, run with the tag specified
           if [ -n "$version_err" ]; then
             # Update changelog with the tag version
-            towncrier build --yes --version ${{ env.TAG_VERSION }} --date "${{ env.CURRENT_DATE }}"
+            buildcmd=$(towncrier build --yes --version ${{ env.TAG_VERSION }} --date "${{ env.CURRENT_DATE }}" >> builderr.txt 2>&1 || true)
+            cat builderr.txt
+            section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
+
+            # Remove builderr.txt
+            rm builderr.txt
+
+            if [ -n "$section_exists_err" ]; then
+              # Print error message on how to fix this
+              message="Your changelog file already contains section ${{ env.TAG_VERSION }} in
+              the ${{ env.UPDATE_BRANCH }} branch. Please checkout ${{ env.UPDATE_BRANCH }}, revert
+              the commit named 'chore: updating CHANGELOG for v${{ env.TAG_VERSION }}', and re-run
+              the workflow."
+
+              echo -e "\033[1;91m[ERROR]: $message\033[0m"
+              exit 1
+            fi
           fi
 
           # Configure git username & email
