@@ -302,25 +302,27 @@ runs:
 
     - name: "Install library"
       shell: bash
+      # Note: we need to use an array to store the extra targets, otherwise
+      # the shell expansion messes with the quotes in the poetry case.
       run: |
         ${{ env.ACTIVATE_VENV }}
         if [[ '${{ inputs.extra-targets }}' != '' ]]; then
           if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${{ inputs.extra-targets }}"
-            extra_targets=$(echo "--extras '${{ inputs.extra-targets }}'")
+            extra_targets=(--extras '${{ inputs.extra-targets }}')
           else
             echo "Installing extra targets with pip: ${{ inputs.extra-targets }}"
-            extra_targets=$(echo"[${{ inputs.extra-targets }}]")
+            extra_targets=([${{ inputs.extra-targets }}])
           fi
         else
           echo "No extra targets to install"
-          extra_targets=''
+          extra_targets=()
         fi
 
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install $extra_targets
+          poetry install ${extra_targets[@]}
         else
-          python -m pip install .$extra_targets
+          python -m pip install .${extra_targets[@]}
         fi
 
     - name: "Download the list of ignored safety vulnerabilities"
