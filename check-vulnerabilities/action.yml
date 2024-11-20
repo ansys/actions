@@ -74,12 +74,12 @@ inputs:
     description: |
       Extra targets to be evaluated by safety. By default, it is set to an
       empty string. This gets substituted to the library install command as
-      follows::
+      follows (inside <INPUT>)::
 
         # For pip install
-        pip install .[${{ inputs.extra-targets }}]
+        pip install .[<INPUT>]
         # For poetry install
-        poetry install --extras '${{ inputs.extra-targets }}'
+        poetry install --extras '<INPUT>'
 
     default: ''
     required: false
