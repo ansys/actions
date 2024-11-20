@@ -318,7 +318,6 @@ runs:
           if [ -n "$version_err" ]; then
             # Update changelog with the tag version
             buildcmd=$(towncrier build --yes --version ${{ env.TAG_VERSION }} --date "${{ env.CURRENT_DATE }}" >> builderr.txt 2>&1 || true)
-            cat builderr.txt
             section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
 
             # Remove builderr.txt
@@ -330,8 +329,9 @@ runs:
               the ${{ env.UPDATE_BRANCH }} branch. Please checkout ${{ env.UPDATE_BRANCH }}, revert
               the commit named 'chore: updating CHANGELOG for v${{ env.TAG_VERSION }}', and re-run
               the workflow."
+              single_line_msg=$(echo -n "$message" | base64)
 
-              echo -e "\033[1;91m[ERROR]: $message\033[0m"
+              echo -e "\033[1;91m[ERROR]: $single_line_msg\033[0m"
               exit 1
             fi
           fi
