@@ -143,12 +143,13 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
+        import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import get_first_letter_case
 
-        pr_title = """${{ env.PR_TITLE }}"""
+        pr_title = os.environ.get("PR_TITLE")
         get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
@@ -170,12 +171,13 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
+        import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import get_conventional_commit_type
 
-        pr_title = """${{ env.PR_TITLE }}"""
+        pr_title = os.environ.get("PR_TITLE")
         get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
@@ -234,12 +236,13 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
+        import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import clean_pr_title
 
-        pr_title = """${{ env.PR_TITLE }}"""
+        pr_title = os.environ.get("PR_TITLE")
         use_cc = True if "${{ inputs.use-conventional-commits }}" == "true" else False
 
         clean_pr_title(pr_title, use_cc)
