@@ -320,9 +320,9 @@ runs:
         fi
 
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install ${extra_targets[@]}
+          poetry install "${extra_targets[@]}"
         else
-          python -m pip install .${extra_targets[@]}
+          python -m pip install ."${extra_targets[@]}"
         fi
 
     - name: "Download the list of ignored safety vulnerabilities"
