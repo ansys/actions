@@ -70,6 +70,21 @@ inputs:
 
   # Optional inputs
 
+  extra-targets:
+    description: |
+      Extra targets to be evaluated by safety. By default, it is set to an
+      empty string. This gets substituted to the library install command as
+      follows (inside <INPUT>)::
+
+        # For pip install
+        pip install .[<INPUT>]
+        # For poetry install
+        poetry install --extras '<INPUT>'
+
+    default: ''
+    required: false
+    type: string
+
   source-directory:
     description: |
       The source folder of the repository to be evaluated by bandit.
@@ -287,12 +302,27 @@ runs:
 
     - name: "Install library"
       shell: bash
+      # Note: we need to use an array to store the extra targets, otherwise
+      # the shell expansion messes with the quotes in the poetry case.
       run: |
         ${{ env.ACTIVATE_VENV }}
-        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install
+        if [[ '${{ inputs.extra-targets }}' != '' ]]; then
+          if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+            echo "Installing extra targets with poetry: ${{ inputs.extra-targets }}"
+            extra_targets=(--extras '${{ inputs.extra-targets }}')
+          else
+            echo "Installing extra targets with pip: ${{ inputs.extra-targets }}"
+            extra_targets=([${{ inputs.extra-targets }}])
+          fi
         else
-          python -m pip install .
+          echo "No extra targets to install"
+          extra_targets=()
+        fi
+
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          poetry install "${extra_targets[@]}"
+        else
+          python -m pip install ."${extra_targets[@]}"
         fi
 
     - name: "Download the list of ignored safety vulnerabilities"
