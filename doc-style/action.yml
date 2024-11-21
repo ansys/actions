@@ -84,6 +84,15 @@ inputs:
       required: false
       type: boolean
 
+  fail-level:
+    description: |
+      Report level used to control check results. Default value is ``"error"``
+      and if at least one issue with severity greater than or equal to
+      ``"error"`` is detected then the action exits with status code ``1``.
+    default: 'error'
+    required: false
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -176,14 +185,13 @@ runs:
         fi
 
     - name: "Run Vale"
-      uses: errata-ai/vale-action@v2.1.1
+      uses: errata-ai/vale-action@reviewdog20
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
         files: ${{ inputs.files }}
         reporter: github-pr-check
-        level: error
+        fail_level: ${{ inputs.fail-level }}
         filter_mode: nofilter
-        fail_on_error: true
         vale_flags: "${{ ENV.VALE_FLAGS }}"
         version: ${{ inputs.vale-version }}
