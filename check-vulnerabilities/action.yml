@@ -323,7 +323,7 @@ runs:
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
-        pip install -r ${{ github.action_path }}/requirements.txt
+        python -m pip install -r ${{ github.action_path }}/requirements.txt
 
     - name: "Download the list of ignored safety vulnerabilities"
       shell: bash
