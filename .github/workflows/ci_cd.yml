@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  MAIN_PYTHON_VERSION: '3.10'
+  MAIN_PYTHON_VERSION: '3.11'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   test-library-name: 'ansys-actions'
   MEILISEARCH_API_KEY: ${{ secrets.MEILISEARCH_API_KEY }}

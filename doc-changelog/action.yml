@@ -57,7 +57,7 @@ inputs:
   python-version:
     description: |
       Python version used for setting up Python.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
