@@ -34,6 +34,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
           needs-quarto: true
+
       - name: "Build documentation with cache"
         uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
         env:
@@ -43,6 +44,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: true
           needs-quarto: true
+
       - name: "Build documentation with cache"
         uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
         env:
@@ -66,6 +68,8 @@ jobs:
           needs-quarto: true
       - name: "Build documentation with cache"
         uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
+        env:
+          PYTHON_NO_CACHE_OPTION: ''
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -73,6 +77,8 @@ jobs:
           needs-quarto: true
       - name: "Build documentation with cache"
         uses: ansys/actions/doc-build@fix/doc-build-without-python-cache-new
+        env:
+          PYTHON_NO_CACHE_OPTION: ''
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
