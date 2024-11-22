@@ -36,6 +36,8 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
      - name: "Label pull-request"
+       # Skip if user does not have write permissions - PR coming from a fork
+       if: github.event.pull_request.head.repo.full_name == github.repository
        uses: actions/labeler@v5.0.0
        with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
