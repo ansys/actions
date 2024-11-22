@@ -294,12 +294,6 @@ runs:
         ${{ env.ACTIVATE_VENV }}
         python -m pip install -U pip
 
-    - name: "Install requirements"
-      shell: bash
-      run: |
-        ${{ env.ACTIVATE_VENV }}
-        pip install -r ${{ github.action_path }}/requirements.txt
-
     - name: "Install library"
       shell: bash
       # Note: we need to use an array to store the extra targets, otherwise
@@ -324,6 +318,12 @@ runs:
         else
           python -m pip install ."${extra_targets[@]}"
         fi
+
+    - name: "Install action requirements"
+      shell: bash
+      run: |
+        ${{ env.ACTIVATE_VENV }}
+        pip install -r ${{ github.action_path }}/requirements.txt
 
     - name: "Download the list of ignored safety vulnerabilities"
       shell: bash
