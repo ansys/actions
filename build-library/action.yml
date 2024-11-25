@@ -51,7 +51,7 @@ inputs:
   python-version:
     description: |
       Python version used for installing and execution of the build process.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
