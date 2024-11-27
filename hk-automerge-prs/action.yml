@@ -38,6 +38,7 @@ runs:
   steps:
 
     - name: Verify allowed PRs (dependabot and pre-commit.ci)
+      shell: bash
       run: |
         if [[ ${{ github.head_ref }} == 'dependabot/'* ]] || [[ ${{ github.head_ref }} == 'pre-commit-ci-update-config' ]]; then
           echo "PR is allowed to be automerged."
@@ -55,12 +56,14 @@ runs:
         fi
 
     - name: Approve a PR
+      shell: bash
       run: gh pr review --approve "$PR_URL"
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
         GH_TOKEN: ${{ inputs.approver-token }}
 
     - name: Merge a PR
+      shell: bash
       if: ${{ env.DEPENDABOT_PR == '0' }}
       run: gh pr merge --auto --squash "$PR_URL"
       env:
@@ -70,6 +73,7 @@ runs:
     # On dependabot PRs, auto-merge is only enabled iif it is a patch
     # or minor version bump. Major version bumps are not auto-merged.
     - name: Dependabot metadata (if dependabot PR only)
+      shell: bash
       if: ${{ env.DEPENDABOT_PR == '1' }}
       id: metadata
       uses: dependabot/fetch-metadata@v2
@@ -77,6 +81,7 @@ runs:
         github-token: ${{ inputs.approver-token }}
 
     - name: Enable auto-merge for Dependabot PRs
+      shell: bash
       if: ${{ env.DEPENDABOT_PR == '1' }}
       run: |
         if [[ ${{ steps.metadata.outputs.update-type }} != 'version-update:semver-major' ]]; then
