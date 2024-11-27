@@ -7,5 +7,5 @@ hk-automerge-prs:
     - name: "Automerging dependabot and pre-commit.ci PRs"
       uses: ansys/actions/hk-automerge-prs@{{ version }}
       with:
-        approver: 'mygithubid'
-        approver-token: '...'
+        approver: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
+        approver-token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
