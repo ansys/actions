@@ -1,0 +1,11 @@
+hk-automerge-prs:
+  name: "Automerging dependabot and pre-commit.ci PRs"
+  runs-on: ubuntu-latest
+  # Only runs if we are on a PR
+  if: github.event_name == 'pull_request'
+  steps:
+    - name: "Automerging dependabot and pre-commit.ci PRs"
+      uses: ansys/actions/hk-automerge-prs@{{ version }}
+      with:
+        approver: 'mygithubid'
+        approver-token: '...'
