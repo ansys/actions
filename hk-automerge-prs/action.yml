@@ -42,9 +42,11 @@ runs:
       run: |
         if [[ ${{ github.head_ref }} == 'dependabot/'* ]] || [[ ${{ github.head_ref }} == 'pre-commit-ci-update-config' ]]; then
           echo "PR is allowed to be automerged."
+          echo "SKIP_ACTION=0" >> $GITHUB_ENV
         else
-          echo "PR is not allowed to be automerged. Exiting."
-          exit 1
+          echo "PR is not allowed to be automerged. Exiting gracefully..."
+          echo "SKIP_ACTION=1" >> $GITHUB_ENV
+          exit 0
         fi
 
         # If it is a dependabot PR, create a new variable (bool type)
@@ -57,6 +59,7 @@ runs:
 
     - name: Approve a PR
       shell: bash
+      if: ${{ env.SKIP_ACTION == '0' }}
       run: gh pr review --approve "$PR_URL"
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
@@ -64,7 +67,7 @@ runs:
 
     - name: Merge a PR
       shell: bash
-      if: ${{ env.DEPENDABOT_PR == '0' }}
+      if: ${{ env.SKIP_ACTION == '0' }} && ${{ env.DEPENDABOT_PR == '0' }}
       run: gh pr merge --auto --squash "$PR_URL"
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
@@ -73,7 +76,7 @@ runs:
     # On dependabot PRs, auto-merge is only enabled iif it is a patch
     # or minor version bump. Major version bumps are not auto-merged.
     - name: Dependabot metadata (if dependabot PR only)
-      if: ${{ env.DEPENDABOT_PR == '1' }}
+      if: ${{ env.SKIP_ACTION == '0' }} && ${{ env.DEPENDABOT_PR == '1' }}
       id: metadata
       uses: dependabot/fetch-metadata@v2
       with:
@@ -81,7 +84,7 @@ runs:
 
     - name: Enable auto-merge for Dependabot PRs
       shell: bash
-      if: ${{ env.DEPENDABOT_PR == '1' }}
+      if: ${{ env.SKIP_ACTION == '0' }} && ${{ env.DEPENDABOT_PR == '1' }}
       run: |
         if [[ ${{ steps.metadata.outputs.update-type }} != 'version-update:semver-major' ]]; then
           gh pr merge --auto --squash "$PR_URL"
