@@ -43,7 +43,6 @@ runs:
         # Check if the author is either dependabot or pre-commit.ci.
         if [[ ${{ github.event.pull_request.user.login }} == 'dependabot[bot]' ]] || [[ ${{ github.event.pull_request.user.login }} == 'pre-commit-ci[bot]' ]]; then
           echo "PR author is allowed to be automerged."
-          echo "SKIP_ACTION=0" >> $GITHUB_ENV
         else
           echo "PR is not allowed to be automerged. Invalid PR author. Exiting gracefully..."
           echo "SKIP_ACTION=1" >> $GITHUB_ENV
@@ -52,12 +51,14 @@ runs:
 
         if [[ ${{ github.head_ref }} == 'dependabot/'* ]] || [[ ${{ github.head_ref }} == 'pre-commit-ci-update-config' ]]; then
           echo "PR branch name is allowed to be automerged."
-          echo "SKIP_ACTION=0" >> $GITHUB_ENV
         else
           echo "PR is not allowed to be automerged. Invalid branch name. Exiting gracefully..."
           echo "SKIP_ACTION=1" >> $GITHUB_ENV
           exit 0
         fi
+
+        # If we reach this point, the PR is allowed to be automerged.
+        echo "SKIP_ACTION=0" >> $GITHUB_ENV
 
         # If it is a dependabot PR, create a new variable (bool type)
         # to be used in the next steps.
