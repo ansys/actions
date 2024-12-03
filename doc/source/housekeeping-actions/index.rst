@@ -15,3 +15,8 @@ Package cleanup excluding certain versions
 .. jinja:: hk-package-clean-except
     :file: _templates/action.rst.jinja
 
+Auto-merge pull requests
+------------------------
+
+.. jinja:: hk-automerge-prs
+    :file: _templates/action.rst.jinja
