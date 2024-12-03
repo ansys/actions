@@ -33,6 +33,16 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
+  only-allow-dependabot-patch:
+    description: |
+      Only allow dependabot patch version updates. By default,
+      this is set to false (allowing also minor bumps).
+    required: false
+    type: boolean
+    default: false
+
 runs:
   using: "composite"
   steps:
@@ -97,6 +107,14 @@ runs:
       shell: bash
       if: ${{ env.SKIP_ACTION == '0' && env.DEPENDABOT_PR == '1' }}
       run: |
+        # If only-allow-dependabot-patch is enabled, only patch versions should be auto-merged.
+        if [[ ${{ inputs.only-allow-dependabot-patch }} == 'true' ]]; then
+          if [[ ${{ steps.metadata.outputs.update-type }} != 'version-update:semver-patch' ]]; then
+            echo "Only patch version updates are allowed. Skipping auto-merge."
+            exit 0
+          fi
+        fi
+
         if [[ ${{ steps.metadata.outputs.update-type }} != 'version-update:semver-major' ]]; then
           gh pr merge --auto --squash "$PR_URL"
         else
