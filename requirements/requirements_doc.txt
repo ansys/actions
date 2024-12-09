@@ -1,4 +1,4 @@
-ansys-sphinx-theme==1.2.2
+ansys-sphinx-theme==1.2.3
 jupyter==1.1.1
 pyyaml==6.0.2
 Sphinx==8.1.3
