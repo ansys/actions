@@ -226,7 +226,7 @@ Include the release notes in ``CHANGELOG.md``
 
         ## [0.10.7](https://github.com/ansys/pymechanical/releases/tag/v0.10.7) - February 13 2024
 
-3. Add the following lines to the ``pyproject.toml`` file, replacing ``{repo-name}`` with the name of the repository respectively.
+3. Add the following lines to the ``pyproject.toml`` file, replacing ``{repo-name}`` with the name of the repository.
 Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.module``. For example, ``ansys.geometry.core``.
 
 .. code:: toml
