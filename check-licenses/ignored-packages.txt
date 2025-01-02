@@ -1,6 +1,7 @@
 aiohappyeyeballs
 ansys-corba
 ansys-turbogrid-api
+attrs
 defusedxml
 distlib
 filelock
