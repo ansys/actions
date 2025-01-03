@@ -99,7 +99,7 @@ runs:
 
     - name: "Build wheels for CPython ${{ inputs.python-version }}"
       if: ${{ inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@v2.19.2
+      uses: pypa/cibuildwheel@v2.22.0
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
@@ -108,7 +108,7 @@ runs:
 
     - name: "Build wheels for PyPy"
       if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
-      uses: pypa/cibuildwheel@v2.19.2
+      uses: pypa/cibuildwheel@v2.22.0
       env:
         CIBW_BUILD: "pp39-*"
         CIBW_SKIP: ${{ inputs.cibw-skip }}
