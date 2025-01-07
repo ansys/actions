@@ -17,13 +17,13 @@ report:
       cvss-severity: []
       vulnerabilities:
         52495:
-          reason: We are not considering this for the moment.
+          reason: We are not considering this vulnerability for the moment.
           expires: '2026-02-01'
         62044:
-          reason: We are not considering this for the moment.
+          reason: We are not considering this vulnerability for the moment.
           expires: '2026-02-01'
         67599:
-          reason: We are not considering this for the moment.
+          reason: We are not considering this vulnerability for the moment.
           expires: '2026-02-01'
 
 fail-scan-with-exit-code:
