@@ -224,7 +224,7 @@ runs:
         ignored_packages_from_txt=${ignored_packages_from_txt::-1}
 
         # Verify if the Python environment contains invalid licenses
-        if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2) ]]; then
+        if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep '^[[:space:]]*[0-9]' | grep -v $accepted_licenses ) ]]; then
           echo "All licenses are valid."
         else
           echo -e "\nInvalid licenses found:\n"
