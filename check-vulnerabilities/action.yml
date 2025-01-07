@@ -328,21 +328,24 @@ runs:
     - name: "Download the list of ignored safety vulnerabilities"
       shell: bash
       run: |
-        wget https://raw.githubusercontent.com/ansys/actions/main/check-vulnerabilities/ignored-safety.txt
+        FILE='.safety-policy.yml'
+        if [ -f $FILE ]; then
+          echo "File $FILE exists."
+        else
+          URL_FILE='https://raw.githubusercontent.com/ansys/actions/main/check-vulnerabilities/default_safety_policy.yaml'
+          echo "File $FILE does not exist."
+          echo "Using a default policy file from $URL_FILE"
+          wget $URL_FILE
+          mv default_safety_policy.yaml  $FILE
+        fi
 
     - name: "Run safety and bandit"
       shell: bash
       run: |
         ${{ env.ACTIVATE_VENV }}
-        # Load accepted safety vulnerabilities
-        mapfile ignored_safety_vulnerabilities < ignored-safety.txt
-        ignored_vulnerabilities=''
-        for pckg in ${ignored_safety_vulnerabilities[*]}; do ignored_vulnerabilities+="-i $pckg "; done
-          ignored_safety_vulnerabilities=${ignored_safety_vulnerabilities::-1}
-        echo "Ignored safety vulnerabilities: $ignored_vulnerabilities"
 
         # Run security tools
-        safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
+        safety scan --output screen --save-as json info_safety.json || echo "Running 'safety' failed."
         bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json --exit-zero
 
     - name: "Run safety advisory checks"
