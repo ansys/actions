@@ -142,6 +142,13 @@ inputs:
     required: false
     type: boolean
 
+  skip-pdf-build:
+    description: |
+      Whether to skip the generation of PDF documentation.
+    required: false
+    default: false
+    type: boolean
+
   check-links:
     description: |
       Whether to perform external link checks during the generation of
@@ -210,6 +217,7 @@ runs:
         skip-install: ${{ inputs.skip-install }}
         requirements-file: ${{ inputs.requirements-file }}
         skip-json-build: ${{ inputs.skip-json-build }}
+        skip-pdf-build: ${{ inputs.skip-pdf-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
@@ -234,6 +242,7 @@ runs:
         skip-install: ${{ inputs.skip-install }}
         requirements-file: ${{ inputs.requirements-file }}
         skip-json-build: ${{ inputs.skip-json-build }}
+        skip-pdf-build: ${{ inputs.skip-pdf-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}

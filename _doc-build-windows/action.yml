@@ -88,6 +88,12 @@ inputs:
     required: true
     type: boolean
 
+  skip-pdf-build:
+    description: |
+      Whether to skip the generation of PDF documentation.
+    required: true
+    type: boolean
+
   check-links:
     description: |
       Whether to perform external link checks during the generation of
@@ -171,6 +177,7 @@ runs:
       run: choco install ${{ env.NEEDED_DEPS }} -y
 
     - name: Install Miktex and update PATH with Miktex binaries
+      if: inputs.skip-pdf-build != 'true'
       shell: powershell
       run: |
         choco install miktex -y
@@ -199,6 +206,7 @@ runs:
 
     - name: Set up Miktex to automatically install packages
       shell: powershell
+      if: inputs.skip-pdf-build != 'true'
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
 
@@ -338,7 +346,13 @@ runs:
         .venv\Scripts\Activate.ps1
         cd doc
         ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        ${{ env.SPHINX_BUILD_MAKE }} pdf
+
+        if ("${{ inputs.skip-pdf-build }}" -ne 'true' ) {
+          ${{ env.SPHINX_BUILD_MAKE }} pdf
+        } else {
+          echo 'Skipping PDF generation as requested by the user/action'
+        }
+
         if ("${{ inputs.check-links }}" -eq 'true' ) {
           ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
         }
@@ -363,7 +377,7 @@ runs:
         python ${{ github.action_path }}\..\python-utils\parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
-      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
+      if: ${{ ((inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '')) && inputs.skip-pdf-build != 'true' }}
       with:
         level: "ERROR"
         message: >
@@ -442,7 +456,9 @@ runs:
         if (Test-Path -Path "${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}") {
           Write-Host "PDF has been generated successfully"
         } else {
-          Write-Error "PDF has not been generated properly"
+          if ("${{ inputs.skip-pdf-build }}" -ne 'true' ) {
+            Write-Error "PDF has not been generated properly"
+          }
         }
 
     # ------------------------------------------------------------------------
@@ -461,6 +477,12 @@ runs:
       run: |
         cd ${{ env.EXPECTED_BUILD_DIR }}\html; zip -r documentation-html.zip *; cd ..\..\..
         mv ${{ env.EXPECTED_BUILD_DIR }}\html\documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
+
+        if ("${{ inputs.skip-pdf-build }}" -eq 'true' ) {
+          echo 'Not attaching PDF since its generation has not being requested.'
+          exit 0;
+        }
+
         if (Test-Path ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}) {
           cp ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
           Write-Output "File ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} has been copied."
@@ -486,6 +508,7 @@ runs:
 
     - name: Upload PDF documentation artifact
       uses: actions/upload-artifact@v4
+      if: ${{ inputs.skip-pdf-build != 'true' }}
       with:
         name: documentation-pdf
         path: doc/_build/latex/*.pdf

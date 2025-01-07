@@ -96,6 +96,12 @@ inputs:
     required: true
     type: boolean
 
+  skip-pdf-build:
+    description: |
+      Whether to skip the generation of PDF documentation.
+    required: true
+    type: boolean
+
   check-links:
     description: |
       Whether to perform external link checks during the generation of
@@ -163,6 +169,7 @@ runs:
         sudo apt-get install -y ${{ env.NEEDED_DEPS }}
 
     - name: "Install LaTeX"
+      if: inputs.skip-pdf-build != 'true'
       shell: bash
       run: |
         sudo apt-get install -y texlive-latex-extra latexmk
@@ -314,7 +321,14 @@ runs:
       run: |
         source .venv/bin/activate
         ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
+
+        if [[ ${{ inputs.skip-pdf-build }} != 'true' ]];
+        then
+          ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
+        else
+          echo "Skipping PDF generation as requested by the user/action"
+        fi
+
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
           ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
@@ -330,7 +344,13 @@ runs:
       run: |
         source .venv/bin/activate
         xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
+
+        if [[ ${{ inputs.skip-pdf-build }} != 'true' ]];
+        then
+          xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc pdf
+        else
+          echo "Skipping PDF generation as requested by the user/action"
+        fi
         if [[ ${{ inputs.check-links }} == 'true' ]];
         then
           xvfb-run ${{ env.SPHINX_BUILD_MAKE }} -C doc linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
@@ -357,7 +377,7 @@ runs:
         python ${{ github.action_path }}/../python-utils/parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
-      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
+      if: ${{ ((inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') ) && inputs.skip-pdf-build != 'true' }}
       with:
         level: "ERROR"
         message: >
@@ -445,6 +465,13 @@ runs:
       shell: bash
       run: |
         mv documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
+
+        if [[ ${{ inputs.skip-pdf-build }} == 'true' ]];
+        then
+          echo "Not attaching PDF since its generation has not being requested."
+          exit 0;
+        fi
+
         if [ -e  "${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }}" ]; then
             cp ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
             echo "File ${{ env.EXPECTED_BUILD_DIR }}/latex/${{ env.PDF_FILENAME }} has been copied."
@@ -464,6 +491,7 @@ runs:
 
     - name: "Upload PDF documentation artifact"
       uses: actions/upload-artifact@v4
+      if: inputs.skip-pdf-build != 'true'
       with:
         name: documentation-pdf
         path: doc/_build/latex/*.pdf
