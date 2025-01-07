@@ -228,7 +228,7 @@ runs:
           echo "All licenses are valid."
         else
           echo -e "\nInvalid licenses found:\n"
-          pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses | awk 'NR>1 {print $1 " " $2 " has " $3 " license"}'
+          pip-licenses --ignore-packages $ignored_packages | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses | awk '{ for (i=3; i<=NF; i++) license = license $i (i==NF ? "" : " "); print $1 " " $2 " has " license; license="" }'
           # print all packages
           echo -e "\n\n"
           pip-licenses --ignore-packages $ignored_packages
