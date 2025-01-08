@@ -347,7 +347,7 @@ runs:
         cd doc
         ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
 
-        if ("${{ inputs.skip-pdf-build }}" -ne 'true' ) {
+        if ("${{ inputs.skip-pdf-build }}" -eq 'false' ) {
           ${{ env.SPHINX_BUILD_MAKE }} pdf
         } else {
           echo 'Skipping PDF generation as requested by the user/action'
@@ -377,7 +377,7 @@ runs:
         python ${{ github.action_path }}\..\python-utils\parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
-      if: ${{ ((inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '')) && inputs.skip-pdf-build != 'true' }}
+      if: ${{ (inputs.skip-pdf-build == 'false') && (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
       with:
         level: "ERROR"
         message: >
@@ -456,7 +456,7 @@ runs:
         if (Test-Path -Path "${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}") {
           Write-Host "PDF has been generated successfully"
         } else {
-          if ("${{ inputs.skip-pdf-build }}" -ne 'true' ) {
+          if ("${{ inputs.skip-pdf-build }}" -eq 'false' ) {
             Write-Error "PDF has not been generated properly"
           }
         }
@@ -479,11 +479,9 @@ runs:
         mv ${{ env.EXPECTED_BUILD_DIR }}\html\documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
 
         if ("${{ inputs.skip-pdf-build }}" -eq 'true' ) {
-          echo 'Not attaching PDF since its generation has not being requested.'
-          exit 0;
+          Write-Output 'Not attaching PDF since its generation has not being requested.'
         }
-
-        if (Test-Path ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}) {
+        elseif (Test-Path ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}) {
           cp ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
           Write-Output "File ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} has been copied."
         } else {
@@ -508,7 +506,7 @@ runs:
 
     - name: Upload PDF documentation artifact
       uses: actions/upload-artifact@v4
-      if: ${{ inputs.skip-pdf-build != 'true' }}
+      if: inputs.skip-pdf-build == 'false'
       with:
         name: documentation-pdf
         path: doc/_build/latex/*.pdf
