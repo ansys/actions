@@ -116,10 +116,11 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
-    - name: "Install towncrier"
+    - name: "Install towncrier, toml, and ansys-sphinx-theme"
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
+        python -m pip install git+https://github.com/ansys/ansys-sphinx-theme.git@fix/jinja-template-testing
 
     # TODO: remove this deprecation in ansys/actions@v9
 
