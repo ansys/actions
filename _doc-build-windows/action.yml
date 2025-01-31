@@ -177,6 +177,7 @@ runs:
         echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install Poppler for PDF to PNG conversion"
+      if: ${{ inputs.needs-quarto == 'true' }}
       shell: powershell
       run: |
         choco install poppler -y
