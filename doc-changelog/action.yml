@@ -98,6 +98,16 @@ inputs:
     default: false
     type: boolean
 
+  use-ansys-sphinx-theme-template:
+    description: |
+      Use the Ansys Sphinx theme template for the documentation. If ``true``, the
+      Ansys Sphinx theme template is used. If ``false``, the template path  should
+      be provided in the ``pyproject.toml`` file. By default, the Ansys Sphinx theme
+      template is used.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -120,6 +130,13 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
+
+    - name: "Use the ANSYS Sphinx theme template"
+      if: ${{ inputs.use-ansys-sphinx-theme-template == 'true' }}
+      shell: bash
+      run: |
+        # Get the ANSYS Sphinx theme template
+        python -m pip install "ansys-sphinx-theme[changelog] @ git+https://github.com/ansys/ansys-sphinx-theme.git@feat/changelog-template"
 
     # TODO: remove this deprecation in ansys/actions@v9
 
@@ -261,8 +278,9 @@ runs:
         org_name = "${{ github.repository_owner }}"
 
         default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
+        use_ansys_sphinx_theme_template = True if "${{ inputs.use-ansys-sphinx-theme-template }}" == "true" else False
 
-        add_towncrier_config(org_name, repo_name, default_config)
+        add_towncrier_config(org_name, repo_name, default_config, use_ansys_sphinx_theme_template)
 
     - name: "Create and commit towncrier fragment"
       shell: bash
