@@ -234,7 +234,7 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
         # Dictionary containing [tool.towncrier] keys and values
         towncrier_config_sections = {
             "directory": '"doc/changelog.d"',
-            "template": '"doc/changelog.d/changelog_template.jinja"',
+            "template": '"ansys_sphinx_theme:changelog_template.jinja"',
             "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
             "start_string": {
                 "web": '".. towncrier release notes start\\n"',
@@ -248,6 +248,8 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
                 "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
                 "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
             },
+            "all_bullet": "false",
+            "underlines": '["=", "^"]',
         }
 
         # Get the package name from [tool.flit.module]
