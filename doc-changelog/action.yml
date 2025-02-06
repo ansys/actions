@@ -278,8 +278,9 @@ runs:
         org_name = "${{ github.repository_owner }}"
 
         default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
+        use_ansys_sphinx_theme_template = True if "${{ inputs.use-ansys-sphinx-theme-template }}" == "true" else False
 
-        add_towncrier_config(org_name, repo_name, default_config)
+        add_towncrier_config(org_name, repo_name, default_config, use_ansys_sphinx_theme_template)
 
     - name: "Create and commit towncrier fragment"
       shell: bash

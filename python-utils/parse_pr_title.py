@@ -202,7 +202,7 @@ def clean_pr_title(pr_title: str, use_cc: str):
     save_env_variable("CLEAN_TITLE", clean_title)
 
 
-def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
+def add_towncrier_config(org_name: str, repo_name: str, default_config: bool, use_ansys_sphinx: bool):
     """Append the missing towncrier information to the pyproject.toml file.
 
     Parameters
@@ -231,10 +231,11 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
             "test",
         ]
 
+        template = "ansys_sphinx_theme:changelog_template.jinja" if use_ansys_sphinx else "doc/changelog.d/changelog_template.jinja"
         # Dictionary containing [tool.towncrier] keys and values
         towncrier_config_sections = {
             "directory": '"doc/changelog.d"',
-            "template": '"ansys_sphinx_theme:changelog_template.jinja"',
+            "template": f'"{template}"',
             "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
             "start_string": {
                 "web": '".. towncrier release notes start\\n"',
@@ -249,8 +250,10 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
                 "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
             },
             "all_bullet": "false",
-            "underlines": '["=", "^"]',
         }
+        if use_ansys_sphinx:
+            towncrier_config_sections["underlines"] = '["=", "^", "-"]'
+
 
         # Get the package name from [tool.flit.module]
         flit = tool.get("flit", "DNE")
