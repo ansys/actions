@@ -214,7 +214,7 @@ runs:
       shell: bash
       run: |
         # Get the ANSYS Sphinx theme template
-        python -m pip install ansys-sphinx-theme[changelog]
+        python -m pip install "ansys-sphinx-theme[changelog] @ git+https://github.com/ansys/ansys-sphinx-theme.git@feat/changelog-template"
 
     # TODO: remove this deprecation in ansys/actions@v9
 
