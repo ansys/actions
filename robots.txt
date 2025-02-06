@@ -1,0 +1,14 @@
+User-agent: *
+
+Disallow: /version/8.0
+Disallow: /version/7.0
+Disallow: /version/6.1
+Disallow: /version/6.0
+Disallow: /version/5.1
+Disallow: /version/5.0
+Disallow: /version/4.1
+Disallow: /version/4.0
+Disallow: /version/3.0
+Disallow: /version/2.0
+
+Sitemap: https://actions.docs.ansys.com/sitemap.xml
