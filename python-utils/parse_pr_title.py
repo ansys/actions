@@ -3,17 +3,6 @@ from pathlib import Path
 
 import toml
 
-CHANGELOG_SECTION = {
-    "added": "Features",
-    "dependencies": "Dependencies",
-    "documentation": "Documentation",
-    "fixed": "Bug Fixes",
-    "maintenance": "Maintenance",
-    "miscellaneous": "Miscellaneous",
-    "test": "Tests",
-}
-"""Dictionary containing the changelog sections and their corresponding names."""
-
 
 def save_env_variable(env_var_name: str, env_var_value: str):
     """Save environment variable to the GITHUB_ENV file.
@@ -235,6 +224,16 @@ def add_towncrier_config(
 
         # List containing changelog sections under each release
 
+        changelog_sections = {
+            "added": "Features",
+            "dependencies": "Dependencies",
+            "documentation": "Documentation",
+            "fixed": "Bug Fixes",
+            "maintenance": "Maintenance",
+            "miscellaneous": "Miscellaneous",
+            "test": "Tests",
+        }
+
         template = (
             "ansys_sphinx_theme:changelog_template.jinja"
             if use_ansys_sphinx
@@ -284,10 +283,10 @@ def add_towncrier_config(
             # Get the existing [[tool.towncrier.type]] sections
             types = towncrier.get("type", "DNE")
             if types != "DNE":
-                remove_existing_types(types, list(CHANGELOG_SECTION.keys()))
+                remove_existing_types(types, changelog_sections)
 
         # Add missing [[tool.towncrier.type]] sections
-        write_missing_types(file)
+        write_missing_types(file, changelog_sections)
 
 
 def write_towncrier_config_section(
@@ -340,11 +339,11 @@ def remove_existing_types(types: list, changelog_sections: list):
         # Remove changelog section if it exists under [[tool.towncrier.type]] so that
         # only missing sections are appended to the pyproject.toml file
         section = group.get("directory")
-        if section in list(CHANGELOG_SECTION.keys()):
-            changelog_sections.remove(section)
+        if section in changelog_sections:
+            changelog_sections.pop(section)
 
 
-def write_missing_types(file):
+def write_missing_types(file, changelog_sections: dict):
     """Write the missing types in [[tool.towncrier.types]]
 
     Parameters
@@ -353,7 +352,7 @@ def write_missing_types(file):
         File to write to.
     """
     # Write each missing section to the pyproject.toml file
-    for section, name in CHANGELOG_SECTION.items():
+    for section, name in changelog_sections.items():
         file.write(
             f"""
 [[tool.towncrier.type]]
