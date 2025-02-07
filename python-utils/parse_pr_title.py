@@ -12,6 +12,7 @@ CHANGELOG_SECTION = {
     "miscellaneous": "Miscellaneous",
     "test": "Tests",
 }
+"""Dictionary containing the changelog sections and their corresponding names."""
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -212,7 +213,9 @@ def clean_pr_title(pr_title: str, use_cc: str):
     save_env_variable("CLEAN_TITLE", clean_title)
 
 
-def add_towncrier_config(org_name: str, repo_name: str, default_config: bool, use_ansys_sphinx: bool):
+def add_towncrier_config(
+    org_name: str, repo_name: str, default_config: bool, use_ansys_sphinx: bool
+):
     """Append the missing towncrier information to the pyproject.toml file.
 
     Parameters
@@ -232,7 +235,11 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool, us
 
         # List containing changelog sections under each release
 
-        template = "ansys_sphinx_theme:changelog_template.jinja" if use_ansys_sphinx else "doc/changelog.d/changelog_template.jinja"
+        template = (
+            "ansys_sphinx_theme:changelog_template.jinja"
+            if use_ansys_sphinx
+            else "doc/changelog.d/changelog_template.jinja"
+        )
         # Dictionary containing [tool.towncrier] keys and values
         towncrier_config_sections = {
             "directory": '"doc/changelog.d"',
@@ -254,7 +261,6 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool, us
         }
         if use_ansys_sphinx:
             towncrier_config_sections["underlines"] = '["=", "^", "-"]'
-
 
         # Get the package name from [tool.flit.module]
         flit = tool.get("flit", "DNE")
@@ -343,8 +349,6 @@ def write_missing_types(file):
 
     Parameters
     ----------
-    changelog_sections: list
-        List containing changelog sections under each release.
     file: _io.TextIOWrapper
         File to write to.
     """
