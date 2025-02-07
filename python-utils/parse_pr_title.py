@@ -349,11 +349,11 @@ def write_missing_types(file):
         File to write to.
     """
     # Write each missing section to the pyproject.toml file
-    for type, name in CHANGELOG_SECTION.items():
+    for section, name in CHANGELOG_SECTION.items():
         file.write(
             f"""
 [[tool.towncrier.type]]
-directory = "{type}"
+directory = "{section}"
 name = "{name}"
 showcontent = true\n"""
         )
