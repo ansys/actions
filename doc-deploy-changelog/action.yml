@@ -175,13 +175,6 @@ inputs:
     default: true
     type: boolean
 
-  use-ansys-sphinx-theme-template:
-    description: |
-      Use the ANSYS Sphinx theme template for the pull request body message.
-    required: false
-    default: true
-    type: boolean
-
 runs:
   using: "composite"
   steps:
@@ -207,14 +200,7 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
-        python -m pip install -e .
-
-    - name: "Use the ANSYS Sphinx theme template"
-      if: ${{ inputs.use-ansys-sphinx-theme-template == true }}
-      shell: bash
-      run: |
-        # Get the ANSYS Sphinx theme template
-        python -m pip install "ansys-sphinx-theme[changelog] @ git+https://github.com/ansys/ansys-sphinx-theme.git@feat/changelog-template"
+        python -m pip install -e .[doc]
 
     # TODO: remove this deprecation in ansys/actions@v9
 

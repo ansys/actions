@@ -202,9 +202,7 @@ def clean_pr_title(pr_title: str, use_cc: str):
     save_env_variable("CLEAN_TITLE", clean_title)
 
 
-def add_towncrier_config(
-    org_name: str, repo_name: str, default_config: bool, use_ansys_sphinx: bool
-):
+def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     """Append the missing towncrier information to the pyproject.toml file.
 
     Parameters
@@ -216,112 +214,68 @@ def add_towncrier_config(
     default_config: bool
         Whether or not to use the default towncrier configuration for the pyproject.toml file.
     """
-    # rewrite the pyproject.toml file
-    with open("pyproject.toml", "r") as file:
-        config = toml.load(file)
+    # Load pyproject.toml file
+    with open("pyproject.toml", "a+") as file:
+        config = toml.load("pyproject.toml")
+        tool = config.get("tool", "DNE")
+        towncrier = tool.get("towncrier", "DNE")
 
-    changelog_sections = {
-        "added": "Features",
-        "dependencies": "Dependencies",
-        "documentation": "Documentation",
-        "fixed": "Bug Fixes",
-        "maintenance": "Maintenance",
-        "miscellaneous": "Miscellaneous",
-        "test": "Tests",
-    }
-
-    template = (
-        "ansys_sphinx_theme:changelog_template.jinja"
-        if use_ansys_sphinx
-        else "doc/changelog.d/changelog_template.jinja"
-    )
-    # Dictionary containing [tool.towncrier] keys and values
-    towncrier_config_sections = {
-        "directory": '"doc/changelog.d"',
-        "template": f'"{template}"',
-        "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
-        "start_string": {
-            "web": '".. towncrier release notes start\\n"',
-            "repo": '"<!-- towncrier release notes start -->\\n"',
-        },
-        "title_format": {
-            "web": f'"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"',
-            "repo": f'"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"',
-        },
-        "issue_format": {
-            "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
-            "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
-        },
-        "all_bullet": "false",
-    }
-    if use_ansys_sphinx:
-        towncrier_config_sections["underlines"] = ["=", "^", "-"]
-
-    # Get the package name from [tool.flit.module]
-    flit = config.get("tool", "DNE").get("flit", "DNE")
-    module = name = ""
-    if flit != "DNE":
-        module = flit.get("module", "DNE")
-        if module != ("DNE" or ""):
-            name = module.get("name", "DNE")
-            # If [tool.flit.module] name exists, create the package string
-            if name != ("DNE" and ""):
-                towncrier_config_sections["package"] = f'"{name}"'
-
-    towncrier = config.get("tool", "DNE").get("towncrier", "DNE")
-
-    if default_config:
-        # If there is no towncrier configuration information or if [[tool.towncrier.type]]
-        # is the only towncrier information in the pyproject.toml file
-        if towncrier == "DNE" or len(towncrier) == 1:
-            # Write the [tool.towncrier] section
-            config = add_towncrier_config_section(towncrier_config_sections, True, config)
-
-    if towncrier != "DNE":
-        # Get the existing [[tool.towncrier.type]] sections
-        types = towncrier.get("type", "DNE")
-        if types != "DNE":
-            config = remove_existing_types(types, changelog_sections, config)
-
-    # Write the missing [[tool.towncrier.type]] sections
-    config = write_missing_types(config, changelog_sections)
-
-    with open("pyproject.toml", "w", encoding="utf-8") as file:
-        file.write(config)
-
-
-def add_towncrier_config_section(
-    towncrier_config_sections: dict, web_release_notes: bool, config: dict
-):
-    """Finalise the towncrier configuration based on the web_release_notes boolean."""
-    if web_release_notes:
-        towncrier_config_sections["filename"] = towncrier_config_sections["filename"][
-            "web"
+        # List containing changelog sections under each release
+        changelog_sections = [
+            "added",
+            "dependencies",
+            "documentation",
+            "fixed",
+            "maintenance",
+            "miscellaneous",
+            "test",
         ]
-        towncrier_config_sections["start_string"] = towncrier_config_sections[
-            "start_string"
-        ]["web"]
-        towncrier_config_sections["title_format"] = towncrier_config_sections[
-            "title_format"
-        ]["web"]
-        towncrier_config_sections["issue_format"] = towncrier_config_sections[
-            "issue_format"
-        ]["web"]
-    else:
-        towncrier_config_sections["filename"] = towncrier_config_sections["filename"][
-            "repo"
-        ]
-        towncrier_config_sections["start_string"] = towncrier_config_sections[
-            "start_string"
-        ]["repo"]
-        towncrier_config_sections["title_format"] = towncrier_config_sections[
-            "title_format"
-        ]["repo"]
-        towncrier_config_sections["issue_format"] = towncrier_config_sections[
-            "issue_format"
-        ]["repo"]
-    config.get("tool", "DNE").setdefault("towncrier", towncrier_config_sections)
-    return config
+
+        # Dictionary containing [tool.towncrier] keys and values
+        towncrier_config_sections = {
+            "directory": '"doc/changelog.d"',
+            "template": '"doc/changelog.d/changelog_template.jinja"',
+            "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
+            "start_string": {
+                "web": '".. towncrier release notes start\\n"',
+                "repo": '"<!-- towncrier release notes start -->\\n"',
+            },
+            "title_format": {
+                "web": f'"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"',
+                "repo": f'"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"',
+            },
+            "issue_format": {
+                "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
+                "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
+            },
+        }
+
+        # Get the package name from [tool.flit.module]
+        flit = tool.get("flit", "DNE")
+        module = name = ""
+        if flit != "DNE":
+            module = flit.get("module", "DNE")
+            if module != ("DNE" or ""):
+                name = module.get("name", "DNE")
+                # If [tool.flit.module] name exists, create the package string
+                if name != ("DNE" and ""):
+                    towncrier_config_sections["package"] = f'"{name}"'
+
+        if default_config:
+            # If there is no towncrier configuration information or if [[tool.towncrier.type]]
+            # is the only towncrier information in the pyproject.toml file
+            if towncrier == "DNE" or len(towncrier) == 1:
+                # Write the [tool.towncrier] section
+                write_towncrier_config_section(file, towncrier_config_sections, True)
+
+        if towncrier != "DNE":
+            # Get the existing [[tool.towncrier.type]] sections
+            types = towncrier.get("type", "DNE")
+            if types != "DNE":
+                remove_existing_types(types, changelog_sections)
+
+        # Add missing [[tool.towncrier.type]] sections
+        write_missing_types(changelog_sections, file)
 
 
 def write_towncrier_config_section(
@@ -360,7 +314,7 @@ def write_towncrier_config_section(
             file.write(f"{key} = {value}\n")
 
 
-def remove_existing_types(types: list, changelog_sections: list, config: dict):
+def remove_existing_types(types: list, changelog_sections: list):
     """Remove the existing [[tool.towncrier.types]] from the changelog_sections list.
 
     Parameters
@@ -374,40 +328,29 @@ def remove_existing_types(types: list, changelog_sections: list, config: dict):
         # Remove changelog section if it exists under [[tool.towncrier.type]] so that
         # only missing sections are appended to the pyproject.toml file
         section = group.get("directory")
-        name = group.get("name")
-        if section in changelog_sections and changelog_sections[section] == name:
-            changelog_sections.pop(section)
-            
-        elif section in changelog_sections and changelog_sections[section] != name:
-            # If the section exists but the name is different, update the name
-            group["name"] = changelog_sections[section]
-            
-    config.get("tool", {}).get("towncrier", {})["type"] = types
-    return config       
-    
-            
-    
+        if section in changelog_sections:
+            changelog_sections.remove(section)
 
 
-def write_missing_types(config: dict, changelog_sections: list):
+def write_missing_types(changelog_sections: list, file):
     """Write the missing types in [[tool.towncrier.types]]
 
     Parameters
     ----------
-    config: dict
-        Dictionary containing the pyproject.toml file.
+    changelog_sections: list
+        List containing changelog sections under each release.
+    file: _io.TextIOWrapper
+        File to write to.
     """
+    # Write each missing section to the pyproject.toml file
     for section in changelog_sections:
-        # Append the missing [[tool.towncrier.type]] sections
-        config.get("tool", {}).get("towncrier", {}).setdefault("type", []).append(
-            {
-                "directory": section,
-                "name": changelog_sections[section],
-                "showcontent": True,
-            }
+        file.write(
+            f"""
+[[tool.towncrier.type]]
+directory = "{section}"
+name = "{section.title()}"
+showcontent = true\n"""
         )
-
-    return config
 
 
 def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
