@@ -255,7 +255,7 @@ def add_towncrier_config(
         "all_bullet": "false",
     }
     if use_ansys_sphinx:
-        towncrier_config_sections["underlines"] = '["=", "^", "-"]'
+        towncrier_config_sections["underlines"] = ["=", "^", "-"]
 
     # Get the package name from [tool.flit.module]
     flit = config.get("tool", "DNE").get("flit", "DNE")
@@ -268,26 +268,26 @@ def add_towncrier_config(
             if name != ("DNE" and ""):
                 towncrier_config_sections["package"] = f'"{name}"'
 
-    towncrier = config.get("tool", {}).get("towncrier", "DNE")
+    towncrier = config.get("tool", "DNE").get("towncrier", "DNE")
 
     if default_config:
         # If there is no towncrier configuration information or if [[tool.towncrier.type]]
         # is the only towncrier information in the pyproject.toml file
         if towncrier == "DNE" or len(towncrier) == 1:
             # Write the [tool.towncrier] section
-            add_towncrier_config_section(towncrier_config_sections, True, config)
+            config = add_towncrier_config_section(towncrier_config_sections, True, config)
 
     if towncrier != "DNE":
         # Get the existing [[tool.towncrier.type]] sections
         types = towncrier.get("type", "DNE")
         if types != "DNE":
-            remove_existing_types(types, changelog_sections)
+            config = remove_existing_types(types, changelog_sections, config)
 
     # Write the missing [[tool.towncrier.type]] sections
     config = write_missing_types(config, changelog_sections)
 
-    with open("pyproject.toml", "w") as file:
-        toml.dump(config, file)
+    with open("pyproject.toml", "w", encoding="utf-8") as file:
+        file.write(config.as_string())
 
 
 def add_towncrier_config_section(
@@ -320,7 +320,8 @@ def add_towncrier_config_section(
         towncrier_config_sections["issue_format"] = towncrier_config_sections[
             "issue_format"
         ]["repo"]
-    config.get("tool", {}).update({"towncrier": towncrier_config_sections})
+    config.get("tool", "DNE").setdefault("towncrier", towncrier_config_sections)
+    return config
 
 
 def write_towncrier_config_section(
@@ -359,7 +360,7 @@ def write_towncrier_config_section(
             file.write(f"{key} = {value}\n")
 
 
-def remove_existing_types(types: list, changelog_sections: list):
+def remove_existing_types(types: list, changelog_sections: list, config: dict):
     """Remove the existing [[tool.towncrier.types]] from the changelog_sections list.
 
     Parameters
@@ -373,8 +374,19 @@ def remove_existing_types(types: list, changelog_sections: list):
         # Remove changelog section if it exists under [[tool.towncrier.type]] so that
         # only missing sections are appended to the pyproject.toml file
         section = group.get("directory")
-        if section in changelog_sections:
+        name = group.get("name")
+        if section in changelog_sections and changelog_sections[section] == name:
             changelog_sections.pop(section)
+            
+        elif section in changelog_sections and changelog_sections[section] != name:
+            # If the section exists but the name is different, update the name
+            group["name"] = changelog_sections[section]
+            
+    config.get("tool", {}).get("towncrier", {})["type"] = types
+    return config       
+    
+            
+    
 
 
 def write_missing_types(config: dict, changelog_sections: list):
