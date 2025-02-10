@@ -120,7 +120,7 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
-        python -m pip install .[doc]        
+        python -m pip install .[doc]
 
     # TODO: remove this deprecation in ansys/actions@v9
 
