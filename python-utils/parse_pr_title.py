@@ -230,7 +230,6 @@ def add_towncrier_config(
         "test": "Tests",
     }
 
-        
     template = (
         "ansys_sphinx_theme:changelog_template.jinja"
         if use_ansys_sphinx
@@ -268,58 +267,61 @@ def add_towncrier_config(
             # If [tool.flit.module] name exists, create the package string
             if name != ("DNE" and ""):
                 towncrier_config_sections["package"] = f'"{name}"'
-      
-      
-    towncrier = config.get("tool", {}).get("towncrier", "DNE")              
+
+    towncrier = config.get("tool", {}).get("towncrier", "DNE")
 
     if default_config:
         # If there is no towncrier configuration information or if [[tool.towncrier.type]]
         # is the only towncrier information in the pyproject.toml file
         if towncrier == "DNE" or len(towncrier) == 1:
             # Write the [tool.towncrier] section
-               add_towncrier_config_section(towncrier_config_sections, True, config)
+            add_towncrier_config_section(towncrier_config_sections, True, config)
 
     if towncrier != "DNE":
         # Get the existing [[tool.towncrier.type]] sections
         types = towncrier.get("type", "DNE")
         if types != "DNE":
             remove_existing_types(types, changelog_sections)
-                
+
     # Write the missing [[tool.towncrier.type]] sections
     config = write_missing_types(config, changelog_sections)
-    
+
     with open("pyproject.toml", "w") as file:
         toml.dump(config, file)
-            
-        
-        
-        
-def add_towncrier_config_section(towncrier_config_sections: dict, web_release_notes: bool, config: dict):
+
+
+def add_towncrier_config_section(
+    towncrier_config_sections: dict, web_release_notes: bool, config: dict
+):
     """Finalise the towncrier configuration based on the web_release_notes boolean."""
     if web_release_notes:
-        towncrier_config_sections["filename"] = towncrier_config_sections["filename"]["web"]
-        towncrier_config_sections["start_string"] = towncrier_config_sections["start_string"][
+        towncrier_config_sections["filename"] = towncrier_config_sections["filename"][
             "web"
         ]
-        towncrier_config_sections["title_format"] = towncrier_config_sections["title_format"][
-            "web"
-        ]
-        towncrier_config_sections["issue_format"] = towncrier_config_sections["issue_format"][
-            "web"
-        ]
+        towncrier_config_sections["start_string"] = towncrier_config_sections[
+            "start_string"
+        ]["web"]
+        towncrier_config_sections["title_format"] = towncrier_config_sections[
+            "title_format"
+        ]["web"]
+        towncrier_config_sections["issue_format"] = towncrier_config_sections[
+            "issue_format"
+        ]["web"]
     else:
-        towncrier_config_sections["filename"] = towncrier_config_sections["filename"]["repo"]
-        towncrier_config_sections["start_string"] = towncrier_config_sections["start_string"][
+        towncrier_config_sections["filename"] = towncrier_config_sections["filename"][
             "repo"
         ]
-        towncrier_config_sections["title_format"] = towncrier_config_sections["title_format"][
-            "repo"
-        ]
-        towncrier_config_sections["issue_format"] = towncrier_config_sections["issue_format"][
-            "repo"
-        ]
+        towncrier_config_sections["start_string"] = towncrier_config_sections[
+            "start_string"
+        ]["repo"]
+        towncrier_config_sections["title_format"] = towncrier_config_sections[
+            "title_format"
+        ]["repo"]
+        towncrier_config_sections["issue_format"] = towncrier_config_sections[
+            "issue_format"
+        ]["repo"]
     config.get("tool", {}).update({"towncrier": towncrier_config_sections})
-    
+
 
 def write_towncrier_config_section(
     file, towncrier_config_sections: dict, web_release_notes: bool
@@ -386,10 +388,15 @@ def write_missing_types(config: dict, changelog_sections: list):
     for section in changelog_sections:
         # Append the missing [[tool.towncrier.type]] sections
         config.get("tool", {}).get("towncrier", {}).setdefault("type", []).append(
-            {"directory": section, "name": changelog_sections[section], "showcontent": True}
+            {
+                "directory": section,
+                "name": changelog_sections[section],
+                "showcontent": True,
+            }
         )
-    
+
     return config
+
 
 def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
     """Get the value of a category within the [tool.towncrier] section of the pyproject.toml file.
