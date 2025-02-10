@@ -287,7 +287,7 @@ def add_towncrier_config(
     config = write_missing_types(config, changelog_sections)
 
     with open("pyproject.toml", "w", encoding="utf-8") as file:
-        file.write(config.as_string())
+        file.write(config)
 
 
 def add_towncrier_config_section(
