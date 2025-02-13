@@ -278,8 +278,6 @@ runs:
         # print template
         print(f"Using template: {template}")
 
-
-    # if ansys-sphinx-theme template is used, then download the template from the ansys-sphinx-theme repo
     - name: "Download ansys-sphinx-theme template"
       shell: bash
       run: |
@@ -288,14 +286,6 @@ runs:
           wget https://raw.githubusercontent.com/ansys/ansys-sphinx-theme/feat/changelog-template/src/ansys_sphinx_theme/templates/changelog_template.jinja -O ansys_sphinx_theme_changelog_template.jinja
         fi
 
-
-    # if ansys-sphinx-theme template is used, then download the template from the ansys-sphinx-theme repo
-    - name: "Download ansys-sphinx-theme template"
-      run: |
-        if [ $ANSYS_SPHINX_THEME_TEMPLATE == "true" ]; then
-          # download the ansys-sphinx-theme template from the specified branch
-          wget https://raw.githubusercontent.com/ansys/ansys-sphinx-theme/feat/changelog-template/src/ansys_sphinx_theme/templates/changelog_template.jinja -O ansys_sphinx_theme_changelog_template.jinja
-        fi
 
     - name: "Append towncrier categories to pyproject.toml"
       env:
