@@ -261,6 +261,8 @@ runs:
             config = toml.load(f)
             template=config["tool"]["towncrier"]["template"]
 
+        github_env = os.getenv('GITHUB_ENV')
+
         ansys_sphinx_theme_template = "ansys_sphinx_theme:changelog_template.jinja"
 
         # check if the template is the ansys_sphinx_theme template
