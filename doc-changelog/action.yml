@@ -98,6 +98,13 @@ inputs:
     default: false
     type: boolean
 
+  use-ansys-default-template:
+    description: |
+      Use the default towncrier template in the pyproject.toml file.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
