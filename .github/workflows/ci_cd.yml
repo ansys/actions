@@ -23,12 +23,15 @@ jobs:
 
   labeler:
     name: "Labels"
+    runs-on: ubuntu-latest
+    if: github.event_name == "pull_request"
     permissions:
       contents: read
       pull-requests: write
-    runs-on: ubuntu-latest
     steps:
-     - uses: actions/checkout@v4
+
+     - name: "Checkout projects"
+       uses: actions/checkout@v4
 
      - name: "Update labels"
        uses: micnncim/action-label-syncer@v1
@@ -42,10 +45,35 @@ jobs:
        with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+  changelog:
+    name: "Changelog"
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: ansys/actions/doc-changelog@v8
+      if: github.event_name == "pull_request"
+      with:
+        token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        use-conventional-commits: true
+        use-default-towncrier-config: true
+        bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+        bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
+    - uses: ansys/actions/doc-deploy-changelog@v8
+      if: github.event_name != "pull_request"
+      with:
+        token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+        bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
   pr-title-style:
     name: "Pull-request title style"
     runs-on: ubuntu-latest
-    needs: labeler
+    needs: changelog
+    if:
     steps:
       - uses: ansys/actions/check-pr-title@main
         with:
