@@ -314,8 +314,12 @@ runs:
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
 
-
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
+
+        # delete the template file if it exists
+        if [ -f "ansys_sphinx_theme_changelog_template.jinja" ]; then
+          rm ansys_sphinx_theme_changelog_template.jinja
+        fi
 
         # Configure git username & email
         git config user.name ${{ inputs.bot-user }}
