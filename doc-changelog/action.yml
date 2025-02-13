@@ -120,7 +120,6 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
-        python -m pip install .[doc]
 
     # TODO: remove this deprecation in ansys/actions@v9
 
@@ -247,6 +246,35 @@ runs:
         use_cc = True if "${{ inputs.use-conventional-commits }}" == "true" else False
 
         clean_pr_title(pr_title, use_cc)
+
+
+    # Testing purpose
+
+    - name: "Get towncrier directory and template"
+      shell: python
+      run: |
+        import os
+        import toml
+
+        # Load pyproject.toml
+        with open('pyproject.toml', 'r') as f:
+            config = toml.load(f)
+            template=config["tool"]["towncrier"]["template"]
+
+        ansys_sphinx_theme_template = "ansys_sphinx_theme:changelog_template.jinja"
+
+        # check if the template is the ansys_sphinx_theme template
+        if template == ansys_sphinx_theme_template:
+            # make env varable to true
+            with open(github_env, "a") as f:
+                f.write("ANSYS_SPHINX_THEME_TEMPLATE=true")
+        else:
+            # make env varable to false
+            with open(github_env, "a") as f:
+                f.write("ANSYS_SPHINX_THEME_TEMPLATE=false")
+
+        # print template
+        print(f"Using template: {template}")
 
     - name: "Append towncrier categories to pyproject.toml"
       env:
