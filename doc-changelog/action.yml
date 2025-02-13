@@ -261,31 +261,24 @@ runs:
             config = toml.load(f)
             template=config["tool"]["towncrier"]["template"]
 
+        # Get the GITHUB_ENV variable
         github_env = os.getenv('GITHUB_ENV')
 
-        ansys_sphinx_theme_template = "ansys_sphinx_theme_changelog_template.jinja"
+        with open(github_env, "a") as f:
+            f.write(f"TEMPLATE={template}")
 
-        # check if the template is the ansys_sphinx_theme template
-        if template == ansys_sphinx_theme_template:
-            # make env varable to true
-            with open(github_env, "a") as f:
-                f.write("ANSYS_SPHINX_THEME_TEMPLATE=true")
-        else:
-            # make env varable to false
-            with open(github_env, "a") as f:
-                f.write("ANSYS_SPHINX_THEME_TEMPLATE=false")
-
-        # print template
-        print(f"Using template: {template}")
-
-    - name: "Download ansys-sphinx-theme template"
-      shell: bash
+    - name: "Rewrite the template with the default template"
+      if: ${{ inputs.use-ansys-default-template }}
+      shell: python
       run: |
-        if [ $ANSYS_SPHINX_THEME_TEMPLATE == "true" ]; then
-          # download the ansys-sphinx-theme template from the specified branch
-          wget https://raw.githubusercontent.com/ansys/ansys-sphinx-theme/feat/changelog-template/src/ansys_sphinx_theme/templates/changelog_template.jinja -O ansys_sphinx_theme_changelog_template.jinja
-        fi
+        import os
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
+        from parse_pr_title import rewrite_template
+
+        # Rewrite the template with the default template
+        rewrite_template(os.getenv('TEMPLATE'))
 
     - name: "Append towncrier categories to pyproject.toml"
       env:
@@ -315,11 +308,6 @@ runs:
         # Fragment file contains the title of the PR
 
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
-
-        # delete the template file if it exists
-        if [ -f "ansys_sphinx_theme_changelog_template.jinja" ]; then
-          rm ansys_sphinx_theme_changelog_template.jinja
-        fi
 
         # Configure git username & email
         git config user.name ${{ inputs.bot-user }}

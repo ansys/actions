@@ -175,6 +175,16 @@ inputs:
     default: true
     type: boolean
 
+  use-ansys-default-template:
+    description: |
+      Use the default template with tabs for the changelog. If ``true``,
+      the default template is used. If ``false``, the default template is not used.
+      .. note::
+        This option requires ``sphinx-design`` as a dependency in doc.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -237,26 +247,21 @@ runs:
         with open(github_env, "a") as f:
             f.write(f"TOWNCRIER_DIR={directory}")
 
-        ansys_sphinx_theme_template = "ansys_sphinx_theme:changelog_template.jinja"
+        with open(github_env, "a") as f:
+            f.write(f"TEMPLATE={template}")
 
-        # check if the template is the ansys_sphinx_theme template
-        if template == ansys_sphinx_theme_template:
-            # make env varable to true
-            with open(github_env, "a") as f:
-                f.write("ANSYS_SPHINX_THEME_TEMPLATE=true")
-        else:
-            # make env varable to false
-            with open(github_env, "a") as f:
-                f.write("ANSYS_SPHINX_THEME_TEMPLATE=false")
-
-        # print template
-        print(f"Using template: {template}")
-
-    - name: "Install doc dependency if using ansys_sphinx_theme template"
-      if: env.ANSYS_SPHINX_THEME_TEMPLATE == 'true'
-      shell: bash
+    - name: "Rewrite the template with the default template"
+      if: ${{ inputs.use-ansys-default-template }}
+      shell: python
       run: |
-        python -m pip install -e .[doc]
+        import os
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        from parse_pr_title import rewrite_template
+
+        # Rewrite the template with the default template
+        rewrite_template()
 
     - name: "Get main branch name"
       shell: bash

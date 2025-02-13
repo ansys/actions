@@ -390,3 +390,27 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
                     category_value = towncrier.get(category, "")
 
     return category_value
+
+
+def rewrite_template(template_path: str):
+    """Rewrite the template.jinja file with the default template."""
+    # Path to the default template file in the repository
+    default_template_path = Path(__file__).parent / "default_template.jinja"
+
+    # Path to the template.jinja file to be rewritten
+    template_path = Path(template_path)
+
+    # Read the content of the default template
+    with open(default_template_path, "r") as default_template_file:
+        default_template_content = default_template_file.read()
+
+    # check if the content of the template.jinja file is the same as the default template
+    if template_path.is_file():
+        with open(template_path, "r") as template_file:
+            template_content = template_file.read()
+            if template_content == default_template_content:
+                print("The template.jinja file is already up-to-date.")
+
+    # Write the content to the template.jinja file
+    with open(template_path, "w") as template_file:
+        template_file.write(default_template_content)
