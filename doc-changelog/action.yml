@@ -267,6 +267,7 @@ runs:
         with open('pyproject.toml', 'r') as f:
             config = toml.load(f)
             template=config["tool"]["towncrier"]["template"]
+            filename=config["tool"]["towncrier"]["filename"]
 
         # Get the GITHUB_ENV variable
         github_env = os.getenv('GITHUB_ENV')
@@ -274,6 +275,11 @@ runs:
         with open(github_env, "a") as f:
             f.write(f"TEMPLATE={template}")
 
+        # Set TEMPLATE_REWRITE to true only if the filename ends with .rst
+        with open(github_env, "a") as f:
+            f.write(f"TEMPLATE_REWRITE={'true' if filename.endswith('.rst') else 'false'}")
+
+        print(f"TEMPLATE_REWRITE={os.getenv('TEMPLATE_REWRITE')}")
 
     - name: "Append towncrier categories to pyproject.toml"
       env:
@@ -293,7 +299,7 @@ runs:
         add_towncrier_config(org_name, repo_name, default_config)
 
     - name: "Rewrite the template with the default template"
-      if: ${{ inputs.use-ansys-default-template }}
+      if: ${{ inputs.use-ansys-default-template }} && ${{ env.TEMPLATE_REWRITE }}
       shell: python
       run: |
         import os
