@@ -175,15 +175,6 @@ inputs:
     default: true
     type: boolean
 
-  use-ansys-default-template:
-    description: |
-      Use the default template with tabs for the changelog. If ``true``,
-      the default template is used. If ``false``, the default template is not used.
-      .. note::
-        This option requires ``sphinx-design`` as a dependency in doc.
-    required: false
-    default: true
-    type: boolean
 
 runs:
   using: "composite"
@@ -249,19 +240,6 @@ runs:
 
         with open(github_env, "a") as f:
             f.write(f"TEMPLATE={template}")
-
-    - name: "Rewrite the template with the default template"
-      if: ${{ inputs.use-ansys-default-template }}
-      shell: python
-      run: |
-        import os
-        import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
-
-        from parse_pr_title import rewrite_template
-
-        # Rewrite the template with the default template
-        rewrite_template()
 
     - name: "Get main branch name"
       shell: bash
