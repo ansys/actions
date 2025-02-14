@@ -410,7 +410,9 @@ def rewrite_template(template_path: str):
             template_content = template_file.read()
             if template_content == default_template_content:
                 print("The template.jinja file is already up-to-date.")
+                return False
 
     # Write the content to the template.jinja file
     with open(template_path, "w") as template_file:
         template_file.write(default_template_content)
+        return True

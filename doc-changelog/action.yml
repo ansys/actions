@@ -274,18 +274,6 @@ runs:
         with open(github_env, "a") as f:
             f.write(f"TEMPLATE={template}")
 
-    - name: "Rewrite the template with the default template"
-      if: ${{ inputs.use-ansys-default-template }}
-      shell: python
-      run: |
-        import os
-        import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
-
-        from parse_pr_title import rewrite_template
-
-        # Rewrite the template with the default template
-        rewrite_template(os.getenv('TEMPLATE'))
 
     - name: "Append towncrier categories to pyproject.toml"
       env:
@@ -303,6 +291,32 @@ runs:
         default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
 
         add_towncrier_config(org_name, repo_name, default_config)
+
+    - name: "Rewrite the template with the default template"
+      if: ${{ inputs.use-ansys-default-template }}
+      shell: python
+      run: |
+        import os
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        from parse_pr_title import rewrite_template
+
+        template_status = rewrite_template(os.getenv('TEMPLATE'))
+
+        github_env = os.getenv('GITHUB_ENV')
+
+        with open(github_env, "a") as f:
+            f.write(f"TEMPLATE_STATUS={template_status}")
+
+    - name: "Make PR comment if template rewritten"
+      if: ${{ env.TEMPLATE_STATUS == 'True' }}
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.number }}
+        body: |
+          The towncrier template has been rewritten with the default template.
+          Please make sure you have `sphinx-design` as a dependency in your doc dependencies.
 
     - name: "Create and commit towncrier fragment"
       shell: bash
