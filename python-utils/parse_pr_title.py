@@ -392,13 +392,17 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
     return category_value
 
 
-def rewrite_template(template_path: str):
+def rewrite_template(template_path: str, file_name: str):
     """Rewrite the template.jinja file with the default template."""
     # Path to the default template file in the repository
     default_template_path = Path(__file__).parent / "default_template.jinja"
 
     # Path to the template.jinja file to be rewritten
     template_path = Path(template_path)
+
+    # if filename endswith/format is .md, donot change the template
+    if file_name.endswith(".md"):
+        return False
 
     # Read the content of the default template
     with open(default_template_path, "r") as default_template_file:
