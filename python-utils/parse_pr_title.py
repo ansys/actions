@@ -392,31 +392,91 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
     return category_value
 
 
-def rewrite_template(template_path: str, file_name: str):
-    """Rewrite the template.jinja file with the default template."""
-    # Path to the default template file in the repository
-    default_template_path = Path(__file__).parent / "default_template.jinja"
+def rewrite_template(template_path: None, file_name: None):
+    """Rewrite the template.jinja file with the default template.
 
-    # Path to the template.jinja file to be rewritten
-    template_path = Path(template_path)
+    Parameters
+    ----------
+    template_path: str
+        The path to the template.jinja file to be rewritten.
+    file_name: str
+        The name of the file to check if it ends with .md.
 
-    # if filename endswith/format is .md, donot change the template
-    if file_name.endswith(".md"):
-        return False
+    Returns
+    -------
+    bool
+        True if the template was rewritten, False otherwise.
+    """
+    template_path = template_path or "doc/changelog.d/changelog_template.jinja"
+    file_name = file_name or "doc/source/changelog.rst"
 
-    # Read the content of the default template
-    with open(default_template_path, "r") as default_template_file:
-        default_template_content = default_template_file.read()
+    try:
+        # Path to the default template file in the repository
+        default_template_path = Path(__file__).parent / "default_template.jinja"
 
-    # check if the content of the template.jinja file is the same as the default template
-    if template_path.is_file():
-        with open(template_path, "r") as template_file:
-            template_content = template_file.read()
+        # Path to the template.jinja file to be rewritten
+        template_path = Path(template_path)
+
+        # If filename ends with .md, do not change the template
+        if file_name.endswith(".md"):
+            print("The file is a markdown file. The template will not be changed.")
+            return False
+
+        # Read the content of the default template
+        default_template_content = read_file_content(default_template_path)
+
+        # Check if the content of the template.jinja file is the same as the default template
+        if template_path.is_file():
+            template_content = read_file_content(template_path)
             if template_content == default_template_content:
-                print("The template.jinja file is already up-to-date.")
+                print("The template.jinja file is already the default template.")
                 return False
 
-    # Write the content to the template.jinja file
-    with open(template_path, "w") as template_file:
-        template_file.write(default_template_content)
+        # Create the necessary directories if they do not exist
+        template_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write the content to the template.jinja file
+        write_file_content(template_path, default_template_content)
+        print("The template.jinja file has been rewritten.")
         return True
+
+    except Exception as e:
+        print(f"An error occurred while rewriting the template.jinja file: {e}")
+        return False
+
+
+def read_file_content(file_path: Path) -> str:
+    """Read the content of a file.
+
+    Parameters
+    ----------
+    file_path: Path
+        The path to the file to be read.
+
+    Returns
+    -------
+    str
+        The content of the file.
+    """
+    try:
+        with open(file_path, "r") as file:
+            return file.read()
+    except Exception as e:
+        print(f"An error occurred while reading the file: {e}")
+
+
+def write_file_content(file_path: Path, content: str):
+    """Write content to a file, if file does not exist, create it.
+
+    Parameters
+    ----------
+    file_path: Path
+        The path to the file to be written.
+    content: str
+        The content to be written to the file.
+    """
+    try:
+        with open(file_path, "w") as file:
+            file.write(content)
+    except Exception as e:
+        print(f"An error occurred while writing to the file: {e}")

@@ -219,7 +219,7 @@ runs:
 
     # TODO: end
 
-    - name: "Get towncrier directory and template"
+    - name: "Get towncrier directory"
       shell: python
       run: |
         import os
@@ -229,7 +229,6 @@ runs:
         with open('pyproject.toml', 'r') as f:
             config = toml.load(f)
             directory=config["tool"]["towncrier"]["directory"]
-            template=config["tool"]["towncrier"]["template"]
 
         # Get the GITHUB_ENV variable
         github_env = os.getenv('GITHUB_ENV')
@@ -237,9 +236,6 @@ runs:
         # Append the TOWNCRIER_DIR with its value to GITHUB_ENV
         with open(github_env, "a") as f:
             f.write(f"TOWNCRIER_DIR={directory}")
-
-        with open(github_env, "a") as f:
-            f.write(f"TEMPLATE={template}")
 
     - name: "Get main branch name"
       shell: bash
