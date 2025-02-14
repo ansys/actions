@@ -108,7 +108,9 @@ def rst_to_md(body: str) -> str:
 
     # Add "### " to the beginning of the release subsections.
     # For example, "Added" becomes "### Added".
-    body = re.sub(r"(?m)^(?=[a-zA-Z]+\s)", "### ", body)
+    # body = re.sub(r"(?m)^(?=[a-zA-Z]+\s)", "### ", body)
+    # Verify that the content does not contain a "." otherwise it's text and not a subsection title
+    body = re.sub(r"(?m)^(?!.*\.).^[A-Za-z].*$", "### ", body)
 
     # Find the first string that matches the format:
     # `0.1.2 <https://github.com/ansys/.../releases/tag/v0.1.2>`_
