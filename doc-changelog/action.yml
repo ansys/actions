@@ -273,8 +273,8 @@ runs:
         github_env = os.getenv('GITHUB_ENV')
 
         with open(github_env, "a") as f:
-            f.write(f"TEMPLATE={template}")
-            f.write(f"FILENAME={filename}")
+            f.write(f"TEMPLATE={template}\n")
+            f.write(f"FILENAME={filename}\n")
 
     - name: "Append towncrier categories to pyproject.toml"
       env:
@@ -308,7 +308,7 @@ runs:
         github_env = os.getenv('GITHUB_ENV')
 
         with open(github_env, "a") as f:
-            f.write(f"TEMPLATE_STATUS={template_status}")
+            f.write(f"TEMPLATE_STATUS={template_status}\n")
 
     - name: "Make PR comment if template rewritten"
       if: ${{ env.TEMPLATE_STATUS == 'True' }}
