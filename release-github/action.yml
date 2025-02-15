@@ -301,7 +301,7 @@ runs:
           echo "### Artifact Attestations"
           echo ""
           echo "You can verify this release's artifact attestations using [GitHub CLI tool](https://cli.github.com/)."
-          echo "For example, you can download the source distribution and wheel from [the project releases](https://github.com/${GITHUB_REPOSITORY}/releases) or from [PyPI](https://pypi.org/).""
+          echo "For example, you can download the source distribution and wheel from [the project releases](https://github.com/${GITHUB_REPOSITORY}/releases) or from [PyPI](https://pypi.org/)."
           echo "Then, run the following commands:"
           echo ""
           echo "\`\`\`bash"
