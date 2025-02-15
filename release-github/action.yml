@@ -116,6 +116,13 @@ inputs:
     default: false
     type: boolean
 
+  add-artifact-attestation-notes:
+    description: |
+      Whether or not to add artifact attestation notes to the release notes.
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -282,6 +289,30 @@ runs:
       if: inputs.changelog-release-notes == 'false'
       shell: bash
       run: echo "RELEASE_NOTES_BODY= " >> $GITHUB_ENV
+
+    - name: "Extend RELEASE_NOTES_BODY with attestation notes"
+      if: inputs.add-artifact-attestation-notes == 'true'
+      shell: bash
+      run: |
+        {
+          echo "RELEASE_NOTES_BODY<<EOF"
+          echo "${RELEASE_NOTES_BODY}"
+
+          echo "Artifact Attestations"
+          echo "^^^^^^^^^^^^^^^^^^^^^"
+          echo ""
+          echo "You can verify this release's artifact attestations using \`GitHub CLI tool <https://cli.github.com/>\`_"
+          echo "by downloading the sdist and wheel from \`PyPI <https://pypi.org/>\`_. Then, run the following commands:"
+          echo ""
+          echo "\`\`\`bash"
+          echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${GITHUB_REPOSITORY##*/}-X.Y.Z.tar.gz"
+          echo "\`\`\`bash"
+          echo "and"
+          echo "\`\`\`bash"
+          echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${GITHUB_REPOSITORY##*/}-X.Y.Z-py3-none-any.whl"
+          echo "\`\`\`"
+          echo "EOF"
+        } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
