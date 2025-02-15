@@ -306,7 +306,7 @@ runs:
           echo ""
           echo "\`\`\`bash"
           echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${GITHUB_REPOSITORY##*/}-X.Y.Z.tar.gz"
-          echo "\`\`\`bash"
+          echo "\`\`\`"
           echo "and"
           echo "\`\`\`bash"
           echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${GITHUB_REPOSITORY##*/}-X.Y.Z-py3-none-any.whl"
