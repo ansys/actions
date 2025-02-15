@@ -300,8 +300,9 @@ runs:
 
           echo "### Artifact Attestations"
           echo ""
-          echo "You can verify this release's artifact attestations using [GitHub CLI tool](https://cli.github.com/)"
-          echo "by downloading the sdist and wheel from [PyPI](https://pypi.org/). Then, run the following commands:"
+          echo "You can verify this release's artifact attestations using [GitHub CLI tool](https://cli.github.com/)."
+          echo "For example, you can download the source distribution and wheel from [the project releases](https://github.com/${GITHUB_REPOSITORY}/releases) or from [PyPI](https://pypi.org/).""
+          echo "Then, run the following commands:"
           echo ""
           echo "\`\`\`bash"
           echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${GITHUB_REPOSITORY##*/}-X.Y.Z.tar.gz"
