@@ -294,6 +294,9 @@ runs:
       if: inputs.add-artifact-attestation-notes == 'true'
       shell: bash
       run: |
+        SDIST_FILE=$(find dist/${{ inputs.library-name }}-artifacts -name '*.tar.gz' | sort | tail -n 1)
+        WHEEL_FILE=$(find dist/${{ inputs.library-name }}-artifacts -name '*.whl' | sort | tail -n 1)
+
         {
           echo "RELEASE_NOTES_BODY<<EOF"
           echo "${RELEASE_NOTES_BODY}"
@@ -303,11 +306,11 @@ runs:
           echo "You can verify this release's artifact attestations using [GitHub CLI tool](https://cli.github.com/). For example, download the source distribution and wheel from this release page or from [PyPI](https://pypi.org/). Then, run the following commands:"
           echo ""
           echo "\`\`\`bash"
-          echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${GITHUB_REPOSITORY##*/}-X.Y.Z.tar.gz"
+          echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${SDIST_FILE}"
           echo "\`\`\`"
           echo "and"
           echo "\`\`\`bash"
-          echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${GITHUB_REPOSITORY##*/}-X.Y.Z-py3-none-any.whl"
+          echo "$ gh attestation verify --owner ${GITHUB_REPOSITORY%%/*} ${WHEEL_FILE}"
           echo "\`\`\`"
           echo "EOF"
         } >> "$GITHUB_ENV"
