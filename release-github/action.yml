@@ -294,8 +294,8 @@ runs:
       if: inputs.add-artifact-attestation-notes == 'true'
       shell: bash
       run: |
-        SDIST_FILE=$(find dist/${{ inputs.library-name }}-artifacts -name '*.tar.gz' | sort | tail -n 1)
-        WHEEL_FILE=$(find dist/${{ inputs.library-name }}-artifacts -name '*.whl' | sort | tail -n 1)
+        SDIST_FILE=$(find dist/${{ inputs.library-name }}-artifacts -name '*.tar.gz' | sort | tail -n 1 | xargs basename)
+        WHEEL_FILE=$(find dist/${{ inputs.library-name }}-artifacts -name '*.whl' | sort | tail -n 1 | xargs basename)
 
         {
           echo "RELEASE_NOTES_BODY<<EOF"
