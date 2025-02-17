@@ -181,14 +181,6 @@ inputs:
     required: false
     type: boolean
 
-  attest-provenance:
-    description: |
-      Whether to generate build provenance attestations for documentation
-      artifacts.
-    required: false
-    default: false
-    type: boolean
-
 runs:
   using: "composite"
   steps:
@@ -221,7 +213,6 @@ runs:
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
-        attest-provenance: ${{ inputs.attest-provenance }}
 
     # ------------------------------------------------------------------------
 
@@ -246,4 +237,3 @@ runs:
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
-        attest-provenance: ${{ inputs.attest-provenance }}
