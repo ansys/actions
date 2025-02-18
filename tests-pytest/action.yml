@@ -93,6 +93,12 @@ inputs:
     default: false
     type: boolean
 
+  randomize:
+    description:
+      Whether to randomize the order of the tests. The default value is ``false``.
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -163,6 +169,12 @@ runs:
         else
           python -m pip install .[tests]
         fi
+
+    - name: "Randomize the order of the tests"
+      shell: bash
+      if: inputs.randomize == 'true'
+      run: |
+        python -m pip install pytest-randomly
 
     - name: "Executing test suite without using xvfb"
       if: inputs.requires-xvfb == 'false'
