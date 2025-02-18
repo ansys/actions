@@ -106,6 +106,12 @@ inputs:
     description: |
       Whether to generate build provenance attestations for wheelhouse
       artifacts.
+
+      .. warning::
+
+        Adding provenance attestations requires write permissions for `id-token`
+        and `attestation`. Otherwise, this action will fail.
+
     required: false
     default: false
     type: boolean
