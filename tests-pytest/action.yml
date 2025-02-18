@@ -105,6 +105,12 @@ inputs:
     required: false
     type: string
 
+  randomize:
+    description:
+      Whether to randomize the order of the tests. The default value is ``false``.
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -261,6 +267,12 @@ runs:
         else
           echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_ENV
         fi
+
+    - name: "Randomize the order of the tests"
+      shell: bash
+      if: inputs.randomize == 'true'
+      run: |
+        python -m pip install pytest-randomly
 
     - name: "Executing test suite"
       if: inputs.requires-xvfb == 'false'
