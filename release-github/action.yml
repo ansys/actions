@@ -322,7 +322,7 @@ runs:
       if: inputs.dry-run == 'false'
       with:
         fail_on_unmatched_files: false
-        generate_release_notes: true
+        generate_release_notes: false
         body: ${{ env.RELEASE_NOTES_BODY }}
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
         token: ${{ inputs.token }}
