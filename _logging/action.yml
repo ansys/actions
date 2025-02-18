@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Utils logging action
 
-description: >
+description: |
   This action is used to generate logging messages during the execution of other
   actions. It supports three logging levels including ``ERROR``, ``WARNING``,
   and ``INFO``. ANSI colors are used to report the different levels. This allows
@@ -34,14 +34,14 @@ inputs:
   # Required inputs
 
   level:
-    description: >
+    description: |
       Logging level of the message. Supported levels are ``ERROR``, ``WARNING``
       and ``INFO``.
     required: true
     type: string
 
   message:
-    description: >
+    description: |
       The message to save in the logging report.
     required: true
     type: string
@@ -57,6 +57,7 @@ runs:
       if: ${{ inputs.level == 'ERROR' && runner.os == 'Linux' }}
       run: |
         echo -e "\033[1;91m[ERROR]: ${{ inputs.message }}\033[0m"
+        exit 1
 
     - name: "Report warning message"
       shell: bash
@@ -77,6 +78,7 @@ runs:
       if: ${{ inputs.level == 'ERROR' && runner.os == 'Windows' }}
       run: |
         Write-Host "$([char]27)[91m[ERROR]: ${{ inputs.message }}$([char]27)[0m"
+        Exit 1
 
     - name: "Report warning message"
       shell: powershell

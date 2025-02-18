@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Doc deploy stable action
 
 description: |
@@ -38,13 +38,13 @@ inputs:
   # Required inputs
 
   cname:
-    description: >
+    description: |
       The canonical name (CNAME) containing the documentation.
     required: true
     type: string
 
   token:
-    description: >
+    description: |
       Required password, key or token with the correct credentials for deploying the
       documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token is
       is enough. For workflows deploying to other repositories, `generate and
@@ -54,10 +54,22 @@ inputs:
     required: true
     type: string
 
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
   # Optional inputs
 
   doc-artifact-name:
-    description: >
+    description: |
         Name of the HTML documentation artifact. This artifact is expected to
         contain all the HTML and static files. If it contains a compressed file,
         make sure you enable the ``decompress-artifact`` option.
@@ -66,7 +78,7 @@ inputs:
     type: string
 
   decompress-artifact:
-    description: >
+    description: |
       Whether to decompress the ``doc-artifact-name`` file using `ouch
       <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
       is ``false``.
@@ -75,7 +87,7 @@ inputs:
     type: string
 
   repository:
-    description: >
+    description: |
       Repository name in the form of ``username/repository`` to be used for
       deploying the documentation. The current repository is assumed by default.
     required: false
@@ -83,7 +95,7 @@ inputs:
     type: string
 
   branch:
-    description: >
+    description: |
       Branch name for deploying the documentation. The ``gh-pages`` branch is
       used by default.
     required: false
@@ -91,14 +103,14 @@ inputs:
     type: string
 
   commit-message:
-    description: >
+    description: |
       Commit message used when deploying the documentation.
     required: false
     default: 'DOC: update development documentation'
     type: string
 
   render-last:
-    description: >
+    description: |
       The number of stable versions to be shown in the `version drop-down
       <https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/version-dropdown.html>`_.
     default: '3'
@@ -106,7 +118,7 @@ inputs:
     type: string
 
   force-orphan:
-    description: >
+    description: |
       Whether to force the deployment branch to be orphan or not. Default value
       is ``true``.
     required: false
@@ -114,7 +126,7 @@ inputs:
     type: string
 
   content-element-id:
-    description: >
+    description: |
       Identifier of the HTML tag that comprises all the content of the article
       or post.
     required: false
@@ -122,7 +134,7 @@ inputs:
     type: string
 
   independent-patch-release-docs:
-    description: >
+    description: |
       Whether to generate documentation for independent patch releases. Default
       value is ``false``. By default, patch releases will overwrite the
       documentation of the previous patch release. If this option is enabled,
@@ -143,6 +155,22 @@ runs:
   using: "composite"
   steps:
 
+    # TODO: remove this deprecation in ansys/actions@v9
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
+      with:
+        level: "ERROR"
+        message: >
+          Ansys Actions v8 will require bot username and email inputs in the
+          ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
+          ``doc-deploy-stable`` actions. Please add the bot-user and bot-email inputs
+          to the respective workflows and see
+          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
+          for more information.
+
+    # TODO: end
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -155,10 +183,12 @@ runs:
           'release/<MAJOR>.<MINOR>'.
 
     - name: "Collect version number from the tag"
+      env:
+        REF_NAME: ${{ github.ref_name }}
       shell: bash
       if: github.ref_type == 'tag'
       run: |
-        tag=${{ github.ref_name }}
+        tag=${{ env.REF_NAME }}
         version=$( echo $tag | cut -d 'v' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
@@ -169,10 +199,12 @@ runs:
         fi
 
     - name: "Collect version number from the release branch"
+      env:
+        REF_NAME: ${{ github.ref_name }}
       shell: bash
       if: github.ref_type == 'branch'
       run: |
-        tag=${{ github.ref_name }}
+        tag=${{ env.REF_NAME }}
         version=$( echo $tag | cut -d '/' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ ]]; then
@@ -219,19 +251,17 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Ensure that the desired branch exists"
-      env:
-        BRANCH: ${{ inputs.branch }}
       shell: bash
       run: |
-        # Check the ${{ env.BRANCH }} branch exists on remote
-        branch_exists=$(git ls-remote --heads origin refs/heads/${{ env.BRANCH }} 2>&1)
+        # Check the ${{ inputs.branch }} branch exists on remote
+        branch_exists=$(git ls-remote --heads origin refs/heads/${{ inputs.branch }} 2>&1)
 
-        # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
+        # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
-          echo "The ${{ env.BRANCH }} branch does not exist. Creating ${{ env.BRANCH }}."
+          echo "The ${{ inputs.branch }} branch does not exist. Creating ${{ inputs.branch }}."
 
           # Create orphan branch
-          git checkout --orphan ${{ env.BRANCH }}
+          git checkout --orphan ${{ inputs.branch }}
 
           # Unstage files to be committed
           git rm --cached -r .
@@ -240,16 +270,16 @@ runs:
           git clean -fd
 
           # Configure git username & email
-          git config user.name 'pyansys-ci-bot'
-          git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+          git config user.name ${{ inputs.bot-user }}
+          git config user.email ${{ inputs.bot-email }}
 
-          # Commit ${{ env.BRANCH }} & push to origin
-          git commit --allow-empty -m "Create ${{ env.BRANCH }} branch"
-          git push -u origin ${{ env.BRANCH }}
+          # Commit ${{ inputs.branch }} & push to origin
+          git commit --allow-empty -m "Create ${{ inputs.branch }} branch"
+          git push -u origin ${{ inputs.branch }}
         else
-          # Fetch and switch to ${{ env.BRANCH }}
-          git fetch origin ${{ env.BRANCH }}:${{ env.BRANCH }}
-          git switch ${{ env.BRANCH }}
+          # Fetch and switch to ${{ inputs.branch }}
+          git fetch origin ${{ inputs.branch }}:${{ inputs.branch }}
+          git switch ${{ inputs.branch }}
         fi
 
     # ------------------------------------------------------------------------
@@ -447,11 +477,9 @@ runs:
           sed -i 's/href="\([^:"]*\)"/href="version\/stable\/\1"/g' index.html
           sed -i 's/src="\([^:"]*\)"/src="version\/stable\/\1"/g' index.html
           sed -i 's/action="search.html"/action="version\/stable\/search.html"/g' index.html
-        elif [[ -f 'version/dev/index.html' ]]; then
-          cp version/dev/index.html index.html
-          sed -i 's/href="\([^:"]*\)"/href="version\/dev\/\1"/g' index.html
-          sed -i 's/src="\([^:"]*\)"/src="version\/dev\/\1"/g' index.html
-          sed -i 's/action="search.html"/action="version\/dev\/search.html"/g' index.html
+          sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/stable/_static/js/meilisearch_theme_wrap.js"|g' index.html
+          sed -i 's|const SEARCH_FILE = ".*_static/search.json";|const SEARCH_FILE = "version/stable/_static/search.json";|g' index.html
+          sed -i 's|<html lang="en" data-content_root="./" >|<html lang="en" data-content_root="./version/stable/" >|g' index.html
         else
           echo "Error: The 'index.html' file does not exist." >&2
           exit 1

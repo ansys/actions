@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Lint Dockerfile
 
 description: |
@@ -50,7 +50,7 @@ inputs:
   # Optional inputs
 
   directory:
-    description: >
+    description: |
       Directory from which to search for Dockerfile(s). You can pass multiple
       directories for processing by separating them with spaces, e.g.
       "docker .devcontainer".
@@ -59,14 +59,14 @@ inputs:
     type: string
 
   recursive:
-    description: >
+    description: |
       Search for Dockerfile(s) recursively.
     required: false
     default: false
     type: bool
 
   error-level:
-    description: >
+    description: |
       Fail action based on hadolint output (-1: never, 0: error, 1: warning,
       2: info)
     required: false
@@ -74,7 +74,7 @@ inputs:
     type: int
 
   checkout:
-    description: >
+    description: |
       Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true

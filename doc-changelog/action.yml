@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Documentation Changelog
 
 description: |
@@ -33,36 +33,69 @@ inputs:
   # Required inputs
 
   token:
-    description: >
+    description: |
       Use the PYANSYS_CI_BOT_TOKEN to do a git commit & push.
       The "contents: write" and "pull-requests: write" permissions
       are required for this action.
     required: true
     type: string
 
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for setting up Python.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
   towncrier-version:
-    description: >
+    description: |
       Towncrier version used for creating fragment files.
     default: '23.11.0'
     required: false
     type: string
 
+  toml-version:
+    description: |
+      Toml version used for retrieving the towncrier directory.
+    default: '0.10.2'
+    required: false
+    type: string
+
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
     required: false
     default: true
+    type: boolean
+
+  use-conventional-commits:
+    description: |
+      Use conventional commits to cateogrize towncrier fragments.
+    required: false
+    default: false
+    type: boolean
+
+  use-default-towncrier-config:
+    description: |
+      Use the default towncrier configuration in the pyproject.toml file.
+    required: false
+    default: false
     type: boolean
 
 runs:
@@ -78,81 +111,119 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      env:
-        PYTHON_VERSION: ${{ inputs.python-version }}
-        PYTHON_CACHE: ${{ inputs.use-python-cache }}
       uses: ansys/actions/_setup-python@main
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        use-cache: ${{ env.PYTHON_CACHE }}
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
 
     - name: "Install towncrier"
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }}
+        python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
+
+    # TODO: remove this deprecation in ansys/actions@v9
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
+      with:
+        level: "ERROR"
+        message: >
+          Ansys Actions v8 will require bot username and email inputs in the
+          ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
+          ``doc-deploy-stable`` actions. Please add the bot-user and bot-email inputs
+          to the respective workflows and see
+          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
+          for more information.
+
+    # TODO: end
+
+    - name: "Get first letter of conventional commit type"
+      if: ${{ inputs.use-conventional-commits == 'true' }}
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      shell: python
+      run: |
+        import os
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        from parse_pr_title import get_first_letter_case
+
+        pr_title = os.environ.get("PR_TITLE")
+        get_first_letter_case(pr_title)
+
+    - name: "Check pull-request title follows conventional commits style"
+      if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'lowercase') }}
+      uses: ansys/actions/check-pr-title@v8
+      with:
+        token: ${{ inputs.token }}
+
+    - name: "Check pull-request title follows conventional commits style with upper case"
+      if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'uppercase') }}
+      uses: ansys/actions/check-pr-title@v8
+      with:
+        token: ${{ inputs.token }}
+        use-upper-case: true
+
+    - name: "Get conventional commit type from title"
+      if: ${{ inputs.use-conventional-commits == 'true' }}
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      shell: python
+      run: |
+        import os
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        from parse_pr_title import get_conventional_commit_type
+
+        pr_title = os.environ.get("PR_TITLE")
+        get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
+      if: ${{ inputs.use-conventional-commits == 'false' }}
       env:
-        OWNER: ${{ github.repository_owner }}
-        REPO_NAME: ${{ github.event.repository.name }}
-        PR_NUMBER: ${{ github.event.number }}
         GH_TOKEN: ${{ inputs.token }}
+        REPO_NAME: ${{ github.event.repository.name }}
       shell: bash
       run: |
         # Get the labels in the pull request
-        pr_labels=$(gh api repos/${{ env.OWNER }}/${{ env.REPO_NAME }}/pulls/${{ env.PR_NUMBER }} --jq '.labels.[].name')
+        pr_labels=$(gh api repos/${{ github.repository_owner }}/${{ env.REPO_NAME }}/pulls/${{ github.event.number }} --jq '.labels.[].name')
 
         # Save the labels to an environment variable
         # For example, LABELS="enhancement maintenance"
         echo LABELS='"'$pr_labels'"' >> $GITHUB_ENV
 
-    - name: "Set PR label environment variable"
+    - name: "Set CHANGELOG category based on conventional commit type"
+      if: ${{ inputs.use-conventional-commits == 'true' }}
       shell: python
       run: |
-        import os
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        # Create a list of labels found in the pull request
-        # For example, "enhancement maintenance".split() -> ["enhancement", "maintenance"]
-        existing_labels = ${{ env.LABELS }}.split()
+        from parse_pr_title import changelog_category_cc
 
-        # Dictionary with the key as a label from .github/workflows/label.yml and
-        # value as the corresponding section in the changelog
-        pr_labels = {
-          "enhancement": "added",
-          "bug": "fixed",
-          "dependencies": "dependencies",
-          "maintenance": "changed"
-        }
+        cc_type = ${{ env.CC_TYPE }}
+        changelog_category_cc(cc_type)
 
-        def get_changelog_section(pr_labels, existing_labels):
-          """Find the changelog section corresponding to the label in the PR."""
-          label_type = ""
+    - name: "Set PR label environment variable"
+      if: ${{ inputs.use-conventional-commits == 'false' }}
+      shell: python
+      run: |
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-          for key, value in pr_labels.items():
-              if key in existing_labels:
-                  label_type = value
-                  return label_type
+        from parse_pr_title import changelog_cateogry_labels
 
-          # If no labels are in the PR, it goes into the miscellaneous category
-          label_type = "miscellaneous"
-          return label_type
-
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
-
-        # Append the PR_LABEL with its value to GITHUB_ENV
-        # For example, PR_LABEL="added" if the PR had an "enhancement" label
-        with open(github_env, "a") as f:
-            f.write(f"PR_LABEL={get_changelog_section(pr_labels, existing_labels)}")
+        labels = ${{ env.LABELS }}
+        changelog_cateogry_labels(labels)
 
     - name: "Remove PR fragment file if it already exists"
-      env:
-        PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
         # Find files containing the PR number
         # For example, 20.*.md
-        file=`find . -type f -name "${{ env.PR_NUMBER }}.*.md"`
+        file=`find . -type f -name "${{ github.event.number }}.*.md"`
 
         # If the fragment file exists, then delete the file
         if [ ! -z "$file" ]; then
@@ -166,40 +237,47 @@ runs:
       shell: python
       run: |
         import os
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        # Retrieve title
-        clean_title = os.getenv('PR_TITLE')
+        from parse_pr_title import clean_pr_title
 
-        # Remove extra whitespace
-        clean_title = clean_title.strip()
+        pr_title = os.environ.get("PR_TITLE")
+        use_cc = True if "${{ inputs.use-conventional-commits }}" == "true" else False
 
-        # Add backslash in front of backtick and double quote
-        clean_title = clean_title.replace("`", "\`").replace('"', '\\"')
+        clean_pr_title(pr_title, use_cc)
 
-        # Get the GITHUB_ENV variable
-        github_env = os.getenv('GITHUB_ENV')
+    - name: "Append towncrier categories to pyproject.toml"
+      env:
+        REPO_NAME: ${{ github.event.repository.name }}
+      shell: python
+      run: |
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        # Append the CLEAN_TITLE with its value to GITHUB_ENV
-        with open(github_env, "a") as f:
-            f.write(f"CLEAN_TITLE={clean_title}")
+        from parse_pr_title import add_towncrier_config
+
+        repo_name = "${{ env.REPO_NAME }}"
+        org_name = "${{ github.repository_owner }}"
+
+        default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
+
+        add_towncrier_config(org_name, repo_name, default_config)
 
     - name: "Create and commit towncrier fragment"
-      env:
-        PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-        PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
         # Changelog fragment file in the following format
         # For example, 20.added.md
-        fragment="${{ env.PR_NUMBER }}.${{ env.PR_LABEL }}.md"
+        fragment="${{ github.event.number }}.${{ env.CHANGELOG_SECTION }}.md"
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
         # Configure git username & email
-        git config user.name 'pyansys-ci-bot'
-        git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+        git config user.name ${{ inputs.bot-user }}
+        git config user.email ${{ inputs.bot-email }}
 
         # Add towncrier fragment
         git add .
@@ -211,6 +289,6 @@ runs:
         if [ ! -z "$modified" ]; then
           echo "modified: $modified"
           # Commit and push fragment
-          git commit -m "chore: adding changelog file $fragment"
+          git commit -m "chore: adding changelog file $fragment [dependabot-skip]"
           git push
         fi

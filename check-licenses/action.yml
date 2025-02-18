@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Check licenses action
 
 description: |
@@ -31,13 +31,13 @@ description: |
 
   .. note::
 
-     **This action relies on PyPI metadata to identify the license for each package.**
+    **This action relies on PyPI metadata to identify the license for each package.**
 
-      If the metadata are flawed or not included, it may lead to
-      inconclusive results. In those cases, please perform a thorough review of the
-      package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
-      Even though packages may define their license as of a certain type, the
-      package could be not applying properly its licensing conditions.
+    If the metadata are flawed or not included, it may lead to
+    inconclusive results. In those cases, please perform a thorough review of the
+    package you are using. Additionally, it is advised not to blindly rely on PyPI metadata.
+    Even though packages may define their license as of a certain type, the
+    package could be not applying properly its licensing conditions.
 
   .. jinja:: check-licenses
 
@@ -58,25 +58,25 @@ description: |
 
   .. admonition:: Projects requiring additional licenses or packages
 
-      If a certain project requires a license or package that is not supported,
-      `open an issue <https://github.com/ansys/actions/issues>`_ in the
-      `official ansys/actions repository
-      <https://github.com/ansys/actions>`_. For additional support, please
-      contact the `PyAnsys support <mailto:support@pyansys.com>`_.
+    If a certain project requires a license or package that is not supported,
+    `open an issue <https://github.com/ansys/actions/issues>`_ in the
+    `official ansys/actions repository
+    <https://github.com/ansys/actions>`_. For additional support, please
+    contact the `PyAnsys support <mailto:support@pyansys.com>`_.
 
 inputs:
 
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for installing and executing licence check.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -85,14 +85,21 @@ inputs:
     type: boolean
 
   target:
-    description: >
+    description: |
       Optional target used during the building process.
     required: false
     default: ''
     type: string
 
+  whitelist-license-check:
+    description: |
+      Optional list of packages to ignore during the license check. Separated by a comma.
+    required: false
+    default: ''
+    type: string
+
   skip-install:
-    description: >
+    description: |
       Whether to skip the installation of the project. The default is ``false``.
       If used in combination with other actions, it might not be needed to install
       the project.
@@ -101,7 +108,7 @@ inputs:
     type: boolean
 
   checkout:
-    description: >
+    description: |
       Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true
@@ -161,6 +168,46 @@ runs:
         wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/accepted-licenses.txt
         wget https://raw.githubusercontent.com/ansys/actions/main/check-licenses/ignored-packages.txt
 
+    - name: "Process whitelisted packages provided on input"
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.whitelist-license-check }}" ]]; then
+          echo "Whitelisted packages: ${{ inputs.whitelist-license-check }}"
+          # Split the input string by comma, trim values and append them to the ignored-packages.txt file
+          IFS=',' read -ra whitelist <<< "${{ inputs.whitelist-license-check }}"
+          for package in "${whitelist[@]}"; do
+            echo "Ignoring whitelisted package: $package"
+            echo "$package" >> ignored-packages.txt
+          done
+        fi
+
+    - name: "Logging licenses and packages"
+      shell: bash
+      run: |
+        # Load accepted licenses
+        mapfile licenses_from_txt < accepted-licenses.txt
+        accepted_licenses='Accepted licenses:\n'
+        for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\n"; done
+        echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> $GITHUB_ENV
+
+        # Load accepted packages
+        mapfile ignored_packages_from_txt < ignored-packages.txt
+        ignored_packages='Ignored packages:\n'
+        for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg\n"; done
+        echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> $GITHUB_ENV
+
+    - name: Log ignored packages and accepted licenses
+      uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: |
+          Licenses accepted and packages ignored
+          ----------------------------------------------
+
+          ${{ env.LOG_ACCEPTED_LICENSES }}
+
+          ${{ env.LOG_IGNORED_PACKAGES }}
+
     - name: "Check licences of packages"
       shell: bash
       run: |
@@ -168,22 +215,20 @@ runs:
         mapfile licenses_from_txt < accepted-licenses.txt
         accepted_licenses=''
         for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\|"; done
-          accepted_licenses=${accepted_licenses::-2}
-        echo "Accepted licenses: $accepted_licenses"
+        accepted_licenses=${accepted_licenses::-2}
 
         # Load accepted packages
         mapfile ignored_packages_from_txt < ignored-packages.txt
         ignored_packages=''
         for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg "; done
-          ignored_packages_from_txt=${ignored_packages_from_txt::-1}
-        echo "Ignored packages: $ignored_packages"
+        ignored_packages_from_txt=${ignored_packages_from_txt::-1}
 
         # Verify if the Python environment contains invalid licenses
-        if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep -v $accepted_licenses | tail -n+2) ]]; then
+        if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep '^[[:space:]]*[0-9]' | grep -v $accepted_licenses ) ]]; then
           echo "All licenses are valid."
         else
           echo -e "\nInvalid licenses found:\n"
-          pip-licenses --ignore-packages $ignored_packages | grep -v $accepted_licenses | awk 'NR>1 {print $1 " " $2 " has " $3 " license"}'
+          pip-licenses --ignore-packages $ignored_packages | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses | awk '{ for (i=3; i<=NF; i++) license = license $i (i==NF ? "" : " "); print $1 " " $2 " has " license; license="" }'
           # print all packages
           echo -e "\n\n"
           pip-licenses --ignore-packages $ignored_packages

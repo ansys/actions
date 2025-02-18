@@ -1,3 +1,4 @@
+aiohappyeyeballs
 ansys-corba
 ansys-turbogrid-api
 defusedxml
@@ -10,4 +11,5 @@ reuse
 typing
 typing-extensions
 typing_extensions
+usd-core
 WMI

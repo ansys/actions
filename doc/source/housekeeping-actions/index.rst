@@ -7,42 +7,16 @@ Package cleanup of untagged versions
 ------------------------------------
 
 .. jinja:: hk-package-clean-untagged
-
-    {{ description }}
-
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
-
+    :file: _templates/action.rst.jinja
 
 Package cleanup excluding certain versions
 ------------------------------------------
 
 .. jinja:: hk-package-clean-except
+    :file: _templates/action.rst.jinja
 
-    {{ description }}
+Auto-merge pull requests
+------------------------
 
-    {{ inputs_table }}
-
-    Examples
-    ++++++++
-
-    {% for filename, title in examples %}
-    .. dropdown:: {{ title }}
-       :animate: fade-in
-
-       .. literalinclude:: examples/{{ filename }}
-          :language: yaml
-
-    {% endfor %}
-
+.. jinja:: hk-automerge-prs
+    :file: _templates/action.rst.jinja

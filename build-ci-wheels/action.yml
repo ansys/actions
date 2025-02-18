@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Build CI wheels
 
 description: |
@@ -40,13 +40,13 @@ inputs:
   # Required inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for building the wheels.
     required: true
     type: string
 
   library-name:
-    description: >
+    description: |
       Name of the Python library. This is the name used when uploading the wheel
       and source distribution as artifacts. The name should be the same one used
       in the PyPI index.
@@ -54,7 +54,7 @@ inputs:
     type: string
 
   operating-system:
-    description: >
+    description: |
       Name of the operating system where the library is installed.
     required: true
     type: string
@@ -62,21 +62,21 @@ inputs:
   # Optional inputs
 
   cibw-build:
-    description: >
+    description: |
       Desired build wheel CPython version.
     default: 'cp310-*'
     required: false
     type: string
 
   cibw-archs:
-    description: >
+    description: |
       Desired build architecture.
     default: "auto"
     required: false
     type: string
 
   requires-pypy:
-      description: >
+      description: |
         Whether to generate wheels for wheel files for `PyPy
         <https://www.pypy.org/>`_ in addition to the wheel files for CPython.
         Default value is ``false``.
@@ -99,7 +99,7 @@ runs:
 
     - name: "Build wheels for CPython ${{ inputs.python-version }}"
       if: ${{ inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@v2.19.2
+      uses: pypa/cibuildwheel@v2.22.0
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
@@ -108,7 +108,7 @@ runs:
 
     - name: "Build wheels for PyPy"
       if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
-      uses: pypa/cibuildwheel@v2.19.2
+      uses: pypa/cibuildwheel@v2.22.0
       env:
         CIBW_BUILD: "pp39-*"
         CIBW_SKIP: ${{ inputs.cibw-skip }}

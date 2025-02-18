@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Build library action
 
 description: |
@@ -39,7 +39,7 @@ inputs:
   # Required inputs
 
   library-name:
-    description: >
+    description: |
       Name of the Python library. This is the name used when uploading the wheel
       and source distribution as artifacts. The name should be the same one used
       in the PyPI index.
@@ -49,14 +49,14 @@ inputs:
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for installing and execution of the build process.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -65,7 +65,7 @@ inputs:
     type: boolean
 
   validate-build:
-    description: >
+    description: |
       Whether to validate the build process. If ``true``, the build process is
       validated. If ``false``, the build process is not validated.
     required: false

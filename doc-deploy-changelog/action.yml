@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Build CHANGELOG from towncrier fragment files
 
 description: |
@@ -30,42 +30,102 @@ description: |
 
   This action will only work on Linux/macOS runners.
 
+  Pushing a release tag results in this action running twice:
+
+  - Once to run ``towncrier`` and consolidate the changelog fragment files
+    into a single update of the CHANGELOG file.
+  - Once to release the package after the CHANGELOG file has been updated.
+
+  There are two options when making a release for your repository:
+
+  1. You pushed a tag from a release branch (``release-from-main`` is ``false``)
+
+  This is the most common case for PyAnsys repositories. The following steps are
+  performed when ``release-from-main`` is ``false``:
+
+  a) Find a release branch that has the same major and minor version of the
+  tag that was pushed. For example, if your tag was "v0.1.2", it looks for
+  a release branch named "release/0.1". If the release branch cannot be found, a
+  temporary branch is used named "maint/changelog-update-vTAG_VERSION".
+
+  b) Checkout the release or temporary branch, update the CHANGELOG file
+  using ``towncrier``, and push the updates to the respective branch.
+
+  c) Checkout the main branch and create a pull request branch named
+  "maint/vTAG_VERSION-changelog". Delete the pull request branch from the remote
+  if it exists, checkout the pull request branch, cherry pick the commit
+  containing the CHANGELOG file changes from the previous step, push the
+  pull request branch, and create a pull request from the branch into main.
+
+  d) Checkout the release or temporary branch, delete the tag locally and
+  on the remote, create the new tag locally, and push the tag on the remote.
+  Delete the temporary branch if one was used to update the CHANGELOG file.
+
+  e) Exit on error if the CHANGELOG is updated, so that the package is not released from
+  this instance of the workflow.
+
+  2. You pushed a tag from the main branch (``release-from-main`` is ``true``)
+
+  The following steps are performed when ``release-from-main`` is ``true``:
+
+  a) Checkout the main branch, update the CHANGELOG file using ``towncrier``,
+  and push the updates to the main branch.
+
+  b) Checkout the main branch, delete the tag locally and on the remote,
+  create the new tag locally, and push the new tag on the remote.
+
+  c) Exit on error if the CHANGELOG is updated, so that the package is not released from
+  this instance of the workflow.
+
+
 inputs:
   # Required inputs
 
   token:
-    description: >
+    description: |
       Use the PYANSYS_CI_BOT_TOKEN to do a git commit & push.
       The "contents: write" and "pull-requests: write" permissions
       are required for this action.
     required: true
     type: string
 
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for setting up Python.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
   towncrier-version:
-    description: >
+    description: |
       Towncrier version used for updating the CHANGELOG file.
     default: '23.11.0'
     required: false
     type: string
 
   toml-version:
-    description: >
+    description: |
       Toml version used for retrieving the towncrier directory.
     default: '0.10.2'
     required: false
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -73,18 +133,19 @@ inputs:
     default: true
     type: boolean
 
-  update-release-branch:
-    description: >
-      Whether or not to update the CHANGELOG in the release branch.
-      If ``true``, the branch used to update the CHANGELOG is "release/major.minor".
-      If ``false``, the branch used to update the CHANGELOG is
-      "maint/changelog-update-tag_version" and will be deleted after use.
+  release-from-main:
+    description: |
+      If ``false``, you pushed a tag from a release branch. This is applicable for most
+      PyAnsys repositories.
+      If ``true``, you pushed a tag from the main branch.
+
+      See the description for more information about each of the options.
     required: false
-    default: true
+    default: false
     type: boolean
 
   use-upper-case:
-    description: >
+    description: |
       Use of uppercase letters in the "type" field of:
 
       - The PR created into main to add CHANGELOG changes.
@@ -92,11 +153,26 @@ inputs:
       - The commit created in the release branch to add the new
         section in CHANGELOG.
 
-
       If ``false``, the title is "chore: ... CHANGELOG for v...".
       If ``true``, the title is "CHORE: ... CHANGELOG for v...".
     required: false
     default: false
+    type: boolean
+
+  format-date:
+    description: |
+      Format the date in the title of the new section being added to
+      the CHANGELOG file.
+
+      If ``false``, the date is formated YYYY-MM-DD. For example, 2024-12-31:
+
+        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - 2024-12-31
+
+      If ``true``, the date is "Month Day, Year". For example, "December 31, 2024":
+
+        `{tag} <https://github.com/ansys/{repo-name}/releases/tag/v{tag}>`_ - December 31, 2024
+    required: false
+    default: true
     type: boolean
 
 runs:
@@ -109,13 +185,10 @@ runs:
         fetch-depth: 0
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      env:
-        PYTHON_VERSION: ${{ inputs.python-version }}
-        PYTHON_CACHE: ${{ inputs.use-python-cache }}
       uses: ansys/actions/_setup-python@main
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        use-cache: ${{ env.PYTHON_CACHE }}
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
 
     - name: Save tag version
       shell: bash
@@ -128,6 +201,22 @@ runs:
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
         python -m pip install -e .
+
+    # TODO: remove this deprecation in ansys/actions@v9
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
+      with:
+        level: "ERROR"
+        message: >
+          Ansys Actions v8 will require bot username and email inputs in the
+          ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
+          ``doc-deploy-stable`` actions. Please add the bot-user and bot-email inputs
+          to the respective workflows and see
+          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
+          for more information.
+
+    # TODO: end
 
     - name: "Get towncrier directory"
       shell: python
@@ -147,10 +236,21 @@ runs:
         with open(github_env, "a") as f:
             f.write(f"TOWNCRIER_DIR={directory}")
 
-    - name: "Set CHANGELOG update branch"
+    - name: "Get main branch name"
       shell: bash
       run: |
-        if [[ ${{ inputs.update-release-branch }} == "true" ]]; then
+        head_branch=$(git remote show origin | grep "HEAD branch:")
+        formatted_head_branch=${head_branch#*: }
+
+        echo "MAIN_BRANCH=$formatted_head_branch" >> $GITHUB_ENV
+
+    - name: "Set the branch to update the CHANGELOG file on"
+      shell: bash
+      run: |
+        if [[ ${{ inputs.release-from-main }} == "true" ]]; then
+          echo "UPDATE_BRANCH=${{ env.MAIN_BRANCH }}" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
+        else
           # Assume release branch is "release/major.minor"
           # v0.1.0 (tag) -> release/0.1
           tag_version=${{ env.TAG_VERSION }}
@@ -168,56 +268,82 @@ runs:
             echo "UPDATE_BRANCH=$release_branch" >> $GITHUB_ENV
             echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
           fi
-
-        else
-          # maint/changelog-update-v0.1.0
-          echo "UPDATE_BRANCH=maint/changelog-update-v${{ env.TAG_VERSION }}" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH_EXISTS=false" >> $GITHUB_ENV
         fi
 
-    - name: "Create new section in CHANGELOG and reupload tag"
+    - name: "Get current date"
+      shell: python
+      run: |
+        import datetime
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        from parse_pr_title import save_env_variable
+
+        # Whether or not to format the date in the CHANGELOG file - "true" or "false"
+        format_date = "${{ inputs.format-date }}"
+
+        # Format the string depending on format_date being "true" or "false"
+        fmt_string = "%B %d, %Y" if format_date == "true" else "%Y-%m-%d"
+        current_date = datetime.date.today().strftime(fmt_string)
+
+        save_env_variable("CURRENT_DATE", current_date)
+
+    - name: "Create a new section in the CHANGELOG file and push the changes"
       shell: bash
       run: |
         # Get number of .md files in ${{ env.TOWNCRIER_DIR }}
         count=$(find ${{ env.TOWNCRIER_DIR }} -type f -name "*.md" | wc -l)
 
         if [ $count -gt 0 ]; then
-          # Checkout branch from tag
-          if [[ ${{ inputs.update-release-branch }} == "true" ]] && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
-            echo "Using release branch"
+          echo "Using ${{ env.UPDATE_BRANCH }} to update the CHANGELOG file"
+          if [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
+            git checkout -b ${{ env.UPDATE_BRANCH }}
+          else
             git checkout ${{ env.UPDATE_BRANCH }}
             git pull
-          else
-            echo "Using temporary branch"
-            git checkout -b ${{ env.UPDATE_BRANCH }}
           fi
 
           # Update the changelog with the package version from pyproject.toml
           # The [tool.towncrier] section in pyproject.toml requires the following line
           # for the command to work:
           # package = "ansys.<product>.<library>"
-          buildcmd=$(towncrier build --yes >> builderr.txt 2>&1 || true)
+          buildcmd=$(towncrier build --yes --date "${{ env.CURRENT_DATE }}" >> builderr.txt 2>&1 || true)
           cat builderr.txt
-          greperr=$(grep "Error: '--version'" builderr.txt || true)
+          version_err=$(grep "Error: '--version'" builderr.txt || true)
 
           # Remove builderr.txt
           rm builderr.txt
 
-          # If greperr contains the error message, run with the tag specified
-          if [ -n "$greperr" ]; then
+          # If version_err contains the error message, run with the tag specified
+          if [ -n "$version_err" ]; then
             # Update changelog with the tag version
-            towncrier build --yes --version ${{ env.TAG_VERSION }}
+            buildcmd=$(towncrier build --yes --version ${{ env.TAG_VERSION }} --date "${{ env.CURRENT_DATE }}" >> builderr.txt 2>&1 || true)
+            section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
+
+            # Remove builderr.txt
+            rm builderr.txt
+
+            if [ -n "$section_exists_err" ]; then
+              # Print error message on how to fix this
+              message="Your changelog file already contains section ${{ env.TAG_VERSION }} in the \
+        ${{ env.UPDATE_BRANCH }} branch. Please checkout ${{ env.UPDATE_BRANCH }}, revert \
+        the commit named 'chore: updating CHANGELOG for v${{ env.TAG_VERSION }}', and \
+        re-run the workflow."
+
+              echo -e "\033[1;91m[ERROR]: $message\033[0m"
+              exit 1
+            fi
           fi
 
           # Configure git username & email
-          git config user.name 'pyansys-ci-bot'
-          git config user.email '92810346+pyansys-ci-bot@users.noreply.github.com'
+          git config user.name ${{ inputs.bot-user }}
+          git config user.email ${{ inputs.bot-email }}
 
           # Add CHANGELOG.md file and deleted ${{ env.TOWNCRIER_DIR }}/*.md files
           git add .
 
           # Commit changes and save commit SHA
-          if [[ ${{ inputs.use-upper-case }} == "false" ]] ; then
+          if [[ ${{ inputs.use-upper-case }} == "false" ]]; then
             git commit -m "chore: updating CHANGELOG for v${{ env.TAG_VERSION }}"
           else
             git commit -m "CHORE: updating CHANGELOG for v${{ env.TAG_VERSION }}"
@@ -225,30 +351,26 @@ runs:
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
           # Push CHANGELOG.md changes
-          if [[ ${{ inputs.update-release-branch }} == "true" ]] && [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
+          if [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "true" ]]; then
             git push
           else
             git push -u origin ${{ env.UPDATE_BRANCH }}
           fi
 
-          echo "UPDATED_CHANGELOG=True" >> $GITHUB_ENV
+          echo "UPDATED_CHANGELOG=true" >> $GITHUB_ENV
         else
           echo "There are no changelog fragment files to update the CHANGELOG for v${{ env.TAG_VERSION }}"
-          echo "UPDATED_CHANGELOG=False" >> $GITHUB_ENV
+          echo "UPDATED_CHANGELOG=false" >> $GITHUB_ENV
         fi
 
-    - name: "Create PR into main with CHANGELOG changes"
-      if: contains(env.UPDATED_CHANGELOG, 'True')
+    - name: "Create PR into main with the CHANGELOG file changes"
+      if: ${{ (inputs.release-from-main == 'false' ) && (env.UPDATED_CHANGELOG == 'true') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
       shell: bash
       run: |
-        # Get main branch name
-        head_branch=$(git remote show origin | grep "HEAD branch:")
-        formatted_head_branch=${head_branch#*: }
-
         # Checkout main & create a branch
-        git checkout $formatted_head_branch
+        git checkout ${{ env.MAIN_BRANCH }}
         git pull
 
         # Set branch for PR
@@ -293,12 +415,18 @@ runs:
         else
           pr_title="CHORE: update CHANGELOG for v${{ env.TAG_VERSION }}"
         fi
-        gh pr create --title "$pr_title" --body "Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}" --reviewer ${{ github.actor }}
+
+        body_msg="Update CHANGELOG for v${{ env.TAG_VERSION }} and remove .md files in ${{ env.TOWNCRIER_DIR }}.
+
+        > [!CAUTION]
+        > Do not merge this pull request until the release has been successfully made."
+
+        gh pr create --title "$pr_title" --body "$body_msg" --reviewer ${{ github.actor }}
 
     - name: "Delete & Re-create tag"
       env:
         GH_TOKEN: ${{ inputs.token }}
-      if: contains(env.UPDATED_CHANGELOG, 'True')
+      if: contains(env.UPDATED_CHANGELOG, 'true')
       shell: bash
       run: |
           # Checkout branch created from tag with CHANGELOG update & pull
@@ -317,7 +445,7 @@ runs:
           # Create the tag on remote
           git push origin v${{ env.TAG_VERSION }}
 
-          if [[ ${{ inputs.update-release-branch }} == "false" ]] || [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
+          if [[ ${{ env.RELEASE_BRANCH_EXISTS }} == "false" ]]; then
             # Delete branch created from deleted tag with CHANGELOG update
             git push origin --delete ${{ env.UPDATE_BRANCH }}
           fi

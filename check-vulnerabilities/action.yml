@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   "Check library and third-party vulnerabilities."
 
 description: |
@@ -57,21 +57,36 @@ description: |
 
 inputs:
   token:
-    description: >
+    description: |
       Token with write permissions on the repository.
     required: true
     type: string
 
   python-package-name:
-    description: >
+    description: |
       Python package name being evaluate as it is shown on PyPI.
     required: true
     type: string
 
   # Optional inputs
 
+  extra-targets:
+    description: |
+      Extra targets to be evaluated by safety. By default, it is set to an
+      empty string. This gets substituted to the library install command as
+      follows (inside <INPUT>)::
+
+        # For pip install
+        pip install .[<INPUT>]
+        # For poetry install
+        poetry install --extras '<INPUT>'
+
+    default: ''
+    required: false
+    type: string
+
   source-directory:
-    description: >
+    description: |
       The source folder of the repository to be evaluated by bandit.
       By default, it is set to ``src``
     default: 'src'
@@ -79,7 +94,7 @@ inputs:
     type: string
 
   repo-full-name:
-    description: >
+    description: |
       The repository to be evaluated. By default, it is extracted from the
       GitHub context.
     default: ''
@@ -87,7 +102,7 @@ inputs:
     type: string
 
   dev-mode:
-    description: >
+    description: |
       Whether to run or not this action in development mode. It will activate
       by default the ``dry-run`` and ``exit-with-error-on-new-advisory`` flags.
     required: false
@@ -95,7 +110,7 @@ inputs:
     type: boolean
 
   dry-run:
-    description: >
+    description: |
       Whether to run or not this action in dry run mode. Dry run mode executes
       all the action steps and prints on screen the results (if any).
     required: false
@@ -103,7 +118,7 @@ inputs:
     type: boolean
 
   exit-with-error-on-new-advisory:
-    description: >
+    description: |
       Whether to exit the action on error if a new advisory is detected.
       This mode is not recommended on ``main`` branches since it will cause the
       workflow to fail. To be used on ``feature`` branches in combination with
@@ -113,7 +128,7 @@ inputs:
     type: boolean
 
   hide-log:
-    description: >
+    description: |
       Whether to hide the output log of the GitHub action.
       By default, the log is available to anyone for public repositories.
       This would disclose any potential vulnerabilities to anyone.
@@ -122,7 +137,7 @@ inputs:
     type: boolean
 
   upload-reports:
-    description: >
+    description: |
       Whether to upload the artifacts containing the vulnerability report.
       By default, the report artifacts will not be uploaded to hide any potential vulnerabilities?
     default: false
@@ -130,7 +145,7 @@ inputs:
     type: boolean
 
   create-issues:
-    description: >
+    description: |
       Whether to create issues for new advisories detected.
       By default, issues are NOT created for new advisories detected.
     default: false
@@ -138,7 +153,7 @@ inputs:
     type: boolean
 
   checkout:
-    description: >
+    description: |
       Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true
@@ -146,9 +161,9 @@ inputs:
     type: boolean
 
   python-version:
-    description: >
+    description: |
       Desired Python version.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
@@ -185,22 +200,130 @@ runs:
       with:
         repository: ${{ env.DEPENDENCY_CHECK_REPOSITORY }}
 
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Determine context.
+
+    - name: "Determine GitHub environment variables"
+
+      shell: bash
+      run: |
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_ENV
+        else
+          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
+        fi
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ env.BUILD_BACKEND }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to check vulnerabilities.
+
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
 
-    - name: "Install requirements"
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: env.BUILD_BACKEND == 'poetry'
       shell: bash
       run: |
-        python -m pip install --upgrade pip
-        pip install -r ${{ github.action_path }}/requirements.txt
+        python -m pip install pipx
+        python -m pipx install poetry
+        python -m venv .venv
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME : ${{ runner.temp }}/pipx/home
+
+    - name: "Create a virtual environment"
+      if: env.BUILD_BACKEND == 'pip'
+      shell: bash
+      run: |
+        python -m venv .venv
+
+    - name: "Set up virtual environment activation command"
+      shell: bash
+      run: |
+        if [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_ENV
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - name: "Update pip"
+      shell: bash
+      run: |
+        ${{ env.ACTIVATE_VENV }}
+        python -m pip install -U pip
 
     - name: "Install library"
       shell: bash
+      # Note: we need to use an array to store the extra targets, otherwise
+      # the shell expansion messes with the quotes in the poetry case.
       run: |
-        python -m pip install .
+        ${{ env.ACTIVATE_VENV }}
+        if [[ '${{ inputs.extra-targets }}' != '' ]]; then
+          if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+            echo "Installing extra targets with poetry: ${{ inputs.extra-targets }}"
+            extra_targets=(--extras '${{ inputs.extra-targets }}')
+          else
+            echo "Installing extra targets with pip: ${{ inputs.extra-targets }}"
+            extra_targets=([${{ inputs.extra-targets }}])
+          fi
+        else
+          echo "No extra targets to install"
+          extra_targets=()
+        fi
+
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          poetry install "${extra_targets[@]}"
+        else
+          python -m pip install ."${extra_targets[@]}"
+        fi
+
+    - name: "Install action requirements"
+      shell: bash
+      run: |
+        ${{ env.ACTIVATE_VENV }}
+        python -m pip install -r ${{ github.action_path }}/requirements.txt
 
     - name: "Download the list of ignored safety vulnerabilities"
       shell: bash
@@ -210,6 +333,7 @@ runs:
     - name: "Run safety and bandit"
       shell: bash
       run: |
+        ${{ env.ACTIVATE_VENV }}
         # Load accepted safety vulnerabilities
         mapfile ignored_safety_vulnerabilities < ignored-safety.txt
         ignored_vulnerabilities=''
@@ -224,6 +348,7 @@ runs:
     - name: "Run safety advisory checks"
       shell: bash
       run: |
+        ${{ env.ACTIVATE_VENV }}
         if [[ ${{ inputs.hide-log }} == 'true' ]]; then
           python ${{ github.action_path }}/check_vulnerabilities.py > /dev/null 2>&1
         else

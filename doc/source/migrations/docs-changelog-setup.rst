@@ -226,7 +226,7 @@ Include the release notes in ``CHANGELOG.md``
 
         ## [0.10.7](https://github.com/ansys/pymechanical/releases/tag/v0.10.7) - February 13 2024
 
-3. Add the following lines to the ``pyproject.toml`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively.
+3. Add the following lines to the ``pyproject.toml`` file, replacing ``{repo-name}`` with the name of the repository.
 Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.module``. For example, ``ansys.geometry.core``.
 
 .. code:: toml
@@ -247,8 +247,13 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
     showcontent = true
 
     [[tool.towncrier.type]]
-    directory = "changed"
-    name = "Changed"
+    directory = "dependencies"
+    name = "Dependencies"
+    showcontent = true
+
+    [[tool.towncrier.type]]
+    directory = "documentation"
+    name = "Documentation"
     showcontent = true
 
     [[tool.towncrier.type]]
@@ -257,13 +262,18 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
     showcontent = true
 
     [[tool.towncrier.type]]
-    directory = "dependencies"
-    name = "Dependencies"
+    directory = "maintenance"
+    name = "Maintenance"
     showcontent = true
 
     [[tool.towncrier.type]]
     directory = "miscellaneous"
     name = "Miscellaneous"
+    showcontent = true
+
+    [[tool.towncrier.type]]
+    directory = "test"
+    name = "Test"
     showcontent = true
 
 A reference pull request for these changes can be found in the `PyAnsys Geometry #1023 <https://github.com/ansys/pyansys-geometry/pull/1023/files>`_ pull request.

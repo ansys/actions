@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  MAIN_PYTHON_VERSION: '3.10'
+  MAIN_PYTHON_VERSION: '3.11'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   test-library-name: 'ansys-actions'
   MEILISEARCH_API_KEY: ${{ secrets.MEILISEARCH_API_KEY }}
@@ -22,80 +22,39 @@ concurrency:
 jobs:
 
   labeler:
-    name: "Label syncer"
-    runs-on: ubuntu-latest
+    name: "Labels"
     permissions:
       contents: read
       pull-requests: write
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: micnncim/action-label-syncer@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     - uses: actions/checkout@v4
 
-      - name: Label based on changed files
-        uses: actions/labeler@v5
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+     - name: "Update labels"
+       uses: micnncim/action-label-syncer@v1
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@v1
-        if: |
-          startsWith(github.event.pull_request.head.ref, 'doc') ||
-          startsWith(github.event.pull_request.head.ref, 'docs')
-        with:
-          labels: documentation
+     - name: "Label pull-request"
+       # Skip if user does not have write permissions - PR coming from a fork
+       if: github.event.pull_request.head.repo.full_name == github.repository
+       uses: actions/labeler@v5.0.0
+       with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@v1
-        if: |
-          startsWith(github.event.pull_request.head.ref, 'maint') ||
-          startsWith(github.event.pull_request.head.ref, 'no-ci') ||
-          startsWith(github.event.pull_request.head.ref, 'ci')
-        with:
-          labels: maintenance
-
-      - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'feat')
-        with:
-          labels: |
-            enhancement
-
-      - uses: actions-ecosystem/action-add-labels@v1
-        if: |
-          startsWith(github.event.pull_request.head.ref, 'fix') ||
-          startsWith(github.event.pull_request.head.ref, 'patch')
-        with:
-          labels: bug
-
-      - name: Suggest to add labels
-        uses: peter-evans/create-or-update-comment@v4
-        if: toJSON(github.event.pull_request.labels.*.name) == '{}'
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Please add one of the following labels to add this contribution to the Release Notes :point_down:
-            - [bug](https://github.com/ansys/actions/pulls?q=label%3Abug+)
-            - [documentation](https://github.com/ansys/actions/pulls?q=label%3Adocumentation+)
-            - [enhancement](https://github.com/ansys/actions/pulls?q=label%3Aenhancement+)
-            - [good first issue](https://github.com/ansys/actions/pulls?q=label%3Agood+first+issue)
-            - [maintenance](https://github.com/ansys/actions/pulls?q=label%3Amaintenance+)
-            - [release](https://github.com/ansys/actions/pulls?q=label%3Arelease+)
-
-  commit-and-branch-style:
-    name: "Commit and branch style"
+  pr-title-style:
+    name: "Pull-request title style"
     runs-on: ubuntu-latest
     needs: labeler
     steps:
-
-      - uses: ansys/actions/commit-style@main
+      - uses: ansys/actions/check-pr-title@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: ansys/actions/branch-name-style@main
 
   code-style:
     name: "Code style"
     runs-on: ubuntu-latest
-    needs: commit-and-branch-style
+    needs: pr-title-style
     steps:
       - name: "Run code style checks"
         uses: ansys/actions/code-style@main
@@ -114,7 +73,7 @@ jobs:
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
-    needs: commit-and-branch-style
+    needs: pr-title-style
     steps:
       - name: "Run documentation style checks"
         uses: ansys/actions/doc-style@main
@@ -132,11 +91,15 @@ jobs:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
+          needs-quarto: true
 
   tests:
     name: "Tests"
     runs-on: ubuntu-latest
     needs: code-style
+    permissions:
+      id-token: write
+      contents: write
     steps:
 
     - name: "Install Git and clone project"
@@ -173,8 +136,7 @@ jobs:
       uses: ansys/actions/release-pypi-test@main
       with:
         library-name: ${{ env.test-library-name }}
-        twine-username: "__token__"
-        twine-token: ${{ secrets.PYANSYS_PYPI_TEST_PAT }}
+        use-trusted-publisher: true
 
   doc-deploy-dev:
     name: "Deploy developers documentation"
@@ -186,20 +148,8 @@ jobs:
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
-
-  doc-index-dev:
-    name: "Deploy dev index docs"
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    needs: doc-deploy-dev
-    steps:
-      - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@main
-        with:
-          cname: ${{ env.DOCUMENTATION_CNAME }}/version/dev
-          index-name: "actions-vdev"
-          host-url: ${{ vars.MEILISEARCH_HOST_URL }}
-          api-key: ${{ env.MEILISEARCH_API_KEY }}
+            bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+            bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
   release:
     name: "Release to GitHub"
@@ -254,35 +204,5 @@ jobs:
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
-
-
-  doc-index-stable:
-    name: "Deploy stable docs index"
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-    runs-on: ubuntu-latest
-    needs: doc-deploy-stable
-    steps:
-      - name: "Install Git and clone project"
-        uses: actions/checkout@v4
-
-      - name: "get version of library"
-        shell: bash
-        run: |
-          echo "FULL_VERSION=$(cat VERSION)" >> $GITHUB_ENV
-
-      - name: Scrape the stable documentation to PyMeilisearch
-        run: |
-          VERSION=$(python -c "import os; version=os.environ['FULL_VERSION']; print('.'.join(version.split('.')[:2]))")
-          VERSION_MEILI=$(python -c "import os; version=os.environ['FULL_VERSION']; print('-'.join(version.split('.')[:2]))")
-          echo "Calculated VERSION: $VERSION"
-          echo "Calculated VERSION_MEILI: $VERSION_MEILI"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "VERSION_MEILI=$VERSION_MEILI" >> $GITHUB_ENV
-
-      - name: "Deploy the latest documentation index"
-        uses: ansys/actions/doc-deploy-index@main
-        with:
-          cname: ${{ env.DOCUMENTATION_CNAME }}/version/${{ env.VERSION }}
-          index-name: actions-v${{ env.VERSION_MEILI }}
-          host-url: ${{ vars.MEILISEARCH_HOST_URL }}
-          api-key: ${{ env.MEILISEARCH_API_KEY }}
+            bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+            bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}

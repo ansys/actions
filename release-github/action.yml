@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,30 +20,62 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Release to GitHub action
 
-description: >
+description: |
     Release library artifacts to the GitHub release section. Some minimum
     artifacts are required before running this action. These artifacts include
     ``documentation-html``, ``documentation-pdf``, and
     ``<library-name>-artifacts`` files. This last file must contain the wheels and
     source distribution files of the library.
 
+    If you are using the ``title_format`` and ``issue_format`` from the ``doc-changelog`` action
+    setup guide, https://actions.docs.ansys.com/version/dev/migrations/docs-changelog-setup.html,
+    the changelog for your release is included in the release notes on GitHub.
+
+
 inputs:
 
   # Required inputs
 
   library-name:
-    description: >
+    description: |
      Name of the Python library to be published.
+    required: true
+    type: string
+
+  token:
+    description: |
+      Required password, key or token with the correct credentials for deploying the
+      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token is
+      is enough. For workflows deploying to other repositories, `generate and
+      use a token with writing access
+      <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
+      to that repository.
     required: true
     type: string
 
   # Optional inputs
 
+  python-version:
+    description: |
+      Python version used for installing towncrier and retrieving the release notes.
+    default: '3.12'
+    required: false
+    type: string
+
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
   additional-artifacts:
-    description: >
+    description: |
         String containing a list of additional artifacts to be included in the
         GitHub release.
     required: false
@@ -51,7 +83,7 @@ inputs:
     type: string
 
   dry-run:
-    description: >
+    description: |
       Whether to run or not this action in testing mode. Testing mode executes
       all the action steps except the releasing artifacts one. This allows
       developers to verify the health of the action once integrated in their
@@ -61,10 +93,49 @@ inputs:
     default: false
     type: boolean
 
+  toml-version:
+    description: |
+      Toml version used for retrieving the towncrier directory.
+    default: '0.10.2'
+    required: false
+    type: string
+
+  changelog-release-notes:
+    description: |
+      Whether or not to generate release notes using the changelog file from the
+      pyproject.toml file's [tool.towncrier] section.
+    default: true
+    required: false
+    type: boolean
+
+  only-code:
+    description: |
+      Only include the source code in the release. This can be helpful for
+      repositories that don't create wheels and/or documentation.
+    required: false
+    default: false
+    type: boolean
 
 runs:
   using: "composite"
   steps:
+
+    # TODO: remove this deprecation in ansys/actions@v9
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.token == '' }}
+      with:
+        level: "ERROR"
+        message: >
+          Ansys Actions v9 will require the token input in the ``release-github`` action.
+          Please add the token input to this action and see
+          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
+          for more information.
+
+    # TODO: end
+
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
 
     # ------------------------------------------------------------------------
 
@@ -87,6 +158,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: inputs.only-code == 'false'
       with:
         level: "INFO"
         message: >
@@ -95,6 +167,7 @@ runs:
           Finally, compress both artifacts.
 
     - name: "Moving documentation artifacts to dist/documentation directory"
+      if: inputs.only-code == 'false'
       shell: bash
       run: |
         mkdir -p dist/documentation
@@ -102,12 +175,14 @@ runs:
         mv /tmp/artifacts/documentation-pdf dist/documentation/documentation-pdf
 
     - name: "Compressing HTML documentation"
+      if: inputs.only-code == 'false'
       uses: vimtor/action-zip@v1.2
       with:
         files: dist/documentation/documentation-html
         dest: dist/documentation/documentation-html.zip
 
     - name: "Compressing PDF documentation"
+      if: inputs.only-code == 'false'
       uses: vimtor/action-zip@v1.2
       with:
         files: dist/documentation/documentation-pdf
@@ -116,6 +191,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: inputs.only-code == 'false'
       with:
         level: "INFO"
         message: >
@@ -123,6 +199,7 @@ runs:
           inside this folder.
 
     - name: "Move wheelhouse artifacts to dist/wheelhouse directory"
+      if: inputs.only-code == 'false'
       shell: bash
       run: |
         mkdir -p dist/wheelhouse
@@ -131,6 +208,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: inputs.only-code == 'false'
       with:
         level: "INFO"
         message: >
@@ -138,6 +216,7 @@ runs:
           inside this folder.
 
     - name: "Move wheel artifacts to dist/${{ inputs.library-name }}-artifacts directory"
+      if: inputs.only-code == 'false'
       shell: bash
       run: |
         mv /tmp/artifacts/${{ inputs.library-name }}-artifacts dist/${{ inputs.library-name }}-artifacts
@@ -173,12 +252,48 @@ runs:
       shell: bash
       run: ls -R dist/
 
+    - name: "Set up Python"
+      uses: ansys/actions/_setup-python@v8
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+
+    - name: "Install toml"
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip toml==${{ inputs.toml-version }}
+
+    - name: "Get the release notes body"
+      if: inputs.changelog-release-notes == 'true'
+      shell: python
+      run: |
+        import sys
+        from pathlib import Path
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        from release_github_utils import get_release_notes
+
+        # Get the path to your pyproject.toml file
+        pyproject_path = Path("${{ github.workspace }}") / "pyproject.toml"
+
+        get_release_notes(pyproject_path)
+
+    - name: "Set RELEASE_NOTES_BODY env variable"
+      if: inputs.changelog-release-notes == 'false'
+      shell: bash
+      run: echo "RELEASE_NOTES_BODY= " >> $GITHUB_ENV
+
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
+      env:
+        REPO_NAME: ${{ github.event.repository.name }}
       if: inputs.dry-run == 'false'
       with:
         fail_on_unmatched_files: false
-        generate_release_notes: true 
+        generate_release_notes: true
+        body: ${{ env.RELEASE_NOTES_BODY }}
+        repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
+        token: ${{ inputs.token }}
         files: |
           # Include wheel and source distribution artifacts
           dist/${{ inputs.library-name }}-artifacts/*.whl

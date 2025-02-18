@@ -20,3 +20,9 @@ changelog-fragment:
     - uses: ansys/actions/doc-changelog@{{ version }}
       with:
         token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
+        bot-user: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
+        bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
+        # uncomment this line to use conventional commits instead of labels
+        # use-conventional-commits: true
+        # uncomment this if you don't have any towncrier configuration in your pyproject.toml file
+        # use-default-towncrier-config: true

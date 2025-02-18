@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,24 +20,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Tests pytest action
 
-description: >
+description: |
   Run a test suite using `pytest <https://docs.pytest.org/en/stable/>`_.
 
 inputs:
 
   # Optional inputs
   python-version:
-    description: >
+    description: |
       Python version used for installing and running ``pytest``.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -46,7 +46,7 @@ inputs:
     type: boolean
 
   pytest-markers:
-    description: >
+    description: |
       Set of `pytest markers
       <https://docs.pytest.org/en/stable/example/markers.html>`_ in the form of
       a string. These markers are used to discretize tests when running the test
@@ -56,20 +56,20 @@ inputs:
     type: string
 
   pytest-extra-args:
-    description: >
+    description: |
       Set of additional ``pytest`` arguments in the form of a string.
     default: ''
     required: false
 
   pytest-postargs:
-    description: >
+    description: |
       Directory of the test suite and the level of verbosity.
     default: 'tests -vv'
     required: false
     type: string
 
   requires-xvfb:
-    description: >
+    description: |
       Whether to install `X Virtual Frame Buffer (XVFB)
       <https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml>`_ and run
       the whole test session using XVFB. The default value is ``false``.
@@ -78,7 +78,7 @@ inputs:
     type: boolean
 
   checkout:
-    description: >
+    description: |
       Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true
@@ -86,12 +86,24 @@ inputs:
     type: boolean
 
   skip-install:
-    description: >
+    description: |
       Skip installation process. This should be set to `false` when using poetry
       as the build-backend because it should be false with poetry as build-backend.
       The default value is ``false``.
     default: false
+    required: false
     type: boolean
+
+  optional-dependencies-name:
+    description: |
+      Any valid install target or dependency group defined in the ``pyproject.toml`` file,
+      or the suffix of a requirement file. The associated dependencies are installed
+      before running the tests.
+      The default value is ``'tests'``. Therefore, in case of a requirement file, the
+      default file is ``requirements/requirements_tests.txt``.
+    default: 'tests'
+    required: false
+    type: string
 
   randomize:
     description:
@@ -107,31 +119,105 @@ runs:
       uses: actions/checkout@v4
       if: ${{ inputs.checkout == 'true' }}
 
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Determine context.
+
+    - name: "Determine GitHub environment variables"
+      shell: bash
+      run: |
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_ENV
+        else
+          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
+        fi
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ env.BUILD_BACKEND }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to test.
+
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
-    - name: "Upgrade pip and disable virtual environment (for poetry only)"
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: env.BUILD_BACKEND == 'poetry'
       shell: bash
       run: |
-        python -m pip install --upgrade pip
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          # For projects using poetry, do not use a virtual environment.
-          # Poetry uses virtual environments to install its dependencies, but this might
-          # lead to problems if it is not activated prior to executing poetry commands.
-          # Store POETRY_VIRTUALENVS_CREATE=false in the GitHub environment to prevent
-          # poetry from creating a virtual environment.
-          #
-          echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+        python -m pip install pipx
+        python -m pipx install poetry
+        python -m venv .venv
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME : ${{ runner.temp }}/pipx/home
+
+    - name: "Create a virtual environment"
+      if: env.BUILD_BACKEND == 'pip'
+      shell: bash
+      run: |
+        python -m venv .venv
+
+    - name: "Set up virtual environment activation command"
+      shell: bash
+      run: |
+        if [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_ENV
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
         fi
+
+    # ------------------------------------------------------------------------
+
+    - name: "Update pip"
+      shell: bash
+      run: |
+        ${{ env.ACTIVATE_VENV }}
+        python -m pip install -U pip
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
       shell: bash
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+        ${{ env.ACTIVATE_VENV }}
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           python -m pip install poetry
           poetry install
         else
@@ -148,7 +234,7 @@ runs:
     - name: "Check if requirements.txt file exists"
       shell: bash
       run: |
-        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_tests.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${{ inputs.optional-dependencies-name }}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
     - name: "Print previous output"
       shell: bash
@@ -158,16 +244,28 @@ runs:
     - name: "Install test dependencies from the requirements file"
       shell: bash
       if: env.EXISTS_TESTS_REQUIREMENTS == 'true'
-      run: python -m pip install -r requirements/requirements_tests.txt
+      run: |
+        ${{ env.ACTIVATE_VENV }}
+        python -m pip install -r requirements/requirements_${{ inputs.optional-dependencies-name }}.txt
 
     - name: "Install test dependencies from pyproject.toml"
       shell: bash
       if: env.EXISTS_TESTS_REQUIREMENTS == 'false'
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          poetry install --with tests
+        ${{ env.ACTIVATE_VENV }}
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          poetry install --with ${{ inputs.optional-dependencies-name }}
         else
-          python -m pip install .[tests]
+          python -m pip install .[${{ inputs.optional-dependencies-name }}]
+        fi
+
+    - name: "Set up pytest run command"
+      shell: bash
+      run: |
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+          echo "PYTEST_RUN=$(echo 'poetry run pytest')" >> $GITHUB_ENV
+        else
+          echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_ENV
         fi
 
     - name: "Randomize the order of the tests"
@@ -176,14 +274,16 @@ runs:
       run: |
         python -m pip install pytest-randomly
 
-    - name: "Executing test suite without using xvfb"
+    - name: "Executing test suite"
       if: inputs.requires-xvfb == 'false'
       shell: bash
       run: |
-        pytest ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
+        ${{ env.ACTIVATE_VENV }}
+        ${{ env.PYTEST_RUN }} ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
 
     - name: "Executing test suite using xvfb"
       if: inputs.requires-xvfb == 'true'
       shell: bash
       run: |
-        xvfb-run pytest ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
+        ${{ env.ACTIVATE_VENV }}
+        xvfb-run ${{ env.PYTEST_RUN }} ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}

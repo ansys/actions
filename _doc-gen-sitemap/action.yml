@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Documentation sitemap generator
 
 description: |
@@ -34,13 +34,13 @@ inputs:
   # Required inputs
 
   cname:
-    description: >
+    description: |
       The canonical name (CNAME) containing the documentation.
     required: true
     type: string
 
   html-directory:
-    description: >
+    description: |
       Name of the directory containing the HTML files of the website.
     required: true
     type: string
@@ -92,7 +92,7 @@ runs:
           echo "    <changefreq>weekly</changefreq>" >> $output
           echo "    <priority>0.5</priority>" >> $output
           echo "  </url>" >> $output
-        done < <(find "$input_dir" -type f -name "*.html" -print0)
+        done < <(find "$input_dir" -type f -name "*.html" ! -name "search.html" ! -name "genindex.html" -print0)
 
         # Close the sitemap
         echo "</urlset>" >> $output

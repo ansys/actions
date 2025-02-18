@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Code style
 
 description: |
@@ -42,14 +42,14 @@ inputs:
   # Optional inputs
 
   python-version:
-    description: >
+    description: |
       Python version used for installing and running ``pre-commit``.
-    default: '3.10'
+    default: '3.11'
     required: false
     type: string
 
   use-python-cache:
-    description: >
+    description: |
       Whether to use the Python cache for installing previously downloaded
       libraries. If ``true``, previously downloaded libraries are installed from the
       Python cache. If ``false``, libraries are downloaded from the PyPI index.
@@ -57,15 +57,22 @@ inputs:
     default: true
     type: boolean
 
+  pre-commit-version:
+    description: |
+      The version of pre-commit to install.
+    required: false
+    default: '3.8.0'
+    type: string
+
   docker-lint:
-    description: >
+    description: |
       Extend the workflow to lint Dockerfile(s).
     required: false
     default: false
     type: bool
 
   docker-recursive:
-    description: >
+    description: |
       Search for Dockerfile(s) recursively. Only applies to allowed
       directories, i.e. docker and .devcontainer.
     required: false
@@ -73,7 +80,7 @@ inputs:
     type: bool
 
   docker-error-level:
-    description: >
+    description: |
       Fail docker-style action based on hadolint output (-1: never, 0: error,
       1: warning, 2: info)
     required: false
@@ -81,10 +88,17 @@ inputs:
     type: int
 
   skip-install:
-    description: >
+    description: |
       Whether to skip the installation of the project or not. If ``true``, the
       project is not installed. If ``false``, the project is installed. By
       default, the project is not installed.
+    required: false
+    default: true
+    type: boolean
+
+  show-diff-on-failure:
+    description: |
+      Whether to show the diff when a pre-commit hook fails.
     required: false
     default: true
     type: boolean
@@ -96,47 +110,127 @@ runs:
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
 
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Determine context.
+
+    - name: "Determine GitHub environment variables"
+      shell: bash
+      run: |
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_ENV
+        else
+          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
+        fi
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ env.BUILD_BACKEND }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to check code style.
+
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
-    - name: "Upgrade pip and disable virtual environment (for poetry only)"
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: env.BUILD_BACKEND == 'poetry'
       shell: bash
       run: |
-        python -m pip install --upgrade pip
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          # For projects using poetry, do not use a virtual environment.
-          # Poetry uses virtual environments to install its dependencies, but this might
-          # lead to problems if it is not activated prior to executing poetry commands.
-          # Store POETRY_VIRTUALENVS_CREATE=false in the GitHub environment to prevent
-          # poetry from creating a virtual environment.
-          #
-          echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+        python -m pip install pipx
+        python -m pipx install poetry
+        python -m venv .venv
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME: ${{ runner.temp }}/pipx/home
+
+    - name: "Create a virtual environment"
+      if: env.BUILD_BACKEND == 'pip'
+      shell: bash
+      run: |
+        python -m venv .venv
+
+    - name: "Set up virtual environment activation command"
+      shell: bash
+      run: |
+        if [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_ENV
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
         fi
+
+    # ------------------------------------------------------------------------
+
+    - name: "Update pip"
+      shell: bash
+      run: |
+        ${{ env.ACTIVATE_VENV }}
+        python -m pip install -U pip
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
       shell: bash
       run: |
-        if grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+        ${{ env.ACTIVATE_VENV }}
+        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           python -m pip install poetry
           python -m poetry install
         else
           python -m pip install .
         fi
 
-    - name: "Install pre-commit"
+    - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
       shell: bash
       run: |
-        python -m pip install pre-commit
+        ${{ env.ACTIVATE_VENV }}
+        python -m pip install 'pre-commit==${{ inputs.pre-commit-version }}'
         pre-commit install
 
     - name: "Run pre-commit"
       shell: bash
       run: |
-        pre-commit run --all-files --show-diff-on-failure
+        ${{ env.ACTIVATE_VENV }}
+        if [[ ${{ inputs.show-diff-on-failure }} == 'true' ]]; then
+          pre-commit run --all-files --show-diff-on-failure
+        else
+          pre-commit run --all-files
+        fi
 
     # ------------------------------------------------------------------------
 

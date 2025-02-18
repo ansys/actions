@@ -1,0 +1,125 @@
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: "Automerge dependabot and pre-commit.ci PRs"
+description: "Action merging dependabot and pre-commit.ci PRs."
+
+inputs:
+  approver:
+    description: "Approver GitHub ID."
+    required: true
+    type: string
+  approver-token:
+    description: "Approver GitHub token."
+    required: true
+    type: string
+
+  # Optional inputs
+
+  only-allow-dependabot-patch:
+    description: |
+      Only allow dependabot patch version updates. By default,
+      this is set to false (allowing also minor bumps).
+    required: false
+    type: boolean
+    default: false
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Verify allowed PRs (dependabot and pre-commit.ci)
+      shell: bash
+      run: |
+        # Check if the author is either dependabot or pre-commit.ci.
+        if [[ ${{ github.event.pull_request.user.login }} == 'dependabot[bot]' ]] || [[ ${{ github.event.pull_request.user.login }} == 'pre-commit-ci[bot]' ]]; then
+          echo "PR author is allowed to be automerged."
+        else
+          echo "PR is not allowed to be automerged. Invalid PR author. Exiting gracefully..."
+          echo "SKIP_ACTION=1" >> $GITHUB_ENV
+          exit 0
+        fi
+
+        if [[ ${{ github.head_ref }} == 'dependabot/'* ]] || [[ ${{ github.head_ref }} == 'pre-commit-ci-update-config' ]]; then
+          echo "PR branch name is allowed to be automerged."
+        else
+          echo "PR is not allowed to be automerged. Invalid branch name. Exiting gracefully..."
+          echo "SKIP_ACTION=1" >> $GITHUB_ENV
+          exit 0
+        fi
+
+        # If we reach this point, the PR is allowed to be automerged.
+        echo "SKIP_ACTION=0" >> $GITHUB_ENV
+
+        # If it is a dependabot PR, create a new variable (bool type)
+        # to be used in the next steps.
+        if [[ ${{ github.head_ref }} == 'dependabot/'* ]]; then
+          echo "DEPENDABOT_PR=1" >> $GITHUB_ENV
+        else
+          echo "DEPENDABOT_PR=0" >> $GITHUB_ENV
+        fi
+
+    - name: Approve a PR
+      shell: bash
+      if: env.SKIP_ACTION == '0'
+      run: gh pr review --approve "$PR_URL"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GH_TOKEN: ${{ inputs.approver-token }}
+
+    - name: Merge a PR
+      shell: bash
+      if: ${{ env.SKIP_ACTION == '0' && env.DEPENDABOT_PR == '0' }}
+      run: gh pr merge --auto --squash "$PR_URL"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GH_TOKEN: ${{ inputs.approver-token }}
+
+    # On dependabot PRs, auto-merge is only enabled iif it is a patch
+    # or minor version bump. Major version bumps are not auto-merged.
+    - name: Dependabot metadata (if dependabot PR only)
+      if: ${{ env.SKIP_ACTION == '0' && env.DEPENDABOT_PR == '1' }}
+      id: metadata
+      uses: dependabot/fetch-metadata@v2
+      with:
+        github-token: ${{ inputs.approver-token }}
+
+    - name: Enable auto-merge for Dependabot PRs
+      shell: bash
+      if: ${{ env.SKIP_ACTION == '0' && env.DEPENDABOT_PR == '1' }}
+      run: |
+        # If only-allow-dependabot-patch is enabled, only patch versions should be auto-merged.
+        if [[ ${{ inputs.only-allow-dependabot-patch }} == 'true' ]]; then
+          if [[ ${{ steps.metadata.outputs.update-type }} != 'version-update:semver-patch' ]]; then
+            echo "Only patch version updates are allowed. Skipping auto-merge."
+            exit 0
+          fi
+        fi
+
+        if [[ ${{ steps.metadata.outputs.update-type }} != 'version-update:semver-major' ]]; then
+          gh pr merge --auto --squash "$PR_URL"
+        else
+          echo "Major version bump detected. Skipping auto-merge."
+        fi
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GH_TOKEN: ${{ inputs.approver-token }}

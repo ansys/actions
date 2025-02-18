@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: >
+name: |
   Documentation build action (Windows)
 
 description: |
@@ -33,8 +33,8 @@ description: |
   <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ is available
   after installing the documentation dependencies, the action uses it
   to generate documentation from the source. It requires that all the
-  documentation is contained in the ``doc/`` directory of a project. The
-  action locates the ``doc/make.bat`` and runs the ``make.bat html`` and
+  documentation is contained in the ``doc\`` directory of a project. The
+  action locates the ``doc\make.bat`` and runs the ``make.bat html`` and
   ``make.bat pdf`` commands. If desired, the ``make.bat json`` command can
   also be executed to generate JSON documentation.
 
@@ -43,7 +43,7 @@ inputs:
   # Required inputs
 
   sphinxopts:
-    description: >
+    description: |
       Set of options to pass to the ``Sphinx`` builder.
 
       .. note::
@@ -54,20 +54,20 @@ inputs:
     type: string
 
   dependencies:
-    description: >
+    description: |
       String of system dependencies to be installed before building the
       documentation of the project.
     required: true
     type: string
 
   skip-dependencies-cache:
-    description: >
+    description: |
       Whether to ignore dependencies cache or not for OS libraries.
     required: true
     type: boolean
 
   skip-install:
-    description: >
+    description: |
       Whether to skip the installation of the project.
       Pure documentation projects require that this action be set to ``false``
       because there is no Python library associated with the project.
@@ -75,7 +75,7 @@ inputs:
     type: boolean
 
   requirements-file:
-    description: >
+    description: |
       Path to the requirements file in case it needs to be in a specific location.
       This is useful for non python projects, where you don't necessarily have a requirements
       file in the root of the project.
@@ -83,13 +83,13 @@ inputs:
     type: string
 
   skip-json-build:
-    description: >
+    description: |
       Whether to skip the generation of JSON documentation.
     required: true
     type: boolean
 
   check-links:
-    description: >
+    description: |
       Whether to perform external link checks during the generation of
       documentation.
     required: true
@@ -100,7 +100,7 @@ inputs:
       Whether to add PDF and HTML documentation as assets of the HTML
       documentation. The HTML documentation is compressed before being added.
       The PDF file name is expected to be retrieved through the documentation's
-      configuration file 'conf.py' in 'doc/source'.
+      configuration file 'conf.py' in 'doc\source'.
 
       .. warning::
 
@@ -108,6 +108,18 @@ inputs:
           PDF file is copied in ``doc\_build\html\_static\assets\download``.
           If such directories do not exist in your repo, the action will fail.
 
+    required: true
+    type: boolean
+
+  needs-quarto:
+    description: |
+      Whether to add a Quarto cheatsheet to the documentation. Default value is
+      ``false``.
+
+      .. warning::
+
+        Quarto needs Jupyter to be installed. Make sure to add `Jupyter <https://pypi.org/project/jupyter/>` to
+        the requirements list.
     required: true
     type: boolean
 
@@ -146,7 +158,7 @@ runs:
 
     - name: Cache Chocolatey packages
       id: cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       if: ${{ (inputs.skip-dependencies-cache == 'false') && (env.NEEDED_DEPS != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
@@ -164,6 +176,20 @@ runs:
         choco install miktex -y
         echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
+    - name: "Install Poppler for PDF to PNG conversion"
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: powershell
+      run: |
+        choco install poppler -y
+        echo "C:\Program Files\poppler\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+    - name: "Install quarto for cheatsheet"
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: powershell
+      run: |
+        choco install quarto -y
+        echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -179,47 +205,124 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - name: Check Quarto Version
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: powershell
+      run: |
+        quarto --version
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Determine context.
+
+    - name: "Determine GitHub environment variables"
+      shell: powershell
+      run: |
+        if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"')) {
+          echo "BUILD_BACKEND=$(echo 'poetry')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        } else {
+          echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ env.BUILD_BACKEND }}
+          Sphinx build make: ${{ env.SPHINX_BUILD_MAKE }}
+
+    # ------------------------------------------------------------------------
+
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
           Set up python to build the documentation.
 
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: powershell
+      run: echo "${{ runner.temp }}/pipx/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: powershell
+      run: echo "POETRY_VIRTUALENVS_CREATE=$(echo false)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: env.BUILD_BACKEND == 'poetry'
+      shell: powershell
+      run: |
+        python -m pip install pipx
+        python -m pipx install poetry
+        python -m venv .venv
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME : ${{ runner.temp }}/pipx/home
+
+    - name: "Create a virtual environment"
+      if: env.BUILD_BACKEND == 'pip'
+      shell: powershell
+      run: python -m venv .venv
+
+    # ------------------------------------------------------------------------
+
     - name: "Update pip"
       shell: powershell
-      run: python -m pip install -U pip
+      run: |
+        .venv\Scripts\Activate.ps1
+        python -m pip install -U pip
 
-    - name: Check if requirements.txt file exists
+    - name: "Check if requirements.txt file exists"
       shell: powershell
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path '${{ inputs.requirements-file }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
-
-    - name: Print previous output
-      shell: powershell
-      run: |
-        echo "Output was found ${{ env.EXISTS_DOC_REQUIREMENTS }}"
 
     - name: Install documentation dependencies from requirements file
       shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
+        .venv\Scripts\Activate.ps1
         python -m pip install -r ${{ inputs.requirements-file }}
 
     - name: Install Python library
       shell: powershell
       if: ${{ inputs.skip-install == 'false' }}
       run: |
-        python -m pip install .
+        .venv\Scripts\Activate.ps1
+        if ("${{ env.BUILD_BACKEND }}" -eq 'poetry' ) {
+          poetry install
+        } else {
+          python -m pip install .
+        }
 
     - name: Install documentation dependencies from pyproject.toml
       shell: powershell
       if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'false' }}
       run: |
-        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
-            python -m pip install poetry
-            poetry install --with doc
+        .venv\Scripts\Activate.ps1
+        if ("${{ env.BUILD_BACKEND }}" -eq 'poetry' ) {
+          poetry install --with doc
         } else {
-            python -m pip install .[doc]
+          python -m pip install .[doc]
         }
 
     # ------------------------------------------------------------------------
@@ -230,20 +333,11 @@ runs:
         message: >
           Build HTML, PDF and JSON documentation.
 
-    - name: Determine command context
-      shell: powershell
-      run: |
-        if (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"') {
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        } else {
-          echo "SPHINX_BUILD_MAKE=$(echo 'doc\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        }
-        echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
-
     - name: Build HTML, PDF, and JSON documentation
       shell: powershell
       run: |
-        echo "Sphinx build make value is ${{ env.SPHINX_BUILD_MAKE }}"
+        .venv\Scripts\Activate.ps1
+        cd doc
         ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
         ${{ env.SPHINX_BUILD_MAKE }} pdf
         if ("${{ inputs.check-links }}" -eq 'true' ) {
@@ -266,7 +360,8 @@ runs:
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
       run: |
-        python ${{ github.action_path }}\..\doc-build\parse_doc_conf.py
+        .venv\Scripts\Activate.ps1
+        python ${{ github.action_path }}\..\python-utils\parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
@@ -285,20 +380,17 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
         message: >
           Check if expected directories exist.
 
     - name: Set expected build directory
-      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
       run: |
         echo "EXPECTED_BUILD_DIR=$(echo 'doc\_build')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Check expected build directory
-      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$(if (Test-Path '${{ env.EXPECTED_BUILD_DIR }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
@@ -334,6 +426,25 @@ runs:
       shell: powershell
       run: |
         New-Item -ItemType directory ${{ env.EXPECTED_DOWNLOAD_DIR }}
+
+    # ------------------------------------------------------------------------
+
+    - name: Verify the docs have been generated properly
+      if: ${{ env.EXISTS_EXPECTED_BUILD_DIR == 'true' }}
+      shell: powershell
+      run: |
+        # Check if the HTML files have been generated
+        if (Test-Path -Path "${{ env.EXPECTED_BUILD_DIR }}\html\index.html") {
+          Write-Host "Docs have been generated successfully"
+        } else {
+          Write-Error "Docs have not been generated properly"
+        }
+        # Check if the PDF files have been generated
+        if (Test-Path -Path "${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}") {
+          Write-Host "PDF has been generated successfully"
+        } else {
+          Write-Error "PDF has not been generated properly"
+        }
 
     # ------------------------------------------------------------------------
 
