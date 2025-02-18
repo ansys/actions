@@ -28,7 +28,7 @@ Version ``v9``
 
     [project.optional-dependencies]
     doc = [
-        "sphinx_design==0.6.0",
+        "sphinx-design==0.6.1",
     ]
 
   In your ``conf.py`` file, add the following line:
