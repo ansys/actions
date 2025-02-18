@@ -316,8 +316,11 @@ runs:
       with:
         issue-number: ${{ github.event.number }}
         body: |
-          The towncrier template has been rewritten with the default template.
-          Please make sure you have `sphinx-design` as a dependency in your doc dependencies.
+          The towncrier template has been successfully rewritten with the default template.
+          Please ensure that `sphinx-design` is included as a dependency in your project's documentation requirements.
+          Additionally, add `sphinx-design` to the extensions list in your `conf.py` file.
+          For more information, please refer to the migration guide at:
+          https://actions.docs.ansys.com/version/stable/migrations/index.html#migration-guide
 
     - name: "Create and commit towncrier fragment"
       shell: bash

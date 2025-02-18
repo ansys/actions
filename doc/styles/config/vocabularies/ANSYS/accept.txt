@@ -11,3 +11,4 @@ TXT
 PyAnsys Dashboard
 robots.txt
 rulesets
+rst
