@@ -175,7 +175,6 @@ inputs:
     default: true
     type: boolean
 
-
 runs:
   using: "composite"
   steps:

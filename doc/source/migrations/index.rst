@@ -12,7 +12,7 @@ Version ``v9``
 **New Features:**
 
 - Added a new input parameter ``use-ansys-default-template`` to the ``ansys/actions/doc-changelog`` action.
-  This input allows users to utilize the default template provided by the ``ansys-actions`` repository.
+  This input allows users to utilize the default template provided by the ``ansys/actions`` repository.
   For migration instructions, see the migration steps below.
 
   .. note::
@@ -28,7 +28,7 @@ Version ``v9``
 
     [project.optional-dependencies]
     doc = [
-        "sphinx-design==0.6.0",
+        "sphinx-design",
     ]
 
   In your ``conf.py`` file, add the following line:

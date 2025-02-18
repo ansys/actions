@@ -254,9 +254,6 @@ runs:
 
         clean_pr_title(pr_title, use_cc)
 
-
-    # Testing purpose
-
     - name: "Get towncrier directory and template"
       shell: python
       run: |
@@ -331,7 +328,6 @@ runs:
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
         # Configure git username & email

@@ -459,8 +459,7 @@ def read_file_content(file_path: Path) -> str:
         The content of the file.
     """
     try:
-        with open(file_path, "r") as file:
-            return file.read()
+        return file_path.read_text()
     except Exception as e:
         print(f"An error occurred while reading the file: {e}")
 
@@ -476,7 +475,6 @@ def write_file_content(file_path: Path, content: str):
         The content to be written to the file.
     """
     try:
-        with open(file_path, "w") as file:
-            file.write(content)
+        file_path.write_text(content)
     except Exception as e:
         print(f"An error occurred while writing to the file: {e}")
