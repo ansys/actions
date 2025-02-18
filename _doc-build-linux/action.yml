@@ -131,14 +131,6 @@ inputs:
     required: true
     type: boolean
 
-  attest-provenance:
-    description: |
-      Whether to generate build provenance attestations for documentation
-      artifacts.
-    required: true
-    type: boolean
-
-
 runs:
   using: "composite"
   steps:
@@ -483,9 +475,3 @@ runs:
         name: documentation-json
         path: doc/_build/json
         retention-days: 7
-
-    - name: Generate build provenance attestation
-      if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@v2
-      with:
-        subject-path: doc
