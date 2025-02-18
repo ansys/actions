@@ -21,9 +21,8 @@ Version ``v9``
 
 **Migration Steps:**
 
-- The default documentation includes tabs and tab items, providing a clean changelog rst file. To use this feature,
-  you need to add ``sphinx-design`` as a dependency in your ``pyproject.toml`` file and include ``sphinx_design``
-  as an extension in your ``conf.py`` file.
+- The default documentation includes tabs and tab items, providing a clean changelog reStructuredText (rst) file. To use this feature,
+  add ``sphinx-design`` as a dependency in your ``pyproject.toml`` file and include ``sphinx_design`` as an extension in your ``conf.py`` file.
 
   .. code-block:: toml
 
@@ -40,10 +39,10 @@ Version ``v9``
         "sphinx_design",
     ]
 
-Once the actions are updated to v9, a comment will be made in the PR with the changelog file, suggesting to add ``sphinx-design`` as a dependency.
+After updating the actions to v9, a comment is made in the PR with the changelog file, suggesting to add ``sphinx-design`` as a dependency.
 You can ignore that comment if you have already added the dependency.
 
-After merging the PR, the changelog file will be updated with the new template, and the new release changelog will be created using the new template.
+After merging the PR, the changelog file updates with the new template, and the new release changelog is created using the new template.
 
 Version ``v8``
 --------------
