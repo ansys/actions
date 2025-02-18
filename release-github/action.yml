@@ -285,6 +285,10 @@ runs:
 
         get_release_notes(pyproject_path)
 
+    - name: "Debug echo"
+      shell: bash
+      run: echo "${{ env.RELEASE_NOTES_BODY }}"
+
     - name: "Set RELEASE_NOTES_BODY env variable"
       if: inputs.changelog-release-notes == 'false'
       shell: bash
@@ -314,6 +318,10 @@ runs:
           echo "\`\`\`"
           echo "EOF"
         } >> "$GITHUB_ENV"
+
+    - name: "Debug echo"
+      shell: bash
+      run: echo "${{ env.RELEASE_NOTES_BODY }}"
 
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@v1
