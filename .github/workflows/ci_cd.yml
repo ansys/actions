@@ -114,10 +114,10 @@ jobs:
     - name: "Isolate testing library"
       run: mv .ci/${{ env.test-library-name }} ~/
 
-    - name: "Install build twine and packaging"
+    - name: "Install build and twine"
       shell: bash
       run: |
-        python -m pip install -U packaging twine build
+        python -m pip install --upgrade build twine==6.0.1
 
     - name: "Build distribution artifacts and check their health"
       shell: bash
