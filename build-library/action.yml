@@ -72,6 +72,20 @@ inputs:
     default: true
     type: boolean
 
+  attest-provenance:
+    description: |
+      Whether to generate build provenance attestations for distribution
+      artifacts.
+
+      .. warning::
+
+        Adding provenance attestations requires write permissions for `id-token`
+        and `attestation`. Otherwise, this action will fail.
+
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -88,7 +102,7 @@ runs:
     - name: "Install build and twine"
       shell: bash
       run: |
-        python -m pip install build twine
+        python -m pip install --upgrade packaging build twine
 
     - name: "Build distribution artifacts"
       shell: bash
@@ -107,3 +121,9 @@ runs:
         name: ${{ inputs.library-name }}-artifacts
         path: dist/
         retention-days: 7
+
+    - name: Generate build provenance attestation
+      if: inputs.attest-provenance == 'true'
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: dist/
