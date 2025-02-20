@@ -7,6 +7,43 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v9``
+--------------
+**New Features:**
+
+- Added a new input parameter ``use-ansys-default-template`` to the ``ansys/actions/doc-changelog`` action.
+  This input allows users to utilize the default template provided by the ``ansys/actions`` repository.
+  For migration instructions, see the migration steps below.
+
+  .. note::
+
+    The default template is only available for the ``ansys/actions/doc-changelog`` action and is in the reStructuredText (rst) format.
+
+**Migration Steps:**
+
+- The default documentation includes tabs and tab items, providing a clean changelog reStructuredText (rst) file. To use this feature,
+  add ``sphinx-design`` as a dependency in your ``pyproject.toml`` file and include ``sphinx_design`` as an extension in your ``conf.py`` file.
+
+  .. code-block:: toml
+
+    [project.optional-dependencies]
+    doc = [
+        "sphinx-design",
+    ]
+
+  In your ``conf.py`` file, add the following line:
+
+  .. code-block:: python
+
+    extensions = [
+        "sphinx_design",
+    ]
+
+After updating the actions to v9, a comment is made in the PR with the changelog file, suggesting to add ``sphinx-design`` as a dependency.
+You can ignore that comment if you have already added the dependency.
+
+After merging the PR, the changelog file updates with the new template, and the new release changelog is created using the new template.
+
 Version ``v8``
 --------------
 **Breaking changes:**
