@@ -118,6 +118,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install --upgrade packaging build twine
+        python pip list
 
     - name: "Build distribution artifacts and check their health"
       shell: bash
