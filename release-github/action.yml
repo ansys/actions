@@ -123,6 +123,20 @@ inputs:
     required: false
     type: boolean
 
+  generate_release_notes:
+    description: |
+      Whether to automatically generate the name and body for this release.
+
+      .. warning::
+
+        If this option is activated and the action is used to create text
+        content for the release notes body, the content will be
+        pre-pended to the automatically generated notes.
+
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -322,7 +336,7 @@ runs:
       if: inputs.dry-run == 'false'
       with:
         fail_on_unmatched_files: false
-        generate_release_notes: true
+        generate_release_notes: ${{ inputs.generate_release_notes }}
         body: ${{ env.RELEASE_NOTES_BODY }}
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
         token: ${{ inputs.token }}
