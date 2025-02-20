@@ -117,8 +117,7 @@ jobs:
     - name: "Install build twine and packaging"
       shell: bash
       run: |
-        python -m pip install -U build packaging
-        python -m pip install twine==6.0.1
+        python -m pip install -U packaging twine build
 
     - name: "Build distribution artifacts and check their health"
       shell: bash
