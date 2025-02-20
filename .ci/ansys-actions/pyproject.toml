@@ -26,9 +26,6 @@ dependencies = ["importlib-metadata >=4.0"]
 [tool.flit.module]
 name = "ansys.actions.core"
 
-[tool.setuptools]
-license-files = ["LICENSE"]
-
 [project.urls]
 Source = "https://github.com/ansys/actions"
 Documentation = "https://actions.docs.ansys.com"
