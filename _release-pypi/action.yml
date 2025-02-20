@@ -106,10 +106,10 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: false
 
-    - name: "Install twine"
+    - name: "Install packaging and twine"
       shell: bash
       run: |
-        python -m pip install -U packaging twine build
+        python -m pip install --upgrade pip packaging twine
 
     - name: "Download the library artifacts from build-library step"
       uses: actions/download-artifact@v4
