@@ -133,7 +133,7 @@ jobs:
         retention-days: 7
 
     - name: "Release to the test PyPI repository"
-      uses: ansys/actions/release-pypi-test@main
+      uses: ansys/actions/release-pypi-test@fix/test_py_failing
       with:
         library-name: ${{ env.test-library-name }}
         use-trusted-publisher: true
