@@ -89,7 +89,7 @@ runs:
       shell: bash
       run: |
         python -m pip install build
-        python -m pip install --upgrade twine 'pkginfo<=1.10'
+        python -m pip install --upgrade twine pkginfo
 
     - name: "Build distribution artifacts"
       shell: bash
