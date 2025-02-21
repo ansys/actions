@@ -109,7 +109,7 @@ runs:
     - name: "Install twine"
       shell: bash
       run: |
-        python -m pip install --upgrade  twine
+        python -m pip install --upgrade pip twine
 
     - name: "Download the library artifacts from build-library step"
       uses: actions/download-artifact@v4
@@ -142,7 +142,7 @@ runs:
         TWINE_REPOSITORY_URL: ${{ inputs.index-name }}
 
     - name: "Upload artifacts to PyPI using Trusted Publisher"
-      uses: pypa/gh-action-pypi-publish@v1.12.4
+      uses: pypa/gh-action-pypi-publish@v1.10.1
       if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'true'
       with:
         repository-url: ${{ inputs.index-name }}
