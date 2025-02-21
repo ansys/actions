@@ -353,7 +353,7 @@ showcontent = true\n"""
         )
 
 
-def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
+def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml") -> str:
     """Get the value of a category within the [tool.towncrier] section of the pyproject.toml file.
 
     Parameters
@@ -392,7 +392,7 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
     return category_value
 
 
-def rewrite_template(template_path: None, file_name: None):
+def rewrite_template(template_path: None, file_name: None) -> bool:
     """Rewrite the template.jinja file with the default template.
 
     Parameters
@@ -465,7 +465,7 @@ def read_file_content(file_path: Path) -> str:
 
 
 def write_file_content(file_path: Path, content: str):
-    """Write content to a file, if file does not exist, create it.
+    """Write content to a file. If this file does not exist, create it.
 
     Parameters
     ----------
