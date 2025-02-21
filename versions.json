@@ -1,0 +1,27 @@
+[
+  {
+    "name": "dev",
+    "version": "dev",
+    "url": "https://actions.docs.ansys.com/version/dev/"
+  },
+  {
+    "name": "8.1 (stable)",
+    "version": "8.1",
+    "url": "https://actions.docs.ansys.com/version/stable/"
+  },
+  {
+    "name": "8.0",
+    "version": "8.0",
+    "url": "https://actions.docs.ansys.com/version/8.0/"
+  },
+  {
+    "name": "7.0",
+    "version": "7.0",
+    "url": "https://actions.docs.ansys.com/version/7.0/"
+  },
+  {
+    "name": "Older versions",
+    "version": "N/A",
+    "url": "https://actions.docs.ansys.com/version/"
+  }
+]
