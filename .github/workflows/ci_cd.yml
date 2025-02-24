@@ -117,8 +117,7 @@ jobs:
     - name: "Install build and twine"
       shell: bash
       run: |
-        python -m pip install --upgrade build twine
-        python -m pip list
+        python -m pip install build twine
 
     - name: "Build distribution artifacts and check their health"
       shell: bash
@@ -134,7 +133,7 @@ jobs:
         retention-days: 7
 
     - name: "Release to the test PyPI repository"
-      uses: ansys/actions/release-pypi-test@feat/add-provenance-attestation
+      uses: ansys/actions/release-pypi-test@main
       with:
         library-name: ${{ env.test-library-name }}
         use-trusted-publisher: true

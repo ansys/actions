@@ -111,7 +111,7 @@ runs:
   steps:
 
     - name: "Release to PyAnsys private index"
-      uses: ansys/actions/_release-pypi@feat/add-provenance-attestation
+      uses: ansys/actions/_release-pypi@main
       with:
         library-name: ${{ inputs.library-name }}
         index-name: ${{ inputs.index-name }}
