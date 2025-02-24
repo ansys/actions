@@ -102,6 +102,20 @@ inputs:
     default: true
     type: boolean
 
+  attest-provenance:
+    description: |
+      Whether to generate build provenance attestations for wheelhouse
+      artifacts.
+
+      .. warning::
+
+        Adding provenance attestations requires write permissions for `id-token`
+        and `attestation`. Otherwise, this action will fail.
+
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -188,6 +202,12 @@ runs:
         name: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
         retention-days: 7
+
+    - name: Generate build provenance attestation
+      if: inputs.attest-provenance == 'true'
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
       uses: ansys/actions/check-licenses@main

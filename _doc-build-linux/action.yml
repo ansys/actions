@@ -131,7 +131,6 @@ inputs:
     required: true
     type: boolean
 
-
 runs:
   using: "composite"
   steps:
