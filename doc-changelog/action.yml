@@ -98,6 +98,13 @@ inputs:
     default: false
     type: boolean
 
+  use-ansys-default-template:
+    description: |
+      Use the default towncrier template in the pyproject.toml file.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -247,6 +254,25 @@ runs:
 
         clean_pr_title(pr_title, use_cc)
 
+    - name: "Get towncrier directory and template"
+      shell: python
+      run: |
+        import os
+        import toml
+
+        # Load pyproject.toml
+        with open('pyproject.toml', 'r') as f:
+            config = toml.load(f)
+            template=config["tool"]["towncrier"]["template"]
+            filename=config["tool"]["towncrier"]["filename"]
+
+        # Get the GITHUB_ENV variable
+        github_env = os.getenv('GITHUB_ENV')
+
+        with open(github_env, "a") as f:
+            f.write(f"TEMPLATE={template}\n")
+            f.write(f"FILENAME={filename}\n")
+
     - name: "Append towncrier categories to pyproject.toml"
       env:
         REPO_NAME: ${{ github.event.repository.name }}
@@ -263,6 +289,35 @@ runs:
         default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
 
         add_towncrier_config(org_name, repo_name, default_config)
+
+    - name: "Rewrite the template with the default template"
+      if: ${{ inputs.use-ansys-default-template }}
+      shell: python
+      run: |
+        import os
+        import sys
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        from parse_pr_title import rewrite_template
+
+        template_status = rewrite_template(os.getenv('TEMPLATE'), os.getenv('FILENAME'))
+
+        github_env = os.getenv('GITHUB_ENV')
+
+        with open(github_env, "a") as f:
+            f.write(f"TEMPLATE_STATUS={template_status}\n")
+
+    - name: "Make PR comment if template rewritten"
+      if: ${{ env.TEMPLATE_STATUS == 'True' }}
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.number }}
+        body: |
+          The towncrier template has been successfully rewritten with the default template.
+          Please ensure that `sphinx-design` is included as a dependency in your project's documentation requirements.
+          Additionally, add `sphinx-design` to the extensions list in your `conf.py` file.
+          For more information, please refer to the migration guide at:
+          https://actions.docs.ansys.com/version/stable/migrations/index.html#migration-guide
 
     - name: "Create and commit towncrier fragment"
       shell: bash
