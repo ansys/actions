@@ -196,8 +196,11 @@ def clean_pr_title(pr_title: str, use_cc: str):
     # Remove extra whitespace
     clean_title = clean_title.strip()
 
-    # Add backslash in front of backtick and double quote
-    clean_title = clean_title.replace("`", "\\`").replace('"', '\\"')
+    # Add backslash in front of backtick
+    clean_title = re.sub(r"(?<!\\)`", r"\`", clean_title)
+
+    # Add backslash in front of double quote
+    clean_title = re.sub(r"(?<!\\)\"", r"\"", clean_title)
 
     # Add backslash in front of star sign
     clean_title = re.sub(r"(?<!\\)\*", r"\\*", clean_title)
