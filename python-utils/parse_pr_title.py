@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 import toml
@@ -199,7 +200,7 @@ def clean_pr_title(pr_title: str, use_cc: str):
     clean_title = clean_title.replace("`", "\\`").replace('"', '\\"')
 
     # Add backslash in front of star sign
-    clean_title = clean_title.replace("*", "\\*")
+    clean_title = re.sub(r"(?<!\\)\*", r"\\*", clean_title)
 
     # Save the clean pull request title as the CLEAN_TITLE environment variable
     save_env_variable("CLEAN_TITLE", clean_title)
