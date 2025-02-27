@@ -9,7 +9,7 @@ env:
   TEST_LIBRARY_NAME: 'test-ansys-actions'
 
 permissions:
-  content: read
+  contents: read
   pull-requests: read
 
 concurrency:
