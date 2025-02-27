@@ -1,19 +1,10 @@
-name: CI
+name: release
 on:
-  pull_request:
-  workflow_dispatch:
   push:
+    branches:
+      - 'release/*'
     tags:
       - "v*.*.*"
-    branches:
-      - main
-
-env:
-  MAIN_PYTHON_VERSION: '3.11'
-  DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
-  test-library-name: 'ansys-actions'
-  MEILISEARCH_API_KEY: ${{ secrets.MEILISEARCH_API_KEY }}
-  MEILISEARCH_PUBLIC_API_KEY: ${{ secrets.MEILISEARCH_PUBLIC_API_KEY }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,62 +12,20 @@ concurrency:
 
 jobs:
 
-  labeler:
-    name: "Labels"
-    permissions:
-      contents: read
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-     - uses: actions/checkout@v4
-
-     - name: "Update labels"
-       uses: micnncim/action-label-syncer@v1
-       env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-     - name: "Label pull-request"
-       # Skip if user does not have write permissions - PR coming from a fork
-       if: github.event.pull_request.head.repo.full_name == github.repository
-       uses: actions/labeler@v5.0.0
-       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-  pr-title-style:
-    name: "Pull-request title style"
-    runs-on: ubuntu-latest
-    needs: labeler
-    steps:
-      - uses: ansys/actions/check-pr-title@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
   code-style:
     name: "Code style"
     runs-on: ubuntu-latest
-    needs: pr-title-style
     steps:
-      - name: "Run code style checks"
-        uses: ansys/actions/code-style@main
+      - uses: ansys/actions/code-style@main
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
 
-      - name: "Verify private actions are not pointing to the 'main' branch"
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-        run: |
-          if $(grep -q --exclude-dir={.git,.github,doc} "ansys\/actions\/.*\@main" -r .); then
-            echo -e "\033[1;91m[ERROR]: Found private actions pointing to the 'main' branch.\033[0m"
-            grep -q --exclude-dir={.git,.github,doc} "ansys\/actions\/.*\@main" -r .
-          fi
-
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
-    needs: pr-title-style
     steps:
-      - name: "Run documentation style checks"
-        uses: ansys/actions/doc-style@main
+      - uses: ansys/actions/doc-style@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -85,8 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: doc-style
     steps:
-      - name: "Build documentation"
-        uses: ansys/actions/doc-build@main
+      - uses: ansys/actions/doc-build@main
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -137,20 +85,6 @@ jobs:
       with:
         library-name: ${{ env.test-library-name }}
         use-trusted-publisher: true
-
-  doc-deploy-dev:
-    name: "Deploy developers documentation"
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && !contains(github.ref, 'refs/tags')
-    needs: [doc-build, tests]
-    steps:
-      - uses: ansys/actions/doc-deploy-dev@main
-        with:
-            cname: ${{ env.DOCUMENTATION_CNAME }}
-            token: ${{ secrets.GITHUB_TOKEN }}
-            bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-            bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
-
   release:
     name: "Release to GitHub"
     runs-on: ubuntu-latest
