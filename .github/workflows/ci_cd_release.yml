@@ -85,6 +85,7 @@ jobs:
       with:
         library-name: ${{ env.test-library-name }}
         use-trusted-publisher: true
+
   release:
     name: "Release to GitHub"
     runs-on: ubuntu-latest
@@ -136,7 +137,7 @@ jobs:
     steps:
       - uses: ansys/actions/doc-deploy-stable@main
         with:
-            cname: ${{ env.DOCUMENTATION_CNAME }}
-            token: ${{ secrets.GITHUB_TOKEN }}
-            bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-            bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+          cname: ${{ env.DOCUMENTATION_CNAME }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
