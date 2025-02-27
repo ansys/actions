@@ -58,6 +58,20 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Test warning"
+      uses: ansys/actions/_logging@feat/add-log-in-workflow-summary
+      with:
+        level: "WARNING"
+        message: >
+          My warning message.
+
+    - name: "Test error"
+      uses: ansys/actions/_logging@feat/add-log-in-workflow-summary
+      with:
+        level: "ERROR"
+        message: >
+          My warning message.
+
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) && inputs.use-upper-case == 'false' }}
       uses: amannn/action-semantic-pull-request@v5

@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: labeler
     steps:
-      - uses: ansys/actions/check-pr-title@main
+      - uses: ansys/actions/check-pr-title@feat/add-log-in-workflow-summary
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
