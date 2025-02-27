@@ -8,6 +8,10 @@ env:
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   TEST_LIBRARY_NAME: 'test-ansys-actions'
 
+permissions:
+  content: read
+  pull-requests: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
