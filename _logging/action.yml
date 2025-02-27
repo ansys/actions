@@ -50,7 +50,7 @@ runs:
   using: "composite"
   steps:
 
-    # ----------------- Workflow summary level -----------------
+    # ------------------------ Workflow summary level ------------------------
 
     - name: "Report error message in workflow summary"
       shell: bash
