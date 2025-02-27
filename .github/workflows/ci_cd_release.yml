@@ -6,6 +6,11 @@ on:
     tags:
       - "v*.*.*"
 
+env:
+  MAIN_PYTHON_VERSION: '3.12'
+  DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
+  LIBRARY_NAME: 'ansys-actions'
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -60,7 +65,7 @@ jobs:
         use-cache: false
 
     - name: "Isolate testing library"
-      run: mv .ci/${{ env.test-library-name }} ~/
+      run: mv .ci/${{ env.LIBRARY_NAME }} ~/
 
     - name: "Install build and twine"
       shell: bash
@@ -70,20 +75,20 @@ jobs:
     - name: "Build distribution artifacts and check their health"
       shell: bash
       run: |
-        cd ~/${{ env.test-library-name }}
+        cd ~/${{ env.LIBRARY_NAME }}
         ls -R && python -m build && python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.test-library-name }}-artifacts
-        path: ~/${{ env.test-library-name }}/dist/
+        name: ${{ env.LIBRARY_NAME }}-artifacts
+        path: ~/${{ env.LIBRARY_NAME }}/dist/
         retention-days: 7
 
     - name: "Release to the test PyPI repository"
       uses: ansys/actions/release-pypi-test@main
       with:
-        library-name: ${{ env.test-library-name }}
+        library-name: ${{ env.LIBRARY_NAME }}
         use-trusted-publisher: true
 
   release:
