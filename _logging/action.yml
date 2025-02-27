@@ -50,24 +50,13 @@ runs:
   using: "composite"
   steps:
 
-    # ------------------------ Workflow summary level ------------------------
-
-    - name: "Report error message in workflow summary"
-      shell: bash
-      if: ${{ inputs.level == 'ERROR'}}
-      run: echo "::error::${{ inputs.message }}"
-
-    - name: "Report warning message in workflow summary"
-      shell: bash
-      if: ${{ inputs.level == 'WARNING'}}
-      run: echo "::warning::${{ inputs.message }}"
-
     # -------------------------------- Linux ---------------------------------
 
     - name: "Report error message"
       shell: bash
       if: ${{ inputs.level == 'ERROR' && runner.os == 'Linux' }}
       run: |
+        echo "::error::${{ inputs.message }}"
         echo -e "\033[1;91m[ERROR]: ${{ inputs.message }}\033[0m"
         exit 1
 
@@ -75,6 +64,7 @@ runs:
       shell: bash
       if: ${{ inputs.level == 'WARNING' && runner.os == 'Linux' }}
       run: |
+        echo "::warning::${{ inputs.message }}"
         echo -e "\033[1;93m[WARNING]: ${{ inputs.message }}\033[0m"
 
     - name: "Report info message"
@@ -89,6 +79,7 @@ runs:
       shell: powershell
       if: ${{ inputs.level == 'ERROR' && runner.os == 'Windows' }}
       run: |
+        echo "::error::${{ inputs.message }}"
         Write-Host "$([char]27)[91m[ERROR]: ${{ inputs.message }}$([char]27)[0m"
         Exit 1
 
@@ -96,6 +87,7 @@ runs:
       shell: powershell
       if: ${{ inputs.level == 'WARNING' && runner.os == 'Windows' }}
       run: |
+        echo "::warning::${{ inputs.message }}"
         Write-Host "$([char]27)[93m[WARNING]: ${{ inputs.message }}$([char]27)[0m"
 
     - name: "Report info message"
