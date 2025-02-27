@@ -24,7 +24,7 @@ jobs:
   pr-title-style:
     name: "Pull-request title style"
     runs-on: ubuntu-latest
-    if: github.event_name == "pull_request"
+    if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: read
@@ -36,7 +36,7 @@ jobs:
   labeler:
     name: "Labels"
     runs-on: ubuntu-latest
-    if: github.event_name == "pull_request"
+    if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: write
