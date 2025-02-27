@@ -21,18 +21,6 @@ concurrency:
 
 jobs:
 
-  pr-title-style:
-    name: "Pull-request title style"
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    permissions:
-      contents: read
-      pull-requests: read
-    steps:
-      - uses: ansys/actions/check-pr-title@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
   labeler:
     name: "Labels"
     runs-on: ubuntu-latest
@@ -57,7 +45,28 @@ jobs:
        with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-  changelog:
+  changelog-fragment:
+    name: "Create changelog fragment"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+
+      - uses: ansys/actions/check-pr-title@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ansys/actions/doc-changelog@v8
+        with:
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          use-conventional-commits: true
+          use-default-towncrier-config: true
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
+  changelog-deployment:
     name: "Changelog"
     permissions:
       contents: write
@@ -65,21 +74,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - uses: ansys/actions/doc-changelog@v8
-      if: github.event_name == 'pull_request'
-      with:
-        token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-        use-conventional-commits: true
-        use-default-towncrier-config: true
-        bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-        bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
-
-    - uses: ansys/actions/doc-deploy-changelog@v8
-      if: github.event_name != 'pull_request'
-      with:
-        token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-        bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-        bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+      - uses: ansys/actions/doc-deploy-changelog@v8
+        if: github.event_name != 'pull_request'
+        with:
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
   code-style:
     name: "Code style"
