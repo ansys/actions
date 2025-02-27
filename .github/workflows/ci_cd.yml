@@ -27,7 +27,7 @@ jobs:
     if: github.event_name == "pull_request"
     permissions:
       contents: read
-      pull_request: read
+      pull-requests: read
     steps:
       - uses: ansys/actions/check-pr-title@main
         with:
