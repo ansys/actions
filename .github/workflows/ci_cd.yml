@@ -66,7 +66,7 @@ jobs:
     steps:
 
     - uses: ansys/actions/doc-changelog@v8
-      if: github.event_name == "pull_request"
+      if: github.event_name == 'pull_request'
       with:
         token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
         use-conventional-commits: true
@@ -75,7 +75,7 @@ jobs:
         bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
     - uses: ansys/actions/doc-deploy-changelog@v8
-      if: github.event_name != "pull_request"
+      if: github.event_name != 'pull_request'
       with:
         token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
         bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
