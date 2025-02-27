@@ -50,6 +50,18 @@ runs:
   using: "composite"
   steps:
 
+    # ----------------- Workflow summary level -----------------
+
+    - name: "Report error message in workflow summary"
+      shell: bash
+      if: ${{ inputs.level == 'ERROR'}}
+      run: echo "::error::${{ inputs.message }}"
+
+    - name: "Report warning message in workflow summary"
+      shell: bash
+      if: ${{ inputs.level == 'WARNING'}}
+      run: echo "::warning::${{ inputs.message }}"
+
     # -------------------------------- Linux ---------------------------------
 
     - name: "Report error message"
