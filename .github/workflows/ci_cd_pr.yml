@@ -100,7 +100,7 @@ jobs:
         use-cache: false
 
     - name: "Isolate testing library"
-      run: mv .ci/{{ env.LIBRARY_NAME }} ~/
+      run: mv .ci/${{ env.LIBRARY_NAME }} ~/
 
     - name: "Install build and twine"
       shell: bash
