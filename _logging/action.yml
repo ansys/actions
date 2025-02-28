@@ -50,6 +50,8 @@ runs:
   using: "composite"
   steps:
 
+    # --------------------------- Warning / Error ----------------------------
+
     - name: "Report error message"
       shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
       if: ${{ inputs.level == 'ERROR' && runner.os == 'Linux' }}
@@ -63,20 +65,16 @@ runs:
       run: |
         echo "::warning::${{ inputs.message }}"
 
-    # -------------------------------- Linux ---------------------------------
+    # -------------------------------- Info ----------------------------------
 
     - name: "Report info message"
       shell: bash
       if: ${{ inputs.level == 'INFO' && runner.os == 'Linux' }}
       run: |
-        echo "::notice::${{ inputs.message }}"
         echo -e "\033[1;92m[INFO]: ${{ inputs.message }}\033[0m"
-
-    # ------------------------------- Windows --------------------------------
 
     - name: "Report info message"
       shell: powershell
       if: ${{ inputs.level == 'INFO' && runner.os == 'Windows' }}
       run: |
-        echo "::notice::${{ inputs.message }}"
         Write-Host "$([char]27)[92m[INFO]: ${{ inputs.message }}$([char]27)[0m"
