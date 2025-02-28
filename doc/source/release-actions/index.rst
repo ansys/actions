@@ -65,7 +65,7 @@ When used to test the release process, you can update the `repository-url` to
         run: ls -R
 
         - name: "Upload artifacts to PyPI using Trusted Publisher"
-        uses: pypa/gh-action-pypi-publish@v1.10.1
+        uses: pypa/gh-action-pypi-publish@v1.12.4
         with:
             repository-url: "https://upload.pypi.org/legacy/"
             print-hash: true
