@@ -1,4 +1,4 @@
-name: pull-request
+name: night
 
 on:
   schedule:
@@ -9,8 +9,7 @@ env:
   LIBRARY_NAME: 'ansys-actions'
 
 permissions:
-  contents: read
-  pull-requests: read
+  contents: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
