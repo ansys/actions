@@ -100,6 +100,12 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Notify to use trusted publisher"
+      shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
+      if: inputs.use-trusted-publisher == 'false'
+      run: |
+        echo "::notice::We recommend using Trusted Publishers to securely publish packages on PyPI. Please consider moving to this approach."
+
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
       with:
