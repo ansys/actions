@@ -34,9 +34,10 @@ Release GitHub action
 Release PyPI template
 ---------------------
 
-Below, we assume that a job `build-library` already created library sources
-and wheel artifacts using the environment variable `PACKAGE_NAME`. Also,
-we define that we don't want to upload files if one already exists.
+Below, it is assumed that a job `build-library` already created library sources
+and wheel artifacts using the environment variable `PACKAGE_NAME`. Also, the job
+is defined to not upload files if one already exists thanks to the
+`skip-existing` input.
 
 When used to test the release process, you can update the `repository-url` to
 "https://test.pypi.org/legacy/".
