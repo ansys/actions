@@ -3,7 +3,7 @@
 Release notes
 #############
 
-This document contains the release notes for the PyAnsys Geometry project.
+This document contains the release notes for the Ansys Actions project.
 
 .. vale off
 
