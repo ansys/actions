@@ -1,4 +1,5 @@
 [tool.towncrier]
+name = "ansys-actions"
 directory = "doc/source/changelog"
 filename = "doc/source/changelog.rst"
 template = "doc/source/changelog/template"
