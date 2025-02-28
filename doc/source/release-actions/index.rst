@@ -69,7 +69,6 @@ is defined to not upload files if one already exists thanks to the
             print-hash: true
             packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
             skip-existing: false
-```
 
 When used to test the release process, you can update the repository URL as
 follow:
@@ -82,4 +81,3 @@ follow:
             print-hash: true
             packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
             skip-existing: false
-```
