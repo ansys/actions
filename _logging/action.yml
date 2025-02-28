@@ -62,8 +62,6 @@ runs:
       if: ${{ inputs.level == 'WARNING' && runner.os == 'Linux' }}
       run: |
         echo "::warning::${{ inputs.message }}"
-        echo -e "\033[1;93m[WARNING]: ${{ inputs.message }}\033[0m"
-
 
     # -------------------------------- Linux ---------------------------------
 
