@@ -54,14 +54,14 @@ runs:
 
     - name: "Report error message"
       shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
-      if: ${{ inputs.level == 'ERROR' && runner.os == 'Linux' }}
+      if: ${{ inputs.level == 'ERROR'}}
       run: |
         echo "::error::${{ inputs.message }}"
         exit 1
 
     - name: "Report warning message"
       shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
-      if: ${{ inputs.level == 'WARNING' && runner.os == 'Linux' }}
+      if: ${{ inputs.level == 'WARNING'}}
       run: |
         echo "::warning::${{ inputs.message }}"
 
