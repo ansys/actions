@@ -39,9 +39,6 @@ and wheel artifacts using the environment variable `PACKAGE_NAME`. Also, the job
 is defined to not upload files if one already exists thanks to the
 `skip-existing` input.
 
-When used to test the release process, you can update the `repository-url` to
-`https://test.pypi.org/legacy/`.
-
 .. code::yaml
 
     release-pypi:
@@ -69,6 +66,19 @@ When used to test the release process, you can update the `repository-url` to
         uses: pypa/gh-action-pypi-publish@v1.12.4
         with:
             repository-url: "https://upload.pypi.org/legacy/"
+            print-hash: true
+            packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
+            skip-existing: false
+```
+
+When used to test the release process, you can update the repository URL as
+follow:
+
+.. code::yaml
+
+        uses: pypa/gh-action-pypi-publish@v1.12.4
+        with:
+            repository-url: "https://test.pypi.org/legacy/"
             print-hash: true
             packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
             skip-existing: false
