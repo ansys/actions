@@ -31,3 +31,43 @@ Release GitHub action
 .. jinja:: release-github
     :file: _templates/action.rst.jinja
 
+Release PyPI template
+---------------------
+
+Below, we assume that a job `build-library` already created library sources
+and wheel artifacts using the environment variable `PACKAGE_NAME`. Also,
+we define that we don't want to upload files if one already exists.
+
+When used to test the release process, you can update the `repository-url` to
+"https://test.pypi.org/legacy/".
+
+```
+    release-pypi:
+    name: "Release to PyPI with trusted publisher approach"
+    runs-on: ubuntu-latest
+    needs: [build-library]
+    # Specifying a GitHub environment is optional, but strongly encouraged
+    environment: release
+    permissions:
+        # IMPORTANT: this permission is mandatory for trusted publishing
+        id-token: write
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+    steps:
+        - name: "Download the library artifacts from build-library step"
+        uses: actions/download-artifact@v4
+        with:
+            name: ${{ env.PACKAGE_NAME }}-artifacts
+            path: ${{ env.PACKAGE_NAME }}-artifacts
+
+        - name: "Display the structure of downloaded files"
+        shell: bash
+        run: ls -R
+
+        - name: "Upload artifacts to PyPI using Trusted Publisher"
+        uses: pypa/gh-action-pypi-publish@v1.10.1
+        with:
+            repository-url: "https://upload.pypi.org/legacy/"
+            print-hash: true
+            packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
+            skip-existing: false
+```
