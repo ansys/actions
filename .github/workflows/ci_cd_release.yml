@@ -1,8 +1,6 @@
 name: release
 on:
   push:
-    branches:
-      - 'release/*'
     tags:
       - "v*.*.*"
 
@@ -84,7 +82,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ansys/actions/doc-deploy-changelog@v8
-        if: github.event_name != 'pull_request'
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
@@ -169,7 +166,6 @@ jobs:
   release:
     name: "Release to GitHub"
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: [doc-build, tests]
     steps:
 
@@ -212,7 +208,6 @@ jobs:
   doc-deploy-stable:
     name: "Deploy stable documentation"
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: release
     steps:
       - uses: ansys/actions/doc-deploy-stable@main
