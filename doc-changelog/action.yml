@@ -262,8 +262,8 @@ runs:
         import toml
 
         # Identify towncrier configuration file
-        pyproject_file = Path("pyproject.toml")
-        towncrier_file = Path("towncrier.toml")
+        pyproject_file = pathlib.Path("pyproject.toml")
+        towncrier_file = pathlib.Path("towncrier.toml")
 
         if not pyproject_file.exists() and not towncrier_file.exists():
             print("No pyproject.toml or towncrier.toml file found.")
