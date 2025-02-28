@@ -17,9 +17,69 @@ concurrency:
 
 jobs:
 
+  rolling-release:
+    name: "Rolling release"
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
+      with:
+        fetch-tags: true
+        ref: ${{ github.ref }}
+
+    - name: "Configure git"
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+
+    - name: "Decompose tag into components"
+      run: |
+        if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          VERSION=$(echo ${{ github.ref_name}} | cut -d 'v' -f2)
+          MAJOR=$(echo "${VERSION}" | cut -d '.' -f1)
+          MINOR=$(echo "${VERSION}" | cut -d '.' -f2)
+          PATCH=$(echo "${VERSION}" | cut -d '.' -f3)
+        else
+          echo "::error::Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
+          exit 1
+        fi
+
+    - name: "Check tag is valid for current branch"
+      run: |
+        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${env.MAJOR}.${{ env.MINOR }}" ]]; then
+          echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
+          exit 1
+        fi
+
+    - name: "Remove MAJOR tag"
+      run: |
+        if git tag -l | grep -q "^${{ env.MAJOR }}$"; then
+          git push --delete origin ${{ env.MAJOR }}
+        else
+          echo -e "Tag ${{ env.MAJOR }} does not exist, skipping deletion."
+        fi
+
+    - name: "Remove MAJOR.MINOR tag"
+      run: |
+        if git tag -l | grep -q "^${{ env.MAJOR }}\.${{ env.MINOR }}$"; then
+          git push --delete origin ${{ env.MAJOR }}.${{ env.MINOR }}
+        else
+          echo -e "Tag ${{ env.MAJOR }}.${{ env.MINOR }} does not exist, skipping deletion."
+        fi
+
+    - name: "Create new tags"
+      run: |
+          git tag ${{ env.MAJOR }}.${{ env.MINOR }}
+          git tag ${{ env.MAJOR }}
+          git push origin ${{ env.MAJOR }}.${{ env.MINOR }}
+          git push origin ${{ env.MAJOR }}
+
   code-style:
     name: "Code style"
     runs-on: ubuntu-latest
+    needs: rolling-release
     steps:
       - uses: ansys/actions/code-style@main
         with:
@@ -29,6 +89,7 @@ jobs:
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
+    needs: rolling-release
     steps:
       - uses: ansys/actions/doc-style@main
         with:
