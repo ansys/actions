@@ -40,9 +40,10 @@ is defined to not upload files if one already exists thanks to the
 `skip-existing` input.
 
 When used to test the release process, you can update the `repository-url` to
-"https://test.pypi.org/legacy/".
+`https://test.pypi.org/legacy/`.
 
-```
+.. code::yaml
+
     release-pypi:
     name: "Release to PyPI with trusted publisher approach"
     runs-on: ubuntu-latest
