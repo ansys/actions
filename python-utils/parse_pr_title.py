@@ -221,9 +221,16 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     default_config: bool
         Whether or not to use the default towncrier configuration for the pyproject.toml file.
     """
-    # Load pyproject.toml file
-    with open("pyproject.toml", "a+") as file:
-        config = toml.load("pyproject.toml")
+    pyproject_file = Path("pyproject.toml")
+    towncrier_file = Path("towncrier.toml")
+
+    if not pyproject_file.exists() and not towncrier_file.exists():
+        print("No pyproject.toml or towncrier.toml file found.")
+        exit(1)
+
+    towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
+    with towncrier_config.open() as file:
+        config = toml.load(towncrier_config)
         tool = config.get("tool", "DNE")
         towncrier = tool.get("towncrier", "DNE")
 
