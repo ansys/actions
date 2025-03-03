@@ -1,8 +1,6 @@
 name: release
 on:
   push:
-    branches:
-      - 'release/*'
     tags:
       - "v*.*.*"
 
@@ -37,10 +35,10 @@ jobs:
     - name: "Decompose tag into components"
       run: |
         if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          VERSION=$(echo ${{ github.ref_name}} | cut -d 'v' -f2)
-          MAJOR=$(echo "${VERSION}" | cut -d '.' -f1)
-          MINOR=$(echo "${VERSION}" | cut -d '.' -f2)
-          PATCH=$(echo "${VERSION}" | cut -d '.' -f3)
+          VERSION=$(echo ${{ github.ref_name}} | cut -d 'v' -f2)
+          MAJOR=$(echo "${VERSION}" | cut -d '.' -f1)
+          MINOR=$(echo "${VERSION}" | cut -d '.' -f2)
+          PATCH=$(echo "${VERSION}" | cut -d '.' -f3)
         else
           echo "::error::Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
           exit 1
@@ -75,6 +73,19 @@ jobs:
           git tag ${{ env.MAJOR }}
           git push origin ${{ env.MAJOR }}.${{ env.MINOR }}
           git push origin ${{ env.MAJOR }}
+
+  changelog-deployment:
+    name: "Changelog"
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ansys/actions/doc-deploy-changelog@v8
+        with:
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
   code-style:
     name: "Code style"
@@ -155,7 +166,6 @@ jobs:
   release:
     name: "Release to GitHub"
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: [doc-build, tests]
     steps:
 
@@ -198,7 +208,6 @@ jobs:
   doc-deploy-stable:
     name: "Deploy stable documentation"
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: release
     steps:
       - uses: ansys/actions/doc-deploy-stable@main

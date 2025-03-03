@@ -40,19 +40,31 @@ jobs:
        with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-  pr-title-style:
-    name: "Pull-request title style"
+  changelog-fragment:
+    name: "Create changelog fragment"
     runs-on: ubuntu-latest
     needs: labeler
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
+
       - uses: ansys/actions/check-pr-title@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: ansys/actions/doc-changelog@main
+        with:
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          use-conventional-commits: true
+          use-default-towncrier-config: true
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
   code-style:
     name: "Code style"
     runs-on: ubuntu-latest
-    needs: pr-title-style
+    needs: changelog-fragment
     steps:
       - name: "Run code style checks"
         uses: ansys/actions/code-style@main
@@ -63,7 +75,7 @@ jobs:
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
-    needs: pr-title-style
+    needs: changelog-fragment
     steps:
       - uses: ansys/actions/doc-style@main
         with:
