@@ -7,6 +7,7 @@ on:
 env:
   MAIN_PYTHON_VERSION: '3.12'
   LIBRARY_NAME: 'ansys-actions'
+  DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
 
 permissions:
   contents: write
