@@ -52,17 +52,17 @@ is defined to not upload files if one already exists thanks to the
         id-token: write
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     steps:
-        - name: "Download the library artifacts from build-library step"
+      - name: "Download the library artifacts from build-library step"
         uses: actions/download-artifact@v4
         with:
             name: ${{ env.PACKAGE_NAME }}-artifacts
             path: ${{ env.PACKAGE_NAME }}-artifacts
 
-        - name: "Display the structure of downloaded files"
+      - name: "Display the structure of downloaded files"
         shell: bash
         run: ls -R
 
-        - name: "Upload artifacts to PyPI using Trusted Publisher"
+      - name: "Upload artifacts to PyPI using trusted publisher approach"
         uses: pypa/gh-action-pypi-publish@v1.12.4
         with:
             repository-url: "https://upload.pypi.org/legacy/"
