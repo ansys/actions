@@ -49,7 +49,7 @@ jobs:
       run: |
         # Remove leading "v" from env.X
         MAJOR="${V_AND_MAJOR:1}"
-        echo "MAJOR=${MAJOR}" >> GITHUB_ENV
+        echo "MAJOR=${MAJOR}" >> $GITHUB_ENV
         if [[ ${{ github.event.base_ref }} != "refs/heads/release/${{ env.MAJOR }}.${{ env.MINOR }}" ]]; then
           echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
           exit 1
