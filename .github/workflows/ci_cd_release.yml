@@ -48,14 +48,14 @@ jobs:
         X_NO_V="${X:1}"
         # Check if the tag was created in the proper branch
         if [[ ${{ github.event.base_ref }} != "refs/heads/release/${X_NO_V}.${{ env.Y }}" ]]; then
-          echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
+          echo "Tag ${{ github.ref_name }} was created in the wrong branch. Expected branch name release/${X_NO_V}.${{ env.Y }}"
           exit 1
         fi
 
     - name: "Remove old tags"
       run: |
-          git push --delete origin ${{ env.X }}
-          git push --delete origin ${{ env.X }}.${{ env.Y }}
+        git push --delete origin ${{ env.X }}
+        git push --delete origin ${{ env.X }}.${{ env.Y }}
 
     - name: "Create new tags"
       run: |
