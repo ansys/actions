@@ -30,4 +30,3 @@ Release GitHub action
 
 .. jinja:: release-github
     :file: _templates/action.rst.jinja
-

@@ -1,7 +1,7 @@
 Ansys actions
 =============
 
-.. note:: Adapting to a new version?
+.. admonition:: Adapting to a new version?
 
    If you are adapting to a new version of the actions, see the
    :ref:`migration_guide`.
