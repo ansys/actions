@@ -21,9 +21,6 @@ jobs:
     permissions: write-all
     steps:
 
-    name: "Perform rolling release"
-    runs-on: ubuntu-latest
-    steps:
     - name: "Checkout repository"
       uses: actions/checkout@v4
 
