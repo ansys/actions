@@ -200,7 +200,6 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
-        python -m pip install -e .
 
     # TODO: remove this deprecation in ansys/actions@v9
 
@@ -221,13 +220,23 @@ runs:
     - name: "Get towncrier directory"
       shell: python
       run: |
+        import pathlib
         import os
         import toml
 
+        # Identify towncrier configuration file
+        pyproject_file = pathlib.Path("pyproject.toml")
+        towncrier_file = pathlib.Path("towncrier.toml")
+        if not pyproject_file.exists() and not towncrier_file.exists():
+            print("No pyproject.toml or towncrier.toml file found.")
+            exit(1)
+
+        towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
+
         # Load pyproject.toml
-        with open('pyproject.toml', 'r') as f:
+        with open(towncrier_config, 'r') as f:
             config = toml.load(f)
-            directory=config["tool"]["towncrier"]["directory"]
+            directory = config["tool"]["towncrier"]["directory"]
 
         # Get the GITHUB_ENV variable
         github_env = os.getenv('GITHUB_ENV')
