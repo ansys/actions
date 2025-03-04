@@ -34,8 +34,8 @@ own release job.
           - name: "Download the library artifacts from build-library step"
             uses: actions/download-artifact@v4
             with:
-                name: ${{ env.PACKAGE_NAME }}-artifacts
-                path: ${{ env.PACKAGE_NAME }}-artifacts
+              name: ${{ env.PACKAGE_NAME }}-artifacts
+              path: ${{ env.PACKAGE_NAME }}-artifacts
 
           - name: "Upload artifacts to PyPI using trusted publisher"
             uses: pypa/gh-action-pypi-publish@v1.12.4
