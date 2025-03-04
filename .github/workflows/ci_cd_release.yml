@@ -46,7 +46,7 @@ jobs:
 
     - name: "Check tag is valid for current branch"
       run: |
-        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${env.MAJOR}.${{ env.MINOR }}" ]]; then
+        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${{ env.MAJOR }}.${{ env.MINOR }}" ]]; then
           echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
           exit 1
         fi
