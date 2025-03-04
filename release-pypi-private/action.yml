@@ -34,7 +34,7 @@ description: |
 
      Starting with version ``ansys-actions@v9``, the ``use-trusted-publisher``
      input parameter is deprecated. Refer to the
-     :ref:`_release_pypi_trusted_publisher` if you wish to use this security
+     :ref:`release_pypi_trusted_publisher` if you wish to use this security
      feature.
 
 inputs:
