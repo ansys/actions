@@ -114,7 +114,7 @@ runs:
       with:
         level: "WARNING"
         message: >
-          As the python ecosystem is moving to project metadata version 2.4,
+          As the Python ecosystem is moving to project metadata version 2.4,
           we need to use a more recent version of pypa/gh-action-pypi-publish.
           However, this action is not compatible with composite actions.
           Therefore, the `ansys/release-pypi-private` action is destined to

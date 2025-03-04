@@ -34,10 +34,9 @@ Release GitHub action
 Release PyPI template
 ---------------------
 
-Below, it is assumed that a job `build-library` already created library sources
-and wheel artifacts using the environment variable `PACKAGE_NAME`. Also, the job
-is defined to not upload files if one already exists thanks to the
-`skip-existing` input.
+The following code assumes that a `build-library` job has already created library sources
+and wheel artifacts using the `PACKAGE_NAME` environment variable. Also, the job's 
+`skip-existing` input indicates that files that already exist are not uploaded again.
 
 .. code::yaml
 
@@ -45,10 +44,10 @@ is defined to not upload files if one already exists thanks to the
     name: "Release to PyPI with trusted publisher approach"
     runs-on: ubuntu-latest
     needs: [build-library]
-    # Specifying a GitHub environment is optional, but strongly encouraged
+    # Specifying a GitHub environment is optional but strongly encouraged
     environment: release
     permissions:
-        # IMPORTANT: this permission is mandatory for trusted publishing
+        # IMPORTANT: This permission is mandatory for trusted publishing.
         id-token: write
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     steps:
@@ -70,8 +69,8 @@ is defined to not upload files if one already exists thanks to the
             packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
             skip-existing: false
 
-When used to test the release process, you can update the repository URL as
-follow:
+When testing the release process, you can update the repository URL as
+follows:
 
 .. code::yaml
 
