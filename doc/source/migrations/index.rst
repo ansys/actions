@@ -55,14 +55,17 @@ Version ``v8``
 
 **Deprecated features:**
 
-- The ``ansys/actions/doc-deploy-index`` action has been deprecated and will be removed in the next release.
-  With the deprecation of ``pymeilisearch`` and the adoption of a static search index via the ``ansys-sphinx-theme``,
-  the ``ansys/actions/doc-deploy-index`` action is no longer necessary.
+- The ``ansys/actions/doc-deploy-index`` action has been deprecated and will be
+  removed in the next release. With the deprecation of ``pymeilisearch`` and
+  the adoption of a static search index via the ``ansys-sphinx-theme``, the
+  ``ansys/actions/doc-deploy-index`` action is no longer necessary.
 
-- The ``ansys/actions/commit-style`` action has been renamed to ``ansys/actions/check-pr-title``.
+- The ``ansys/actions/commit-style`` action has been renamed to
+  ``ansys/actions/check-pr-title``.
 
 - The ``ansys/actions/branch-name-style`` actions has been removed in favor of
-  `GitHub rulesets <https://dev.docs.pyansys.com/how-to/repository-protection.html#branch-protection>`_.
+  `GitHub rulesets
+  <https://dev.docs.pyansys.com/how-to/repository-protection.html#branch-protection>`_.
 
 **Migration steps:**
 
