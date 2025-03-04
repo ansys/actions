@@ -29,6 +29,13 @@ description: |
   named ``<library-name>-artifacts``. This file is expected to contain a wheel file
   and a source distribution file for the desired library.
 
+  .. attention::
+
+     Starting with version ``ansys-actions@v9``, the ``use-trusted-publisher``
+     input parameter is deprecated. Refer to the
+     :ref:`_release_pypi_trusted_publisher` if you wish to use this security
+     feature.
+
 inputs:
 
   # Required inputs
