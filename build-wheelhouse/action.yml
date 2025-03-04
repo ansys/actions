@@ -125,7 +125,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v8.2
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -210,7 +210,7 @@ runs:
         subject-path: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
-      uses: ansys/actions/check-licenses@main
+      uses: ansys/actions/check-licenses@v8.2
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}

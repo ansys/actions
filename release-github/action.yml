@@ -143,7 +143,7 @@ runs:
 
     # TODO: remove this deprecation in ansys/actions@v9
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       if: ${{ inputs.token == '' }}
       with:
         level: "ERROR"
@@ -160,7 +160,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       with:
         level: "INFO"
         message: >
@@ -178,7 +178,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -211,7 +211,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -228,7 +228,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -244,7 +244,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -263,7 +263,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       with:
         level: "INFO"
         message: >

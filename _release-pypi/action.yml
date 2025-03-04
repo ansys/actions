@@ -107,7 +107,7 @@ runs:
         echo "::notice::We recommend using trusted publishers to securely publish packages on PyPI. You should consider moving to this approach."
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v8.2
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false

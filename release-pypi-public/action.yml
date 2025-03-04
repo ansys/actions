@@ -110,7 +110,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       with:
         level: "WARNING"
         message: >
@@ -123,7 +123,7 @@ runs:
           https://actions.docs.ansys.com/version/stable/release-actions/index.html#release-pypi-template
 
     - name: "Release to the public PyPI index"
-      uses: ansys/actions/_release-pypi@main
+      uses: ansys/actions/_release-pypi@v8.2
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://upload.pypi.org/legacy/"

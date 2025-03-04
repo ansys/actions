@@ -118,7 +118,7 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v8.2
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -130,7 +130,7 @@ runs:
 
     # TODO: remove this deprecation in ansys/actions@v9
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v8.2
       if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
       with:
         level: "ERROR"
