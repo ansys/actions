@@ -21,59 +21,51 @@ jobs:
     permissions: write-all
     steps:
 
+    name: "Perform rolling release"
+    runs-on: ubuntu-latest
+    steps:
     - name: "Checkout repository"
       uses: actions/checkout@v4
-      with:
-        fetch-tags: true
-        ref: ${{ github.ref }}
 
     - name: "Configure git"
       run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
+          git config user.name github-actions
+          git config user.email github-actions@github.com
 
     - name: "Decompose tag into components"
       run: |
         if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           # Split the tag into its components
           IFS='.' read -ra PARTS <<< "${{ github.ref_name }}"
-          echo "MAJOR=${PARTS[0]}" >> $GITHUB_ENV
-          echo "MINOR=${PARTS[1]}" >> $GITHUB_ENV
-          echo "PATCH=${PARTS[2]}" >> $GITHUB_ENV
+          echo "X=${PARTS[0]}" >> $GITHUB_ENV
+          echo "Y=${PARTS[1]}" >> $GITHUB_ENV
+          echo "Z=${PARTS[2]}" >> $GITHUB_ENV
         else
           echo "Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
           exit 1
         fi
 
-    - name: "Check tag is valid for current branch"
+    - name: "Verify tag was created in the proper release branch"
       run: |
-        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${{ env.MAJOR }}.${{ env.MINOR }}" ]]; then
-          echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
+        # Remove leading "v" from env.X
+        X_NO_V="${X:1}"
+        # Check if the tag was created in the proper branch
+        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${X_NO_V}.${{ env.Y }}" ]]; then
+          echo "Tag ${{ github.ref_name }} was created in the wrong branch. Expected branch name release/${X_NO_V}.${{ env.Y }}"
           exit 1
         fi
 
-    - name: "Remove MAJOR tag"
+    - name: "Remove old tags"
       run: |
-        if git tag -l | grep -q "^${{ env.MAJOR }}$"; then
-          git push --delete origin ${{ env.MAJOR }}
-        else
-          echo -e "Tag ${{ env.MAJOR }} does not exist, skipping deletion."
-        fi
-
-    - name: "Remove MAJOR.MINOR tag"
-      run: |
-        if git tag -l | grep -q "^${{ env.MAJOR }}\.${{ env.MINOR }}$"; then
-          git push --delete origin ${{ env.MAJOR }}.${{ env.MINOR }}
-        else
-          echo -e "Tag ${{ env.MAJOR }}.${{ env.MINOR }} does not exist, skipping deletion."
-        fi
+          git push --delete origin ${{ env.X }}
+          git push --delete origin ${{ env.X }}.${{ env.Y }}
 
     - name: "Create new tags"
       run: |
-        git tag ${{ env.MAJOR }}.${{ env.MINOR }}
-        git tag ${{ env.MAJOR }}
-        git push origin ${{ env.MAJOR }}.${{ env.MINOR }}
-        git push origin ${{ env.MAJOR }}
+          git tag ${{ env.X }}.${{ env.Y }}
+          git tag ${{ env.X }}
+          git push origin ${{ env.X }}.${{ env.Y }}
+          git push origin ${{ env.X }}
 
   changelog-deployment:
     name: "Changelog"
@@ -93,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: rolling-release
     steps:
-      - uses: ansys/actions/code-style@main
+      - uses: ansys/actions/code-style@v8.2
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -103,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: rolling-release
     steps:
-      - uses: ansys/actions/doc-style@main
+      - uses: ansys/actions/doc-style@v8.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -112,7 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: doc-style
     steps:
-      - uses: ansys/actions/doc-build@main
+      - uses: ansys/actions/doc-build@v8.2
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -132,7 +124,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v8.2
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
@@ -159,7 +151,7 @@ jobs:
         retention-days: 7
 
     - name: "Release to the test PyPI repository"
-      uses: ansys/actions/release-pypi-test@main
+      uses: ansys/actions/release-pypi-test@v8.2
       with:
         library-name: ${{ env.LIBRARY_NAME }}
         use-trusted-publisher: true
@@ -211,7 +203,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     steps:
-      - uses: ansys/actions/doc-deploy-stable@main
+      - uses: ansys/actions/doc-deploy-stable@v8.2
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
