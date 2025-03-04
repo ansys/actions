@@ -26,8 +26,8 @@ jobs:
 
     - name: "Configure git"
       run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+        git config user.name github-actions
+        git config user.email github-actions@github.com
 
     - name: "Decompose tag into components"
       run: |
@@ -48,7 +48,7 @@ jobs:
         X_NO_V="${X:1}"
         # Check if the tag was created in the proper branch
         if [[ ${{ github.event.base_ref }} != "refs/heads/release/${X_NO_V}.${{ env.Y }}" ]]; then
-          echo "Tag ${{ github.ref_name }} was created in the wrong branch. Expected branch name release/${X_NO_V}.${{ env.Y }}"
+          echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
           exit 1
         fi
 
@@ -59,10 +59,10 @@ jobs:
 
     - name: "Create new tags"
       run: |
-          git tag ${{ env.X }}.${{ env.Y }}
-          git tag ${{ env.X }}
-          git push origin ${{ env.X }}.${{ env.Y }}
-          git push origin ${{ env.X }}
+        git tag ${{ env.X }}.${{ env.Y }}
+        git tag ${{ env.X }}
+        git push origin ${{ env.X }}.${{ env.Y }}
+        git push origin ${{ env.X }}
 
   changelog-deployment:
     name: "Changelog"
