@@ -61,6 +61,12 @@ see each of these cards:
 
        Vulnerabilities actions provide for actively checking library and third party vulnerabilities.
 
+    .. grid-item-card:: :octicon:`log` Changelog
+       :link: changelog
+       :link-type: doc
+
+       History of changes to the project.
+
 .. toctree::
    :hidden:
    :maxdepth: 3
@@ -74,3 +80,4 @@ see each of these cards:
    housekeeping-actions/index
    vulnerability-actions/index
    migrations/index
+   changelog
