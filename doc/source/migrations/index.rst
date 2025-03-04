@@ -7,8 +7,8 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
-Version ``v9``
---------------
+Version ``v8.2``
+----------------
 **New Features:**
 
 - Added a new input parameter ``use-ansys-default-template`` to the ``ansys/actions/doc-changelog`` action.
