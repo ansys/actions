@@ -23,6 +23,9 @@ jobs:
 
     - name: "Checkout repository"
       uses: actions/checkout@v4
+      with:
+        fetch-tags: true
+        ref: ${{ github.ref }}
 
     - name: "Configure git"
       run: |
