@@ -264,7 +264,6 @@ runs:
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
         towncrier_file = pathlib.Path("towncrier.toml")
-
         if not pyproject_file.exists() and not towncrier_file.exists():
             print("No pyproject.toml or towncrier.toml file found.")
             exit(1)
@@ -274,8 +273,8 @@ runs:
         # Load pyproject.toml
         with open(towncrier_config, 'r') as f:
             config = toml.load(f)
-            template=config["tool"]["towncrier"]["template"]
-            filename=config["tool"]["towncrier"]["filename"]
+            template = config["tool"]["towncrier"]["template"]
+            filename = config["tool"]["towncrier"]["filename"]
 
         # Get the GITHUB_ENV variable
         github_env = os.getenv('GITHUB_ENV')
