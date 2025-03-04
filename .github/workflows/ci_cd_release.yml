@@ -45,20 +45,30 @@ jobs:
           exit 1
         fi
 
-    - name: "Verify tag was created in the proper release branch"
+    - name: "Check tag is valid for current branch"
       run: |
         # Remove leading "v" from env.X
         MAJOR_NO_V="${MAJOR:1}"
-        # Check if the tag was created in the proper branch
         if [[ ${{ github.event.base_ref }} != "refs/heads/release/${MAJOR_NO_V}.${{ env.MINOR }}" ]]; then
-          echo "Tag ${{ github.ref_name }} was created in the wrong branch. Expected branch name release/${MAJOR_NO_V}.${{ env.MINOR }}"
+          echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
           exit 1
         fi
 
-    - name: "Remove old tags"
+    - name: "Remove MAJOR tag"
       run: |
-        git push --delete origin ${{ env.MAJOR }}
-        git push --delete origin ${{ env.MAJOR }}.${{ env.MINOR }}
+        if git tag -l | grep -q "^${{ env.MAJOR }}$"; then
+          git push --delete origin ${{ env.MAJOR }}
+        else
+          echo -e "Tag ${{ env.MAJOR }} does not exist, skipping deletion."
+        fi
+
+    - name: "Remove MAJOR.MINOR tag"
+      run: |
+        if git tag -l | grep -q "^${{ env.MAJOR }}\.${{ env.MINOR }}$"; then
+          git push --delete origin ${{ env.MAJOR }}.${{ env.MINOR }}
+        else
+          echo -e "Tag ${{ env.MAJOR }}.${{ env.MINOR }} does not exist, skipping deletion."
+        fi
 
     - name: "Create new tags"
       run: |
