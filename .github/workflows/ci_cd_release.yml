@@ -37,7 +37,7 @@ jobs:
         if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           # Split the tag into its components
           IFS='.' read -ra PARTS <<< "${{ github.ref_name }}"
-          echo "MAJOR=${PARTS[0]}" >> $GITHUB_ENV
+          echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_ENV
           echo "MINOR=${PARTS[1]}" >> $GITHUB_ENV
           echo "PATCH=${PARTS[2]}" >> $GITHUB_ENV
         else
@@ -48,8 +48,9 @@ jobs:
     - name: "Check tag is valid for current branch"
       run: |
         # Remove leading "v" from env.X
-        MAJOR_NO_V="${MAJOR:1}"
-        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${MAJOR_NO_V}.${{ env.MINOR }}" ]]; then
+        MAJOR="${{ V_AND_MAJOR:1}"
+        echo "MAJOR=${MAJOR}" >> GITHUB_ENV
+        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${{ env.MAJOR }}.${{ env.MINOR }}" ]]; then
           echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
           exit 1
         fi
