@@ -35,12 +35,13 @@ jobs:
     - name: "Decompose tag into components"
       run: |
         if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          VERSION=$(echo ${{ github.ref_name}} | cut -d 'v' -f2)
-          MAJOR=$(echo "${VERSION}" | cut -d '.' -f1)
-          MINOR=$(echo "${VERSION}" | cut -d '.' -f2)
-          PATCH=$(echo "${VERSION}" | cut -d '.' -f3)
+          # Split the tag into its components
+          IFS='.' read -ra PARTS <<< "${{ github.ref_name }}"
+          echo "MAJOR=${PARTS[0]}" >> $GITHUB_ENV
+          echo "MINOR=${PARTS[1]}" >> $GITHUB_ENV
+          echo "PATCH=${PARTS[2]}" >> $GITHUB_ENV
         else
-          echo "::error::Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
+          echo "Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
           exit 1
         fi
 
@@ -69,10 +70,10 @@ jobs:
 
     - name: "Create new tags"
       run: |
-          git tag ${{ env.MAJOR }}.${{ env.MINOR }}
-          git tag ${{ env.MAJOR }}
-          git push origin ${{ env.MAJOR }}.${{ env.MINOR }}
-          git push origin ${{ env.MAJOR }}
+        git tag ${{ env.MAJOR }}.${{ env.MINOR }}
+        git tag ${{ env.MAJOR }}
+        git push origin ${{ env.MAJOR }}.${{ env.MINOR }}
+        git push origin ${{ env.MAJOR }}
 
   changelog-deployment:
     name: "Changelog"
