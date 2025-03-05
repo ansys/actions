@@ -111,6 +111,7 @@ runs:
   steps:
 
     - uses: ansys/actions/_logging@main
+      if: inputs.use-trusted-publisher == 'true'
       with:
         level: "WARNING"
         message: >
