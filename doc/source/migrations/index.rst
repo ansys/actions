@@ -42,7 +42,7 @@ Version ``v8.2``
           id-token: write
         steps:
           - name: "Build library source and wheel artifacts"
-            uses: ansys/actions/build-library@v8
+            uses: ansys/actions/build-library@v8.2
             with:
               library-name: ${{ env.PACKAGE_NAME }}
               python-version: ${{ env.MAIN_PYTHON_VERSION }}
