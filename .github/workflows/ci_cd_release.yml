@@ -58,26 +58,26 @@ jobs:
 
     - name: "Remove MAJOR tag"
       run: |
-        if git tag -l | grep -q "^${{ env.MAJOR }}$"; then
-          git push --delete origin ${{ env.MAJOR }}
+        if git tag -l | grep -q "^v${{ env.MAJOR }}$"; then
+          git push --delete origin v${{ env.MAJOR }}
         else
-          echo -e "Tag ${{ env.MAJOR }} does not exist, skipping deletion."
+          echo -e "Tag v${{ env.MAJOR }} does not exist, skipping deletion."
         fi
 
     - name: "Remove MAJOR.MINOR tag"
       run: |
-        if git tag -l | grep -q "^${{ env.MAJOR }}\.${{ env.MINOR }}$"; then
-          git push --delete origin ${{ env.MAJOR }}.${{ env.MINOR }}
+        if git tag -l | grep -q "^v${{ env.MAJOR }}\.${{ env.MINOR }}$"; then
+          git push --delete origin v${{ env.MAJOR }}.${{ env.MINOR }}
         else
-          echo -e "Tag ${{ env.MAJOR }}.${{ env.MINOR }} does not exist, skipping deletion."
+          echo -e "Tag v${{ env.MAJOR }}.${{ env.MINOR }} does not exist, skipping deletion."
         fi
 
     - name: "Create new tags"
       run: |
-        git tag ${{ env.MAJOR }}.${{ env.MINOR }}
-        git tag ${{ env.MAJOR }}
-        git push origin ${{ env.MAJOR }}.${{ env.MINOR }}
-        git push origin ${{ env.MAJOR }}
+        git tag v${{ env.MAJOR }}.${{ env.MINOR }}
+        git tag v${{ env.MAJOR }}
+        git push origin v${{ env.MAJOR }}.${{ env.MINOR }}
+        git push origin v${{ env.MAJOR }}
 
   changelog-deployment:
     name: "Changelog"
