@@ -19,6 +19,42 @@ Version ``v8.2``
 
     The default template is only available for the ``ansys/actions/doc-changelog`` action and is in the reStructuredText (rst) format.
 
+- Added a new input parameter ``fail-level`` to the ``ansys/actions/doc-style`` action.
+  This input allows users to select the report level used to control check results.
+  Default value is ``"error"`` but it can be changed to ``"any"``, ``"info"``, ``"warning"``, or ``"error"``
+
+- The ``release-github/action.yml`` action has been improved with the ability to extend a Github release note with
+  instructions on how to verify the release's artifacts attestations with
+  `Github's CLI tool<https://cli.github.com/>`_.
+
+  - Added a new input ``attest-provenance`` to the ``build-library/action.yml`` and ``build-wheelhouse/action.yml``
+    actions. Note that adding provenance attestations requires write permissions for `id-token` and `attestation`.
+    For example
+
+    .. code-block:: yaml
+
+      build-library:
+        name: Build library
+        runs-on: ubuntu-latest
+        permissions:
+          attestations: write
+          contents: read
+          id-token: write
+        steps:
+          - name: "Build library source and wheel artifacts"
+            uses: ansys/actions/build-library@v8
+            with:
+              library-name: ${{ env.PACKAGE_NAME }}
+              python-version: ${{ env.MAIN_PYTHON_VERSION }}
+              attest-provenance: true
+
+  - Added two inputs to the ``release-github/action.yml`` action. The first input parameter
+    ``add-artifact-attestation-notes`` allows users to add artifact attestation notes to the Github release notes.
+    The second input parameter ``generate_release_notes`` allows users to deactivate the notes automatically generated
+    by default.
+
+- Added a new input parameter ``randomize`` to the ``tests-pytest/action.yml`` action to randomize the order of the tests.
+
 **Migration Steps:**
 
 - The default documentation includes tabs and tab items, providing a clean changelog reStructuredText (rst) file. To use this feature,
