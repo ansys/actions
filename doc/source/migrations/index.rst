@@ -21,15 +21,15 @@ Version ``v8.2``
 
 - Added a new input parameter ``fail-level`` to the ``ansys/actions/doc-style`` action.
   This input allows users to select the report level used to control check results.
-  Default value is ``"error"`` but it can be changed to ``"any"``, ``"info"``, ``"warning"``, or ``"error"``
+  Default value is ``"error"`` but it can be changed to ``"any"``, ``"info"``, ``"warning"``, or ``"error"``.
 
 - The ``release-github/action.yml`` action has been improved with the ability to extend a Github release note with
   instructions on how to verify the release's artifacts attestations with
-  `Github's CLI tool<https://cli.github.com/>`_.
+  `Github's CLI tool <https://cli.github.com/>`_.
 
-  - Added a new input ``attest-provenance`` to the ``build-library/action.yml`` and ``build-wheelhouse/action.yml``
+  - Added a new input ``attest-provenance`` to the ``ansys/actions/build-library`` and ``ansys/actions/build-wheelhouse``
     actions. Note that adding provenance attestations requires write permissions for `id-token` and `attestation`.
-    For example
+    For example:
 
     .. code-block:: yaml
 
@@ -53,7 +53,7 @@ Version ``v8.2``
     The second input parameter ``generate_release_notes`` allows users to deactivate the notes automatically generated
     by default.
 
-- Added a new input parameter ``randomize`` to the ``tests-pytest/action.yml`` action to randomize the order of the tests.
+- Added a new input parameter ``randomize`` to the ``ansys/actions/tests-pytest`` action to randomize the order of the tests.
 
 **Migration Steps:**
 
