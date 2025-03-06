@@ -1,0 +1,94 @@
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  Check actions security action
+
+description: |
+  Detects common security issues in GitHub Actions yml files using `zizmor <https://woodruffw.github.io/zizmor/>`_.
+
+inputs:
+
+  token:
+    description: |
+      Use the PYANSYS_CI_BOT_TOKEN to allow online audits by zizmor
+    required: false
+    type: string
+
+  generate-summary:
+    description: |
+      Whether to output a nicely formatted summary table showing the number
+      of security issues per workflow file.
+    required: false
+    default: true
+    type: boolean
+
+  auditing-level:
+    description: |
+      Equivalent to "persona" zizmor option, controls zizmor's auditing sensitivity.
+      Possible values include "normal", "high", and "strict", which map to "regular", "pedantic",
+      and "auditor" persona options.
+    default: "normal"
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v4
+
+    - name: "Install uv"
+      uses: astral-sh/setup-uv@v5
+
+    - name: "Install zizmor and verify installation"
+      run: |
+        uv tool install zizmor
+        zizmor --version
+
+    - name: "Output a summary of detected vulnerabilities"
+      shell: bash
+      run: |
+          cat <<- _EOF_ > zizmor-summary
+            #!/bin/bash
+            # Process zizmor report and generate summary of identified issues
+
+            format="%-50s%-20s\n"
+            printf "$format" "=========" "================"
+            printf "$format" "File name" "Number of issues"
+            printf "$format" "=========" "================"
+
+            count=0
+            while read no_of_occurence workflow_file; do
+                printf "$format" "$workflow_file" "$no_of_occurence"
+                count=$((count + no_of_occurence))
+            done < <(zizmor . 2> /dev/null | grep -Eo "[^ /]+/([^ /]+/)?.*\.yml" | sort | uniq -c)
+
+            printf "$format" "Total" "$count"
+            printf "$format" "=========" "================"
+            _EOF_
+          
+          chmod u+x zizmor-summary
+          ./zizmor-summary
+  
+
+  
