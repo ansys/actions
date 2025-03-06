@@ -133,6 +133,15 @@ inputs:
     default: true
     type: boolean
 
+  skip-install:
+    description: |
+      Whether to skip the installation of the project or not. If ``true``, the
+      project is not installed. If ``false``, the project is installed. By
+      default, the project is not installed.
+    required: false
+    default: false
+    type: boolean
+
   release-from-main:
     description: |
       If ``false``, you pushed a tag from a release branch. This is applicable for most
@@ -200,6 +209,12 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
+
+    - name: "Install the project"
+      shell: bash
+      if: inputs.skip-install == 'false'
+      run: |
+        python -m pip install .
 
     # TODO: remove this deprecation in ansys/actions@v9
 
