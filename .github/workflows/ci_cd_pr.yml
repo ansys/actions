@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: doc-style
     steps:
-      - uses: ansys/actions/doc-build@feat/check-actions-security-action
+      - uses: ansys/actions/doc-build@main
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -138,9 +138,9 @@ jobs:
         library-name: ${{ env.LIBRARY_NAME }}
         use-trusted-publisher: true
 
-# # Checking if the action runs
-#   actions-security:
-#     name: "Check actions security"
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: ansys/actions/check-actions-security@${{ github.ref }}
+# Checking if the action runs
+  actions-security:
+    name: "Check actions security"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ansys/actions/check-actions-security@feat/check-actions-security-action
