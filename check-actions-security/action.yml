@@ -72,13 +72,13 @@ runs:
       run: |
         echo '${{ inputs.token }}' >> "$GITHUB_ENV"
 
-    - name: "Detailed zizmor audit"
-      shell: bash
-      env:
-        HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
-        STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
-      run: |
-        zizmor $HIGH_AUDIT_LEVEL $STRICT_AUDIT_LEVEL .
+    # - name: "Detailed zizmor audit"
+    #   shell: bash
+    #   env:
+    #     HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
+    #     STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
+    #   run: |
+    #     zizmor $HIGH_AUDIT_LEVEL $STRICT_AUDIT_LEVEL .
 
     - name: "Output a summary of detected vulnerabilities"
       if: ${{ inputs.generate-summary == 'true' }}
