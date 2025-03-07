@@ -70,7 +70,7 @@ runs:
       if: ${{ inputs.token != '' }}
       shell: bash
       run: |
-        echo '${{ inputs.token }}' >> "$GITHUB_ENV"
+        echo 'GH_TOKEN=${{ inputs.token }}' >> "$GITHUB_ENV"
 
     - name: "Output a summary of detected vulnerabilities"
       if: ${{ inputs.generate-summary == 'true' }}
