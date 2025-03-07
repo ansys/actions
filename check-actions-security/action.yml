@@ -75,6 +75,9 @@ runs:
     - name: "Output a summary of detected vulnerabilities"
       if: ${{ inputs.generate-summary == 'true' }}
       shell: bash
+      env:
+        HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
+        STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
         cat << _EOF_ > zizmor-summary
         #!/bin/bash
@@ -89,11 +92,12 @@ runs:
         while read no_of_occurence workflow_file; do
             printf "\$format" "\$workflow_file" "\$no_of_occurence"
             count=\$((count + no_of_occurence))
-        done < <(zizmor . 2> /dev/null | grep -Eo "[^ /]+/([^ /]+/)?.*\.yml" | sort | uniq -c)
+        done < <(zizmor $HIGH_AUDIT_LEVEL $STRICT_AUDIT_LEVEL . 2> /dev/null | grep -Eo "[^ /]+/([^ /]+/)?.*\.yml" | sort | uniq -c)
 
         printf "\$format" "=========" "================"
         printf "\$format" "Total" "\$count"
         printf "\$format" "=========" "================"
+        printf "\nNote: the summary excludes warning surpressed by zizmor."
         _EOF_
 
         chmod u+x zizmor-summary
