@@ -44,10 +44,10 @@ inputs:
 
   auditing-level:
     description: |
-      Equivalent to "persona" zizmor option, controls zizmor's auditing sensitivity.
-      Possible values include "normal", "high", and "strict", which map to "regular", "pedantic",
-      and "auditor" persona options.
-    default: "normal"
+      Equivalent to 'persona' zizmor option, controls zizmor's auditing sensitivity.
+      Possible values include 'normal', 'high', and 'strict', which map to 'regular', 'pedantic',
+      and 'auditor' persona options.
+    default: 'normal'
     required: false
     type: string
 
@@ -66,7 +66,14 @@ runs:
         uv tool install zizmor
         zizmor --version
 
+    - name: "Optionally set GH_TOKEN"
+      if: ${{ inputs.token != '' }}
+      shell: bash
+      run: |
+        echo '${{ inputs.token }}' >> "$GITHUB_ENV"
+
     - name: "Output a summary of detected vulnerabilities"
+      if: ${{ inputs.generate-summary == true }}
       shell: bash
       run: |
         cat << _EOF_ > zizmor-summary
@@ -91,3 +98,11 @@ runs:
 
         chmod u+x zizmor-summary
         ./zizmor-summary
+
+    - name: "Detailed zizmor audit"
+      shell: bash
+      env:
+        HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
+        STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
+      run: |
+        zizmor $HIGH_AUDIT_LEVEL $STRICT_AUDIT_LEVEL .
