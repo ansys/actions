@@ -146,4 +146,4 @@ jobs:
       - uses: ansys/actions/check-actions-security@feat/check-actions-security-action
         with:
           generate-summary: true
-          # token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
