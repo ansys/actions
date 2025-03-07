@@ -81,7 +81,7 @@ runs:
         zizmor $HIGH_AUDIT_LEVEL $STRICT_AUDIT_LEVEL .
 
     - name: "Output a summary of detected vulnerabilities"
-      if: ${{ inputs.generate-summary }}
+      if: ${{ inputs.generate-summary == 'true' }}
       shell: bash
       run: |
         cat << _EOF_ > zizmor-summary
