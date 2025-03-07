@@ -137,3 +137,14 @@ jobs:
       with:
         library-name: ${{ env.LIBRARY_NAME }}
         use-trusted-publisher: true
+
+# Checking if the action runs
+  actions-security:
+    name: "Check actions security"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ansys/actions/check-actions-security@feat/check-actions-security-action
+        with:
+          generate-summary: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          auditing-level: 'normal'
