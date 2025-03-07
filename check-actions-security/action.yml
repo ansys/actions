@@ -86,9 +86,5 @@ runs:
             printf "$format" "Total" "$count"
             printf "$format" "=========" "================"
             _EOF_
-          
           chmod u+x zizmor-summary
           ./zizmor-summary
-  
-
-  

@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: doc-style
     steps:
-      - uses: ansys/actions/doc-build@main
+      - uses: ansys/actions/doc-build@${{ github.ref }}
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
