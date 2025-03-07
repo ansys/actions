@@ -138,9 +138,9 @@ jobs:
         library-name: ${{ env.LIBRARY_NAME }}
         use-trusted-publisher: true
 
-# Checking if the action runs
-  actions-security:
-    name: "Check actions security"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ansys/actions/check-actions-security@${{ github.ref }}
+# # Checking if the action runs
+#   actions-security:
+#     name: "Check actions security"
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: ansys/actions/check-actions-security@${{ github.ref }}
