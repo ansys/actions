@@ -69,23 +69,25 @@ runs:
     - name: "Output a summary of detected vulnerabilities"
       shell: bash
       run: |
-          cat <<- _EOF_ > zizmor-summary
-            #!/bin/bash
-            # Process zizmor report and generate summary of identified issues
+        cat << _EOF_ > zizmor-summary
+        #!/bin/bash
+        # Process zizmor report and generate summary of identified issues
 
-            format="%-50s%-20s\n"
-            printf "$format" "=========" "================"
-            printf "$format" "File name" "Number of issues"
-            printf "$format" "=========" "================"
+        format="%-50s%-20s\n"
+        printf "\$format" "=========" "================"
+        printf "\$format" "File name" "Number of issues"
+        printf "\$format" "=========" "================"
 
-            count=0
-            while read no_of_occurence workflow_file; do
-                printf "$format" "$workflow_file" "$no_of_occurence"
-                count=$((count + no_of_occurence))
-            done < <(zizmor . 2> /dev/null | grep -Eo "[^ /]+/([^ /]+/)?.*\.yml" | sort | uniq -c)
+        count=0
+        while read no_of_occurence workflow_file; do
+            printf "\$format" "\$workflow_file" "\$no_of_occurence"
+            count=\$((count + no_of_occurence))
+        done < <(zizmor . 2> /dev/null | grep -Eo "[^ /]+/([^ /]+/)?.*\.yml" | sort | uniq -c)
 
-            printf "$format" "Total" "$count"
-            printf "$format" "=========" "================"
-            _EOF_
-          chmod u+x zizmor-summary
-          ./zizmor-summary
+        printf "\$format" "=========" "================"
+        printf "\$format" "Total" "\$count"
+        printf "\$format" "=========" "================"
+        _EOF_
+
+        chmod u+x zizmor-summary
+        ./zizmor-summary
