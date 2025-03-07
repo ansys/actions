@@ -147,3 +147,4 @@ jobs:
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
+          auditing-level: 'strict'
