@@ -3,8 +3,6 @@ name: night
 on:
   schedule:
     - cron: '0 0 * * *'
-  pull_request:       # TODO: Remove before merging the PR
-    types: [opened, synchronize, reopened, labeled]
 
 env:
   MAIN_PYTHON_VERSION: '3.12'
