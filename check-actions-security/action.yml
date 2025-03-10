@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 name: |
-  Check actions security action
+  Check actions security action.
 
 description: |
   Detects common security issues in GitHub Actions yml files using `zizmor <https://woodruffw.github.io/zizmor/>`_.
@@ -30,7 +30,7 @@ inputs:
 
   token:
     description: |
-      Use the PYANSYS_CI_BOT_TOKEN to allow online audits by zizmor
+      Use the GH_TOKEN to allow online audits by zizmor.
     required: false
     type: string
 
