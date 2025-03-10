@@ -27,6 +27,8 @@ jobs:
 
      - name: "Checkout project"
        uses: actions/checkout@v4
+       with:
+        persist-credentials: false
 
      - name: "Sync labels"
        uses: micnncim/action-label-syncer@v1
@@ -104,6 +106,8 @@ jobs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
