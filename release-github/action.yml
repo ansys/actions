@@ -146,7 +146,7 @@ runs:
     - uses: ansys/actions/_logging@v8.2
       if: ${{ inputs.token == '' }}
       with:
-        level: "ERROR"
+        level: "WARNING"
         message: >
           Ansys Actions v9 will require the token input in the ``release-github`` action.
           Please add the token input to this action and see
