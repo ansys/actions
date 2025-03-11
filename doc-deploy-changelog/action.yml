@@ -186,6 +186,14 @@ inputs:
 
 runs:
   using: "composite"
+  env:
+    TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
+    TOML_VERSION: ${{ inputs.toml-version }}
+    RELEASE_FROM_MAIN: ${{ inputs.release-from-main }}
+    FORMAT_DATE: ${{ inputs.format-date }}
+    BOT_USER: ${{ inputs.bot-user }}
+    BOT_EMAIL: ${{ inputs.bot-email }}
+    USE_UPPER_CASE: ${{ inputs.use-upper-case }}
   steps:
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
@@ -208,7 +216,7 @@ runs:
     - name: "Install towncrier, toml, and the project"
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
+        python -m pip install --upgrade pip towncrier=="$TOWNCRIER_VERSION" toml=="$TOML_VERSION"
 
     - name: "Install the project"
       shell: bash
@@ -271,7 +279,7 @@ runs:
     - name: "Set the branch to update the CHANGELOG file on"
       shell: bash
       run: |
-        if [[ ${{ inputs.release-from-main }} == "true" ]]; then
+        if [[ "$RELEASE_FROM_MAIN" == "true" ]]; then
           echo "UPDATE_BRANCH=${{ env.MAIN_BRANCH }}" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_ENV
         else
@@ -304,7 +312,7 @@ runs:
         from parse_pr_title import save_env_variable
 
         # Whether or not to format the date in the CHANGELOG file - "true" or "false"
-        format_date = "${{ inputs.format-date }}"
+        format_date = "$FORMAT_DATE"
 
         # Format the string depending on format_date being "true" or "false"
         fmt_string = "%B %d, %Y" if format_date == "true" else "%Y-%m-%d"
@@ -360,14 +368,14 @@ runs:
           fi
 
           # Configure git username & email
-          git config user.name ${{ inputs.bot-user }}
-          git config user.email ${{ inputs.bot-email }}
+          git config user.name "$BOT_USER"
+          git config user.email "$BOT_EMAIL"
 
           # Add CHANGELOG.md file and deleted ${{ env.TOWNCRIER_DIR }}/*.md files
           git add .
 
           # Commit changes and save commit SHA
-          if [[ ${{ inputs.use-upper-case }} == "false" ]]; then
+          if [[ "$USE_UPPER_CASE" == "false" ]]; then
             git commit -m "chore: updating CHANGELOG for v${{ env.TAG_VERSION }}"
           else
             git commit -m "CHORE: updating CHANGELOG for v${{ env.TAG_VERSION }}"
@@ -391,6 +399,7 @@ runs:
       if: ${{ (inputs.release-from-main == 'false' ) && (env.UPDATED_CHANGELOG == 'true') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
+        GITHUB_ACTOR: ${{ github.actor }}
       shell: bash
       run: |
         # Checkout main & create a branch
@@ -434,7 +443,7 @@ runs:
         # Push CHANGELOG.md changes to $pr_branch
         git push -u origin $pr_branch
 
-        if [[ ${{ inputs.use-upper-case }} == "false" ]] ; then
+        if [[ "$USE_UPPER_CASE" == "false" ]] ; then
           pr_title="chore: update CHANGELOG for v${{ env.TAG_VERSION }}"
         else
           pr_title="CHORE: update CHANGELOG for v${{ env.TAG_VERSION }}"
@@ -445,7 +454,7 @@ runs:
         > [!CAUTION]
         > Do not merge this pull request until the release has been successfully made."
 
-        gh pr create --title "$pr_title" --body "$body_msg" --reviewer ${{ github.actor }}
+        gh pr create --title "$pr_title" --body "$body_msg" --reviewer "$GITHUB_ACTOR"
 
     - name: "Delete & Re-create tag"
       env:

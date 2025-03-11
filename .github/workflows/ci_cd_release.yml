@@ -20,6 +20,8 @@ jobs:
   rolling-release:
     name: "Rolling release"
     runs-on: ubuntu-latest
+    env:
+      REF_NAME: ${{ github.ref_name }}
     permissions:
       contents: write
     steps:
@@ -37,14 +39,14 @@ jobs:
 
     - name: "Decompose tag into components"
       run: |
-        if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           # Split the tag into its components
-          IFS='.' read -ra PARTS <<< "${{ github.ref_name }}"
+          IFS='.' read -ra PARTS <<< "$REF_NAME"
           echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_ENV
           echo "MINOR=${PARTS[1]}" >> $GITHUB_ENV
           echo "PATCH=${PARTS[2]}" >> $GITHUB_ENV
         else
-          echo "Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
+          echo "Invalid tag format. Expected vX.Y.Z but got $REF_NAME"
           exit 1
         fi
 
@@ -55,7 +57,7 @@ jobs:
         MAJOR="${V_AND_MAJOR#v}"
         echo "MAJOR=${MAJOR}" >> $GITHUB_ENV
         if [[ $GITHUB_REF_NAME != "refs/heads/release/$MAJOR.${{ env.MINOR }}" ]]; then
-          echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
+          echo "::error::Tag $REF_NAME does not match branch version. wrong branch."
           exit 1
         fi
 
