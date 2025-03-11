@@ -47,12 +47,8 @@ jobs:
 
     - name: "Check tag is valid for current branch"
       run: |
-        # Use correct GitHub ref name and path manipulation
-        RELEASE_TAG="${{ env.MAJOR }}${{ env.MINOR }}"
-        RELEASE_BRANCH="$GITHUB_REF_NAME"
-
-        echo "Version name: $VERSION_NAME"
-        echo "Branch name: $BRANCH_NAME"
+        RELEASE_TAG="${{ env.MAJOR }}.${{ env.MINOR }}"
+        RELEASE_BRANCH="${GITHUB_REF_NAME}"
 
         if [[ "$RELEASE_BRANCH" != "release/$RELEASE_TAG" ]]; then
           echo "::error::Tag ${{ github.ref_name }} does not match branch version. Wrong branch."
