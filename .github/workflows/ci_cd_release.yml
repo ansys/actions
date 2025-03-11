@@ -50,6 +50,11 @@ jobs:
         RELEASE_TAG="${{ env.MAJOR }}.${{ env.MINOR }}"
         RELEASE_BRANCH="${GITHUB_REF_NAME}"
 
+        echo "GitHub Reference Name: $GITHUB_REF_NAME"
+        echo "GitHub Reference Name: ${GITHUB_REF_NAME}"
+        echo "Release tag: ${RELEASE_TAG}"
+        echo "Release branch: ${RELEASE_BRANCH}"
+
         if [[ "$RELEASE_BRANCH" != "release/$RELEASE_TAG" ]]; then
           echo "::error::Tag ${{ github.ref_name }} does not match branch version. Wrong branch."
           exit 1
