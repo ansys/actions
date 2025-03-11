@@ -49,7 +49,7 @@ jobs:
       run: |
         # Remove leading "v" from env.V_AND_MAJOR
         V_AND_MAJOR="${{ env.V_AND_MAJOR }}"
-        MAJOR="${V_AND_MAJOR#v}"
+        MAJOR="${V_AND_MAJOR/#v}"
         echo "MAJOR=${MAJOR}" >> $GITHUB_ENV
 
         # Use correct GitHub ref name and path manipulation
