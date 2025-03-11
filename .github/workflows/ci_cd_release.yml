@@ -47,16 +47,8 @@ jobs:
 
     - name: "Check tag is valid for current branch"
       run: |
-        RELEASE_TAG="${{ env.MAJOR }}.${{ env.MINOR }}"
-        RELEASE_BRANCH="${GITHUB_REF_NAME}"
-
-        echo "GitHub Reference Name: $GITHUB_REF_NAME"
-        echo "GitHub Reference Name: ${GITHUB_REF_NAME}"
-        echo "Release tag: ${RELEASE_TAG}"
-        echo "Release branch: ${RELEASE_BRANCH}"
-
-        if [[ "$RELEASE_BRANCH" != "release/$RELEASE_TAG" ]]; then
-          echo "::error::Tag ${{ github.ref_name }} does not match branch version. Wrong branch."
+        if [[ ${{ github.event.base_ref }} != "refs/heads/release/${{ env.MAJOR }}.${{ env.MINOR }}" ]]; then
+          echo "::error::Tag ${{ github.ref_name }} was created in the wrong branch. Expected branch name release/${{ env.MAJOR }}.${{ env.MINOR }}"
           exit 1
         fi
 
