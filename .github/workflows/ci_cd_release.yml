@@ -20,7 +20,8 @@ jobs:
   rolling-release:
     name: "Rolling release"
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      contents: write
     steps:
 
     - name: "Checkout repository" # zizmor: ignore[artipacked] git credentials need to be persisted on this job
