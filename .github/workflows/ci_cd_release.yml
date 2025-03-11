@@ -47,12 +47,17 @@ jobs:
 
     - name: "Check tag is valid for current branch"
       run: |
-        # Remove leading "v" from env.X
-        V_AND_MAJOR=${{ env.V_AND_MAJOR }}
+        # Remove leading "v" from env.V_AND_MAJOR
+        V_AND_MAJOR="${{ env.V_AND_MAJOR }}"
         MAJOR="${V_AND_MAJOR#v}"
         echo "MAJOR=${MAJOR}" >> $GITHUB_ENV
-        if [[ $GITHUB_REF_NAME != "refs/heads/release/$MAJOR.${{ env.MINOR }}" ]]; then
-          echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
+
+        # Use correct GitHub ref name and path manipulation
+        BRANCH_NAME=${GITHUB_REF_NAME#refs/heads/}
+        EXPECTED_BRANCH="release/$MAJOR.${{ env.MINOR }}"
+
+        if [[ "$BRANCH_NAME" != "$EXPECTED_BRANCH" ]]; then
+          echo "::error::Tag ${{ github.ref_name }} does not match branch version. Wrong branch."
           exit 1
         fi
 
