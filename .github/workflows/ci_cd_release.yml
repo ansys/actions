@@ -38,51 +38,63 @@ jobs:
         git config user.email github-actions@github.com
 
     - name: "Decompose tag into components"
+      id: tag-components
       run: |
         if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           # Split the tag into its components
           IFS='.' read -ra PARTS <<< "$REF_NAME"
-          echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_ENV
-          echo "MINOR=${PARTS[1]}" >> $GITHUB_ENV
-          echo "PATCH=${PARTS[2]}" >> $GITHUB_ENV
+          echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_OUTPUT
+          echo "MINOR=${PARTS[1]}" >> $GITHUB_OUTPUT
+          echo "PATCH=${PARTS[2]}" >> $GITHUB_OUTPUT
         else
           echo "Invalid tag format. Expected vX.Y.Z but got $REF_NAME"
           exit 1
         fi
 
     - name: "Check tag is valid for current branch"
+      id: current-branch-tag-validity
+      env:
+        V_AND_MAJOR: ${{ steps.tag-components.outputs.V_AND_MAJOR }}
+        MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
         # Remove leading "v" from env.X
-        V_AND_MAJOR=${{ env.V_AND_MAJOR }}
         MAJOR="${V_AND_MAJOR#v}"
-        echo "MAJOR=${MAJOR}" >> $GITHUB_ENV
-        if [[ $GITHUB_REF_NAME != "refs/heads/release/$MAJOR.${{ env.MINOR }}" ]]; then
+        echo "MAJOR=${MAJOR}" >> $GITHUB_OUTPUT
+        if [[ $GITHUB_REF_NAME != "refs/heads/release/$MAJOR.$MINOR" ]]; then
           echo "::error::Tag $REF_NAME does not match branch version. wrong branch."
           exit 1
         fi
 
     - name: "Remove MAJOR tag"
+      env:
+        MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
       run: |
-        if git tag -l | grep -q "^v${{ env.MAJOR }}"; then
-          git push --delete origin v${{ env.MAJOR }}
+        if git tag -l | grep -q "^v$MAJOR"; then
+          git push --delete origin v$MAJOR
         else
-          echo -e "Tag v${{ env.MAJOR }} does not exist, skipping deletion."
+          echo -e "Tag v$MAJOR does not exist, skipping deletion."
         fi
 
     - name: "Remove MAJOR.MINOR tag"
+      env:
+        MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
+        MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
-        if git tag -l | grep -q "^v${{ env.MAJOR }}\.${{ env.MINOR }}"; then
-          git push --delete origin v${{ env.MAJOR }}.${{ env.MINOR }}
+        if git tag -l | grep -q "^v$MAJOR\.$MINOR"; then
+          git push --delete origin v$MAJOR.$MINOR
         else
-          echo -e "Tag v${{ env.MAJOR }}.${{ env.MINOR }} does not exist, skipping deletion."
+          echo -e "Tag v$MAJOR.$MINOR does not exist, skipping deletion."
         fi
 
     - name: "Create new tags"
+      env:
+        MAJOR: $MAJOR
+        MINOR: $MINOR
       run: |
-        git tag v${{ env.MAJOR }}.${{ env.MINOR }}
-        git tag v${{ env.MAJOR }}
-        git push origin v${{ env.MAJOR }}.${{ env.MINOR }}
-        git push origin v${{ env.MAJOR }}
+        git tag v$MAJOR.$MINOR
+        git tag v$MAJOR
+        git push origin v$MAJOR.$MINOR
+        git push origin v$MAJOR
 
   changelog-deployment:
     name: "Changelog"
