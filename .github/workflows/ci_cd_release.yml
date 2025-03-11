@@ -53,10 +53,12 @@ jobs:
         echo "MAJOR=${MAJOR}" >> $GITHUB_ENV
 
         # Use correct GitHub ref name and path manipulation
-        BRANCH_NAME=${GITHUB_REF_NAME#refs/heads/}
-        EXPECTED_BRANCH="release/$MAJOR.${{ env.MINOR }}"
+        RELEASE_TAG="${MAJOR}${{ env.MINOR }}"
+        RELEASE_BRANCH=${GITHUB_REF_NAME}
+        echo "Version name: ${VERSION_NAME}"
+        echo "Branch name: ${BRANCH_NAME}"
 
-        if [[ "$BRANCH_NAME" != "$EXPECTED_BRANCH" ]]; then
+        if [[ "$RELEASE_BRANCH" != "release/$RELEASE_TAG" ]]; then
           echo "::error::Tag ${{ github.ref_name }} does not match branch version. Wrong branch."
           exit 1
         fi
