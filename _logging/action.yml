@@ -73,7 +73,7 @@ runs:
       shell: powershell
       run: |
         echo "::warning::$env:MESSAGE"
-        
+
     - name: "Report warning message"
       if: ${{ runner.os == 'Linux' && inputs.level == 'WARNING'}}
       shell: bash
