@@ -88,8 +88,8 @@ jobs:
 
     - name: "Create new tags"
       env:
-        MAJOR: $MAJOR
-        MINOR: $MINOR
+        MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
+        MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
         git tag v$MAJOR.$MINOR
         git tag v$MAJOR

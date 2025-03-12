@@ -421,7 +421,7 @@ runs:
         git pull
 
         # Set branch for PR
-        pr_branch=maint/v$TAG_VERSION-changelog
+        pr_branch=maint/v${TAG_VERSION}-changelog
 
         # Check if pr_branch exists on remote
         remote_branch_exists=$(git ls-remote --heads origin refs/heads/$pr_branch 2>&1)

@@ -129,23 +129,28 @@ runs:
 
     - name: "Evaluate if skip-existing is required"
       shell: bash
+      id: skip-existing
+      env:
+        SKIP_EXISTING: ${{ inputs.skip-existing }}
       run: |
-        if [[ ${{ inputs.skip-existing }} == 'true' ]]; then
-          echo "SKIP_EXISTING=$(echo '--skip-existing')" >> $GITHUB_ENV
+        if [[ "$SKIP_EXISTING" == 'true' ]]; then
+          echo "SKIP_EXISTING=$(echo '--skip-existing')" >> $GITHUB_OUTPUT
         else
-          echo "SKIP_EXISTING=$(echo '')" >> $GITHUB_ENV
+          echo "SKIP_EXISTING=$(echo '')" >> $GITHUB_OUTPUT
         fi
 
     - name: "Upload artifacts to PyPi"
       shell: bash
       if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'false'
       run: |
-        python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.whl
-        python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.tar.gz
+        python -m twine upload --verbose $SKIP_EXISTING ${LIBRARY_NAME}-artifacts/*.whl
+        python -m twine upload --verbose $SKIP_EXISTING ${LIBRARY_NAME}-artifacts/*.tar.gz
       env:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
         TWINE_REPOSITORY_URL: ${{ inputs.index-name }}
+        LIBRARY_NAME: ${{ inputs.library-name }}
+        SKIP_EXISTING: ${{ steps.skip-existing.outputs.SKIP_EXISTING }}
 
     - name: "Upload artifacts to PyPI using Trusted Publisher"
       uses: pypa/gh-action-pypi-publish@v1.10.1
