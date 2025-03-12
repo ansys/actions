@@ -76,6 +76,9 @@ runs:
 
     - name: "Collect all released versions and update the 'version/index.html' file"
       shell: bash
+      env:
+        CNAME: ${{ inputs.cname }}
+        CONTENT_ELEMENT_ID: ${{ inputs.content-element-id }}
       run: |
 
         # Move inside of the version folder
@@ -92,7 +95,7 @@ runs:
 
         # Loop through the folder array and add each folder name and URL to the table
         for folder in "${folders[@]}"; do
-          url="https://${{ inputs.cname }}/version/${folder}"
+          url="https://${CNAME}/version/${folder}"
           table+="<tr><td>${folder}</td><td><a href='${url}'>${url}</a></td></tr>"
         done
 
@@ -108,7 +111,7 @@ runs:
         html_file="index.html"
 
         # Get the ID of the element hosting the content
-        content_element_id=${{ inputs.content-element-id }}
+        content_element_id=$CONTENT_ELEMENT_ID
 
         # Declare the content of the script
         script_content=$(cat <<EOF
