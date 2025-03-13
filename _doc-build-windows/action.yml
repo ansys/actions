@@ -151,23 +151,28 @@ runs:
           Miktex is installed to build the documentation.
 
     - name: Collect system dependencies
+      id: collect-system-dependencies
       shell: powershell
+      env:
+        DEPENDENCIES: ${{ inputs.dependencies }}
       run: |
-        echo "NEEDED_DEPS=$(echo '${{ inputs.dependencies }}')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "NEEDED_DEPS=$(echo "$env:DEPENDENCIES")" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
     - name: Cache Chocolatey packages
       id: cache
       uses: actions/cache@v4
-      if: ${{ (inputs.skip-dependencies-cache == 'false') && (env.NEEDED_DEPS != '') }}
+      if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
-        key: choco-${{ env.NEEDED_DEPS }}
+        key: choco-${{ steps.collect-system-dependencies.outputs.DEPENDENCIES }}
         restore-keys: choco
 
     - name: Install packages with Chocolatey
-      if: ${{ (steps.cache.outputs.cache-hit != 'true') && (env.NEEDED_DEPS != '') }}
+      if: ${{ (steps.cache.outputs.cache-hit != 'true') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
       shell: powershell
-      run: choco install ${{ env.NEEDED_DEPS }} -y
+      env:
+        NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.DEPENDENCIES }}
+      run: choco install $env:NEEDED_DEPS -y
 
     - name: Install Miktex and update PATH with Miktex binaries
       shell: powershell
@@ -219,22 +224,23 @@ runs:
           Determine context.
 
     - name: "Determine GitHub environment variables"
+      id: determine-environment-variables
       shell: powershell
       run: |
         if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"')) {
-          echo "BUILD_BACKEND=$(echo 'poetry')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "BUILD_BACKEND=$(echo 'poetry')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         } else {
-          echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
 
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
-          Build backend: ${{ env.BUILD_BACKEND }}
-          Sphinx build make: ${{ env.SPHINX_BUILD_MAKE }}
+          Build backend: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
+          Sphinx build make: ${{ steps.determine-environment-variables.outputs.SPHINX_BUILD_MAKE }}
 
     # ------------------------------------------------------------------------
 
@@ -249,7 +255,7 @@ runs:
     # dependencies with different version. This can lead to CICD failures. For
     # more information, see https://github.com/ansys/actions/pull/560
     - name: "Add pipx/bin directory to Github Path"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.determine-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: powershell
       run: echo "${{ runner.temp }}/pipx/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
@@ -257,7 +263,7 @@ runs:
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
     # in the GitHub environment.
     - name: "Set poetry environment variable(s)"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.determine-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: powershell
       run: echo "POETRY_VIRTUALENVS_CREATE=$(echo false)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
@@ -267,7 +273,7 @@ runs:
     # making it available in the following call and installed in a different
     # environment from the project.
     - name: "Install poetry and create a virtual environment"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.determine-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: powershell
       run: |
         python -m pip install pipx
@@ -278,7 +284,7 @@ runs:
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
     - name: "Create a virtual environment"
-      if: env.BUILD_BACKEND == 'pip'
+      if: steps.determine-environment-variables.outputs.BUILD_BACKEND == 'pip'
       shell: powershell
       run: python -m venv .venv
 
@@ -291,23 +297,30 @@ runs:
         python -m pip install -U pip
 
     - name: "Check if requirements.txt file exists"
+      id: check-requirements-file-exists
       shell: powershell
+      env:
+        REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
       run: |
-        echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path '${{ inputs.requirements-file }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+        echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path "$env:REQUIREMENTS_FILE") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
     - name: Install documentation dependencies from requirements file
       shell: powershell
-      if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'true' }}
+      env:
+        REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
+      if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
         .venv\Scripts\Activate.ps1
-        python -m pip install -r ${{ inputs.requirements-file }}
+        python -m pip install -r "$env:REQUIREMENTS_FILE"
 
     - name: Install Python library
       shell: powershell
       if: ${{ inputs.skip-install == 'false' }}
+      env:
+        BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         .venv\Scripts\Activate.ps1
-        if ("${{ env.BUILD_BACKEND }}" -eq 'poetry' ) {
+        if ("$env:BUILD_BACKEND" -eq 'poetry' ) {
           poetry install
         } else {
           python -m pip install .
@@ -315,10 +328,12 @@ runs:
 
     - name: Install documentation dependencies from pyproject.toml
       shell: powershell
-      if: ${{ env.EXISTS_DOC_REQUIREMENTS == 'false' }}
+      if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false' }}
+      env:
+        BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         .venv\Scripts\Activate.ps1
-        if ("${{ env.BUILD_BACKEND }}" -eq 'poetry' ) {
+        if ("$env:BUILD_BACKEND" -eq 'poetry' ) {
           poetry install --with doc
         } else {
           python -m pip install .[doc]
@@ -334,16 +349,21 @@ runs:
 
     - name: Build HTML, PDF, and JSON documentation
       shell: powershell
+      env:
+        SPHINXOPTS: ${{ inputs.sphinxopts }}
+        SKIP_JSON_BUILD: ${{ inputs.skip-json-build }}
+        CHECK_LINKS: ${{ inputs.check-links }}
+        SPHINX_BUILD_MAKE: ${{ steps.determine-environment-variables.outputs.SPHINX_BUILD_MAKE }}
       run: |
         .venv\Scripts\Activate.ps1
         cd doc
-        ${{ env.SPHINX_BUILD_MAKE }} html SPHINXOPTS="${{ inputs.sphinxopts }}"
-        ${{ env.SPHINX_BUILD_MAKE }} pdf
-        if ("${{ inputs.check-links }}" -eq 'true' ) {
-          ${{ env.SPHINX_BUILD_MAKE }} linkcheck SPHINXOPTS="${{ inputs.sphinxopts }}"
+        $env:SPHINX_BUILD_MAKE html SPHINXOPTS="$env:SPHINXOPTS"
+        $env:SPHINX_BUILD_MAKE pdf
+        if ("$env:CHECK_LINKS" -eq 'true' ) {
+          $env:SPHINX_BUILD_MAKE linkcheck SPHINXOPTS="$env:SPHINXOPTS"
         }
-        if ("${{ inputs.skip-json-build }}" -eq 'false' ) {
-          ${{ env.SPHINX_BUILD_MAKE }} json SPHINXOPTS="${{ inputs.sphinxopts }}"
+        if ("$env:SKIP_JSON_BUILD" -eq 'false' ) {
+          $env:SPHINX_BUILD_MAKE json SPHINXOPTS="$env:SPHINXOPTS"
         }
 
     # ------------------------------------------------------------------------
@@ -385,61 +405,75 @@ runs:
           Check if expected directories exist.
 
     - name: Set expected build directory
+      id: set-expected-build-directory
       shell: powershell
       run: |
-        echo "EXPECTED_BUILD_DIR=$(echo 'doc\_build')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "EXPECTED_BUILD_DIR=$(echo 'doc\_build')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
     - name: Check expected build directory
+      id: set-exists-expected-build-directory
       shell: powershell
+      env:
+        EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
       run: |
-        echo "EXISTS_EXPECTED_BUILD_DIR=$(if (Test-Path '${{ env.EXPECTED_BUILD_DIR }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+        echo "EXISTS_EXPECTED_BUILD_DIR=$(if (Test-Path "$env:EXPECTED_BUILD_DIR") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
     - uses: ansys/actions/_logging@main
-      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-build-directory.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
         message: >
-          Expected build directory ${{ env.EXPECTED_BUILD_DIR }} does not exist.
+          Expected build directory ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }} does not exist.
 
     - name: Set expected download directory
+      id: set-expected-download-directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
+      env:
+        EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
       run: |
-        echo "EXPECTED_DOWNLOAD_DIR=$(echo '${{ env.EXPECTED_BUILD_DIR }}\html\_static\assets\download')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "EXPECTED_DOWNLOAD_DIR=$(echo "${env:EXPECTED_BUILD_DIR}\html\_static\assets\download")" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
     - name: Check expected download directory
+      id: set-exists-expected-download-directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
+      env:
+        EXPECTED_DOWNLOAD_DIR: ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }}
       run: |
-        echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$(if (Test-Path '${{ env.EXPECTED_DOWNLOAD_DIR }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+        echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$(if (Test-Path "$env:EXPECTED_DOWNLOAD_DIR") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
     - uses: ansys/actions/_logging@main
-      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"
         message: >
-          Expected build directory ${{ env.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
+          Expected build directory ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
 
     - name: Create expected download directory
-      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       shell: powershell
+      env:
+        EXPECTED_DOWNLOAD_DIR: ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }}
       run: |
-        New-Item -ItemType directory ${{ env.EXPECTED_DOWNLOAD_DIR }}
+        New-Item -ItemType directory "$env:EXPECTED_DOWNLOAD_DIR"
 
     # ------------------------------------------------------------------------
 
     - name: Verify the docs have been generated properly
-      if: ${{ env.EXISTS_EXPECTED_BUILD_DIR == 'true' }}
+      if: ${{ steps.set-exists-expected-build-directory.outputs.EXISTS_EXPECTED_BUILD_DIR == 'true' }}
       shell: powershell
+      env:
+        EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
       run: |
         # Check if the HTML files have been generated
-        if (Test-Path -Path "${{ env.EXPECTED_BUILD_DIR }}\html\index.html") {
+        if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\html\index.html") {
           Write-Host "Docs have been generated successfully"
         } else {
           Write-Error "Docs have not been generated properly"
         }
         # Check if the PDF files have been generated
-        if (Test-Path -Path "${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}") {
+        if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }}") {
           Write-Host "PDF has been generated successfully"
         } else {
           Write-Error "PDF has not been generated properly"
@@ -458,15 +492,18 @@ runs:
     - name: Add assets to HTML docs
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: powershell
+      env:
+        EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
+        EXPECTED_DOWNLOAD_DIR: ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }}
       run: |
-        cd ${{ env.EXPECTED_BUILD_DIR }}\html; zip -r documentation-html.zip *; cd ..\..\..
-        mv ${{ env.EXPECTED_BUILD_DIR }}\html\documentation-html.zip ${{ env.EXPECTED_DOWNLOAD_DIR }}
-        if (Test-Path ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}) {
-          cp ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} ${{ env.EXPECTED_DOWNLOAD_DIR }}
-          Write-Output "File ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }} has been copied."
+        cd ${env:EXPECTED_BUILD_DIR}\html; zip -r documentation-html.zip *; cd ..\..\..
+        mv ${env:EXPECTED_BUILD_DIR}\html\documentation-html.zip ${env:EXPECTED_DOWNLOAD_DIR}
+        if (Test-Path ${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }}) {
+          cp ${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }} ${env:EXPECTED_DOWNLOAD_DIR}
+          Write-Output "File ${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }} has been copied."
         } else {
-          cp ${{ env.EXPECTED_BUILD_DIR }}\latex\*.pdf ${{ env.EXPECTED_DOWNLOAD_DIR }}
-          Write-Output "Couldn't find ${{ env.EXPECTED_BUILD_DIR }}\latex\${{ env.PDF_FILENAME }}, every existing PDF file has been copied."
+          cp ${env:EXPECTED_BUILD_DIR}\latex\*.pdf ${env:EXPECTED_DOWNLOAD_DIR}
+          Write-Output "Couldn't find ${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }}, every existing PDF file has been copied."
         }
 
     # ------------------------------------------------------------------------
