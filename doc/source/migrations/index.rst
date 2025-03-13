@@ -7,8 +7,8 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
-Version ``v9``
---------------
+Version ``v8.2``
+----------------
 **New Features:**
 
 - Added a new input parameter ``use-ansys-default-template`` to the ``ansys/actions/doc-changelog`` action.
@@ -18,6 +18,42 @@ Version ``v9``
   .. note::
 
     The default template is only available for the ``ansys/actions/doc-changelog`` action and is in the reStructuredText (rst) format.
+
+- Added a new input parameter ``fail-level`` to the ``ansys/actions/doc-style`` action.
+  This input allows users to select the report level used to control check results.
+  Default value is ``"error"`` but it can be changed to ``"any"``, ``"info"``, ``"warning"``, or ``"error"``.
+
+- The ``release-github/action.yml`` action has been improved with the ability to extend a Github release note with
+  instructions on how to verify the release's artifacts attestations with
+  `Github's CLI tool <https://cli.github.com/>`_.
+
+  - Added a new input ``attest-provenance`` to the ``ansys/actions/build-library`` and ``ansys/actions/build-wheelhouse``
+    actions. Note that adding provenance attestations requires write permissions for `id-token` and `attestation`.
+    For example:
+
+    .. code-block:: yaml
+
+      build-library:
+        name: Build library
+        runs-on: ubuntu-latest
+        permissions:
+          attestations: write
+          contents: read
+          id-token: write
+        steps:
+          - name: "Build library source and wheel artifacts"
+            uses: ansys/actions/build-library@v8
+            with:
+              library-name: ${{ env.PACKAGE_NAME }}
+              python-version: ${{ env.MAIN_PYTHON_VERSION }}
+              attest-provenance: true
+
+  - Added two inputs to the ``release-github/action.yml`` action. The first input parameter
+    ``add-artifact-attestation-notes`` allows users to add artifact attestation notes to the Github release notes.
+    The second input parameter ``generate_release_notes`` allows users to deactivate the notes automatically generated
+    by default.
+
+- Added a new input parameter ``randomize`` to the ``ansys/actions/tests-pytest`` action to randomize the order of the tests.
 
 **Migration Steps:**
 
@@ -55,14 +91,17 @@ Version ``v8``
 
 **Deprecated features:**
 
-- The ``ansys/actions/doc-deploy-index`` action has been deprecated and will be removed in the next release.
-  With the deprecation of ``pymeilisearch`` and the adoption of a static search index via the ``ansys-sphinx-theme``,
-  the ``ansys/actions/doc-deploy-index`` action is no longer necessary.
+- The ``ansys/actions/doc-deploy-index`` action has been deprecated and will be
+  removed in the next release. With the deprecation of ``pymeilisearch`` and
+  the adoption of a static search index via the ``ansys-sphinx-theme``, the
+  ``ansys/actions/doc-deploy-index`` action is no longer necessary.
 
-- The ``ansys/actions/commit-style`` action has been renamed to ``ansys/actions/check-pr-title``.
+- The ``ansys/actions/commit-style`` action has been renamed to
+  ``ansys/actions/check-pr-title``.
 
 - The ``ansys/actions/branch-name-style`` actions has been removed in favor of
-  `GitHub rulesets <https://dev.docs.pyansys.com/how-to/repository-protection.html#branch-protection>`_.
+  `GitHub rulesets
+  <https://dev.docs.pyansys.com/how-to/repository-protection.html#branch-protection>`_.
 
 **Migration steps:**
 
