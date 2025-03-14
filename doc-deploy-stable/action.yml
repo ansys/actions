@@ -153,6 +153,8 @@ inputs:
 
 runs:
   using: "composite"
+  env:
+    CNAME: ${{ inputs.cname }}
   steps:
 
     # TODO: remove this deprecation in ansys/actions@v9
@@ -183,32 +185,34 @@ runs:
           'release/<MAJOR>.<MINOR>'.
 
     - name: "Collect version number from the tag"
+      id: version-raw-tag
       env:
         REF_NAME: ${{ github.ref_name }}
       shell: bash
       if: github.ref_type == 'tag'
       run: |
-        tag=${{ env.REF_NAME }}
+        tag="$REF_NAME"
         version=$( echo $tag | cut -d 'v' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_ENV
+          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_OUTPUT
         else
           echo -e "\033[1;91m[ERROR]: Tag names must follow 'v<MAJOR>.<MINOR>.<PATCH> name convention.'\033[0m"
           exit 1
         fi
 
     - name: "Collect version number from the release branch"
+      id: version-raw-branch
       env:
         REF_NAME: ${{ github.ref_name }}
       shell: bash
       if: github.ref_type == 'branch'
       run: |
-        tag=${{ env.REF_NAME }}
+        tag="$REF_NAME"
         version=$( echo $tag | cut -d '/' -f 2)
 
         if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ ]]; then
-          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_ENV
+          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_OUTPUT
         else
           echo -e "\033[1;91m[ERROR]: Branch names must follow 'release/<MAJOR>.<MINOR>' name convention.\033[0m"
           echo -e "\033[1;91m[ERROR]: or 'release/<MAJOR>.<MINOR>.<PATCH>' name convention.\033[0m"
@@ -217,13 +221,17 @@ runs:
 
     - name: "Assemble the version number using the collected major and minor numbers"
       shell: bash
+      id: version-number
+      env:
+        INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
+        VERSION_RAW: ${{ github.ref_type == 'tag' && steps.version-raw-tag.outputs.VERSION_RAW || steps.version-raw-branch.outputs.VERSION_RAW }}
       run: |
-          if [[ ${{ inputs.independent-patch-release-docs }} == 'true' ]]; then
-            echo "VERSION=${{ env.VERSION_RAW }}" >> $GITHUB_ENV
+          if [[ $INDEPENDENT_PATCH_RELEASE_DOCS == 'true' ]]; then
+            echo "VERSION=$VERSION_RAW" >> $GITHUB_OUTPUT
           else
-            major=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 1)
-            minor=$(echo ${{ env.VERSION_RAW }} | cut -d . -f 2)
-            echo "VERSION=$major.$minor" >> $GITHUB_ENV
+            major=$(echo "$VERSION_RAW" | cut -d . -f 1)
+            minor=$(echo "$VERSION_RAW" | cut -d . -f 2)
+            echo "VERSION=$major.$minor" >> $GITHUB_OUTPUT
           fi
 
     # ------------------------------------------------------------------------
@@ -237,31 +245,38 @@ runs:
 
     - name: "Get the name of the repository"
       shell: bash
+      id: get-repository-name
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
-        if [[ "${{ inputs.repository }}" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
+        if [[ "$INPUT_REPOSITORY" == "current" ]]; then
+          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
         else
-          echo "REPOSITORY=${{ inputs.repository }}" >> $GITHUB_ENV
+          echo "REPOSITORY=${INPUT_REPOSITORY}" >> $GITHUB_OUTPUT
         fi
 
-    - name: "Checkout ${{ env.REPOSITORY }} repository"
+    - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
       uses: actions/checkout@v4
       with:
-        repository: ${{ env.REPOSITORY }}
+        repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }}
 
     - name: "Ensure that the desired branch exists"
       shell: bash
+      env:
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+        BRANCH: ${{ inputs.branch }}
       run: |
         # Check the ${{ inputs.branch }} branch exists on remote
-        branch_exists=$(git ls-remote --heads origin refs/heads/${{ inputs.branch }} 2>&1)
+        branch_exists=$(git ls-remote --heads origin "refs/heads/${BRANCH}" 2>&1)
 
         # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
-          echo "The ${{ inputs.branch }} branch does not exist. Creating ${{ inputs.branch }}."
+          echo "The $BRANCH branch does not exist. Creating $BRANCH."
 
           # Create orphan branch
-          git checkout --orphan ${{ inputs.branch }}
+          git checkout --orphan "$BRANCH"
 
           # Unstage files to be committed
           git rm --cached -r .
@@ -270,16 +285,16 @@ runs:
           git clean -fd
 
           # Configure git username & email
-          git config user.name ${{ inputs.bot-user }}
-          git config user.email ${{ inputs.bot-email }}
+          git config user.name "$BOT_USER"
+          git config user.email "$BOT_EMAIL"
 
           # Commit ${{ inputs.branch }} & push to origin
-          git commit --allow-empty -m "Create ${{ inputs.branch }} branch"
-          git push -u origin ${{ inputs.branch }}
+          git commit --allow-empty -m "Create $BRANCH branch"
+          git push -u origin "$BRANCH"
         else
           # Fetch and switch to ${{ inputs.branch }}
-          git fetch origin ${{ inputs.branch }}:${{ inputs.branch }}
-          git switch ${{ inputs.branch }}
+          git fetch origin "${BRANCH}:${BRANCH}"
+          git switch "$BRANCH"
         fi
 
     # ------------------------------------------------------------------------
@@ -295,19 +310,22 @@ runs:
 
     - name: "Clean version content"
       shell: bash
+      id: clean-version-content
+      env:
+        VERSION: ${{ steps.version-number.outputs.VERSION }}
       run: |
-        if [ -d version/${{ env.VERSION }} ]; then
-          echo "VERSION_EXISTS=true" >> $GITHUB_ENV
+        if [ -d version/${VERSION} ]; then
+          echo "VERSION_EXISTS=true" >> $GITHUB_OUTPUT
         else
-          echo "VERSION_EXISTS=false" >> $GITHUB_ENV
+          echo "VERSION_EXISTS=false" >> $GITHUB_OUTPUT
         fi
-        rm -rf version/${{ env.VERSION }} && mkdir -p version/${{ env.VERSION }}
+        rm -rf version/${VERSION} && mkdir -p version/${VERSION}
 
     - name: "Download the stable documentation artifact"
       uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.doc-artifact-name }}
-        path: version/${{ env.VERSION }}
+        path: version/${{ steps.version-number.outputs.VERSION }}
 
     - name: "Update apt-get"
       shell: bash
@@ -317,11 +335,13 @@ runs:
     - name: "Decompress artifact content"
       shell: bash
       if: inputs.decompress-artifact == 'true'
+      env:
+        VERSION: ${{ steps.version-number.outputs.VERSION }}
       run: |
         sudo apt-get install -y cargo && cargo install ouch
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd version/${{ env.VERSION }} && compressed_artifact=$(ls .)
+        cd version/${VERSION} && compressed_artifact=$(ls .)
         ouch decompress $compressed_artifact
         decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
         mv $decompressed_artifact/* .
@@ -329,8 +349,10 @@ runs:
 
     - name: "Display structure of version/dev"
       shell: bash
+      env:
+        VERSION: ${{ steps.version-number.outputs.VERSION }}
       run: |
-        ls -R version/${{ env.VERSION }}
+        ls -R version/${VERSION}
 
     # ------------------------------------------------------------------------
 
@@ -355,18 +377,20 @@ runs:
     - name: "Add the development version to the 'versions.json' file"
       shell: bash
       run: |
-        url_dev="https://${{ inputs.cname }}/version/dev/"
+        url_dev="https://${CNAME}/version/dev/"
         jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
         cat versions.json
 
     - name: "Populate the 'versions.json' file with the desired amount of versions"
       shell: bash
+      env:
+        RENDER_LAST: ${{ inputs.render-last }}
       run: |
         for version in $( ls version | \
                           grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
                           sort -r --version-sort | \
-                          head -${{ inputs.render-last }}); do
-          url="https://${{ inputs.cname }}/version/$version/"
+                          head -$RENDER_LAST); do
+          url="https://${CNAME}/version/$version/"
           jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json | sponge versions.json
         done
 
@@ -374,11 +398,13 @@ runs:
 
     - name: "Add an 'Older versions' item if required"
       shell: bash
+      env:
+        RENDER_LAST: ${{ inputs.render-last }}
       run: |
         num_versions=$(jq length versions.json)
 
-        if [ $num_versions -gt ${{ inputs.render-last }} ]; then
-          cname=${{ inputs.cname }}
+        if [ $num_versions -gt $RENDER_LAST ]; then
+          cname="$CNAME"
           new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/\" }"
           jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
         fi
@@ -387,20 +413,23 @@ runs:
       shell: bash
       run: |
         jq '.[1].name += " (stable)"' versions.json | sponge versions.json
-        url_stable="https://${{ inputs.cname }}/version/stable/"
+        url_stable="https://${CNAME}/version/stable/"
         jq --arg url $url_stable '.[1].url = $url' versions.json | sponge versions.json
         cat versions.json
 
     - name: "Find the latest stable version"
+      id: latest-stable-version
       shell: bash
       run: |
         stable_version=$(jq '.[1].version' versions.json | grep -o '".*"' | sed 's/"//g')
-        echo "LATEST_STABLE_VERSION=$stable_version" >> $GITHUB_ENV
+        echo "LATEST_STABLE_VERSION=$stable_version" >> $GITHUB_OUTPUT
 
     - name: "Update the content for the 'version/stable' folder"
       shell: bash
+      env:
+        LATEST_STABLE_VERSION: ${{ steps.latest-stable-version.outputs.LATEST_STABLE_VERSION }}
       run: |
-        rm -rf version/stable && cp -r version/${{ env.LATEST_STABLE_VERSION }} version/stable
+        rm -rf version/stable && cp -r version/${LATEST_STABLE_VERSION} version/stable
 
     # ------------------------------------------------------------------------
 
@@ -422,10 +451,12 @@ runs:
         EOF
 
     - name: "Render the 'announcement.html' template with the desired stable version"
+      env:
+        LATEST_STABLE_VERSION: ${{ steps.latest-stable-version.outputs.LATEST_STABLE_VERSION }}
       shell: bash
       run: |
-        latest_stable_version=${{ env.LATEST_STABLE_VERSION}}
-        stable_url="https://${{ inputs.cname }}/version/stable/"
+        latest_stable_version=${LATEST_STABLE_VERSION}
+        stable_url="https://${CNAME}/version/stable/"
         sed -i "s|LATEST_STABLE_VERSION|$latest_stable_version|g" announcement.html
         sed -i "s|STABLE_URL|$stable_url|g" announcement.html
 
@@ -434,7 +465,7 @@ runs:
       run: |
         for version_dir in $( ls version | \
                           grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
-                          grep -v "${{ env.LATEST_STABLE_VERSION }}" | \
+                          grep -v "${LATEST_STABLE_VERSION}" | \
                           sort -r --version-sort ); do
             find version/$version_dir -type d -not \( -path "*/_*" -type d -prune \) -exec cp announcement.html {} \;
         done
@@ -522,7 +553,7 @@ runs:
       shell: bash
       run: |
           touch .nojekyll CNAME
-          echo "${{ inputs.cname }}" > CNAME
+          echo "$CNAME" > CNAME
 
     # ------------------------------------------------------------------------
 
