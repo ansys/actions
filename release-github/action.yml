@@ -100,6 +100,13 @@ inputs:
     required: false
     type: string
 
+  pypandoc-binary-version:
+    description: |
+      Pypandoc-binary version used for converting rst text to markdown.
+    default: '1.15'
+    required: false
+    type: string
+
   changelog-release-notes:
     description: |
       Whether or not to generate release notes using the changelog file from the
@@ -279,10 +286,11 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
 
-    - name: "Install toml"
+    - name: "Install toml and pypandoc"
       shell: bash
       run: |
         python -m pip install --upgrade pip toml==${{ inputs.toml-version }}
+        python -m pip install pypandoc-binary==${{ inputs.pypandoc-binary-version }}
 
     - name: "Get the release notes body"
       if: inputs.changelog-release-notes == 'true'
