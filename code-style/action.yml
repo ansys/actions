@@ -119,19 +119,20 @@ runs:
           Determine context.
 
     - name: "Determine GitHub environment variables"
+      id: github-environment-variables
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_ENV
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
+          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
         fi
 
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
-          Build backend: ${{ env.BUILD_BACKEND }}
+          Build backend: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
 
     # ------------------------------------------------------------------------
 
@@ -152,7 +153,7 @@ runs:
     # dependencies with different version. This can lead to CICD failures. For
     # more information, see https://github.com/ansys/actions/pull/560
     - name: "Add pipx/bin directory to Github Path"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH
 
@@ -160,7 +161,7 @@ runs:
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
     # in the GitHub environment.
     - name: "Set poetry environment variable(s)"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
 
@@ -170,7 +171,7 @@ runs:
     # making it available in the following call and installed in a different
     # environment from the project.
     - name: "Install poetry and create a virtual environment"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: |
         python -m pip install pipx
@@ -181,34 +182,40 @@ runs:
         PIPX_HOME: ${{ runner.temp }}/pipx/home
 
     - name: "Create a virtual environment"
-      if: env.BUILD_BACKEND == 'pip'
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'pip'
       shell: bash
       run: |
         python -m venv .venv
 
     - name: "Set up virtual environment activation command"
+      id: virtual-environment-activation-command
       shell: bash
       run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_ENV
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
         fi
 
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
+        $ACTIVATE_VENV
         python -m pip install -U pip
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
       shell: bash
+      env:
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+        $ACTIVATE_VENV
+        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           python -m pip install poetry
           python -m poetry install
         else
@@ -217,16 +224,22 @@ runs:
 
     - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
       shell: bash
+      env:
+        PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        python -m pip install 'pre-commit==${{ inputs.pre-commit-version }}'
+        $ACTIVATE_VENV
+        python -m pip install "pre-commit==$PRE_COMMIT_VERSION"
         pre-commit install
 
     - name: "Run pre-commit"
       shell: bash
+      env:
+        SHOW_DIFF_ON_FAILURE: ${{ inputs.show-diff-on-failure }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        if [[ ${{ inputs.show-diff-on-failure }} == 'true' ]]; then
+        $ACTIVATE_VENV
+        if [[ "$SHOW_DIFF_ON_FAILURE" == 'true' ]]; then
           pre-commit run --all-files --show-diff-on-failure
         else
           pre-commit run --all-files

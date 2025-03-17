@@ -134,14 +134,19 @@ runs:
         python -m pip install -U pip pip-licenses
 
     - name: "Check if specific target is requested"
+      id: specific-target-requested
       shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
       run: |
-        echo "install_target=$( [[ '${{ inputs.target }}' == '' ]] && echo '.' || echo '.[${{ inputs.target }}]')" >> $GITHUB_ENV
+        echo "install_target=$( [[ "$TARGET" == '' ]] && echo '.' || echo ".[$TARGET]")" >> $GITHUB_OUTPUT
 
     - name: "Install Python library"
       if: inputs.skip-install == 'false'
       shell: bash
-      run: pip install ${{ env.install_target }}
+      env:
+        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+      run: pip install "$INSTALL_TARGET"
 
     - name:  "Install wget on Windows"
       if: runner.os == 'Windows'
@@ -170,11 +175,13 @@ runs:
 
     - name: "Process whitelisted packages provided on input"
       shell: bash
+      env:
+        WHITELIST_LICENSE_CHECK: ${{ inputs.whitelist-license-check }}
       run: |
-        if [[ -n "${{ inputs.whitelist-license-check }}" ]]; then
-          echo "Whitelisted packages: ${{ inputs.whitelist-license-check }}"
+        if [[ -n "$WHITELIST_LICENSE_CHECK" ]]; then
+          echo "Whitelisted packages: $WHITELIST_LICENSE_CHECK"
           # Split the input string by comma, trim values and append them to the ignored-packages.txt file
-          IFS=',' read -ra whitelist <<< "${{ inputs.whitelist-license-check }}"
+          IFS=',' read -ra whitelist <<< "$WHITELIST_LICENSE_CHECK"
           for package in "${whitelist[@]}"; do
             echo "Ignoring whitelisted package: $package"
             echo "$package" >> ignored-packages.txt
@@ -182,19 +189,20 @@ runs:
         fi
 
     - name: "Logging licenses and packages"
+      id: log-licenses-and-packages
       shell: bash
       run: |
         # Load accepted licenses
         mapfile licenses_from_txt < accepted-licenses.txt
         accepted_licenses='Accepted licenses:\n'
         for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\n"; done
-        echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> $GITHUB_ENV
+        echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> $GITHUB_OUTPUT
 
         # Load accepted packages
         mapfile ignored_packages_from_txt < ignored-packages.txt
         ignored_packages='Ignored packages:\n'
         for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg\n"; done
-        echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> $GITHUB_ENV
+        echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> $GITHUB_OUTPUT
 
     - name: Log ignored packages and accepted licenses
       uses: ansys/actions/_logging@main
@@ -204,9 +212,9 @@ runs:
           Licenses accepted and packages ignored
           ----------------------------------------------
 
-          ${{ env.LOG_ACCEPTED_LICENSES }}
+          ${{ steps.log-licenses-and-packages.outputs.LOG_ACCEPTED_LICENSES }}
 
-          ${{ env.LOG_IGNORED_PACKAGES }}
+          ${{ steps.log-licenses-and-packages.outputs.LOG_IGNORED_PACKAGES }}
 
     - name: "Check licences of packages"
       shell: bash
