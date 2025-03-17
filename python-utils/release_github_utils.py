@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 
+import pypandoc
 from parse_pr_title import get_towncrier_config_value, save_env_variable
 
 """Semantic version regex as found on semver.org:
@@ -54,89 +55,6 @@ def get_pattern(content: str, section_title_regex: str) -> str:
     return pattern
 
 
-def rst_to_md_links(
-    body: str, original_number: str, new_number: str, original_link: str, new_link: str
-) -> str:
-    """Convert reStructuredText, RST, links to Markdown, MD, links.
-
-    Parameters
-    ----------
-    body: str
-        A string containing the section title and content of the tag with RST links.
-    original_number: str
-        The semantic version or issue number in RST format.
-        For example, "`0.1.2 " or "#123 "
-    new_number: str
-        The new semantic version or issue number in MD format.
-        For example, "## [0.1.2]" or "[#123]"
-    original_link: str
-        The link in RST format. For example, "<https://github.com/ansys/.../###>`_"
-    new_link: str
-        The link in MD format. For example, "(https://github.com/ansys/.../###)"
-
-    Returns
-    -------
-    str
-        A string containing the section title and content of the tag with MD links.
-    """
-    # Replace "`0.1.2 " with "## [0.1.2]" or "`#123 " with "[#123]"
-    body = body.replace(original_number, new_number)
-
-    # Replace "<https://github.com/ansys/.../###>`_" with "(https://github.com/ansys/.../###)"
-    body = body.replace(original_link, new_link)
-
-    return body
-
-
-def rst_to_md(body: str) -> str:
-    """Convert RST text to MD.
-
-    Parameters
-    ----------
-    body: str
-        A string containing the changelog title and content for the most recent release in rst.
-
-    Returns
-    -------
-    str
-        A string containing the changelog title and content in markdown.
-    """
-    # Remove underline characters from the body
-    underline_chars = ["=", "^"]
-    for char in underline_chars:
-        body = re.sub(rf"(\n|\r\n)\{char}+", "", body)
-
-    # Add "### " to the beginning of the release subsections.
-    # For example, "Added" becomes "### Added".
-    body = re.sub(r"(?m)^(?=[a-zA-Z]+\s)", "### ", body)
-
-    # Find the first string that matches the format:
-    # `0.1.2 <https://github.com/ansys/.../releases/tag/v0.1.2>`_
-    title_regex = re.search(rf"(`({SEMVER_REGEX})\W)(<(?<=\<)(.*?)(?=\>)>`_)", body)
-
-    # Fix the title link
-    body = rst_to_md_links(
-        body,
-        title_regex.group(1),
-        f"## [{title_regex.group(2)}]",
-        title_regex.group(8),
-        f"({title_regex.group(9)})",
-    )
-
-    # Find strings that match the format: "`#1234 <https://github.com/ansys/.../pull/1234>`_"
-    issue_regex = r"(`(\B#\d+)\W)(<(?<=\<)(.*?)(?=\>)>`_)"
-    matches = re.findall(issue_regex, body)
-
-    # Change all RST links, `### <...>`_, to MD links, [###](...)
-    for match in matches:
-        # Fix the issue links
-        body = rst_to_md_links(
-            body, match[0], f"[{match[1]}]", match[2], f"({match[3]})"
-        )
-
-    return body
-
-
 def get_tag_section(changelog_file: Path, body: str) -> str:
     """Get the section title and content of the tag from the changelog file.
 
@@ -187,7 +105,7 @@ def get_tag_section(changelog_file: Path, body: str) -> str:
 
             # Convert rst to markdown
             if file_type.lower() == "rst":
-                body = rst_to_md(body)
+                body = pypandoc.convert_text(body, "markdown_strict", format="rst")
         else:
             print("Cannot generate release notes from changelog file.")
 
@@ -206,7 +124,6 @@ def get_release_notes(pyproject_path: Path):
     body = ""
     # Get the path to your changelog file: [tool.towncrier]'s filename configuration
     changelog_loc = get_towncrier_config_value("filename", pyproject_path)
-    print(f"CHANGELOG_LOC: {changelog_loc}")
 
     # If the changelog file exists, get the title and content for the release section
     if changelog_loc:
