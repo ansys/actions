@@ -128,12 +128,13 @@ runs:
           Determine context.
 
     - name: "Determine GitHub environment variables"
+      id: github-environment-variables
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_ENV
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
+          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
         fi
 
     - uses: ansys/actions/_logging@main
@@ -196,28 +197,34 @@ runs:
         python -m venv .venv
 
     - name: "Set up virtual environment activation command"
+      id: virtual-environment-activation-command
       shell: bash
       run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_ENV
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
         fi
 
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
+        $ACTIVATE_VENV
         python -m pip install -U pip
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
       shell: bash
+      env:
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+        $ACTIVATE_VENV
+        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           python -m pip install poetry
           poetry install
         else
@@ -232,40 +239,55 @@ runs:
         sudo apt-get install -y xvfb
 
     - name: "Check if requirements.txt file exists"
+      id: check-exists-requirements-file
       shell: bash
+      env:
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
       run: |
-        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${{ inputs.optional-dependencies-name }}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
 
     - name: "Print previous output"
       shell: bash
+      env:
+        EXISTS_TESTS_REQUIREMENTS: ${{ steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS }}
       run:
-        echo "Output was found ${{ env.EXISTS_TESTS_REQUIREMENTS }}"
+        echo "Output was found $EXISTS_TESTS_REQUIREMENTS"
 
     - name: "Install test dependencies from the requirements file"
       shell: bash
-      if: env.EXISTS_TESTS_REQUIREMENTS == 'true'
+      if: steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS == 'true'
+      env:
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        python -m pip install -r requirements/requirements_${{ inputs.optional-dependencies-name }}.txt
+        $ACTIVATE_VENV
+        python -m pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
 
     - name: "Install test dependencies from pyproject.toml"
       shell: bash
-      if: env.EXISTS_TESTS_REQUIREMENTS == 'false'
+      if: steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS == 'false'
+      env:
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          poetry install --with ${{ inputs.optional-dependencies-name }}
+        $ACTIVATE_VENV
+        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+          poetry install --with "$OPTIONAL_DEPENDENCIES_NAME"
         else
-          python -m pip install .[${{ inputs.optional-dependencies-name }}]
+          python -m pip install ".[${OPTIONAL_DEPENDENCIES_NAME}]"
         fi
 
     - name: "Set up pytest run command"
+      id: pytest-run-command
       shell: bash
+      env:
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
       run: |
-        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-          echo "PYTEST_RUN=$(echo 'poetry run pytest')" >> $GITHUB_ENV
+        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+          echo "PYTEST_RUN=$(echo 'poetry run pytest')" >> $GITHUB_OUTPUT
         else
-          echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_ENV
+          echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_OUTPUT
         fi
 
     - name: "Randomize the order of the tests"
@@ -277,13 +299,25 @@ runs:
     - name: "Executing test suite"
       if: inputs.requires-xvfb == 'false'
       shell: bash
+      env:
+       PYTEST_MARKERS: ${{ inputs.pytest-markers }}
+       PYTEST_EXTRA_ARGS: ${{ inputs.pytest-extra-args }}
+       PYTEST_POST_ARGS: ${{ inputs.pytest-postargs }}
+       PYTEST_RUN: ${{ steps.output.pytest-run-command.PYTEST_RUN }}
+       ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        ${{ env.PYTEST_RUN }} ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
+        $ACTIVATE_VENV
+        "$PYTEST_RUN" "$PYTEST_MARKERS" "$PYTEST_EXTRA_ARGS" "$PYTEST_POST_ARGS"
 
     - name: "Executing test suite using xvfb"
       if: inputs.requires-xvfb == 'true'
       shell: bash
+      env:
+       PYTEST_MARKERS: ${{ inputs.pytest-markers }}
+       PYTEST_EXTRA_ARGS: ${{ inputs.pytest-extra-args }}
+       PYTEST_POST_ARGS: ${{ inputs.pytest-postargs }}
+       PYTEST_RUN: ${{ steps.output.pytest-run-command.PYTEST_RUN }}
+       ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        xvfb-run ${{ env.PYTEST_RUN }} ${{ inputs.pytest-markers }} ${{ inputs.pytest-extra-args }} ${{ inputs.pytest-postargs }}
+        $ACTIVATE_VENV
+        xvfb-run "$PYTEST_RUN" "$PYTEST_MARKERS" "$PYTEST_EXTRA_ARGS" "$PYTEST_POST_ARGS"

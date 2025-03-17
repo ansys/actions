@@ -158,32 +158,39 @@ runs:
           this step fails, then it means that the provided token is not valid.
 
     - name: "Get the name of the repository"
+      id: get-repository-name
       shell: bash
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
-        if [[ "${{ inputs.repository }}" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
+        if [[ "$INPUT_REPOSITORY" == "current" ]]; then
+          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
         else
-          echo "REPOSITORY=${{ inputs.repository }}" >> $GITHUB_ENV
+          echo "REPOSITORY=$INPUT_REPOSITORY" >> $GITHUB_OUTPUT
         fi
 
-    - name: "Checkout ${{ env.REPOSITORY }} repository"
+    - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
       uses: actions/checkout@v4
       with:
-        repository: ${{ env.REPOSITORY }}
+        repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }}
 
     - name: "Ensure that the desired branch exists"
       shell: bash
+      env:
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+        BRANCH:  ${{ inputs.branch }}
       run: |
         # Check the ${{ inputs.branch }} branch exists on remote
-        branch_exists=$(git ls-remote --heads origin refs/heads/${{ inputs.branch }} 2>&1)
+        branch_exists=$(git ls-remote --heads origin "refs/heads/$BRANCH" 2>&1)
 
         # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
-          echo "The ${{ inputs.branch }} branch does not exist. Creating ${{ inputs.branch }}."
+          echo "The $BRANCH branch does not exist. Creating $BRANCH."
 
           # Create orphan branch
-          git checkout --orphan ${{ inputs.branch }}
+          git checkout --orphan "$BRANCH"
 
           # Unstage files to be committed
           git rm --cached -r .
@@ -192,16 +199,16 @@ runs:
           git clean -fd
 
           # Configure git username & email
-          git config user.name ${{ inputs.bot-user }}
-          git config user.email ${{ inputs.bot-email }}
+          git config user.name "$BOT_USER"
+          git config user.email "$BOT_EMAIL"
 
           # Commit ${{ inputs.branch }} & push to origin
-          git commit --allow-empty -m "Create ${{ inputs.branch }} branch"
-          git push -u origin ${{ inputs.branch }}
+          git commit --allow-empty -m "Create $BRANCH branch"
+          git push -u origin "$BRANCH"
         else
           # Fetch and switch to ${{ inputs.branch }}
-          git fetch origin ${{ inputs.branch }}:${{ inputs.branch }}
-          git switch ${{ inputs.branch }}
+          git fetch origin "${BRANCH}:${BRANCH}"
+          git switch "$BRANCH"
         fi
 
     # ------------------------------------------------------------------------
@@ -262,12 +269,14 @@ runs:
 
     - name: "Create the 'versions.json' file if not present"
       shell: bash
+      env:
+        CNAME: ${{ inputs.cname }}
       run: |
         if ! [[ -f "versions.json" ]];
         then
             sudo apt-get install -y moreutils jq
             echo '[]' > versions.json
-            url_dev="https://${{ inputs.cname }}/version/dev/"
+            url_dev="https://${CNAME}/version/dev/"
             jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
         fi
         cat versions.json
@@ -359,9 +368,11 @@ runs:
 
     - name: "Create '.nojekyll' and 'CNAME' files"
       shell: bash
+      env:
+        CNAME: ${{ inputs.cname }}
       run: |
           touch .nojekyll CNAME
-          echo "${{ inputs.cname }}" > CNAME
+          echo "$CNAME" > CNAME
 
     # ------------------------------------------------------------------------
 
