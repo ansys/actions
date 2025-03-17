@@ -12,6 +12,16 @@ updates:
 
   - package-ecosystem: "github-actions"
     directories:
+      - "_release-pypi"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "build"
+    labels:
+      - "dependencies:ci"
+
+  - package-ecosystem: "github-actions"
+    directories:
       - "!(requirements)/**/*"
     schedule:
       interval: "daily"
