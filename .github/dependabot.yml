@@ -13,6 +13,11 @@ updates:
   - package-ecosystem: "github-actions"
     directories:
       - "_release-pypi"
+      - "release-github"
+      # The following actions do not use non ansys-action but are added in case of future changes
+      - "release-pypi-private" 
+      - "release-pypi-public"
+      - "release-pypi-test"
     schedule:
       interval: "daily"
     commit-message:
