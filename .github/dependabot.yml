@@ -16,7 +16,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "build"
+      prefix: "build(release)"
     labels:
       - "dependencies:ci"
 
