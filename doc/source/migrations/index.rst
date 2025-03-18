@@ -25,7 +25,7 @@ Version ``v8.2``
 
 - The ``release-github/action.yml`` action has been improved with the ability to extend a Github release note with
   instructions on how to verify the release's artifacts attestations with
-  `Github's CLI tool <https://cli.github.com/>`_.
+  `Github's command-line tool <https://cli.github.com/>`_.
 
   - Added a new input ``attest-provenance`` to the ``ansys/actions/build-library`` and ``ansys/actions/build-wheelhouse``
     actions. Note that adding provenance attestations requires write permissions for `id-token` and `attestation`.
