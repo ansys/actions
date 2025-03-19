@@ -316,7 +316,7 @@ runs:
         if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
           poetry install "${extra_targets[@]}"
         else
-          python -m pip install ."${extra_targets[@]}"
+          python -m pip install ."$(echo ${extra_targets[@]} | sed 's/ /,/g')"
         fi
 
     - name: "Install action requirements"
