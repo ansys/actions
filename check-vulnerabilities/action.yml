@@ -172,24 +172,33 @@ runs:
   steps:
     - name: "Declare needed environment variables"
       shell: bash
-      run: |
-        echo "DEPENDENCY_CHECK_TOKEN=${{ inputs.token }}" >> $GITHUB_ENV
-        echo "DEPENDENCY_CHECK_PACKAGE_NAME=${{ inputs.python-package-name }}" >> $GITHUB_ENV
-        echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ '${{ inputs.repo-full-name }}' == '' ]] && echo '${{ github.repository }}' || echo '${{ inputs.repo-full-name }}')" >> $GITHUB_ENV
-        if [[ ${{ inputs.dry-run }} == 'true' ]];
+      env:
+        TOKEN: ${{ inputs.token }}
+        PYTHON_PACKAGE_NAME: ${{ inputs.python-package-name }}
+        REPO_FULL_NAME: ${{ inputs.repo-full-name }}
+        REPOSITORY: ${{ github.repository }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        EXIT_WITH_ERROR_ON_NEW_ADVISORY: ${{ inputs.exit-with-error-on-new-advisory }}
+        DEV_MODE: ${{ inputs.dev-mode }}
+        CREATE_ISSUES: ${{ inputs.create-issues }}
+      run: |  # zizmor: ignore[github-env]
+        echo "DEPENDENCY_CHECK_TOKEN=$TOKEN" >> $GITHUB_ENV
+        echo "DEPENDENCY_CHECK_PACKAGE_NAME=$PYTHON_PACKAGE_NAME" >> $GITHUB_ENV
+        echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ "$REPO_FULL_NAME" == '' ]] && echo "$REPOSITORY" || echo "$REPO_FULL_NAME")" >> $GITHUB_ENV
+        if [[ "$DRY_RUN" == 'true' ]];
         then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
         fi
-        if [[ ${{ inputs.exit-with-error-on-new-advisory }} == 'true' ]];
+        if [[ "$EXIT_WITH_ERROR_ON_NEW_ADVISORY" == 'true' ]];
         then
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
         fi
-        if [[ ${{ inputs.dev-mode }} == 'true' ]];
+        if [[ "$DEV_MODE" == 'true' ]];
         then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
         fi
-        if [[ ${{ inputs.create-issues }} == 'true' ]];
+        if [[ "$CREATE_ISSUES" == 'true' ]];
         then
           echo "DEPENDENCY_CHECK_CREATE_ISSUES=1" >> $GITHUB_ENV
         fi
@@ -209,20 +218,20 @@ runs:
           Determine context.
 
     - name: "Determine GitHub environment variables"
-
+      id: github-environment-variables
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_ENV
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_ENV
+          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
         fi
 
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
-          Build backend: ${{ env.BUILD_BACKEND }}
+          Build backend: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
 
     # ------------------------------------------------------------------------
 
@@ -243,15 +252,15 @@ runs:
     # dependencies with different version. This can lead to CICD failures. For
     # more information, see https://github.com/ansys/actions/pull/560
     - name: "Add pipx/bin directory to Github Path"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH
+      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
     # in the GitHub environment.
     - name: "Set poetry environment variable(s)"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
 
@@ -261,7 +270,7 @@ runs:
     # making it available in the following call and installed in a different
     # environment from the project.
     - name: "Install poetry and create a virtual environment"
-      if: env.BUILD_BACKEND == 'poetry'
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: |
         python -m pip install pipx
@@ -272,48 +281,55 @@ runs:
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
     - name: "Create a virtual environment"
-      if: env.BUILD_BACKEND == 'pip'
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'pip'
       shell: bash
       run: |
         python -m venv .venv
 
     - name: "Set up virtual environment activation command"
+      id: virtual-environment-activation-command
       shell: bash
       run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_ENV
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_ENV
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
         fi
 
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
+        $ACTIVATE_VENV
         python -m pip install -U pip
 
     - name: "Install library"
       shell: bash
+      env:
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        EXTRA_TARGETS: ${{ inputs.extra-targets }}
       # Note: we need to use an array to store the extra targets, otherwise
       # the shell expansion messes with the quotes in the poetry case.
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        if [[ '${{ inputs.extra-targets }}' != '' ]]; then
-          if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
-            echo "Installing extra targets with poetry: ${{ inputs.extra-targets }}"
-            extra_targets=(--extras '${{ inputs.extra-targets }}')
+        $ACTIVATE_VENV
+        if [[ "$EXTRA_TARGETS" != '' ]]; then
+          if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+            echo "Installing extra targets with poetry: $EXTRA_TARGETS"
+            extra_targets=(--extras $EXTRA_TARGETS)
           else
-            echo "Installing extra targets with pip: ${{ inputs.extra-targets }}"
-            extra_targets=([${{ inputs.extra-targets }}])
+            echo "Installing extra targets with pip: $EXTRA_TARGETS"
+            extra_targets=([$EXTRA_TARGETS])
           fi
         else
           echo "No extra targets to install"
           extra_targets=()
         fi
 
-        if [[ ${{ env.BUILD_BACKEND }} == 'poetry' ]]; then
+        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           poetry install "${extra_targets[@]}"
         else
           python -m pip install ."${extra_targets[@]}"
@@ -321,9 +337,12 @@ runs:
 
     - name: "Install action requirements"
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        python -m pip install -r ${{ github.action_path }}/requirements.txt
+        $ACTIVATE_VENV
+        python -m pip install -r "${ACTION_PATH}/requirements.txt"
 
     - name: "Download the list of ignored safety vulnerabilities"
       shell: bash
@@ -332,8 +351,11 @@ runs:
 
     - name: "Run safety and bandit"
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        SOURCE_DIRECTORY: ${{ inputs.source-directory }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
+        $ACTIVATE_VENV
         # Load accepted safety vulnerabilities
         mapfile ignored_safety_vulnerabilities < ignored-safety.txt
         ignored_vulnerabilities=''
@@ -343,16 +365,20 @@ runs:
 
         # Run security tools
         safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
-        bandit -r ${{ inputs.source-directory }} -o info_bandit.json -f json --exit-zero
+        bandit -r "$SOURCE_DIRECTORY" -o info_bandit.json -f json --exit-zero
 
     - name: "Run safety advisory checks"
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        ACTION_PATH: ${{ github.action_path }}
+        HIDE_LOG: ${{ inputs.hide-log }}
       run: |
-        ${{ env.ACTIVATE_VENV }}
-        if [[ ${{ inputs.hide-log }} == 'true' ]]; then
-          python ${{ github.action_path }}/check_vulnerabilities.py > /dev/null 2>&1
+        $ACTIVATE_VENV
+        if [[ "$HIDE_LOG" == 'true' ]]; then
+          python "${ACTION_PATH}/check_vulnerabilities.py" > /dev/null 2>&1
         else
-          python ${{ github.action_path }}/check_vulnerabilities.py
+          python "${ACTION_PATH}/check_vulnerabilities.py"
         fi
 
     - name: "Uploading safety and bandit results"

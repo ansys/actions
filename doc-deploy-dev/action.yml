@@ -181,7 +181,7 @@ runs:
         BOT_USER: ${{ inputs.bot-user }}
         BOT_EMAIL: ${{ inputs.bot-email }}
         BRANCH:  ${{ inputs.branch }}
-      run: |
+      run: | # zizmor: ignore[template-injection] I can't think of any other way to expand input.branch within comments
         # Check the ${{ inputs.branch }} branch exists on remote
         branch_exists=$(git ls-remote --heads origin "refs/heads/$BRANCH" 2>&1)
 

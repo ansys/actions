@@ -69,7 +69,7 @@ runs:
     - name: "Optionally set GH_TOKEN"
       if: ${{ inputs.token != '' }}
       shell: bash
-      run: |
+      run: |  # zizmor: ignore[template-injection]
         echo 'GH_TOKEN=${{ inputs.token }}' >> "$GITHUB_ENV"
 
     - name: "Output a summary of detected vulnerabilities"

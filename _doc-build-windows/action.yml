@@ -135,7 +135,7 @@ runs:
 
     - name: Download script and install Chocolatey
       shell: powershell
-      run: |
+      run: |  # zizmor: ignore[github-env]
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
@@ -176,21 +176,21 @@ runs:
 
     - name: Install Miktex and update PATH with Miktex binaries
       shell: powershell
-      run: |
+      run: | # zizmor: ignore[github-env]
         choco install miktex -y
         echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: powershell
-      run: |
+      run: | # zizmor: ignore[github-env]
         choco install poppler -y
         echo "C:\Program Files\poppler\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install quarto for cheatsheet"
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: powershell
-      run: |
+      run: | # zizmor: ignore[github-env]
         choco install quarto -y
         echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
@@ -257,7 +257,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.determine-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: powershell
-      run: echo "${{ runner.temp }}/pipx/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      run: echo "${{ runner.temp }}/pipx/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append # zizmor: ignore[github-env]
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -265,7 +265,7 @@ runs:
     - name: "Set poetry environment variable(s)"
       if: steps.determine-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: powershell
-      run: echo "POETRY_VIRTUALENVS_CREATE=$(echo false)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      run: echo "POETRY_VIRTUALENVS_CREATE=$(echo false)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append # zizmor: ignore[github-env]
 
     # NOTE: Install pipx in a location that can be used in following CICD jobs
     # but ensure that poetry is installed in a temporary folder cleaned before

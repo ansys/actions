@@ -131,7 +131,7 @@ inputs:
     required: true
     type: boolean
 
-runs:
+runs: # zizmor: ignore[github-env]
   using: "composite"
   steps:
 
@@ -232,7 +232,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH
+      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH  # zizmor: ignore[github-env]
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false

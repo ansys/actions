@@ -109,15 +109,20 @@ runs:
           version of Vale.
 
     - name: "Check Vale's version"
+      id: vale-major-version
       shell: bash
+      env:
+        VALE_VERSION: ${{ inputs.vale-version }}
       run: |
-        version=${{ inputs.vale-version }}
+        version="$VALE_VERSION"
         vale_major_version=$( echo $version | cut -d '.' -f 1)
-        echo "VALE_MAJOR_VERSION=$(echo $vale_major_version)" >> $GITHUB_ENV
+        echo "VALE_MAJOR_VERSION=$(echo $vale_major_version)" >> $GITHUB_OUTPUT
         echo "VALE_MAJOR_VERSION set to $vale_major_version"  # Add this line for debugging
 
     - name: "Verify Vale's configuration layout according to selected version"
       shell: bash
+      env:
+        VALE_MAJOR_VERSION: ${{ steps.vale-major-version.outputs.VALE_MAJOR_VERSION }}
       run: |
         if [ -z "$VALE_MAJOR_VERSION" ]; then
           echo "VALE_MAJOR_VERSION is not set."
@@ -140,8 +145,10 @@ runs:
 
     - name: "Install toml"
       shell: bash
+      env:
+       TOML_VERSION: ${{ inputs.toml-version }}
       run: |
-        python -m pip install --upgrade pip toml==${{ inputs.toml-version }}
+        python -m pip install --upgrade pip toml==$TOML_VERSION
 
     - name: "Install docutils"
       shell: bash
@@ -175,13 +182,17 @@ runs:
             f.write(f"TOWNCRIER_DIR={directory}")
 
     - name: "Check if changelog.d is ignored"
+      id: vale-flags
       shell: bash
+      env:
+        VALE_CONFIG: ${{ inputs.vale-config }}
+        IGNORE_CHANGELOGD: ${{ inputs.ignore-changelogd }}
       run: |
         # If changelog.d is ignored and the TOWNCRIER_DIR exists in pyproject.toml, add the ignore glob
-        if [[ ${{ inputs.ignore-changelogd }} == 'true' ]] && [[ -n "${{ env.TOWNCRIER_DIR }}" ]]; then
-          echo VALE_FLAGS="--config=${{ inputs.vale-config }} --glob=!${{ env.TOWNCRIER_DIR }}/*.md" >> $GITHUB_ENV
+        if [[ "$IGNORE_CHANGELOGD" == 'true' ]] && [[ -n "${{ env.TOWNCRIER_DIR }}" ]]; then
+          echo VALE_FLAGS="--config=$VALE_CONFIG --glob=!${{ env.TOWNCRIER_DIR }}/*.md" >> $GITHUB_OUTPUT
         else
-          echo VALE_FLAGS="--config=${{ inputs.vale-config }}" >> $GITHUB_ENV
+          echo VALE_FLAGS="--config=$VALE_CONFIG" >> $GITHUB_OUTPUT
         fi
 
     - name: "Run Vale"
@@ -193,5 +204,5 @@ runs:
         reporter: github-pr-check
         fail_level: ${{ inputs.fail-level }}
         filter_mode: nofilter
-        vale_flags: "${{ ENV.VALE_FLAGS }}"
+        vale_flags: "${{ steps.vale-flags.outputs.VALE_FLAGS }}"
         version: ${{ inputs.vale-version }}
