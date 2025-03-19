@@ -47,7 +47,7 @@ inputs:
       Equivalent to 'persona' zizmor option, controls zizmor's auditing sensitivity.
       Possible values include 'normal', 'high', and 'strict', which map to 'regular', 'pedantic',
       and 'auditor' persona options.
-    default: 'normal'
+    default: 'high'
     required: false
     type: string
 
