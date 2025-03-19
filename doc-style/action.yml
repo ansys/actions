@@ -98,7 +98,7 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       if: inputs.checkout == 'true'
 
     - uses: ansys/actions/_logging@main
@@ -185,7 +185,9 @@ runs:
         fi
 
     - name: "Run Vale"
-      uses: errata-ai/vale-action@reviewdog20
+      # The vale-action points to the latest commit in the reviewdog20 branch
+      # Contrary to other pinned version, this action is pinned to a commit
+      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
@@ -195,3 +197,13 @@ runs:
         filter_mode: nofilter
         vale_flags: "${{ ENV.VALE_FLAGS }}"
         version: ${{ inputs.vale-version }}
+
+    # Contrary to the previous step, this step refers to a release of vale-action.
+    # However, the step is not mean to be executed and is only used to track changes
+    # in the vale-action.
+    - name: Dummy step to track vale-action changes
+      if: false
+      uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
+      with:
+        reporter: github-pr-check
+        filter_mode: nofilter
