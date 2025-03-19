@@ -12,6 +12,77 @@ updates:
 
   - package-ecosystem: "github-actions"
     directories:
+      - "code-style"
+      - "doc-style"
+      - "docker-style"
+      - "check-pr-title"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    commit-message:
+      prefix: "build(style)"
+    labels:
+      - "dependencies:ci"
+
+  - package-ecosystem: "github-actions"
+    directories:
+      - "tests-pytest"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    commit-message:
+      prefix: "build(tests)"
+    labels:
+      - "dependencies:ci"
+
+  - package-ecosystem: "github-actions"
+    directories:
+      - "_doc-build-linux"
+      - "_doc-build-windows"
+      - "doc-build"
+      - "doc-changelog"
+      - "doc-deploy-changelog"
+      - "doc-deploy-dev"
+      - "doc-deploy-stable"
+      # The following actions do not use non ansys-action but are added in case of future changes
+      - "_doc-gen-canonical"
+      - "_doc-gen-robots"
+      - "_doc-gen-sitemap"
+      - "_doc-gen-versions-page"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    commit-message:
+      prefix: "build(docs)"
+    labels:
+      - "dependencies:ci"
+
+  - package-ecosystem: "github-actions"
+    directories:
+      - "check-licenses"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    commit-message:
+      prefix: "build(licenses)"
+    labels:
+      - "dependencies:ci"
+
+  - package-ecosystem: "github-actions"
+    directories:
+      - "build-ci-wheels"
+      - "build-library"
+      - "build-wheelhouse"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    commit-message:
+      prefix: "build(build)"
+    labels:
+      - "dependencies:ci"
+
+  - package-ecosystem: "github-actions"
+    directories:
       - "_release-pypi"
       - "release-github"
       # The following actions do not use non ansys-action but are added in case of future changes
@@ -19,7 +90,8 @@ updates:
       - "release-pypi-public"
       - "release-pypi-test"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "wednesday"
     commit-message:
       prefix: "build(release)"
     labels:
@@ -27,10 +99,38 @@ updates:
 
   - package-ecosystem: "github-actions"
     directories:
-      - "!(requirements)/**/*"
+      - "hk-automerge-prs"
+      # The following actions do not use non ansys-action but are added in case of future changes
+      - "hk-package-clean-except"
+      - "hk-package-clean-untagged"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "wednesday"
     commit-message:
-      prefix: "build"
+      prefix: "build(hk)"
+    labels:
+      - "dependencies:ci"
+
+  - package-ecosystem: "github-actions"
+    directories:
+      - "check-vulnerabilities"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    commit-message:
+      prefix: "build(vulnerabilities)"
+    labels:
+      - "dependencies:ci"
+
+  - package-ecosystem: "github-actions"
+    directories:
+      - "_setup-python"
+      # The following actions do not use non ansys-action but are added in case of future changes
+      - "_logging"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    commit-message:
+      prefix: "build(utils)"
     labels:
       - "dependencies:ci"
