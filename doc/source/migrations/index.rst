@@ -12,8 +12,8 @@ Version ``v8.2``
 **New Features:**
 
 - Added a new action named ``ansys/actions/hk-automerge-prs``. This action allows maintainers to auto-approve and merge
-  ``dependabot`` PRs and ``pre-commit.ci`` PRs. It is suggested to add the action at the end of the workflow, once all the
-  stages have finalized. That way, in case a repository has failing stages, it is not run. This action will run in case
+  ``dependabot`` PRs and ``pre-commit.ci`` PRs. It is recommended to add the action at the end of the workflow, once all the
+  stages have exited successfully. That way, in case a repository has failing stages, it is not run. This action will run in case
   the PR has been created by ``dependabot`` or ``pre-commit.ci``. You can see an example of its implementation
   `here <https://github.com/ansys/pyansys/blob/e00400f3b0ad3c09d82d91a97045e6b4d3d7692c/.github/workflows/ci-build.yml#L226-L239>`_
   and the `associated PR/commit <https://github.com/ansys/pyansys/commit/e9f221428a9cc7fc64dd5f775699871288063512>`_.
