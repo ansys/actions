@@ -12,125 +12,47 @@ updates:
 
   - package-ecosystem: "github-actions"
     directories:
-      - "code-style"
-      - "doc-style"
-      - "docker-style"
-      - "check-pr-title"
+      - "/"
     schedule:
       interval: "weekly"
       day: "wednesday"
     commit-message:
-      prefix: "build(style)"
+      prefix: "build(actions)"
     labels:
       - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "tests-pytest"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    commit-message:
-      prefix: "build(tests)"
-    labels:
-      - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "_doc-build-linux"
-      - "_doc-build-windows"
-      - "doc-build"
-      - "doc-changelog"
-      - "doc-deploy-changelog"
-      - "doc-deploy-dev"
-      - "doc-deploy-stable"
-      # The following actions do not use non ansys-action but are added in case of future changes
-      - "_doc-gen-canonical"
-      - "_doc-gen-robots"
-      - "_doc-gen-sitemap"
-      - "_doc-gen-versions-page"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    commit-message:
-      prefix: "build(docs)"
-    labels:
-      - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "check-licenses"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    commit-message:
-      prefix: "build(licenses)"
-    labels:
-      - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "build-ci-wheels"
-      - "build-library"
-      - "build-wheelhouse"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    commit-message:
-      prefix: "build(build)"
-    labels:
-      - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "_release-pypi"
-      - "release-github"
-      # The following actions do not use non ansys-action but are added in case of future changes
-      - "release-pypi-private"
-      - "release-pypi-public"
-      - "release-pypi-test"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    commit-message:
-      prefix: "build(release)"
-    labels:
-      - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "hk-automerge-prs"
-      # The following actions do not use non ansys-action but are added in case of future changes
-      - "hk-package-clean-except"
-      - "hk-package-clean-untagged"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    commit-message:
-      prefix: "build(hk)"
-    labels:
-      - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "check-vulnerabilities"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    commit-message:
-      prefix: "build(vulnerabilities)"
-    labels:
-      - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "_setup-python"
-      # The following actions do not use non ansys-action but are added in case of future changes
-      - "_logging"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    commit-message:
-      prefix: "build(utils)"
-    labels:
-      - "dependencies:ci"
+    groups:
+      # Actions related to this repo's CI/CD
+      cicd-actions:
+        patterns:
+          - "micnncim/action-label-syncer"
+      # Github actions that are used in our composite actions
+      github-actions:
+        patterns:
+          - "actions/*"
+      # Actions associated to our style composite actions
+      style-related-actions:
+        patterns:
+          - "amannn/action-semantic-pull-request"
+          - "errata-ai/vale-action"
+          - "jbergstroem/hadolint-gh-action"
+      # Actions associated to our documentation composite actions
+      doc-related-actions:
+        patterns:
+          - "awalsh128/cache-apt-pkgs-action"
+          - "quarto-dev/quarto-actions/setup"
+          - "peaceiris/actions-gh-pages"
+          - "peter-evans/create-or-update-comment"
+      # Actions associated to our tests composite actions
+      test-related-actions:
+        patterns:
+          - "docker/login-action"
+      # Actions associated to our build composite actions
+      build-related-actions:
+        patterns:
+          - "docker/setup-qemu-action"
+          - "pypa/cibuildwheel"
+      # Actions associated to our release composite actions
+      release-related-actions:
+        patterns:
+          - "pypa/gh-action-pypi-publish"
+          - "softprops/action-gh-release"
