@@ -1,5 +1,6 @@
 Ansys
 ansys
+automerge
 CI
 dev
 GitHub
