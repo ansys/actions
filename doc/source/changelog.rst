@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`8.2.27 <https://github.com/ansys/actions/releases/tag/v8.2.27>`_ - March 20, 2025
+==================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - add documentation on automerge action
+          - `#740 <https://github.com/ansys/actions/pull/740>`_
+
+
 `8.2.26 <https://github.com/ansys/actions/releases/tag/v8.2.26>`_ - March 14, 2025
 ==================================================================================
 
