@@ -348,7 +348,7 @@ runs:
         } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       env:
         REPO_NAME: ${{ github.event.repository.name }}
       if: inputs.dry-run == 'false'
