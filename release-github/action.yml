@@ -140,7 +140,7 @@ inputs:
         content for the release notes body, the content will be
         pre-pended to the automatically generated notes.
 
-    default: true
+    default: false
     required: false
     type: boolean
 
