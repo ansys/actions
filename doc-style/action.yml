@@ -185,9 +185,10 @@ runs:
         fi
 
     - name: "Run Vale"
-      # The vale-action points to the latest commit in the reviewdog20 branch
-      # Contrary to other pinned version, this action is pinned to a commit
-      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858
+      # WARNING: Do not accept dependabot updates as the hash below is associated
+      # to the reviewdog20 branch and not to a release tag !!! We must update the branch
+      # with the new rekease content with a PR and then update the commit hash.
+      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # Read warning above
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
@@ -197,13 +198,3 @@ runs:
         filter_mode: nofilter
         vale_flags: "${{ ENV.VALE_FLAGS }}"
         version: ${{ inputs.vale-version }}
-
-    # Contrary to the previous step, this step refers to a release of vale-action.
-    # However, the step is not mean to be executed and is only used to track changes
-    # in the vale-action.
-    - name: Dummy step to track vale-action changes
-      if: false
-      uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
-      with:
-        reporter: github-pr-check
-        filter_mode: nofilter
