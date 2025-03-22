@@ -6,13 +6,12 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "build"
+      prefix: "build(pip)"
     labels:
       - "dependencies:requirements"
 
   - package-ecosystem: "github-actions"
-    directories:
-      - "/"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "wednesday"
@@ -56,3 +55,9 @@ updates:
         patterns:
           - "pypa/gh-action-pypi-publish"
           - "softprops/action-gh-release"
+      # Missed actions that should by assigned to a group
+      must-be-assigned-actions:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "ansys/actions*"
