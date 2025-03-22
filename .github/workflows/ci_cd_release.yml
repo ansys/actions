@@ -22,7 +22,7 @@ jobs:
     steps:
 
     - name: "Checkout repository"
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         fetch-tags: true
         ref: ${{ github.ref }}
@@ -134,7 +134,7 @@ jobs:
     steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -157,7 +157,7 @@ jobs:
         ls -R && python -m build && python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
         name: ${{ env.LIBRARY_NAME }}-artifacts
         path: ~/${{ env.LIBRARY_NAME }}/dist/
@@ -176,25 +176,25 @@ jobs:
     steps:
 
     - name: "Download HTML documentation"
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         name: documentation-html
         path: documentation-html
 
     - name: "Zip HTML documentation"
-      uses: vimtor/action-zip@v1.2
+      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
       with:
         files: documentation-html
         dest: documentation-html.zip
 
     - name: "Download PDF documentation"
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         name: documentation-pdf
         path: documentation-pdf
 
     - name: "Zip PDF documentation"
-      uses: vimtor/action-zip@v1.2
+      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
       with:
         files: documentation-pdf
         dest: documentation-pdf.zip
@@ -204,7 +204,7 @@ jobs:
       run: ls -R
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
       with:
         generate_release_notes: true
         files: |

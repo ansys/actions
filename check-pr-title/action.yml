@@ -60,13 +60,13 @@ runs:
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) && inputs.use-upper-case == 'false' }}
-      uses: amannn/action-semantic-pull-request@v5
+      uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017 # v5.5.3
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
       if: ${{ ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) && inputs.use-upper-case == 'true' }}
-      uses: amannn/action-semantic-pull-request@v5
+      uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017 # v5.5.3
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
