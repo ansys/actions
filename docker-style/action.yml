@@ -99,18 +99,19 @@ runs:
           If it does not, then a warning is emitted.
 
     - name: "Check if docker directory exists"
+      id: check-docker-directory-exists
       shell: bash
       run: |
         if [ -d "${{ github.workspace }}/docker" ]; then
-          echo "HAS_DOCKER_DIR=true" >> $GITHUB_ENV
+          echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
         else
-          echo "HAS_DOCKER_DIR=false" >> $GITHUB_ENV
+          echo "HAS_DOCKER_DIR=false" >> $GITHUB_OUTPUT
         fi
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: env.HAS_DOCKER_DIR == 'false'
+      if: steps.check-docker-directory-exists.outputs.HAS_DOCKER_DIR == 'false'
       with:
         level: "WARNING"
         message: >
@@ -129,10 +130,13 @@ runs:
 
     - name: "Filter input directory"
       shell: bash
+      id: filter-input-directory
+      env:
+        DIRECTORY: ${{ inputs.directory }}
       run: |
         EXISTING_DIRS=""
         NON_EXISTING_DIRS=""
-        for directory in ${{ inputs.directory }}
+        for directory in $DIRECTORY
         do
           if [ -d "${{ github.workspace }}/$directory" ]; then
             EXISTING_DIRS+="$directory "
@@ -141,51 +145,53 @@ runs:
           fi
         done
         EXISTING_DIRS=$(echo -n "$EXISTING_DIRS" | xargs)
-        echo "EXISTING_DIRS=$EXISTING_DIRS" >> $GITHUB_ENV
+        echo "EXISTING_DIRS=$EXISTING_DIRS" >> $GITHUB_OUTPUT
         NON_EXISTING_DIRS=$(echo -n "$NON_EXISTING_DIRS" | xargs)
-        echo "NON_EXISTING_DIRS=$NON_EXISTING_DIRS" >> $GITHUB_ENV
+        echo "NON_EXISTING_DIRS=$NON_EXISTING_DIRS" >> $GITHUB_OUTPUT
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: ${{ !!env.EXISTING_DIRS }}
+      if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}
       with:
         level: "INFO"
         message: >
-          Lint '${{ env.EXISTING_DIRS }}'.
+          Lint '${{ steps.filter-input-directory.outputs.EXISTING_DIRS }}'.
 
     - name: "Format Hadolint dockerfile input"
-      if: ${{ !!env.EXISTING_DIRS }}
+      id: format-hadolint-dockerfile-input
+      if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}
       shell: bash
+      env:
+        fmt_directory: ${{ steps.filter-input-directory.outputs.EXISTING_DIRS }}
       run: |
-        fmt_directory="${{ env.EXISTING_DIRS }}"
         pattern="${{ inputs.recursive == 'true' && '/**' || '' }}/Dockerfile"
         fmt_directory_array=($fmt_directory)
         for i in "${!fmt_directory_array[@]}"; do
           fmt_directory_array[i]="${fmt_directory_array[i]}${pattern}"
         done
         fmt_directory="${fmt_directory_array[*]}"
-        echo "FORMATED_HADOLINT_DOCKERFILE_INPUT=$fmt_directory" >> $GITHUB_ENV
+        echo "FORMATED_HADOLINT_DOCKERFILE_INPUT=$fmt_directory" >> $GITHUB_OUTPUT
 
     - name: "Run Hadolint"
-      if: ${{ !!env.EXISTING_DIRS }}
+      if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}
       uses: jbergstroem/hadolint-gh-action@v1
       with:
-        dockerfile: ${{ env.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
+        dockerfile: ${{ steps.format-hadolint-dockerfile-input.output.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
         error_level: ${{ inputs.error-level }}
 
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: ${{ env.NON_EXISTING_DIRS != '' && contains(env.NON_EXISTING_DIRS, ' ') }}
+      if: ${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS != '' && contains(steps.filter-input-directory.outputs.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
         message: >
-          Non existing directories: '${{ env.NON_EXISTING_DIRS }}'
+          Non existing directories: '${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS }}'
 
     - uses: ansys/actions/_logging@main
-      if: ${{ env.NON_EXISTING_DIRS != '' && !contains(env.NON_EXISTING_DIRS, ' ') }}
+      if: ${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS != '' && !contains(steps.filter-input-directory.outputs.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
         message: >
-          Non existing directory: '${{ env.NON_EXISTING_DIRS }}'
+          Non existing directory: '${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS }}'

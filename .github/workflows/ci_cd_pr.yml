@@ -27,6 +27,8 @@ jobs:
 
      - name: "Checkout project"
        uses: actions/checkout@v4
+       with:
+        persist-credentials: false
 
      - name: "Sync labels"
        uses: micnncim/action-label-syncer@v1
@@ -104,6 +106,8 @@ jobs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -137,3 +141,13 @@ jobs:
       with:
         library-name: ${{ env.LIBRARY_NAME }}
         use-trusted-publisher: true
+
+  actions-security:
+    name: "Check actions security"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ansys/actions/check-actions-security@feat/check-actions-security-action
+        with:
+          generate-summary: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          auditing-level: 'normal'

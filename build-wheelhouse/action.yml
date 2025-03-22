@@ -136,42 +136,54 @@ runs:
         python -m pip install --upgrade pip build wheel
 
     - name: "Check if specific target is requested"
+      id: specific-target-requested
       shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
       run: |
-        echo "install_target=$( [[ '${{ inputs.target }}' == '' ]] && echo '.' || echo '.[${{ inputs.target }}]')" >> $GITHUB_ENV
-        echo "wheelhouse_target=$( [[ '${{ inputs.target }}' == '' ]] && echo 'wheelhouse' || echo '${{ inputs.target }}-wheelhouse')" >> $GITHUB_ENV
+        echo "install_target=$( [[ "$TARGET" == '' ]] && echo '.' || echo ".[$TARGET]")" >> $GITHUB_OUTPUT
+        echo "wheelhouse_target=$( [[ "$TARGET" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> $GITHUB_OUTPUT
 
     - name: "Install the library"
       shell: bash
+      env:
+        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
       run: |
-        python -m pip install ${{ env.install_target }}
+        python -m pip install "$INSTALL_TARGET"
 
     - name: "Verify if importlib-metadata needs to be installed"
+      id: needs-importlib-metadata
       shell: bash
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
       run: |
-        python_version="${{ inputs.python-version }}"
+        python_version="$PYTHON_VERSION"
         minor_python_version=$(echo "$python_version" | awk -F "." '{print $2}')
         major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
         if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 8 )) )); then
-          echo "needs_importlib_metadata=true" >> $GITHUB_ENV
+          echo "needs_importlib_metadata=true" >> $GITHUB_OUTPUT
         elif (( $(( $major_python_version < 3 )) )); then
-          echo "needs_importlib_metadata=true" >> $GITHUB_ENV
+          echo "needs_importlib_metadata=true" >> $GITHUB_OUTPUT
         else
-          echo "needs_importlib_metadata=false" >> $GITHUB_ENV
+          echo "needs_importlib_metadata=false" >> $GITHUB_OUTPUT
         fi
 
     - name: "Install importlib-metadata (only for Python <= 3.7)"
-      if: env.needs_importlib_metadata == 'true'
+      if: steps.needs-importlib-metadata.outputs.needs_importlib_metadata == 'true'
       shell: bash
       run: |
         python -m pip install importlib-metadata
 
     - name: "Verify library is properly installed and get its version number"
+      id: library-version
       shell: bash
+      env:
+        LIBRARY_NAME: ${{ inputs.library-name }}
+        NEEDS_IMPORTLIB_METADATA: ${{ steps.needs-importlib-metadata.outputs.needs_importlib_metadata }}
       run: |
-        library_name=${{ inputs.library-name }}
+        library_name="$LIBRARY_NAME"
 
-        if [ ${{ env.needs_importlib_metadata }} == 'true' ]; then
+        if [ $NEEDS_IMPORTLIB_METADATA == 'true' ]; then
           version=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
         else
           version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
@@ -183,31 +195,33 @@ runs:
         else
             echo "The library version is: $version";
         fi;
-        echo "library_version=$version" >> $GITHUB_ENV
+        echo "library_version=$version" >> $GITHUB_OUTPUT
 
     - name: "Generate the wheelhouse"
       shell: bash
+      env:
+        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
       run: |
-        python -m pip wheel ${{ env.install_target }} -w wheelhouse
+        python -m pip wheel "$INSTALL_TARGET" -w wheelhouse
 
     - name: "Compress the wheelhouse"
       uses: vimtor/action-zip@v1.2
       with:
         files: wheelhouse
-        dest: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        dest: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: "Upload the compressed wheelhouse"
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
-        path: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
+        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
       uses: actions/attest-build-provenance@v2
       with:
-        subject-path: ${{ inputs.library-name }}-v${{ env.library_version }}-${{ env.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
       uses: ansys/actions/check-licenses@main
