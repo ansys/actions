@@ -32,8 +32,11 @@ updates:
       style-related-actions:
         patterns:
           - "amannn/action-semantic-pull-request"
-          - "errata-ai/vale-action"
           - "jbergstroem/hadolint-gh-action"
+      # Group dedicated to vale due to the use of a release branch (reviewdog20)
+      vale-action:
+        patterns:
+          - "errata-ai/vale-action"
       # Actions associated to our documentation composite actions
       doc-related-actions:
         patterns:
@@ -55,7 +58,7 @@ updates:
         patterns:
           - "pypa/gh-action-pypi-publish"
           - "softprops/action-gh-release"
-      # Missed actions that should by assigned to a group
+      # Missed non ansys actions that should by assigned to a group
       must-be-assigned-actions:
         patterns:
           - "*"
