@@ -50,7 +50,7 @@ jobs:
     steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -73,7 +73,7 @@ jobs:
         ls -R && python -m build && python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
         name: ${{ env.LIBRARY_NAME }}-artifacts
         path: ~/${{ env.LIBRARY_NAME }}/dist/

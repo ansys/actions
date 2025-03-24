@@ -86,7 +86,7 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       if: inputs.checkout == 'true'
 
     # ------------------------------------------------------------------------
@@ -169,7 +169,7 @@ runs:
 
     - name: "Run Hadolint"
       if: ${{ !!env.EXISTING_DIRS }}
-      uses: jbergstroem/hadolint-gh-action@v1
+      uses: jbergstroem/hadolint-gh-action@39e57273ed8f513872326b228217828be6a42730 # v1.12.2
       with:
         dockerfile: ${{ env.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
         error_level: ${{ inputs.error-level }}

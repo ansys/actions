@@ -98,7 +98,7 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       if: inputs.checkout == 'true'
 
     - uses: ansys/actions/_logging@main
@@ -184,8 +184,22 @@ runs:
           echo VALE_FLAGS="--config=${{ inputs.vale-config }}" >> $GITHUB_ENV
         fi
 
+    # WARNING: This step is not meant to be executed and is here to track changes
+    # in the vale-action. If a PR is opened by dependabot, we need to update the
+    # reviewdog20 branch with the new release changes, see next step.
+    - name: "Dummy step to track vale-action changes"
+      if: false
+      uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
+      with:
+        reporter: github-pr-check
+        filter_mode: nofilter
+
+    # WARNING: Do not accept dependabot updates as the hash below is associated
+    # to the reviewdog20 branch and not to a release tag !!! If a PR is opened by
+    # dependabot, we need to update the reviewdog20 branch with the new release changes.
+    # Once performed, we can manually update the commit hash below.
     - name: "Run Vale"
-      uses: errata-ai/vale-action@reviewdog20
+      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # Read warning above
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
