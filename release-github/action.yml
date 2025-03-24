@@ -162,6 +162,16 @@ runs:
 
     # TODO: end
 
+    # Only one of both can be true: generate_release_notes, changelog-release-notes
+    - name: "Sanity check on release notes"
+      uses: ansys/actions/_logging@main
+      if: ${{ inputs.generate_release_notes == 'true' && inputs.changelog-release-notes == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          Only one of the inputs ``generate_release_notes`` and ``changelog-release-notes``
+          can be true. Please set one of them to false.
+
     - name: "Checkout repository"
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
