@@ -3,6 +3,7 @@ ansys
 automerge
 CI
 dev
+dependabot
 GitHub
 pytest
 PyPI
