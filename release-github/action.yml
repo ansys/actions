@@ -362,16 +362,16 @@ runs:
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
         token: ${{ inputs.token }}
         files: |
-          # Include wheel and source distribution artifacts
+          # [COMMENT] Include wheel and source distribution artifacts
           dist/${{ inputs.library-name }}-artifacts/*.whl
           dist/${{ inputs.library-name }}-artifacts/*.tar.gz
 
-          # Include wheelhouse artifacts
+          # [COMMENT] Include wheelhouse artifacts
           dist/wheelhouse/**/*-wheelhouse-*.zip
 
-          # Include HTML and PDF documentation artifacts
+          # [COMMENT] Include HTML and PDF documentation artifacts
           dist/documentation/documentation-html.zip
           dist/documentation/documentation-pdf.zip
 
-          # Include additional artifacts
+          # [COMMENT] Include additional artifacts
           dist/extra/**/*
