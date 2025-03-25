@@ -1,6 +1,5 @@
 name: pull-request
 on:
-  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
 
@@ -22,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Exit if dependabot triggered the workflow
-        if: github.actor == 'dependabot[bot]'
+        if: github.triggering_actor == 'dependabot[bot]'
         run: |
           echo "::warning::Dependabot is not allowed to trigger this workflow. Please check the changes before running the workflow manually."
           exit 1
@@ -32,14 +31,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Exit if dependabot triggered the workflow
-        if: github.actor == 'pyansys-ci-bot' && startsWith(github.head_ref, 'dependabot')
+        if: github.triggering_actor == 'pyansys-ci-bot' && startsWith(github.head_ref, 'dependabot')
         run: |
           echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please check the changes before running the workflow manually."
           exit 1
 
   check-dependabot-pr:
     needs: block-pyansys-ci-bot
-    if: startsWith(github.head_ref, 'dependabot') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.head_ref, 'dependabot')
     name: Manual approval
     runs-on: ubuntu-latest
     environment: dependabot
