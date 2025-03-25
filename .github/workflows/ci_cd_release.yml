@@ -81,6 +81,7 @@ jobs:
 
   changelog-deployment:
     name: "Changelog"
+    needs: rolling-release
     permissions:
       contents: write
       pull-requests: write
