@@ -2,6 +2,8 @@ Ansys
 ansys
 automerge
 CI
+cooldown
+dependabot
 dev
 GitHub
 pytest
