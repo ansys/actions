@@ -23,7 +23,7 @@ jobs:
       - name: Exit if dependabot triggered the workflow
         if: github.triggering_actor == 'dependabot[bot]'
         run: |
-          echo "::warning::Dependabot is not allowed to trigger this workflow. Please check the changes before running the workflow manually."
+          echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
           exit 1
 
   block-pyansys-ci-bot:
@@ -33,7 +33,7 @@ jobs:
       - name: Exit if dependabot triggered the workflow
         if: github.triggering_actor == 'pyansys-ci-bot' && startsWith(github.head_ref, 'dependabot')
         run: |
-          echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please check the changes before running the workflow manually."
+          echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
           exit 1
 
   check-dependabot-pr:
