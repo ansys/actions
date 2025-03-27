@@ -170,7 +170,7 @@ runs:
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }}
@@ -228,7 +228,7 @@ runs:
         rm -rf version/dev && mkdir -p version/dev
 
     - name: "Download the development documentation artifact"
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/dev
@@ -406,7 +406,7 @@ runs:
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
       if: inputs.repository == 'current'
-      uses: peaceiris/actions-gh-pages@v4
+      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
       with:
         publish_dir: .
         publish_branch: ${{ inputs.branch }}
@@ -417,7 +417,7 @@ runs:
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
       if: inputs.repository != 'current'
-      uses: peaceiris/actions-gh-pages@v4
+      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
       with:
         publish_dir: .
         publish_branch: ${{ inputs.branch }}

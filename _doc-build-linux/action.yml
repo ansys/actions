@@ -149,7 +149,7 @@ runs: # zizmor: ignore[github-env]
         fi
 
     - name: "Cache apt packages needed"
-      uses: awalsh128/cache-apt-pkgs-action@v1.4.3
+      uses: awalsh128/cache-apt-pkgs-action@5902b33ae29014e6ca012c5d8025d4346556bd40 # v1.4.3
       if: inputs.skip-dependencies-cache == 'false' && steps.needed-dependencies.outputs.NEEDED_DEPS != ''
       with:
         packages: ${{ steps.needed-dependencies.outputs.NEEDED_DEPS }}
@@ -174,7 +174,7 @@ runs: # zizmor: ignore[github-env]
 
     - name: Install Quarto
       if: ${{ inputs.needs-quarto == 'true' }}
-      uses: quarto-dev/quarto-actions/setup@v2
+      uses: quarto-dev/quarto-actions/setup@9e48da27e184aa238fcb49f5db75469626d43adb # v2.1.9
       with:
         tinytex: true
 
@@ -472,7 +472,7 @@ runs: # zizmor: ignore[github-env]
 
     - name: Compress HTML documentation
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: vimtor/action-zip@v1.2
+      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
       with:
         files: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}/html
         dest: documentation-html.zip
@@ -497,21 +497,21 @@ runs: # zizmor: ignore[github-env]
     # ------------------------------------------------------------------------
 
     - name: "Upload HTML documentation artifact"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
         name: documentation-html
         path: doc/_build/html
         retention-days: 7
 
     - name: "Upload PDF documentation artifact"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
         name: documentation-pdf
         path: doc/_build/latex/*.pdf
         retention-days: 7
 
     - name: "Upload JSON documentation artifact"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       if: inputs.skip-json-build == 'false'
       with:
         name: documentation-json

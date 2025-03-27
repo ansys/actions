@@ -160,7 +160,7 @@ runs:
 
     - name: Cache Chocolatey packages
       id: cache
-      uses: actions/cache@v4
+      uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
       if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
@@ -515,21 +515,21 @@ runs:
           Upload HTML, PDF and JSON documentation.
 
     - name: Upload HTML documentation artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
         name: documentation-html
         path: doc/_build/html
         retention-days: 7
 
     - name: Upload PDF documentation artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
         name: documentation-pdf
         path: doc/_build/latex/*.pdf
         retention-days: 7
 
     - name: Upload JSON documentation artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       if: inputs.skip-json-build == 'false'
       with:
         name: documentation-json

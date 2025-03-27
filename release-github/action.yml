@@ -173,7 +173,7 @@ runs:
           can be true. Please set one of them to false.
 
     - name: "Checkout repository"
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     # ------------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ runs:
           directory containing the final artifacts to be published in GitHub.
 
     - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         path: /tmp/artifacts
 
@@ -214,14 +214,14 @@ runs:
 
     - name: "Compressing HTML documentation"
       if: inputs.only-code == 'false'
-      uses: vimtor/action-zip@v1.2
+      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
       with:
         files: dist/documentation/documentation-html
         dest: dist/documentation/documentation-html.zip
 
     - name: "Compressing PDF documentation"
       if: inputs.only-code == 'false'
-      uses: vimtor/action-zip@v1.2
+      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
       with:
         files: dist/documentation/documentation-pdf
         dest: dist/documentation/documentation-pdf.zip
@@ -357,7 +357,10 @@ runs:
         } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@v1
+      # NOTE: There is only one tag associated to v1 (previous version used) and it's also v0.1.15
+      # Since the V1.0.0 is not associated to a github release, the version pinned is v0.1.15
+      # This should be updated soon and this comment should be removed afterward.
+      uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v0.1.15
       env:
         REPO_NAME: ${{ github.event.repository.name }}
       if: inputs.dry-run == 'false'
@@ -368,16 +371,16 @@ runs:
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
         token: ${{ inputs.token }}
         files: |
-          # Include wheel and source distribution artifacts
+          # [COMMENT] Include wheel and source distribution artifacts
           dist/${{ inputs.library-name }}-artifacts/*.whl
           dist/${{ inputs.library-name }}-artifacts/*.tar.gz
 
-          # Include wheelhouse artifacts
+          # [COMMENT] Include wheelhouse artifacts
           dist/wheelhouse/**/*-wheelhouse-*.zip
 
-          # Include HTML and PDF documentation artifacts
+          # [COMMENT] Include HTML and PDF documentation artifacts
           dist/documentation/documentation-html.zip
           dist/documentation/documentation-pdf.zip
 
-          # Include additional artifacts
+          # [COMMENT] Include additional artifacts
           dist/extra/**/*
