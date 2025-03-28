@@ -5,6 +5,7 @@ CI
 cooldown
 dependabot
 dev
+dependabot
 GitHub
 pytest
 PyPI

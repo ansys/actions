@@ -17,8 +17,50 @@ concurrency:
 
 jobs:
 
+  # NOTE: We do not allow dependabot to trigger the CI/CD pipeline automatically.
+  # This is to mitigate supply chain attacks, where a malicious dependency update
+  # could execute arbitrary code in our build environment.
+  # Dependabot PRs must be reviewed carefully and approved manually before
+  # running the CI.
+  block-dependabot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exit if dependabot triggered the workflow
+        if: github.triggering_actor == 'dependabot[bot]'
+        run: |
+          echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
+          exit 1
+
+  # NOTE: We do not allow pyansys-ci-bot to trigger the CI/CD pipeline automatically
+  # on dependabot's PR. This is to mitigate supply chain attacks, where a malicious
+  # dependency update could execute arbitrary code in our build environment.
+  # Dependabot PRs must be reviewed carefully and approved manually before
+  # running the CI.
+  block-pyansys-ci-bot:
+    needs: block-dependabot
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exit if pyansys-ci-bot triggered the workflow on dependabot's PR
+        if: github.triggering_actor == 'pyansys-ci-bot' && startsWith(github.head_ref, 'dependabot')
+        run: |
+          echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
+          exit 1
+
+  check-dependabot-pr:
+    needs: block-pyansys-ci-bot
+    if: startsWith(github.head_ref, 'dependabot')
+    name: Manual approval
+    runs-on: ubuntu-latest
+    environment: dependabot
+    steps:
+      - name: Proceed after approval
+        run: |
+          echo "::notice::Workflow approved."
+
   labeler:
     name: "Labels"
+    needs: check-dependabot-pr
+    if: success() || needs.check-dependabot-pr.result == 'skipped'
     permissions:
       contents: read
       pull-requests: write
@@ -44,6 +86,7 @@ jobs:
     name: "Create changelog fragment"
     runs-on: ubuntu-latest
     needs: labeler
+    if: success() || needs.labeler.result == 'success'
     permissions:
       contents: read
       pull-requests: write
@@ -65,6 +108,7 @@ jobs:
     name: "Code style"
     runs-on: ubuntu-latest
     needs: changelog-fragment
+    if: success() || needs.changelog-fragment.result == 'success'
     steps:
       - name: "Run code style checks"
         uses: ansys/actions/code-style@main
@@ -76,6 +120,7 @@ jobs:
     name: "Doc style"
     runs-on: ubuntu-latest
     needs: changelog-fragment
+    if: success() || needs.changelog-fragment.result == 'success'
     steps:
       - uses: ansys/actions/doc-style@main
         with:
@@ -85,6 +130,7 @@ jobs:
     name: "Doc build"
     runs-on: ubuntu-latest
     needs: doc-style
+    if: success() || needs.doc-style.result == 'success'
     steps:
       - uses: ansys/actions/doc-build@main
         with:
@@ -97,6 +143,7 @@ jobs:
     name: "Tests"
     runs-on: ubuntu-latest
     needs: code-style
+    if: success() || needs.code-style.result == 'success'
     permissions:
       id-token: write
       contents: write
