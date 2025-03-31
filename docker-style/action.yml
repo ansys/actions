@@ -164,8 +164,13 @@ runs:
       shell: bash
       env:
         fmt_directory: ${{ steps.filter-input-directory.outputs.EXISTING_DIRS }}
+        RECURSIVE: ${{ inputs.recursive }}
       run: |
-        pattern="${{ inputs.recursive == 'true' && '/**' || '' }}/Dockerfile"
+        if [[ "$RECURSIVE" == "true" ]]; then
+            pattern="/**/Dockerfile"
+        else
+            pattern="/Dockerfile"
+        fi
         fmt_directory_array=($fmt_directory)
         for i in "${!fmt_directory_array[@]}"; do
           fmt_directory_array[i]="${fmt_directory_array[i]}${pattern}"
