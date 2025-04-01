@@ -123,6 +123,14 @@ inputs:
     required: true
     type: boolean
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -226,11 +234,18 @@ runs:
     - name: "Determine GitHub environment variables"
       id: determine-environment-variables
       shell: powershell
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"')) {
           echo "BUILD_BACKEND=$(echo 'poetry')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        } else {
+        }
+        elseif ($env:USE_UV -eq "true") {
+          echo "BUILD_BACKEND=$(echo 'uv')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          echo "SPHINX_BUILD_MAKE=$(echo 'uv run --no-sync -- .\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        }
+        else {
           echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
