@@ -357,13 +357,13 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         cd doc
-        $env:SPHINX_BUILD_MAKE html SPHINXOPTS="$env:SPHINXOPTS"
-        $env:SPHINX_BUILD_MAKE pdf
+        & $env:SPHINX_BUILD_MAKE html SPHINXOPTS="$env:SPHINXOPTS"
+        & $env:SPHINX_BUILD_MAKE pdf
         if ("$env:CHECK_LINKS" -eq 'true' ) {
-          $env:SPHINX_BUILD_MAKE linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+          & $env:SPHINX_BUILD_MAKE linkcheck SPHINXOPTS="$env:SPHINXOPTS"
         }
         if ("$env:SKIP_JSON_BUILD" -eq 'false' ) {
-          $env:SPHINX_BUILD_MAKE json SPHINXOPTS="$env:SPHINXOPTS"
+          & $env:SPHINX_BUILD_MAKE json SPHINXOPTS="$env:SPHINXOPTS"
         }
 
     # ------------------------------------------------------------------------
