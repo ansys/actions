@@ -217,7 +217,7 @@ runs: # zizmor: ignore[github-env]
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_OUTPUT
         elif [[ "$USE_UV" == 'true' ]]; then
           echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
-          echo "SPHINX_BUILD_MAKE=$(echo 'uv run -- make')" >> $GITHUB_OUTPUT
+          echo "SPHINX_BUILD_MAKE=$(echo 'uv run --no-sync -- make')" >> $GITHUB_OUTPUT
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_OUTPUT
@@ -269,7 +269,7 @@ runs: # zizmor: ignore[github-env]
       env:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
-    
+
     # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
     # the installation speed "uv pip" offers is what needs to be taken advantage of,
     # using "uv venv" in a separate step is not necessary since "uv pip" will still
@@ -291,7 +291,7 @@ runs: # zizmor: ignore[github-env]
           uv pip install -U pip
         else
           python -m pip install -U pip
-        
+
 
     - name: "Check if requirements.txt file exists"
       id: check-requirement-file-exists
