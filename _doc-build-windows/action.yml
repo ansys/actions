@@ -293,13 +293,11 @@ runs:
       run: |
         python -m pip install pipx
         python -m pipx install poetry
-        python -m venv .venv
       env:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
     - name: "Create a virtual environment"
-      if: steps.determine-environment-variables.outputs.BUILD_BACKEND == 'pip'
       shell: powershell
       run: python -m venv .venv
 
@@ -307,9 +305,15 @@ runs:
 
     - name: "Update pip"
       shell: powershell
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         .venv\Scripts\Activate.ps1
-        python -m pip install -U pip
+        if ($env:USE_UV -eq "true") {
+            uv pip install -U pip
+        } else {
+            python -m pip install -U pip
+        }
 
     - name: "Check if requirements.txt file exists"
       id: check-requirements-file-exists
@@ -323,10 +327,15 @@ runs:
       shell: powershell
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
+        USE_UV: ${{ inputs.use-uv }}
       if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
         .venv\Scripts\Activate.ps1
-        python -m pip install -r "$env:REQUIREMENTS_FILE"
+        if ($env:USE_UV -eq "true") {
+            uv pip install -r "$env:REQUIREMENTS_FILE"
+        } else {
+            python -m pip install -r "$env:REQUIREMENTS_FILE"
+        }
 
     - name: Install Python library
       shell: powershell
@@ -335,10 +344,12 @@ runs:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         .venv\Scripts\Activate.ps1
-        if ("$env:BUILD_BACKEND" -eq 'poetry' ) {
-          poetry install
+        if ($env:BUILD_BACKEND -eq "poetry") {
+            poetry install
+        } elseif ($env:BUILD_BACKEND -eq "uv") {
+            uv pip install .
         } else {
-          python -m pip install .
+            python -m pip install .
         }
 
     - name: Install documentation dependencies from pyproject.toml
@@ -348,10 +359,12 @@ runs:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         .venv\Scripts\Activate.ps1
-        if ("$env:BUILD_BACKEND" -eq 'poetry' ) {
-          poetry install --with doc
+        if ($env:BUILD_BACKEND -eq "poetry") {
+            poetry install --with doc
+        } elseif ($env:BUILD_BACKEND -eq "uv") {
+            uv pip install .[doc]
         } else {
-          python -m pip install .[doc]
+            python -m pip install .[doc]
         }
 
     # ------------------------------------------------------------------------
@@ -374,10 +387,10 @@ runs:
         cd doc
         & $env:SPHINX_BUILD_MAKE html SPHINXOPTS="$env:SPHINXOPTS"
         & $env:SPHINX_BUILD_MAKE pdf
-        if ("$env:CHECK_LINKS" -eq 'true' ) {
+        if ($env:CHECK_LINKS -eq 'true') {
           & $env:SPHINX_BUILD_MAKE linkcheck SPHINXOPTS="$env:SPHINXOPTS"
         }
-        if ("$env:SKIP_JSON_BUILD" -eq 'false' ) {
+        if ($env:SKIP_JSON_BUILD -eq 'false') {
           & $env:SPHINX_BUILD_MAKE json SPHINXOPTS="$env:SPHINXOPTS"
         }
 
