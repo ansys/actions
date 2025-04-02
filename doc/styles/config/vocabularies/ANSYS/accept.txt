@@ -16,3 +16,4 @@ PyAnsys Dashboard
 robots.txt
 rulesets
 rst
+uv

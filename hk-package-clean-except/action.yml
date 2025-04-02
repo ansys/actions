@@ -71,6 +71,11 @@ runs:
 
     - name: "Declare Python script"
       shell: bash
+      env:
+        PACKAGE_ORG: ${{ inputs.package-org }}
+        PACKAGE_NAME: ${{ inputs.package-name }}
+        ALLOW_LAST_DAYS: ${{ inputs.allow-last-days }}
+        VALID_TAGS_STR: ${{ inputs.tags-kept }}
       run: |
         cat > clean-except.py << 'EOF'
 
@@ -83,10 +88,10 @@ runs:
 
         PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-        org_str = "${{ inputs.package-org }}"
-        pck_str = "${{ inputs.package-name }}"
-        last_days_str = "${{ inputs.allow-last-days }}"
-        valid_tags_str = "${{ inputs.tags-kept }}"
+        org_str = os.environ.get("PACKAGE_ORG")
+        pck_str = os.environ.get("PACKAGE_NAME")
+        last_days_str = os.environ.get("ALLOW_LAST_DAYS")
+        valid_tags_str = os.environ.get("VALID_TAGS_STR")
 
         last_days = int(last_days_str) if last_days_str != "" else None
         valid_tags = [x.strip() for x in valid_tags_str.split(",")]
