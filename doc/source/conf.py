@@ -103,6 +103,7 @@ linkcheck_ignore = [
     r"https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/*",
     "https://opensource.org/blog/license/mit",  # 403 - protected from bots
     r"https://github.com/ansys/.*",
+    r"https://www.x.org/*",
 ]
 
 # Auxiliary routines for automatic documentation generation
