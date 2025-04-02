@@ -205,10 +205,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
-
-    - name: "Set up uv"
-      uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5.4.1
-      if: ${{ inputs.use-uv == 'true' }}
+        provision-uv: ${{ inputs.use-uv == 'true' && 'true' || 'false' }}
 
     # ------------------------------------------------------------------------
 
@@ -226,6 +223,7 @@ runs:
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
+        use-uv: ${{ inputs.use-uv }}
 
     # ------------------------------------------------------------------------
 
@@ -250,3 +248,4 @@ runs:
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
+        use-uv: ${{ inputs.use-uv }}
