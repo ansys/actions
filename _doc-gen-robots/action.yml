@@ -74,5 +74,7 @@ runs:
 
     - name: "Include the location of the sitemap.xml file"
       shell: bash
+      env:
+        CNAME: ${{ inputs.cname }}
       run: |
-        echo -e "\nSitemap: https://${{ inputs.cname }}/sitemap.xml" >> robots.txt
+        echo -e "\nSitemap: https://${CNAME}/sitemap.xml" >> robots.txt

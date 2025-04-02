@@ -59,6 +59,9 @@ runs:
 
     - name: "Create and update canonical links"
       shell: bash
+      env:
+        CNAME: ${{ inputs.cname }}
+        VERSION_DIRECTORY: ${{ inputs.version-directory }}
       run: |
 
         remove_canonical_tag() {
@@ -70,7 +73,7 @@ runs:
             local file=$1
             local filename=$(basename "$file")
             local relative_path=${file#*version/*/}
-            local baseurl="https://${{ inputs.cname }}/version/stable"
+            local baseurl="https://${CNAME}/version/stable"
             local canonical_url="${baseurl}/${relative_path}"
             local link_tag="\ \ <link rel=\"canonical\" href=\"$canonical_url\" />"
             sed -i "/^ *<\/head>/i$link_tag" "$file"
@@ -91,21 +94,21 @@ runs:
                 -exec bash -c 'add_canonical_tag "$0"' {} \;
         }
 
-        find_html_files ${{ inputs.version-directory }}
+        find_html_files ${VERSION_DIRECTORY}
 
         # Ensure that 'version/{stable|dev}/index.html' uses as canonical the
         # landing page of the documentation
 
         replace_canonical_link() {
             local file="$1"
-            sed -i "s|<link rel=\"canonical\".*>|<link rel=\"canonical\" href=\"https://${{ inputs.cname }}/\">|g" "$file"
+            sed -i "s|<link rel=\"canonical\".*>|<link rel=\"canonical\" href=\"https://${CNAME}/\">|g" "$file"
         }
 
         export -f replace_canonical_link
 
-        if [[ -f "${{ inputs.version-directory }}/stable/index.html" ]]; then
+        if [[ -f "${VERSION_DIRECTORY}/stable/index.html" ]]; then
           replace_canonical_link 'version/stable/index.html'
-        elif [[ -f "${{ inputs.version-directory }}/dev/index.html" ]]; then
+        elif [[ -f "${VERSION_DIRECTORY}/dev/index.html" ]]; then
           replace_canonical_link 'version/dev/index.html'
         else
           echo "Error: The 'index.html' file does not exist." >&2

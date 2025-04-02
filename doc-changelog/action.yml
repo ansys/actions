@@ -125,8 +125,11 @@ runs:
 
     - name: "Install towncrier"
       shell: bash
+      env:
+        TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
+        TOML_VERSION: ${{ inputs.toml-version }}
       run: |
-        python -m pip install --upgrade pip towncrier==${{ inputs.towncrier-version }} toml==${{ inputs.toml-version }}
+        python -m pip install --upgrade pip towncrier==$TOWNCRIER_VERSION toml==$TOML_VERSION
 
     # TODO: remove this deprecation in ansys/actions@v9
 
@@ -188,6 +191,7 @@ runs:
         get_conventional_commit_type(pr_title)
 
     - name: "Get labels in the pull request"
+      id: get-labels
       if: ${{ inputs.use-conventional-commits == 'false' }}
       env:
         GH_TOKEN: ${{ inputs.token }}
@@ -195,11 +199,11 @@ runs:
       shell: bash
       run: |
         # Get the labels in the pull request
-        pr_labels=$(gh api repos/${{ github.repository_owner }}/${{ env.REPO_NAME }}/pulls/${{ github.event.number }} --jq '.labels.[].name')
+        pr_labels=$(gh api repos/${{ github.repository_owner }}/${REPO_NAME}/pulls/${{ github.event.number }} --jq '.labels.[].name')
 
         # Save the labels to an environment variable
         # For example, LABELS="enhancement maintenance"
-        echo LABELS='"'$pr_labels'"' >> $GITHUB_ENV
+        echo LABELS='"'$pr_labels'"' >> $GITHUB_OUTPUT
 
     - name: "Set CHANGELOG category based on conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
@@ -216,13 +220,16 @@ runs:
     - name: "Set PR label environment variable"
       if: ${{ inputs.use-conventional-commits == 'false' }}
       shell: python
+      env:
+        LABELS: ${{ steps.get-labels.outputs.LABELS }}
       run: |
+        import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import changelog_cateogry_labels
 
-        labels = ${{ env.LABELS }}
+        labels = os.environ.get("LABELS")
         changelog_cateogry_labels(labels)
 
     - name: "Remove PR fragment file if it already exists"
@@ -241,6 +248,7 @@ runs:
     - name: "Clean PR title"
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
+        USE_CONVENTIONAL_COMMITS: ${{ inputs.use-conventional-commits }}
       shell: python
       run: |
         import os
@@ -250,7 +258,7 @@ runs:
         from parse_pr_title import clean_pr_title
 
         pr_title = os.environ.get("PR_TITLE")
-        use_cc = True if "${{ inputs.use-conventional-commits }}" == "true" else False
+        use_cc = True if os.environ.get("USE_CONVENTIONAL_COMMITS") == "true" else False
 
         clean_pr_title(pr_title, use_cc)
 
@@ -286,17 +294,19 @@ runs:
     - name: "Append towncrier categories to pyproject.toml"
       env:
         REPO_NAME: ${{ github.event.repository.name }}
+        USE_DEFAULT_TOWNCRIER_CONFIG: ${{ inputs.use-default-towncrier-config }}
       shell: python
       run: |
+        import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import add_towncrier_config
 
-        repo_name = "${{ env.REPO_NAME }}"
+        repo_name = os.environ.get("REPO_NAME")
         org_name = "${{ github.repository_owner }}"
 
-        default_config = True if "${{ inputs.use-default-towncrier-config }}" == "true" else False
+        default_config = True if os.environ.get("USE_DEFAULT_TOWNCRIER_CONFIG") == "true" else False
 
         add_towncrier_config(org_name, repo_name, default_config)
 
@@ -331,6 +341,9 @@ runs:
 
     - name: "Create and commit towncrier fragment"
       shell: bash
+      env:
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
       run: |
         # Changelog fragment file in the following format
         # For example, 20.added.md
@@ -341,8 +354,8 @@ runs:
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
         # Configure git username & email
-        git config user.name ${{ inputs.bot-user }}
-        git config user.email ${{ inputs.bot-email }}
+        git config user.name "$BOT_USER"
+        git config user.email "$BOT_EMAIL"
 
         # Add towncrier fragment
         git add .
