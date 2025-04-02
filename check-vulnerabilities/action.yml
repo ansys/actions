@@ -319,20 +319,20 @@ runs:
         if [[ "$EXTRA_TARGETS" != '' ]]; then
           if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: $EXTRA_TARGETS"
-            extra_targets=(--extras $EXTRA_TARGETS)
+            extra_targets=$EXTRA_TARGETS
           else
             echo "Installing extra targets with pip: $EXTRA_TARGETS"
-            extra_targets=([$EXTRA_TARGETS])
+            extra_targets=[$EXTRA_TARGETS]
           fi
         else
           echo "No extra targets to install"
-          extra_targets=()
+          extra_targets=""
         fi
 
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
-          poetry install "${extra_targets[@]}"
+          poetry install --extras "$extra_targets"
         else
-          python -m pip install ."${extra_targets[@]}"
+          python -m pip install ."$extra_targets"
         fi
 
     - name: "Install action requirements"
