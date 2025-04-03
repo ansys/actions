@@ -1,36 +1,73 @@
 version: 2
+enable-beta-ecosystems: true
 updates:
   - package-ecosystem: "pip"
     directories:
       - "/requirements"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 7
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys-sphinx-theme"
     commit-message:
-      prefix: "build"
+      prefix: "build(pip)"
     labels:
       - "dependencies:requirements"
 
   - package-ecosystem: "github-actions"
-    directories:
-      - "_release-pypi"
-      - "release-github"
-      # The following actions do not use non ansys-action but are added in case of future changes
-      - "release-pypi-private"
-      - "release-pypi-public"
-      - "release-pypi-test"
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "wednesday"
     commit-message:
-      prefix: "build(release)"
+      prefix: "build(actions)"
     labels:
       - "dependencies:ci"
-
-  - package-ecosystem: "github-actions"
-    directories:
-      - "!(requirements)/**/*"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "build"
-    labels:
-      - "dependencies:ci"
+    groups:
+      # Actions related to this repo's CI/CD
+      cicd-actions:
+        patterns:
+          - "micnncim/action-label-syncer"
+      # Github actions that are used in our composite actions
+      github-actions:
+        patterns:
+          - "actions/*"
+      # Actions associated to our style composite actions
+      style-related-actions:
+        patterns:
+          - "amannn/action-semantic-pull-request"
+          - "jbergstroem/hadolint-gh-action"
+      # Group dedicated to vale due to the use of a release branch (reviewdog20)
+      vale-action:
+        patterns:
+          - "errata-ai/vale-action"
+      # Actions associated to our documentation composite actions
+      doc-related-actions:
+        patterns:
+          - "awalsh128/cache-apt-pkgs-action"
+          - "quarto-dev/quarto-actions/setup"
+          - "peaceiris/actions-gh-pages"
+          - "peter-evans/create-or-update-comment"
+      # Actions associated to our tests composite actions
+      test-related-actions:
+        patterns:
+          - "docker/login-action"
+      # Actions associated to our build composite actions
+      build-related-actions:
+        patterns:
+          - "docker/setup-qemu-action"
+          - "pypa/cibuildwheel"
+      # Actions associated to our release composite actions
+      release-related-actions:
+        patterns:
+          - "pypa/gh-action-pypi-publish"
+          - "softprops/action-gh-release"
+      # Missed non ansys actions that should by assigned to a group
+      must-be-assigned-actions:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "ansys/actions*"
