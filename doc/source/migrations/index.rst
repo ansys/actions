@@ -7,6 +7,82 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v9.0``
+----------------
+
+**Breaking changes:**
+
+- Use ``ansys/actions/build-wheelhouse`` or ``ansys/actions/check-licenses`` actions with Python version 3.10 or higher.
+- Remove input ``use-trusted-publisher`` from the ``ansys/actions/release-pypi-*`` actions.
+  See :doc:`release-pypi-trusted-publisher` for more information.
+
+  .. note::
+
+    The reason for the removal of input ``use-trusted-publisher`` is related to the action
+    `pypa/gh-action-pypi-publish <https://github.com/pypa/gh-action-pypi-publish>`_ which allows us to use the trusted
+    publisher. Indeed, starting with versions `v1.12.0` of this action, it is no longer possible to use it in a composite action,
+    see `pypa/gh-action-pypi-publish@v1.12.0 <https://github.com/pypa/gh-action-pypi-publish/releases/tag/v1.12.0>`_.
+    However, we must use the latest versions of this action to upload
+    `PEP 639 licensing metadata <https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression>` to PyPI.
+    This will allow us to avoid adding upper bounds on our build system like `setuptools<=67.0.0`, `wheel<0.46.0` or
+    `flit_core >=3.2,<3.11`.
+
+**Migration Steps:**
+
+- Update input ``python-version`` to ``3.10`` or higher in the ``ansys/actions/build-wheelhouse`` action.
+
+  For example:
+
+  .. code-block:: yaml
+
+    build-wheelhouse:
+      name: Build wheelhouse
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - name: Build wheelhouse and perform smoke test
+        uses: ansys/actions/build-wheelhouse@v9
+        with:
+          library-name: ${{ env.PACKAGE_NAME }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+
+- When using trusted publisher to publish to PyPI, define you own release job instead of using the
+  ``ansys/actions/release-pypi-*`` actions.
+
+  For example:
+
+  .. code-block:: yaml
+    release-public-pypi:
+      name: Release project to public PyPI
+      if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags') }}
+      needs: build-library
+      runs-on: ubuntu-latest
+      # INFO: Specifying a GitHub environment is optional but encouraged
+      environment: release
+      # INFO: Trusted publishers require these permissions
+      permissions:
+        id-token: write
+        contents: write
+      steps:
+
+        - name: "Download the library artifacts from build-library step"
+          uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+          with:
+            name: ${{ env.PACKAGE_NAME }}-artifacts
+            path: ${{ env.PACKAGE_NAME }}-artifacts
+
+        - name: "Upload artifacts to PyPI using trusted publisher"
+          uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+          with:
+            repository-url: "https://upload.pypi.org/legacy/"
+            print-hash: true
+            packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
+            skip-existing: false
+
 Version ``v8.2``
 ----------------
 **New Features:**
