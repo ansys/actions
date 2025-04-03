@@ -81,30 +81,9 @@ inputs:
     required: true
     type: boolean
 
-  use-trusted-publisher:
-    description: |
-      Whether to use the OIDC token for releasing.
-      This is useful when you want to publish to PyPI through a CI/CD pipeline
-      as a Trusted Publisher. It is necessary that your repository has been authorized
-      to use Trusted Publisher's. For more information, see
-      `Using a Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_.
-
-      .. note::
-
-          ``permissions: id-token: write`` is mandatory for trusted publishing.
-
-    required: true
-    type: boolean
-
 runs:
   using: "composite"
   steps:
-
-    - name: "Notify to use trusted publisher"
-      shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
-      if: inputs.use-trusted-publisher == 'false'
-      run: |
-        echo "::notice::We recommend using trusted publishers to securely publish packages on PyPI. You should consider moving to this approach."
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -138,7 +117,7 @@ runs:
 
     - name: "Upload artifacts to PyPi"
       shell: bash
-      if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'false'
+      if: inputs.dry-run == 'false'
       run: |
         python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.whl
         python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.tar.gz
@@ -146,12 +125,3 @@ runs:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
         TWINE_REPOSITORY_URL: ${{ inputs.index-name }}
-
-    - name: "Upload artifacts to PyPI using Trusted Publisher"
-      uses: pypa/gh-action-pypi-publish@0ab0b79471669eb3a4d647e625009c62f9f3b241 # v1.10.1
-      if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'true'
-      with:
-        repository-url: ${{ inputs.index-name }}
-        print-hash: true
-        packages-dir: ${{ inputs.library-name }}-artifacts
-        skip-existing: ${{ env.SKIP_EXISTING }}
