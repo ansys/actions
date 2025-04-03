@@ -81,9 +81,44 @@ inputs:
     required: true
     type: boolean
 
+  use-trusted-publisher:
+    description: |
+      Whether to use the OIDC token for releasing.
+      This is useful when you want to publish to PyPI through a CI/CD pipeline
+      as a Trusted Publisher. It is necessary that your repository has been authorized
+      to use Trusted Publisher's. For more information, see
+      `Using a Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`_.
+
+      .. note::
+
+          ``permissions: id-token: write`` is mandatory for trusted publishing.
+
+    required: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
+
+    - uses: ansys/actions/_logging@main
+      if: inputs.use-trusted-publisher == 'true'
+      with:
+        level: "ERROR"
+        message: >
+          As the Python ecosystem is moving to project metadata version 2.4,
+          we need to use a more recent version of pypa/gh-action-pypi-publish.
+          However, this action is not compatible with composite actions.
+          Therefore, this private action can no longer be used with trusted
+          publishers. To keep using trusted publisher, and we encourage that,
+          we invite all users to define their release job manually.
+          As an example, see
+          https://actions.docs.ansys.com/version/stable/release-actions/index.html#release-pypi-template
+
+    - name: "Notify to use trusted publisher"
+      shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
+      if: inputs.use-trusted-publisher == 'false'
+      run: |
+        echo "::notice::We recommend using trusted publishers to securely publish packages on PyPI. You should consider moving to this approach."
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -117,7 +152,7 @@ runs:
 
     - name: "Upload artifacts to PyPi"
       shell: bash
-      if: inputs.dry-run == 'false'
+      if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'false'
       run: |
         python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.whl
         python -m twine upload --verbose ${{ env.SKIP_EXISTING }} ${{ inputs.library-name }}-artifacts/*.tar.gz
