@@ -20,13 +20,13 @@ Version ``v9.0``
 
     Using the trusted publisher approach in our pypi release actions is not possible anymore.
     The reason for that is related to the action
-    `pypa/gh-action-pypi-publish <https://github.com/pypa/gh-action-pypi-publish>`_ which allows us to use the trusted
+    `pypa/gh-action-pypi-publish <https://github.com/pypa/gh-action-pypi-publish>`_ which allows to use the trusted
     publisher. Indeed, starting with versions `v1.12.0` of this action, it is no longer possible to use the action in
     a composite action, see
     `pypa/gh-action-pypi-publish@v1.12.0 <https://github.com/pypa/gh-action-pypi-publish/releases/tag/v1.12.0>`_.
-    However, we must use the latest versions of this action to upload
+    However, the latest versions of this action is required to upload
     `PEP 639 licensing metadata <https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression>`
-    to PyPI. This will allow us to avoid adding upper bounds on our build system like `setuptools<=67.0.0`, `wheel<0.46.0`
+    to PyPI. This allow us to avoid adding upper bounds on our build system like `setuptools<=67.0.0`, `wheel<0.46.0`
     or `flit_core >=3.2,<3.11`.
 
 **Migration Steps:**
