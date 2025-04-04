@@ -136,7 +136,7 @@ runs:
       with:
         level: "ERROR"
         message: >
-          Check licenses leverages Ansys fork of `pip-licenses`.
+          Check licenses leverages Ansys fork of pip-licenses.
           This package requires Python 3.10 or higher.
 
     - name: "Install Git and clone project"
