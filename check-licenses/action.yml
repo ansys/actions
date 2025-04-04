@@ -128,6 +128,7 @@ runs:
           echo "PYTHON_TOO_OLD=true" >> "$GITHUB_ENV"
         fi
 
+    - name: Break if Python version is too old
       uses: ansys/actions/_logging@main
       if: env.PYTHON_TOO_OLD == 'true'
       with:
