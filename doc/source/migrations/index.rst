@@ -13,7 +13,7 @@ Version ``v9.0``
 **Breaking changes:**
 
 - Use ``ansys/actions/check-licenses`` actions with Python version 3.10 or higher.
-- To use ``check-licenses: true`` with the ``ansys/actions/build-wheelhouse``action, use Python version 3.10 or higher.
+- To use ``check-licenses: true`` with the ``ansys/actions/build-wheelhouse`` action, use Python version 3.10 or higher.
 - Update your workflow to not use ``use-trusted-publisher: true`` with our pypi release actions.
 
   .. warning::
