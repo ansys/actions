@@ -133,7 +133,7 @@ runs:
       if: env.PYTHON_TOO_OLD == 'true'
       with:
         level: "ERROR"
-        message: |
+        message: >
           Check licenses leverages Ansys fork of `pip-licenses`.
           This package requires Python 3.10 or higher.
 
