@@ -120,25 +120,6 @@ runs:
   using: "composite"
   steps:
 
-    - name: Check python version
-      if: ${{ inputs.check-licenses == 'true' }}
-      shell: bash
-      run: |
-        PYTHON_VERSION="${{ inputs.python-version }}"
-        MIN_VERSION="3.10"
-        if [ "$(printf '%s\n' "$PYTHON_VERSION" "$MIN_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]; then
-          echo "PYTHON_TOO_OLD=true" >> "$GITHUB_ENV"
-        fi
-
-    - name: Break if Python version is too old
-      if: ${{ inputs.check-licenses == 'true' && env.PYTHON_TOO_OLD == 'true' }}
-      uses: ansys/actions/_logging@main
-      with:
-        level: "ERROR"
-        message: >
-          Check licenses leverages Ansys fork of pip-licenses.
-          This package requires Python 3.10 or higher.
-
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
