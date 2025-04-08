@@ -181,6 +181,7 @@ jobs:
     name: "Test release"
     runs-on: ubuntu-latest
     needs: tests
+    if: success() || needs.tests.result == 'success'
     permissions:
       id-token: write
       contents: write
