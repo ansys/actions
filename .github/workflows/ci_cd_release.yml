@@ -60,13 +60,13 @@ jobs:
       run: |
         git push --delete origin v${{ env.MAJOR }} && \
           echo "Deleted v${{ env.MAJOR }} tag" || \
-          echo "Tag v${{ env.MAJOR }}" not found"
+          echo "Tag v${{ env.MAJOR }} not found"
 
     - name: "Remove v${{ env.MAJOR }}.${{ env.MINOR }} tag"
       run: |
         git push --delete origin v${{ env.MAJOR }}.${{ env.MINOR }} && \
           echo "Deleted v${{ env.MAJOR }}.${{ env.MINOR }} tag" || \
-          echo "Tag v${{ env.MAJOR }}.${{ env.MINOR }}" not found"
+          echo "Tag v${{ env.MAJOR }}.${{ env.MINOR }} not found"
 
     - name: "Create new tags"
       run: |
