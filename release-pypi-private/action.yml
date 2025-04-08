@@ -75,6 +75,7 @@ inputs:
 
         ``permissions: id-token: write`` is mandatory for trusted publishing.
 
+
     required: false
     default: false
     type: boolean
@@ -116,19 +117,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-
-    - uses: ansys/actions/_logging@main
-      if: inputs.use-trusted-publisher == 'true'
-      with:
-        level: "WARNING"
-        message: >
-          As the Python ecosystem is moving to project metadata version 2.4,
-          we need to use a more recent version of pypa/gh-action-pypi-publish.
-          However, this action is not compatible with composite actions.
-          Therefore, the `ansys/release-pypi-private` action is destined to
-          disappear in a future version. We invite all users to define their
-          release job manually. As an example, see
-          https://actions.docs.ansys.com/version/stable/release-actions/index.html#release-pypi-template
 
     - name: "Release to PyAnsys private index"
       uses: ansys/actions/_release-pypi@main

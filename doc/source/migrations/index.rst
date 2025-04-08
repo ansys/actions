@@ -7,6 +7,54 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v9.0``
+----------------
+
+**Breaking changes:**
+
+- Use ``ansys/actions/check-licenses`` actions with Python version 3.10 or higher.
+- To use ``check-licenses: true`` with the ``ansys/actions/build-wheelhouse`` action, use Python version 3.10 or higher.
+- Update your workflow to not use ``use-trusted-publisher: true`` with our pypi release actions.
+
+  .. warning::
+
+    Using the trusted publisher approach in ansys pypi release actions is not possible anymore.
+    The reason for that is related to the action
+    `pypa/gh-action-pypi-publish <https://github.com/pypa/gh-action-pypi-publish>`_ which allows to use the trusted
+    publisher. Indeed, starting with versions `v1.12.0` of this action, it is no longer possible to use the action in
+    a composite action, see
+    `pypa/gh-action-pypi-publish@v1.12.0 <https://github.com/pypa/gh-action-pypi-publish/releases/tag/v1.12.0>`_.
+    However, the latest versions of this action is required to upload
+    `PEP 639 licensing metadata <https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression>`
+    to PyPI. This allows to avoid adding upper bounds on build system like ``setuptools<=67.0.0``, ``wheel<0.46.0`` or ``flit_core>=3.2,<3.11``.
+
+**Migration Steps:**
+
+- Update input ``python-version`` to ``3.10`` or higher in the ``ansys/actions/check-licenses`` action or in
+  the ``ansys/actions/build-wheelhouse`` action if you are using the ``check-licenses`` input.
+
+  For example:
+
+  .. code-block:: yaml
+
+    build-wheelhouse:
+      name: Build wheelhouse
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+      - name: Build wheelhouse and perform smoke test
+        uses: ansys/actions/build-wheelhouse@v9
+        with:
+          library-name: ${{ env.PACKAGE_NAME }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+
+- When using trusted publisher to publish to PyPI, define you own release job instead of using the
+  ``ansys/actions/release-pypi-*`` actions. See :ref:`release_pypi_trusted_publisher` for more details.
+
 Version ``v8.2``
 ----------------
 **New Features:**
