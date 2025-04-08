@@ -179,8 +179,10 @@ jobs:
         path: ~/${{ env.LIBRARY_NAME }}/dist/
         retention-days: 7
 
-    - name: "Release to the test PyPI repository"
-      uses: ansys/actions/release-pypi-test@main
+    - name: "Upload artifacts to PyPI using trusted publisher"
+      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
       with:
-        library-name: ${{ env.LIBRARY_NAME }}
-        use-trusted-publisher: true
+        repository-url: "https://upload.pypi.org/legacy/"
+        print-hash: true
+        packages-dir: ${{ env.LIBRARY_NAME }}-artifacts
+        skip-existing: false
