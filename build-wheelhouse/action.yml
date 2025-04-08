@@ -117,11 +117,11 @@ inputs:
     type: boolean
 
   install-build-and-wheel:
-  description: |
-    Whether to install ``build`` and ``wheel`` libraries before building the wheelhouse.
-  required: false
-  default: false
-  type: boolean
+    description: |
+      Whether to install ``build`` and ``wheel`` libraries before building the wheelhouse.
+    required: false
+    default: false
+    type: boolean
 
 runs:
   using: "composite"
