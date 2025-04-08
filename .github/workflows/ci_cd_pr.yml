@@ -158,9 +158,6 @@ jobs:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
 
-    - name: "Isolate testing library"
-      run: mv .ci/${{ env.LIBRARY_NAME }} ~/
-
     - name: "Install build and twine"
       shell: bash
       run: |
@@ -169,22 +166,31 @@ jobs:
     - name: "Build distribution artifacts and check their health"
       shell: bash
       run: |
-        cd ~/${{ env.LIBRARY_NAME }}
-        ls -R && python -m build && python -m twine check dist/*
+        python -m build .ci/${{ env.LIBRARY_NAME }}
+        ls -R .ci/${{ env.LIBRARY_NAME }}/dist
+        python -m twine check .ci/${{ env.LIBRARY_NAME }}/dist
 
-    - name: "Upload distribution artifacts to GitHub artifacts"
+    - name: "Upload distribution artifacts"
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: ${{ env.LIBRARY_NAME }}-artifacts
-        path: ~/${{ env.LIBRARY_NAME }}/dist/
+        path: .ci/${{ env.LIBRARY_NAME }}/dist
         retention-days: 7
+
+  test-release:
+    name: "Tests"
+    runs-on: ubuntu-latest
+    needs: tests
+    permissions:
+      id-token: write
+      contents: write
+    steps:
 
     - name: "Download distribution artifacts"
       uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         name: ${{ env.LIBRARY_NAME }}-artifacts
         path: dist
-        retention-days: 7
 
     - name: "Upload artifacts to PyPI using trusted publisher"
       uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
@@ -192,3 +198,4 @@ jobs:
         repository-url: "https://test.pypi.org/legacy/"
         print-hash: true
         skip-existing: false
+        verbose: true
