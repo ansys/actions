@@ -184,4 +184,5 @@ jobs:
       with:
         repository-url: "https://test.pypi.org/legacy/"
         print-hash: true
+        packages-dir: dist/
         skip-existing: false
