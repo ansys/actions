@@ -84,5 +84,5 @@ jobs:
       with:
         repository-url: "https://test.pypi.org/legacy/"
         print-hash: true
-        packages-dir: ~/${{ env.LIBRARY_NAME }}/dist/
+        packages-dir: ../../dist
         skip-existing: false
