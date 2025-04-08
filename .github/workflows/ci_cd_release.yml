@@ -56,21 +56,17 @@ jobs:
           exit 1
         fi
 
-    - name: "Remove MAJOR tag"
+    - name: "Remove v${{ env.MAJOR }} tag"
       run: |
-        if git tag -l | grep -q "^v${{ env.MAJOR }}$"; then
-          git push --delete origin v${{ env.MAJOR }}
-        else
-          echo -e "Tag v${{ env.MAJOR }} does not exist, skipping deletion."
-        fi
+        git push --delete origin v${{ env.MAJOR }} && \
+          echo "Deleted v${{ env.MAJOR }} tag" || \
+          echo "Tag v${{ env.MAJOR }} not found"
 
-    - name: "Remove MAJOR.MINOR tag"
+    - name: "Remove v${{ env.MAJOR }}.${{ env.MINOR }} tag"
       run: |
-        if git tag -l | grep -q "^v${{ env.MAJOR }}\.${{ env.MINOR }}$"; then
-          git push --delete origin v${{ env.MAJOR }}.${{ env.MINOR }}
-        else
-          echo -e "Tag v${{ env.MAJOR }}.${{ env.MINOR }} does not exist, skipping deletion."
-        fi
+        git push --delete origin v${{ env.MAJOR }}.${{ env.MINOR }} && \
+          echo "Deleted v${{ env.MAJOR }}.${{ env.MINOR }} tag" || \
+          echo "Tag v${{ env.MAJOR }}.${{ env.MINOR }} not found"
 
     - name: "Create new tags"
       run: |
@@ -166,6 +162,9 @@ jobs:
     name: "Release"
     runs-on: ubuntu-latest
     needs: [doc-build, tests]
+    permissions:
+      id-token: write
+      contents: write
     steps:
 
     - name: "Download distribution artifacts"
