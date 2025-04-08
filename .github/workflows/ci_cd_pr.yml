@@ -179,10 +179,16 @@ jobs:
         path: ~/${{ env.LIBRARY_NAME }}/dist/
         retention-days: 7
 
+    - name: "Download distribution artifacts"
+      uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+      with:
+        name: ${{ env.LIBRARY_NAME }}-artifacts
+        path: dist
+        retention-days: 7
+
     - name: "Upload artifacts to PyPI using trusted publisher"
       uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
       with:
         repository-url: "https://test.pypi.org/legacy/"
         print-hash: true
-        packages-dir: ../../dist
         skip-existing: false
