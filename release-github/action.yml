@@ -150,7 +150,7 @@ runs:
 
     # TODO: remove this deprecation in ansys/actions@v9
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v9.0
       if: ${{ inputs.token == '' }}
       with:
         level: "ERROR"
@@ -164,7 +164,7 @@ runs:
 
     # Only one of both can be true: generate_release_notes, changelog-release-notes
     - name: "Sanity check on release notes"
-      uses: ansys/actions/_logging@main
+      uses: ansys/actions/_logging@v9.0
       if: ${{ inputs.generate_release_notes == 'true' && inputs.changelog-release-notes == 'true' }}
       with:
         level: "ERROR"
@@ -177,7 +177,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v9.0
       with:
         level: "INFO"
         message: >
@@ -195,7 +195,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v9.0
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -228,7 +228,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v9.0
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -245,7 +245,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v9.0
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -261,7 +261,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v9.0
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -280,7 +280,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v9.0
       with:
         level: "INFO"
         message: >
