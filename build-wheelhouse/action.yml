@@ -116,6 +116,13 @@ inputs:
     default: false
     type: boolean
 
+  install-build-and-wheel:
+    description: |
+      Whether to install ``build`` and ``wheel`` libraries before building the wheelhouse.
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -134,6 +141,12 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip
+
+    - name: "Optionally install build and wheel"
+      if: ${{ inputs.install-build-and-wheel == 'true' }}
+      shell: bash
+      run: |
+        python -m pip install build wheel
 
     - name: "Check if specific target is requested"
       shell: bash
