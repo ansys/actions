@@ -9,6 +9,155 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`9.0.0 <https://github.com/ansys/actions/releases/tag/v9.0.0>`_ - April 08, 2025
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - bump sphinx from 8.2.1 to 8.2.3 in /requirements
+          - `#710 <https://github.com/ansys/actions/pull/710>`_
+
+        * - bump ansys-sphinx-theme from 1.3.2 to 1.3.3 in /requirements
+          - `#729 <https://github.com/ansys/actions/pull/729>`_
+
+        * - bump the github-actions group with 2 updates
+          - `#746 <https://github.com/ansys/actions/pull/746>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - setup changelog
+          - `#699 <https://github.com/ansys/actions/pull/699>`_
+
+        * - add SECURITY.md
+          - `#709 <https://github.com/ansys/actions/pull/709>`_
+
+        * - add CONTRIBUTING.md
+          - `#712 <https://github.com/ansys/actions/pull/712>`_
+
+        * - change migration guide version to v8.2
+          - `#713 <https://github.com/ansys/actions/pull/713>`_
+
+        * - extend v8.2 new features notes
+          - `#718 <https://github.com/ansys/actions/pull/718>`_
+
+        * - log deprecation only for trusted publishers
+          - `#719 <https://github.com/ansys/actions/pull/719>`_
+
+        * - fix vale warning
+          - `#737 <https://github.com/ansys/actions/pull/737>`_
+
+        * - do not check link on www.x.org/*
+          - `#755 <https://github.com/ansys/actions/pull/755>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - use ansys/pip-licenses to handle PEP 639
+          - `#698 <https://github.com/ansys/actions/pull/698>`_
+
+        * - syntax
+          - `#714 <https://github.com/ansys/actions/pull/714>`_
+
+        * - avoids installing project and provides support for non-python projects
+          - `#715 <https://github.com/ansys/actions/pull/715>`_
+
+        * - rolling release job
+          - `#716 <https://github.com/ansys/actions/pull/716>`_
+
+        * - major variable
+          - `#717 <https://github.com/ansys/actions/pull/717>`_
+
+        * - default should be false for "generate release notes" entry
+          - `#745 <https://github.com/ansys/actions/pull/745>`_
+
+        * - drop build and wheel packages
+          - `#756 <https://github.com/ansys/actions/pull/756>`_
+
+        * - optional build and wheel installation
+          - `#762 <https://github.com/ansys/actions/pull/762>`_
+
+        * - use trusted publishers from PyPA action
+          - `#763 <https://github.com/ansys/actions/pull/763>`_
+
+        * - github-ref
+          - `#764 <https://github.com/ansys/actions/pull/764>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - nightly deployment does not have the CNAME
+          - `#711 <https://github.com/ansys/actions/pull/711>`_
+
+        * - update CHANGELOG for v8.2.11
+          - `#721 <https://github.com/ansys/actions/pull/721>`_
+
+        * - update CHANGELOG for v8.2.13
+          - `#724 <https://github.com/ansys/actions/pull/724>`_
+
+        * - update CHANGELOG for v8.2.16
+          - `#728 <https://github.com/ansys/actions/pull/728>`_
+
+        * - update CHANGELOG for v8.2.26
+          - `#733 <https://github.com/ansys/actions/pull/733>`_
+
+        * - update CHANGELOG for v8.2.27
+          - `#741 <https://github.com/ansys/actions/pull/741>`_
+
+        * - update CHANGELOG for v8.2.28
+          - `#743 <https://github.com/ansys/actions/pull/743>`_
+
+        * - update CHANGELOG for v8.2.30
+          - `#749 <https://github.com/ansys/actions/pull/749>`_
+
+        * - changelog action should depend on rolling release
+          - `#750 <https://github.com/ansys/actions/pull/750>`_
+
+        * - refactor logic for PRs opened by dependabot
+          - `#751 <https://github.com/ansys/actions/pull/751>`_
+
+        * - add dependabot cooldown for pip
+          - `#752 <https://github.com/ansys/actions/pull/752>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - warn about release pypi deprecation and encourage to use trusted publisher
+          - `#707 <https://github.com/ansys/actions/pull/707>`_
+
+        * - use SHA version for pypa/gh-action-pypi-publish
+          - `#734 <https://github.com/ansys/actions/pull/734>`_
+
+        * - use full length commit SHA instead of tags for external github actions
+          - `#739 <https://github.com/ansys/actions/pull/739>`_
+
+        * - remove trusted publisher
+          - `#758 <https://github.com/ansys/actions/pull/758>`_
+
+
 `8.2.30 <https://github.com/ansys/actions/releases/tag/v8.2.30>`_ - March 25, 2025
 ==================================================================================
 
