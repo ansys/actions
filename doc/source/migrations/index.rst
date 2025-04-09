@@ -16,7 +16,7 @@ Version ``v9.0``
 - To use ``check-licenses: true`` with the ``ansys/actions/build-wheelhouse`` action, use Python version 3.10 or higher.
 - Update your workflow to not use ``use-trusted-publisher: true`` with our pypi release actions.
 
-.. warning::
+  .. warning::
 
     Using the trusted publisher approach in ``ansys/release-pypi-public`` and ``ansys/release-pypi-private`` actions is
     not possible anymore. The reason for that is related to the action
