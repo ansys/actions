@@ -55,7 +55,7 @@ jobs:
   labeler:
     name: "Labels"
     needs: check-dependabot-pr
-    if: ${{ success() }}
+    if: needs.check-dependabot-pr.result == 'skipped' || needs.check-dependabot-pr.result == 'success'
     permissions:
       contents: read
       pull-requests: write
