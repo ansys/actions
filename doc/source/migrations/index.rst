@@ -16,17 +16,15 @@ Version ``v9.0``
 - To use ``check-licenses: true`` with the ``ansys/actions/build-wheelhouse`` action, use Python version 3.10 or higher.
 - Update your workflow to not use ``use-trusted-publisher: true`` with our pypi release actions.
 
-  .. warning::
-
-    Using the trusted publisher approach in ansys pypi release actions is not possible anymore.
-    The reason for that is related to the action
+    Using the trusted publisher approach in ``ansys/release-pypi-public`` and ``ansys/release-pypi-private`` actions is
+    not possible anymore. The reason for that is related to the action
     `pypa/gh-action-pypi-publish <https://github.com/pypa/gh-action-pypi-publish>`_ which allows to use the trusted
-    publisher. Indeed, starting with versions `v1.12.0` of this action, it is no longer possible to use the action in
-    a composite action, see
+    publisher. Indeed, it is no longer possible to use the action in a composite action for versions after ``v1.12.0``, see
     `pypa/gh-action-pypi-publish@v1.12.0 <https://github.com/pypa/gh-action-pypi-publish/releases/tag/v1.12.0>`_.
     However, the latest versions of this action is required to upload
     `PEP 639 licensing metadata <https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression>`_
-    to PyPI. This allows to avoid adding upper bounds on build system like ``setuptools<=67.0.0``, ``wheel<0.46.0`` or ``flit_core>=3.2,<3.11``.
+    to PyPI. This allows to avoid adding upper bounds on build system like ``setuptools<=67.0.0``, ``wheel<0.46.0`` or
+    ``flit_core>=3.2,<3.11``.
 
 **Migration Steps:**
 
