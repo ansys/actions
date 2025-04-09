@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`9.0.2 <https://github.com/ansys/actions/releases/tag/v9.0.2>`_ - April 09, 2025
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - build-wheelhouse: remove new lines inside run block
+          - `#761 <https://github.com/ansys/actions/pull/761>`_
+
+
 `9.0.1 <https://github.com/ansys/actions/releases/tag/v9.0.1>`_ - April 09, 2025
 ================================================================================
 
