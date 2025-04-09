@@ -57,6 +57,15 @@ jobs:
         run: |
           echo "::notice::Workflow approved."
 
+  dummy:
+    name: Dummy stage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log the github_ref
+        run: |
+          echo "GitHub ref value: ${{ github.head_ref }}""
+          exit 1
+
   labeler:
     name: "Labels"
     needs: check-dependabot-pr
