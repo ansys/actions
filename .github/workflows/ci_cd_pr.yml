@@ -22,33 +22,29 @@ jobs:
   # could execute arbitrary code in our build environment.
   # Dependabot PRs must be reviewed carefully and approved manually before
   # running the CI.
-  block-dependabot:
+  block-dependabot-automated-runs:
+    name: Block dependabot automated runs
     runs-on: ubuntu-latest
+    outputs:
+      is_blocked: ${{ steps.block.outputs.is_blocked }}
     steps:
-      - name: Exit if dependabot triggered the workflow
-        if: github.triggering_actor == 'dependabot[bot]'
+      - name: Block if dependabot triggered the workflow
+        id: block
         run: |
-          echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
-          exit 1
-
-  # NOTE: We do not allow pyansys-ci-bot to trigger the CI/CD pipeline automatically
-  # on dependabot's PR. This is to mitigate supply chain attacks, where a malicious
-  # dependency update could execute arbitrary code in our build environment.
-  # Dependabot PRs must be reviewed carefully and approved manually before
-  # running the CI.
-  block-pyansys-ci-bot:
-    needs: block-dependabot
-    runs-on: ubuntu-latest
-    steps:
-      - name: Exit if pyansys-ci-bot triggered the workflow on dependabot's PR
-        if: github.triggering_actor == 'pyansys-ci-bot' && startsWith(github.head_ref, 'dependabot')
-        run: |
-          echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
-          exit 1
+          if [[ "${{ github.triggering_actor }}" == "dependabot[bot]" ]]; then
+            echo "is_blocked=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
+          elif [[ "${{ github.triggering_actor }}" == "pyansys-ci-bot" && ${{ startsWith(github.head_ref, 'dependabot/') }} ]]; then
+            echo "is_blocked=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
+          else
+            echo "is_blocked=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Workflow triggered by ${{ github.triggering_actor }}."
+          fi
 
   check-dependabot-pr:
-    needs: block-pyansys-ci-bot
-    if: startsWith(github.head_ref, 'dependabot')
+    needs: [block-dependabot-automated-runs]
+    if: startsWith(github.head_ref, 'dependabot') && needs.block-dependabot-automated-runs.outputs.is_blocked == 'true'
     name: Manual approval
     runs-on: ubuntu-latest
     environment: dependabot
