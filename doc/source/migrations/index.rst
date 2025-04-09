@@ -25,7 +25,7 @@ Version ``v9.0``
     a composite action, see
     `pypa/gh-action-pypi-publish@v1.12.0 <https://github.com/pypa/gh-action-pypi-publish/releases/tag/v1.12.0>`_.
     However, the latest versions of this action is required to upload
-    `PEP 639 licensing metadata <https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression>`
+    `PEP 639 licensing metadata <https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression>`_
     to PyPI. This allows to avoid adding upper bounds on build system like ``setuptools<=67.0.0``, ``wheel<0.46.0`` or ``flit_core>=3.2,<3.11``.
 
 **Migration Steps:**
