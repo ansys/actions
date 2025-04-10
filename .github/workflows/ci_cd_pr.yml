@@ -33,7 +33,7 @@ jobs:
   # Dependabot PRs must be reviewed carefully and approved manually before
   # running the CI.
   check-dependabot-pr:
-    needs: [block-dependabot-automated-runs]
+    needs: [determine-environment-approval]
     name: Manual approval (on dependabot PRs)
     runs-on: ubuntu-latest
     environment: ${{ needs.block-dependabot-automated-runs.outputs.environment }}
