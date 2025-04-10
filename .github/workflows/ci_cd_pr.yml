@@ -36,7 +36,7 @@ jobs:
     needs: [determine-environment-approval]
     name: Manual approval (on dependabot PRs)
     runs-on: ubuntu-latest
-    environment: ${{ needs.block-dependabot-automated-runs.outputs.environment }}
+    environment: ${{ needs.determine-environment-approval.outputs.environment }}
     steps:
       - name: Proceed after approval
         if: ${{ job.environment.name == 'dependabot'}}
