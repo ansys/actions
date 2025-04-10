@@ -44,7 +44,7 @@ jobs:
 
   check-dependabot-pr:
     needs: [block-dependabot-automated-runs]
-    name: Manual approval
+    name: Manual approval (on dependabot PRs)
     runs-on: ubuntu-latest
     environment: ${{ needs.block-dependabot-automated-runs.outputs.environment }}
     steps:
