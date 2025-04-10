@@ -49,6 +49,7 @@ jobs:
       - name: Test
         run: |
           echo "::notice::Environment name ${{ job.environment.name }}"
+          echo "::notice::Environment name ${{ needs.block-dependabot-automated-runs.outputs.environment }}"
 
   labeler:
     name: "Labels"
