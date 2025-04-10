@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "::notice::Workflow approved."
       - name: Approval skipped
-        if: ${{ needs.determine-environment-approval.outputs.environment == 'no-dependabot'}}
+        if: ${{ needs.determine-environment-approval.outputs.environment == 'no-dependabot' || needs.determine-environment-approval.outputs.environment == ''}}
         run: |
           echo "::notice::Workflow approval skipped."
 
