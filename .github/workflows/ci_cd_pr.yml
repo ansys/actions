@@ -38,7 +38,7 @@ jobs:
             echo "environment=dependabot" >> "$GITHUB_OUTPUT"
             echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
           else
-            echo "environment=" >> "$GITHUB_OUTPUT"
+            echo "environment=no-dependabot" >> "$GITHUB_OUTPUT"
             echo "::notice::Workflow triggered by ${{ github.triggering_actor }}."
           fi
 
