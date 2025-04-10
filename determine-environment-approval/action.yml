@@ -91,5 +91,5 @@ runs:
           echo "environment=${{ inputs.skip-manual-check-environment }}" >> "$GITHUB_OUTPUT"
           echo "::notice::Workflow triggered by ${{ github.triggering_actor }}."
         fi
-        echo "::notice::Environment name proposed: '${environment}'"
+        echo "::notice::Environment name proposed: ${{ steps.decision.outputs.environment }}"
 
