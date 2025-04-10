@@ -39,8 +39,13 @@ jobs:
     environment: ${{ needs.block-dependabot-automated-runs.outputs.environment }}
     steps:
       - name: Proceed after approval
+        if: ${{ job.environment.name == 'dependabot'}}
         run: |
           echo "::notice::Workflow approved."
+      - name: Proceed after approval
+        if: ${{ job.environment.name == 'no-dependabot'}}
+        run: |
+          echo "::notice::Workflow approval skipped."
 
   labeler:
     name: "Labels"
