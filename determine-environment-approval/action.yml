@@ -69,7 +69,7 @@ outputs:
     description: |
       Name of the environment used in the workflow. When a manual check is
       required, the environment name is set to ``manual-check-environment``
-      input. Otherwise, it is set to the ``skip-manuel-check-environment``
+      input. Otherwise, it is set to the ``skip-manual-check-environment``
       input.
     value: ${{ steps.decision.outputs.environment }}
 
@@ -88,7 +88,7 @@ runs:
           echo "environment=${{ inputs.manual-check-environment }}" >> "$GITHUB_OUTPUT"
           echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
         else
-          echo "environment=${{ inputs.skip-manuel-check-environment }}" >> "$GITHUB_OUTPUT"
+          echo "environment=${{ inputs.skip-manual-check-environment }}" >> "$GITHUB_OUTPUT"
           echo "::notice::Workflow triggered by ${{ github.triggering_actor }}."
         fi
         echo "::notice::Environment name proposed: '${environment}'"
