@@ -25,28 +25,27 @@ jobs:
     name: Block dependabot automated runs
     runs-on: ubuntu-latest
     outputs:
-      is_blocked: ${{ steps.block.outputs.is_blocked }}
+      environment: ${{ steps.block.outputs.environment }}
     steps:
       - name: Block if dependabot triggered the workflow
         id: block
         run: |
           if [[ "${{ github.triggering_actor }}" == "dependabot[bot]" ]]; then
-            echo "is_blocked=true" >> "$GITHUB_OUTPUT"
+            echo "environment=dependabot" >> "$GITHUB_OUTPUT"
             echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
           elif [[ "${{ github.triggering_actor }}" == "pyansys-ci-bot" && ${{ startsWith(github.head_ref, 'dependabot/') }} ]]; then
-            echo "is_blocked=true" >> "$GITHUB_OUTPUT"
+            echo "environment=dependabot" >> "$GITHUB_OUTPUT"
             echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
           else
-            echo "is_blocked=false" >> "$GITHUB_OUTPUT"
+            echo "environment=" >> "$GITHUB_OUTPUT"
             echo "::notice::Workflow triggered by ${{ github.triggering_actor }}."
           fi
 
   check-dependabot-pr:
     needs: [block-dependabot-automated-runs]
-    if: startsWith(github.head_ref, 'dependabot') && needs.block-dependabot-automated-runs.outputs.is_blocked == 'true'
     name: Manual approval
     runs-on: ubuntu-latest
-    environment: dependabot
+    environment: ${{ needs.block-dependabot-automated-runs.outputs.environment }}
     steps:
       - name: Proceed after approval
         run: |
@@ -55,7 +54,6 @@ jobs:
   labeler:
     name: "Labels"
     needs: check-dependabot-pr
-    if: success() || needs.check-dependabot-pr.result == 'skipped'
     permissions:
       contents: read
       pull-requests: write
@@ -81,7 +79,6 @@ jobs:
     name: "Create changelog fragment"
     runs-on: ubuntu-latest
     needs: labeler
-    if: success() || needs.labeler.result == 'success'
     permissions:
       contents: read
       pull-requests: write
@@ -103,7 +100,6 @@ jobs:
     name: "Code style"
     runs-on: ubuntu-latest
     needs: changelog-fragment
-    if: success() || needs.changelog-fragment.result == 'success'
     steps:
       - name: "Run code style checks"
         uses: ansys/actions/code-style@main
@@ -115,7 +111,6 @@ jobs:
     name: "Doc style"
     runs-on: ubuntu-latest
     needs: changelog-fragment
-    if: success() || needs.changelog-fragment.result == 'success'
     steps:
       - uses: ansys/actions/doc-style@main
         with:
@@ -125,7 +120,6 @@ jobs:
     name: "Doc build"
     runs-on: ubuntu-latest
     needs: doc-style
-    if: success() || needs.doc-style.result == 'success'
     steps:
       - uses: ansys/actions/doc-build@main
         with:
@@ -138,7 +132,6 @@ jobs:
     name: "Tests"
     runs-on: ubuntu-latest
     needs: code-style
-    if: success() || needs.code-style.result == 'success'
     permissions:
       id-token: write
       contents: write
@@ -176,7 +169,6 @@ jobs:
     name: "Test release"
     runs-on: ubuntu-latest
     needs: tests
-    if: success() || needs.tests.result == 'success'
     permissions:
       id-token: write
       contents: write
