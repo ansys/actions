@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Decide which environment should be used
         id: block
-        uses: ansys/actions/determine-environment-approval@feat/determine-environment-approval
+        uses: ansys/actions/determine-environment-approval@main
         with:
           skip-manual-check-environment: ''
 
