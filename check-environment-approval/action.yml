@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: Determine Environment Approval
+name: Check Environment Approval
 
 description: |
   Evaluates the pull request workflow and determines the environment name to be
