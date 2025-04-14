@@ -60,7 +60,7 @@ inputs:
       Name of the environment used to skip the manual checking. This is useful
       when the workflow is triggered by a different actor than dependabot.
     required: false
-    default: 'no-dependabot'
+    default: ''
     type: string
 
 outputs:
