@@ -84,7 +84,7 @@ runs:
         if [[ "${{ github.triggering_actor }}" == "dependabot[bot]" ]]; then
           echo "environment=${{ inputs.manual-check-environment }}" >> "$GITHUB_OUTPUT"
           echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
-        elif [[ "${{ github.triggering_actor }}" == "pyansys-ci-bot" && ${{ startsWith(github.head_ref, 'dependabot/') }} ]]; then
+        elif [[ "${{ github.triggering_actor }}" == "pyansys-ci-bot" && "${{ startsWith(github.head_ref, 'dependabot/') }}" == "true" ]]; then
           echo "environment=${{ inputs.manual-check-environment }}" >> "$GITHUB_OUTPUT"
           echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
         else
