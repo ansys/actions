@@ -357,10 +357,7 @@ runs:
         } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"
-      # NOTE: There is only one tag associated to v1 (previous version used) and it's also v0.1.15
-      # Since the V1.0.0 is not associated to a github release, the version pinned is v0.1.15
-      # This should be updated soon and this comment should be removed afterward.
-      uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v0.1.15
+      uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
       env:
         REPO_NAME: ${{ github.event.repository.name }}
       if: inputs.dry-run == 'false'

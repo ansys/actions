@@ -116,6 +116,13 @@ inputs:
     default: false
     type: boolean
 
+  install-build-and-wheel:
+    description: |
+      Whether to install ``build`` and ``wheel`` libraries before building the wheelhouse.
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -134,6 +141,12 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip
+
+    - name: "Optionally install build and wheel"
+      if: ${{ inputs.install-build-and-wheel == 'true' }}
+      shell: bash
+      run: |
+        python -m pip install build wheel
 
     - name: "Check if specific target is requested"
       id: specific-target-requested
@@ -182,13 +195,12 @@ runs:
         NEEDS_IMPORTLIB_METADATA: ${{ steps.needs-importlib-metadata.outputs.needs_importlib_metadata }}
       run: |
         library_name="$LIBRARY_NAME"
-
+        
         if [ $NEEDS_IMPORTLIB_METADATA == 'true' ]; then
           version=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
         else
           version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
         fi
-
         if [ -z "$version" ]; then
             echo "Problem getting the library version"
             exit 1;
