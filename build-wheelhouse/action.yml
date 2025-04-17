@@ -195,7 +195,7 @@ runs:
         NEEDS_IMPORTLIB_METADATA: ${{ steps.needs-importlib-metadata.outputs.needs_importlib_metadata }}
       run: |
         library_name="$LIBRARY_NAME"
-        
+
         if [ $NEEDS_IMPORTLIB_METADATA == 'true' ]; then
           version=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
         else

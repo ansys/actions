@@ -30,16 +30,19 @@ jobs:
     steps:
       - name: Block if dependabot triggered the workflow
         id: block
+        env:
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          DEPENDABOT_BRANCH: ${{ startsWith(github.head_ref, 'dependabot/') }}
         run: |
-          if [[ "${{ github.triggering_actor }}" == "dependabot[bot]" ]]; then
+          if [[ "$TRIGGERING_ACTOR" == "dependabot[bot]" ]]; then
             echo "environment=dependabot" >> "$GITHUB_OUTPUT"
             echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
-          elif [[ "${{ github.triggering_actor }}" == "pyansys-ci-bot" && ${{ startsWith(github.head_ref, 'dependabot/') }} ]]; then
+          elif [[ "$TRIGGERING_ACTOR" == "pyansys-ci-bot" && "$DEPENDABOT_BRANCH" == "true" ]]; then
             echo "environment=dependabot" >> "$GITHUB_OUTPUT"
             echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
           else
             echo "environment=no-dependabot" >> "$GITHUB_OUTPUT"
-            echo "::notice::Workflow triggered by ${{ github.triggering_actor }}."
+            echo "::notice::Workflow triggered by $TRIGGERING_ACTOR."
           fi
 
   check-dependabot-pr:

@@ -120,17 +120,19 @@ runs:
   steps:
 
     - name: Check python version
+      id: check-python-version
       shell: bash
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
       run: |
-        PYTHON_VERSION="${{ inputs.python-version }}"
         MIN_VERSION="3.10"
         if [ "$(printf '%s\n' "$PYTHON_VERSION" "$MIN_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]; then
-          echo "PYTHON_TOO_OLD=true" >> "$GITHUB_ENV"
+          echo "PYTHON_TOO_OLD=true" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Break if Python version is too old
       uses: ansys/actions/_logging@main
-      if: env.PYTHON_TOO_OLD == 'true'
+      if: steps.check-python-version.outputs.PYTHON_TOO_OLD == 'true'
       with:
         level: "ERROR"
         message: >
