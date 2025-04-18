@@ -1,4 +1,5 @@
 bandit>=1.7,<2
 click>=7.0,<9
+marshmallow>=3.0,<4 # There is currently a bug in marshmallow 4.0.0 that causes safety to fail
 pygithub>=1.59,<2
 safety>=2.3,<4
