@@ -111,7 +111,7 @@ runs:
   steps:
 
     - name: "Release to the public PyPI index"
-      uses: ansys/actions/_release-pypi@main
+      uses: ansys/actions/_release-pypi@feat/check-actions-security-action
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://upload.pypi.org/legacy/"

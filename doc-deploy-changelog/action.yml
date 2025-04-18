@@ -194,7 +194,7 @@ runs:
         fetch-depth: 0
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/check-actions-security-action
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -222,7 +222,7 @@ runs:
 
     # TODO: remove this deprecation in ansys/actions@v9
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
       with:
         level: "ERROR"

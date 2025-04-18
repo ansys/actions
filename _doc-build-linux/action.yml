@@ -192,7 +192,7 @@ runs: # zizmor: ignore[github-env]
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -210,7 +210,7 @@ runs: # zizmor: ignore[github-env]
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -219,7 +219,7 @@ runs: # zizmor: ignore[github-env]
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -317,7 +317,7 @@ runs: # zizmor: ignore[github-env]
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -367,7 +367,7 @@ runs: # zizmor: ignore[github-env]
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -381,14 +381,14 @@ runs: # zizmor: ignore[github-env]
         source .venv/bin/activate
         python ${{ github.action_path }}/../python-utils/parse_doc_conf.py
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
       with:
         level: "ERROR"
         message: >
           Unable to determine PDF filename using conf.py file.
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
       with:
         level: "INFO"
@@ -397,7 +397,7 @@ runs: # zizmor: ignore[github-env]
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -420,7 +420,7 @@ runs: # zizmor: ignore[github-env]
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d "$EXPECTED_BUILD_DIR" ] && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-build-dir.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
@@ -445,7 +445,7 @@ runs: # zizmor: ignore[github-env]
       run: |
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d "$EXPECTED_DOWNLOAD_DIR" ] && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"
@@ -464,7 +464,7 @@ runs: # zizmor: ignore[github-env]
 
     - name: Check build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: ansys/actions/_logging@main
+      uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
