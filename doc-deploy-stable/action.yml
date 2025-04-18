@@ -153,8 +153,6 @@ inputs:
 
 runs:
   using: "composite"
-  env:
-    CNAME: ${{ inputs.cname }}
   steps:
 
     # TODO: remove this deprecation in ansys/actions@v9
@@ -376,6 +374,8 @@ runs:
 
     - name: "Add the development version to the 'versions.json' file"
       shell: bash
+      env:
+        CNAME: ${{ inputs.cname }}
       run: |
         url_dev="https://${CNAME}/version/dev/"
         jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
@@ -385,6 +385,7 @@ runs:
       shell: bash
       env:
         RENDER_LAST: ${{ inputs.render-last }}
+        CNAME: ${{ inputs.cname }}
       run: |
         for version in $( ls version | \
                           grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
@@ -400,6 +401,7 @@ runs:
       shell: bash
       env:
         RENDER_LAST: ${{ inputs.render-last }}
+        CNAME: ${{ inputs.cname }}
       run: |
         num_versions=$(jq length versions.json)
 
@@ -411,6 +413,8 @@ runs:
 
     - name: "Convert the first stable version into the 'stable' one"
       shell: bash
+      env:
+        CNAME: ${{ inputs.cname }}
       run: |
         jq '.[1].name += " (stable)"' versions.json | sponge versions.json
         url_stable="https://${CNAME}/version/stable/"
@@ -453,6 +457,7 @@ runs:
     - name: "Render the 'announcement.html' template with the desired stable version"
       env:
         LATEST_STABLE_VERSION: ${{ steps.latest-stable-version.outputs.LATEST_STABLE_VERSION }}
+        CNAME: ${{ inputs.cname }}
       shell: bash
       run: |
         latest_stable_version=${LATEST_STABLE_VERSION}
@@ -551,6 +556,8 @@ runs:
 
     - name: "Create '.nojekyll' and 'CNAME' files"
       shell: bash
+      env:
+        CNAME: ${{ inputs.cname }}
       run: |
           touch .nojekyll CNAME
           echo "$CNAME" > CNAME

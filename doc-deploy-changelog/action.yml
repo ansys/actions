@@ -186,14 +186,6 @@ inputs:
 
 runs:
   using: "composite"
-  env:
-    TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-    TOML_VERSION: ${{ inputs.toml-version }}
-    RELEASE_FROM_MAIN: ${{ inputs.release-from-main }}
-    FORMAT_DATE: ${{ inputs.format-date }}
-    BOT_USER: ${{ inputs.bot-user }}
-    BOT_EMAIL: ${{ inputs.bot-email }}
-    USE_UPPER_CASE: ${{ inputs.use-upper-case }}
   steps:
     - name: "Install Git and clone project"
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -215,6 +207,9 @@ runs:
         echo "TAG_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_OUTPUT
 
     - name: "Install towncrier, toml, and the project"
+      env:
+        TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
+        TOML_VERSION: ${{ inputs.toml-version }}
       shell: bash
       run: |
         python -m pip install --upgrade pip towncrier=="$TOWNCRIER_VERSION" toml=="$TOML_VERSION"
@@ -284,6 +279,7 @@ runs:
       env:
         MAIN_BRANCH: ${{ steps.main-branch-name.outputs.MAIN_BRANCH }}
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
+        RELEASE_FROM_MAIN: ${{ inputs.release-from-main }}
       run: |
         if [[ "$RELEASE_FROM_MAIN" == "true" ]]; then
           echo "UPDATE_BRANCH=$MAIN_BRANCH" >> $GITHUB_OUTPUT
@@ -310,6 +306,8 @@ runs:
 
     - name: "Get current date"
       shell: python
+      env:
+        FORMAT_DATE: ${{ inputs.format-date }}
       run: |
         import datetime
         import sys
@@ -332,6 +330,9 @@ runs:
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
         UPDATE_BRANCH: ${{ steps.set-branch-changelog.outputs.UPDATE_BRANCH }}
         RELEASE_BRANCH_EXISTS: ${{ steps.set-branch-changelog.outputs.RELEASE_BRANCH_EXISTS }}
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+        USE_UPPER_CASE: ${{ inputs.use-upper-case }}
       shell: bash
       run: |
         # Get number of .md files in ${{ env.TOWNCRIER_DIR }}
@@ -414,6 +415,7 @@ runs:
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
         MAIN_BRANCH: ${{ steps.main-branch-name.outputs.MAIN_BRANCH }}
         COMMIT_SHA: ${{ steps.new-section-changelog.outputs.COMMIT_SHA }}
+        USE_UPPER_CASE: ${{ inputs.use-upper-case }}
       shell: bash
       run: |
         # Checkout main & create a branch
