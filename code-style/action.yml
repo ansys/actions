@@ -103,6 +103,14 @@ inputs:
     default: true
     type: boolean
 
+  use-uv:
+    description: |
+      Whether to use uv for installation operations instead of pip. By default it is set
+      to ``true``.
+    required: true
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -120,10 +128,14 @@ runs:
 
     - name: "Determine GitHub environment variables"
       id: github-environment-variables
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
+        elif [[ "$USE_UV" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
         fi
@@ -147,6 +159,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv == 'true' && 'true' || 'false' }}
 
     # NOTE: Installation of poetry in a separate environment to the project to
     # avoid situations in which both poetry and the project have shared
@@ -176,13 +189,15 @@ runs:
       run: |
         python -m pip install pipx
         python -m pipx install poetry
-        python -m venv .venv
       env:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME: ${{ runner.temp }}/pipx/home
 
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
     - name: "Create a virtual environment"
-      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'pip'
       shell: bash
       run: |
         python -m venv .venv
@@ -203,9 +218,13 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         $ACTIVATE_VENV
-        python -m pip install -U pip
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv pip install -U pip
+        else
+          python -m pip install -U pip
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
@@ -216,8 +235,9 @@ runs:
       run: |
         $ACTIVATE_VENV
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
-          python -m pip install poetry
-          python -m poetry install
+          poetry install
+        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
+          uv pip install .
         else
           python -m pip install .
         fi
@@ -229,7 +249,10 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         $ACTIVATE_VENV
-        python -m pip install "pre-commit==$PRE_COMMIT_VERSION"
+        if [[ "$BUILD_BACKEND" == 'uv' ]]; then
+          uv pip install "pre-commit==$PRE_COMMIT_VERSION"
+        else
+          python -m pip install "pre-commit==$PRE_COMMIT_VERSION"
         pre-commit install
 
     - name: "Run pre-commit"

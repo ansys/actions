@@ -32,6 +32,11 @@ inputs:
     description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
     required: true
     type: boolean
+  provision-uv:
+    description: 'Whether to provision uv alongside Python'
+    default: false
+    required: true
+    type: boolean
 
 runs:
   using: "composite"
@@ -50,3 +55,7 @@ runs:
       if: inputs.use-cache == 'false'
       with:
         python-version: ${{ inputs.python-version }}
+
+    - name: "Set up uv"
+      uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5.4.1
+      if: ${{ inputs.provision-uv == 'true' }}

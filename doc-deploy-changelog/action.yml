@@ -133,6 +133,13 @@ inputs:
     default: true
     type: boolean
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
   skip-install:
     description: |
       Whether to skip the installation of the project or not. If ``true``, the
@@ -198,6 +205,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv == 'true' && 'true' || 'false' }}
 
     - name: Save tag version
       id: save-tag-version
@@ -210,15 +218,26 @@ runs:
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOML_VERSION: ${{ inputs.toml-version }}
+        USE_UV: ${{ inputs.use-uv }}
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier=="$TOWNCRIER_VERSION" toml=="$TOML_VERSION"
+        if [[ "$USE_UV" == "true" ]]; then
+          uv pip install --upgrade pip towncrier=="$TOWNCRIER_VERSION" toml=="$TOML_VERSION"
+        else
+          python -m pip install --upgrade pip towncrier=="$TOWNCRIER_VERSION" toml=="$TOML_VERSION"
+        fi
 
     - name: "Install the project"
-      shell: bash
       if: inputs.skip-install == 'false'
+      shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        python -m pip install .
+        if [[ "$USE_UV" == "true" ]]; then
+          uv pip install .
+        else
+          python -m pip install .
+        fi
 
     # TODO: remove this deprecation in ansys/actions@v9
 
