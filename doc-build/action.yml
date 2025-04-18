@@ -201,7 +201,6 @@ runs:
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
-      if: ${{ inputs.use-uv == 'false' }}
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
