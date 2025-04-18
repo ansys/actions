@@ -359,10 +359,10 @@ runs:
         cd doc
         & $env:SPHINX_BUILD_MAKE html SPHINXOPTS="$env:SPHINXOPTS"
         & $env:SPHINX_BUILD_MAKE pdf
-        if ("$env:CHECK_LINKS" -eq 'true' ) {
+        if ($env:CHECK_LINKS -eq 'true') {
           & $env:SPHINX_BUILD_MAKE linkcheck SPHINXOPTS="$env:SPHINXOPTS"
         }
-        if ("$env:SKIP_JSON_BUILD" -eq 'false' ) {
+        if ($env:SKIP_JSON_BUILD -eq 'false') {
           & $env:SPHINX_BUILD_MAKE json SPHINXOPTS="$env:SPHINXOPTS"
         }
 
