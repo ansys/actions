@@ -53,28 +53,53 @@ runs:
     # --------------------------- Warning / Error ----------------------------
 
     - name: "Report error message"
-      shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
-      if: ${{ inputs.level == 'ERROR'}}
+      if: ${{ runner.os == 'Windows' && inputs.level == 'ERROR'}}
+      env:
+        MESSAGE: ${{ inputs.message }}
+      shell: powershell
       run: |
-        echo "::error::${{ inputs.message }}"
+        echo "::error::$env:MESSAGE"
+        exit 1
+
+    - name: "Report error message"
+      if: ${{ runner.os == 'Linux' && inputs.level == 'ERROR'}}
+      env:
+        MESSAGE: ${{ inputs.message }}
+      shell: bash
+      run: |
+        echo "::error::$MESSAGE"
         exit 1
 
     - name: "Report warning message"
-      shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
-      if: ${{ inputs.level == 'WARNING'}}
+      if: ${{ runner.os == 'Windows' && inputs.level == 'WARNING'}}
+      env:
+        MESSAGE: ${{ inputs.message }}
+      shell: powershell
       run: |
-        echo "::warning::${{ inputs.message }}"
+        echo "::warning::$env:MESSAGE"
+
+    - name: "Report warning message"
+      if: ${{ runner.os == 'Linux' && inputs.level == 'WARNING'}}
+      env:
+        MESSAGE: ${{ inputs.message }}
+      shell: bash
+      run: |
+        echo "::warning::$MESSAGE"
 
     # -------------------------------- Info ----------------------------------
 
     - name: "Report info message"
-      shell: bash
       if: ${{ inputs.level == 'INFO' && runner.os == 'Linux' }}
+      env:
+        MESSAGE: ${{ inputs.message }}
+      shell: bash
       run: |
-        echo -e "\033[1;92m[INFO]: ${{ inputs.message }}\033[0m"
+        echo -e "\033[1;92m[INFO]: ${MESSAGE}\033[0m"
 
     - name: "Report info message"
-      shell: powershell
       if: ${{ inputs.level == 'INFO' && runner.os == 'Windows' }}
+      env:
+        MESSAGE: ${{ inputs.message }}
+      shell: powershell
       run: |
-        Write-Host "$([char]27)[92m[INFO]: ${{ inputs.message }}$([char]27)[0m"
+        Write-Host "$([char]27)[92m[INFO]: $env:MESSAGE$([char]27)[0m"
