@@ -133,8 +133,6 @@ inputs:
 
 runs:
   using: "composite"
-  env:
-    INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
   steps:
 
     - name: "Install Git and clone project"
@@ -150,12 +148,16 @@ runs:
 
     - name: "Update pip"
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         $INSTALL_COMMAND -U pip
 
     - name: "Optionally install build and wheel"
       if: ${{ inputs.install-build-and-wheel == 'true' }}
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         $INSTALL_COMMAND build wheel
 
@@ -171,6 +173,7 @@ runs:
     - name: "Install the library"
       shell: bash
       env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
       run: |
         $INSTALL_COMMAND "$INSTALL_TARGET"
@@ -195,6 +198,8 @@ runs:
     - name: "Install importlib-metadata (only for Python <= 3.7)"
       if: steps.needs-importlib-metadata.outputs.needs_importlib_metadata == 'true'
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         $INSTALL_COMMAND importlib-metadata
 
