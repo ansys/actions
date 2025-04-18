@@ -1,0 +1,96 @@
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: Check Environment Approval
+
+description: |
+  Evaluates the pull request workflow and determines the environment name to be
+  used in the workflow. The environment name should then be used in a workflow
+  to trigger a manual approval step if needed.
+
+  The environment name is set to the ``manual-check-environment`` input if
+  the workflow is triggered by ``dependabot[bot]`` or if the pull request was
+  created by ``dependabot[bot]`` and ``pyansys-ci-bot`` is the actor triggering
+  the workflow. Otherwise, it is set to ``skip-manual-check-environment`` input.
+
+  The manual check is required to mitigate supply chain attacks, where a malicious
+  dependency update could execute arbitrary code in our build environment.
+  Dependabot PRs must be reviewed carefully and approved manually before
+  running the CI.
+
+  .. note::
+
+    This action relies on the
+    `Github context <https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context>`_
+    to determine which environment to use. The manual approval can be added by
+    referencing the
+    `Github environment <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment#about-environments>`_
+    in a workflow job and configuring the environment with deployment protection
+    rules requiring a manual approval. For more information, see how to add
+    `required reviewers <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment#required-reviewers>`_.
+
+inputs:
+
+  # Optional inputs
+
+  manual-check-environment:
+    description: Name of the environment used to trigger manual checking.
+    required: false
+    default: 'dependabot'
+    type: string
+
+  skip-manual-check-environment:
+    description: |
+      Name of the environment used to skip the manual checking. This is useful
+      when the workflow is triggered by a different actor than dependabot.
+    required: false
+    default: ''
+    type: string
+
+outputs:
+
+  environment:
+    description: |
+      Name of the environment used in the workflow. When a manual check is
+      required, the environment name is set to ``manual-check-environment``
+      input. Otherwise, it is set to the ``skip-manual-check-environment``
+      input.
+    value: ${{ steps.decision.outputs.environment }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Decide which environment should be used
+      id: decision
+      shell: bash
+      run: |
+        if [[ "${{ github.triggering_actor }}" == "dependabot[bot]" ]]; then
+          echo "environment=${{ inputs.manual-check-environment }}" >> "$GITHUB_OUTPUT"
+          echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
+        elif [[ "${{ github.triggering_actor }}" == "pyansys-ci-bot" && "${{ startsWith(github.head_ref, 'dependabot/') }}" == "true" ]]; then
+          echo "environment=${{ inputs.manual-check-environment }}" >> "$GITHUB_OUTPUT"
+          echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
+        else
+          echo "environment=${{ inputs.skip-manual-check-environment }}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Workflow triggered by ${{ github.triggering_actor }}."
+        fi
