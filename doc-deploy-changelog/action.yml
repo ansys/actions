@@ -239,7 +239,6 @@ runs:
             directory = config["tool"]["towncrier"]["directory"]
             project_name = config["tool"]["towncrier"].get("package")
 
-
         # If the project name is not specified, use the project name from the pyproject.toml
         # Last resource - just call it DNE. In any case, based on our template, this value is not used
         if project_name is None:
@@ -250,7 +249,7 @@ runs:
 
         # Append the TOWNCRIER_DIR and TOWNCRIER_NAME with its value to GITHUB_ENV
         with open(github_env, "a") as f:
-            f.write(f"TOWNCRIER_DIR={directory}")
+            f.write(f"TOWNCRIER_DIR={directory}\n")
             f.write(f"TOWNCRIER_NAME={project_name}")
 
     - name: "Get main branch name"
