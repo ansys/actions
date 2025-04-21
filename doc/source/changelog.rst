@@ -9,6 +9,28 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`9.0.6 <https://github.com/ansys/actions/releases/tag/v9.0.6>`_ - April 21, 2025
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - skip installation on doc-deploy-changelog
+          - `#782 <https://github.com/ansys/actions/pull/782>`_
+
+        * - add package key in towncrier.toml
+          - `#783 <https://github.com/ansys/actions/pull/783>`_
+
+        * - Add newline between environment variables in Python
+          - `#784 <https://github.com/ansys/actions/pull/784>`_
+
+
 `9.0.3 <https://github.com/ansys/actions/releases/tag/v9.0.3>`_ - April 18, 2025
 ================================================================================
 
