@@ -1,5 +1,5 @@
 [tool.towncrier]
-package = "ansys.actions"
+package = "ansys.actions.core"
 package_dir  = ".ci/ansys-actions/src"
 directory = "doc/source/changelog"
 filename = "doc/source/changelog.rst"
