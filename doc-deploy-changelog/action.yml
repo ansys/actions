@@ -240,6 +240,7 @@ runs:
             project_name = config["tool"]["towncrier"].get("package")
         
         # If the project name is not specified, use the project name from the pyproject.toml
+        # Last resource - just call it DNE. In any case, based on our template, this value is not used
         if project_name is None:
             project_name = config["project"].get("name", "DNE")
 
