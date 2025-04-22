@@ -131,4 +131,4 @@ runs:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
-        zizmor ${HIGH_AUDIT_LEVEL $STRICT_AUDIT_LEVEL} .
+        zizmor ${HIGH_AUDIT_LEVEL} ${STRICT_AUDIT_LEVEL} .
