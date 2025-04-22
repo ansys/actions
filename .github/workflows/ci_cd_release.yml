@@ -88,10 +88,10 @@ jobs:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
         MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
-        git tag v$MAJOR.$MINOR
-        git tag v$MAJOR
-        git push origin v$MAJOR.$MINOR
-        git push origin v$MAJOR
+        git tag v${MAJOR}.${MINOR}
+        git tag v${MAJOR}
+        git push origin v${MAJOR}.${MINOR}
+        git push origin v${MAJOR}
 
   changelog-deployment:
     name: "Changelog"

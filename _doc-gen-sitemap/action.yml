@@ -65,8 +65,8 @@ runs:
         HTML_DIRECTORY: ${{ inputs.html-directory }}
       run: |
         # Declare the website name and the output file for the sitemap
-        website="https://$CNAME"
-        input_dir=$HTML_DIRECTORY
+        website="https://${CNAME}"
+        input_dir="${HTML_DIRECTORY}"
         output="sitemap.xml"
 
         # Add URLs to the sitemap

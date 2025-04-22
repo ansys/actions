@@ -136,7 +136,7 @@ runs:
       run: |
         EXISTING_DIRS=""
         NON_EXISTING_DIRS=""
-        for directory in $DIRECTORY
+        for directory in ${DIRECTORY}
         do
           if [ -d "${{ github.workspace }}/$directory" ]; then
             EXISTING_DIRS+="$directory "
@@ -145,9 +145,9 @@ runs:
           fi
         done
         EXISTING_DIRS=$(echo -n "$EXISTING_DIRS" | xargs)
-        echo "EXISTING_DIRS=$EXISTING_DIRS" >> $GITHUB_OUTPUT
+        echo "EXISTING_DIRS=${EXISTING_DIRS}" >> ${GITHUB_OUTPUT}
         NON_EXISTING_DIRS=$(echo -n "$NON_EXISTING_DIRS" | xargs)
-        echo "NON_EXISTING_DIRS=$NON_EXISTING_DIRS" >> $GITHUB_OUTPUT
+        echo "NON_EXISTING_DIRS=${NON_EXISTING_DIRS}" >> ${GITHUB_OUTPUT}
 
     # ------------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ runs:
         fmt_directory: ${{ steps.filter-input-directory.outputs.EXISTING_DIRS }}
         RECURSIVE: ${{ inputs.recursive }}
       run: |
-        if [[ "$RECURSIVE" == "true" ]]; then
+        if [[ "${RECURSIVE}" == "true" ]]; then
             pattern="/**/Dockerfile"
         else
             pattern="/Dockerfile"

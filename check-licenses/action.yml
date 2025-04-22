@@ -127,7 +127,7 @@ runs:
       run: |
         MIN_VERSION="3.10"
         if [ "$(printf '%s\n' "$PYTHON_VERSION" "$MIN_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]; then
-          echo "PYTHON_TOO_OLD=true" >> "$GITHUB_OUTPUT"
+          echo "PYTHON_TOO_OLD=true" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: Break if Python version is too old
@@ -172,14 +172,14 @@ runs:
       env:
         TARGET: ${{ inputs.target }}
       run: |
-        echo "install_target=$( [[ "$TARGET" == '' ]] && echo '.' || echo ".[$TARGET]")" >> $GITHUB_OUTPUT
+        echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '.' || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
 
     - name: "Install Python library"
       if: inputs.skip-install == 'false'
       shell: bash
       env:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-      run: pip install "$INSTALL_TARGET"
+      run: python -m pip install "${INSTALL_TARGET}"
 
     - name:  "Install wget on Windows"
       if: runner.os == 'Windows'
@@ -211,10 +211,10 @@ runs:
       env:
         WHITELIST_LICENSE_CHECK: ${{ inputs.whitelist-license-check }}
       run: |
-        if [[ -n "$WHITELIST_LICENSE_CHECK" ]]; then
-          echo "Whitelisted packages: $WHITELIST_LICENSE_CHECK"
+        if [[ -n "${WHITELIST_LICENSE_CHECK}" ]]; then
+          echo "Whitelisted packages: ${WHITELIST_LICENSE_CHECK}"
           # Split the input string by comma, trim values and append them to the ignored-packages.txt file
-          IFS=',' read -ra whitelist <<< "$WHITELIST_LICENSE_CHECK"
+          IFS=',' read -ra whitelist <<< "${WHITELIST_LICENSE_CHECK}"
           for package in "${whitelist[@]}"; do
             echo "Ignoring whitelisted package: $package"
             echo "$package" >> ignored-packages.txt
@@ -229,13 +229,13 @@ runs:
         mapfile licenses_from_txt < accepted-licenses.txt
         accepted_licenses='Accepted licenses:\n'
         for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\n"; done
-        echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> $GITHUB_OUTPUT
+        echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> ${GITHUB_OUTPUT}
 
         # Load accepted packages
         mapfile ignored_packages_from_txt < ignored-packages.txt
         ignored_packages='Ignored packages:\n'
         for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg\n"; done
-        echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> $GITHUB_OUTPUT
+        echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> ${GITHUB_OUTPUT}
 
     - name: Log ignored packages and accepted licenses
       uses: ansys/actions/_logging@feat/check-actions-security-action

@@ -278,7 +278,7 @@ runs: # zizmor: ignore[github-env]
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
       run: |
-        echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f "$REQUIREMENTS_FILE" ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+        echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f "${REQUIREMENTS_FILE}" ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
 
     - name: "Install documentation dependencies from requirements file"
       shell: bash
@@ -287,7 +287,7 @@ runs: # zizmor: ignore[github-env]
       if: steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
       run: |
         source .venv/bin/activate
-        python -m pip install -r "$REQUIREMENTS_FILE"
+        python -m pip install -r "${REQUIREMENTS_FILE}"
 
     - name: "Install Python library"
       shell: bash
@@ -296,7 +296,7 @@ runs: # zizmor: ignore[github-env]
         BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
       run: |
         source .venv/bin/activate
-        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install
         else
           python -m pip install .
@@ -309,7 +309,7 @@ runs: # zizmor: ignore[github-env]
         BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
       run: |
         source .venv/bin/activate
-        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --with doc
         else
           python -m pip install .[doc]
@@ -333,15 +333,15 @@ runs: # zizmor: ignore[github-env]
       shell: bash
       run: |
         source .venv/bin/activate
-        $SPHINX_BUILD_MAKE -C doc html SPHINXOPTS="$SPHINX_OPTS"
+        ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINX_OPTS}"
         $SPHINX_BUILD_MAKE -C doc pdf
-        if [[ "$CHECK_LINKS" == 'true' ]];
+        if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="$SPHINX_OPTS"
+          $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINX_OPTS}"
         fi
-        if [[ "$SKIP_JSON_BUILD" == 'false' ]];
+        if [[ "${SKIP_JSON_BUILD}" == 'false' ]];
         then
-          $SPHINX_BUILD_MAKE -C doc json SPHINXOPTS="$SPHINX_OPTS"
+          ${SPHINX_BUILD_MAKE} -C doc json SPHINXOPTS="${SPHINX_OPTS}"
         fi
 
     - name: "Build HTML, PDF, and JSON documentation using xvfb"
@@ -354,15 +354,15 @@ runs: # zizmor: ignore[github-env]
       shell: bash
       run: |
         source .venv/bin/activate
-        xvfb-run $SPHINX_BUILD_MAKE -C doc html SPHINXOPTS="$SPHINX_OPTS"
-        xvfb-run $SPHINX_BUILD_MAKE -C doc pdf
-        if [[ "$CHECK_LINKS" == 'true' ]];
+        xvfb-run ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINX_OPTS}"
+        xvfb-run ${SPHINX_BUILD_MAKE} -C doc pdf
+        if [[ "${CHECK_LINKS}" == 'true' ]];
         then
           xvfb-run $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="$SPHINX_OPTS"
         fi
         if [[ "$SKIP_JSON_BUILD" == 'false' ]];
         then
-          xvfb-run $SPHINX_BUILD_MAKE -C doc json SPHINXOPTS="$SPHINX_OPTS"
+          xvfb-run ${SPHINX_BUILD_MAKE} -C doc json SPHINXOPTS="${SPHINX_OPTS}"
         fi
 
     # ------------------------------------------------------------------------
@@ -409,7 +409,7 @@ runs: # zizmor: ignore[github-env]
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       shell: bash
       run: |
-        echo "EXPECTED_BUILD_DIR=doc/_build" >> $GITHUB_OUTPUT
+        echo "EXPECTED_BUILD_DIR=doc/_build" >> ${GITHUB_OUTPUT}
 
     - name: Check expected build directory
       id: check-expected-build-dir
@@ -418,7 +418,7 @@ runs: # zizmor: ignore[github-env]
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
       shell: bash
       run: |
-        echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d "$EXPECTED_BUILD_DIR" ] && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+        echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d "${EXPECTED_BUILD_DIR}" ] && echo 'true' || echo 'false' )" >> ${GITHUB_OUTPUT}
 
     - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-build-dir.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
@@ -434,7 +434,7 @@ runs: # zizmor: ignore[github-env]
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
       shell: bash
       run: |
-        echo "EXPECTED_DOWNLOAD_DIR=$(echo "${EXPECTED_BUILD_DIR}/html/_static/assets/download")" >> $GITHUB_OUTPUT
+        echo "EXPECTED_DOWNLOAD_DIR=$(echo "${EXPECTED_BUILD_DIR}/html/_static/assets/download")" >> ${GITHUB_OUTPUT}
 
     - name: Check expected download directory
       id: check-expected-download-directory
@@ -443,7 +443,7 @@ runs: # zizmor: ignore[github-env]
         EXPECTED_DOWNLOAD_DIR: ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }}
       shell: bash
       run: |
-        echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d "$EXPECTED_DOWNLOAD_DIR" ] && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+        echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d "${EXPECTED_DOWNLOAD_DIR}" ] && echo 'true' || echo 'false' )" >> ${GITHUB_OUTPUT}
 
     - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
@@ -458,7 +458,7 @@ runs: # zizmor: ignore[github-env]
       env:
         EXPECTED_DOWNLOAD_DIR: ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }}
       run: |
-        mkdir -p "$EXPECTED_DOWNLOAD_DIR"
+        mkdir -p "${EXPECTED_DOWNLOAD_DIR}"
 
     # ------------------------------------------------------------------------
 

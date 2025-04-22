@@ -123,9 +123,9 @@ runs:
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
     - uses: ansys/actions/_logging@feat/check-actions-security-action
@@ -192,9 +192,9 @@ runs:
       shell: bash
       run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
         fi
 
     # ------------------------------------------------------------------------
@@ -204,7 +204,7 @@ runs:
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        $ACTIVATE_VENV
+        ${ACTIVATE_VENV}
         python -m pip install -U pip
 
     - name: "Install project (if required)"
@@ -215,7 +215,7 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         $ACTIVATE_VENV
-        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           python -m pip install poetry
           python -m poetry install
         else
@@ -228,8 +228,8 @@ runs:
         PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        $ACTIVATE_VENV
-        python -m pip install "pre-commit==$PRE_COMMIT_VERSION"
+        ${ACTIVATE_VENV}
+        python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
         pre-commit install
 
     - name: "Run pre-commit"
@@ -239,7 +239,7 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         $ACTIVATE_VENV
-        if [[ "$SHOW_DIFF_ON_FAILURE" == 'true' ]]; then
+        if [[ "${SHOW_DIFF_ON_FAILURE}" == 'true' ]]; then
           pre-commit run --all-files --show-diff-on-failure
         else
           pre-commit run --all-files

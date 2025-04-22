@@ -55,11 +55,11 @@ runs:
         HEAD_REF: ${{ github.head_ref }}
       run: |
         # Check if the author is either dependabot or pre-commit.ci.
-        if [[ "$AUTHOR" == 'dependabot[bot]' ]] || [[ "$AUTHOR" == 'pre-commit-ci[bot]' ]]; then
+        if [[ "${AUTHOR}" == 'dependabot[bot]' ]] || [[ "${AUTHOR}" == 'pre-commit-ci[bot]' ]]; then
           echo "PR author is allowed to be automerged."
         else
           echo "PR is not allowed to be automerged. Invalid PR author. Exiting gracefully..."
-          echo "SKIP_ACTION=1" >> $GITHUB_OUTPUT
+          echo "SKIP_ACTION=1" >> ${GITHUB_OUTPUT}
           exit 0
         fi
 

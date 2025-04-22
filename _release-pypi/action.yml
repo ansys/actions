@@ -147,10 +147,10 @@ runs:
       env:
         SKIP_EXISTING: ${{ inputs.skip-existing }}
       run: |
-        if [[ "$SKIP_EXISTING" == 'true' ]]; then
-          echo "SKIP_EXISTING=$(echo '--skip-existing')" >> $GITHUB_OUTPUT
+        if [[ "${SKIP_EXISTING}" == 'true' ]]; then
+          echo "SKIP_EXISTING=$(echo '--skip-existing')" >> ${GITHUB_OUTPUT}
         else
-          echo "SKIP_EXISTING=$(echo '')" >> $GITHUB_OUTPUT
+          echo "SKIP_EXISTING=$(echo '')" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Upload artifacts to PyPi"

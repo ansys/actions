@@ -163,10 +163,10 @@ runs:
       env:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
-        if [[ "$INPUT_REPOSITORY" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
+        if [[ "${INPUT_REPOSITORY}" == "current" ]]; then
+          echo "REPOSITORY=${{ github.repository }}" >> ${GITHUB_OUTPUT}
         else
-          echo "REPOSITORY=$INPUT_REPOSITORY" >> $GITHUB_OUTPUT
+          echo "REPOSITORY=${INPUT_REPOSITORY}" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
@@ -183,14 +183,14 @@ runs:
         BRANCH:  ${{ inputs.branch }}
       run: | # zizmor: ignore[template-injection] I can't think of any other way to expand input.branch within comments
         # Check the ${{ inputs.branch }} branch exists on remote
-        branch_exists=$(git ls-remote --heads origin "refs/heads/$BRANCH" 2>&1)
+        branch_exists=$(git ls-remote --heads origin "refs/heads/${BRANCH}" 2>&1)
 
         # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
-          echo "The $BRANCH branch does not exist. Creating $BRANCH."
+          echo "The ${BRANCH} branch does not exist. Creating ${BRANCH}."
 
           # Create orphan branch
-          git checkout --orphan "$BRANCH"
+          git checkout --orphan "${BRANCH}"
 
           # Unstage files to be committed
           git rm --cached -r .
@@ -199,16 +199,16 @@ runs:
           git clean -fd
 
           # Configure git username & email
-          git config user.name "$BOT_USER"
-          git config user.email "$BOT_EMAIL"
+          git config user.name "${BOT_USER}"
+          git config user.email "${BOT_EMAIL}"
 
           # Commit ${{ inputs.branch }} & push to origin
-          git commit --allow-empty -m "Create $BRANCH branch"
-          git push -u origin "$BRANCH"
+          git commit --allow-empty -m "Create ${BRANCH} branch"
+          git push -u origin "${BRANCH}"
         else
           # Fetch and switch to ${{ inputs.branch }}
           git fetch origin "${BRANCH}:${BRANCH}"
-          git switch "$BRANCH"
+          git switch "${BRANCH}"
         fi
 
     # ------------------------------------------------------------------------
@@ -372,7 +372,7 @@ runs:
         CNAME: ${{ inputs.cname }}
       run: |
           touch .nojekyll CNAME
-          echo "$CNAME" > CNAME
+          echo "${CNAME}" > CNAME
 
     # ------------------------------------------------------------------------
 
