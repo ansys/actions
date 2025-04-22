@@ -47,9 +47,17 @@ inputs:
       Equivalent to 'persona' zizmor option, controls zizmor's auditing sensitivity.
       Possible values include 'normal', 'high', and 'strict', which map to 'regular', 'pedantic',
       and 'auditor' persona options.
-    default: 'high'
     required: false
+    default: 'high'
     type: string
+
+  trust-ansys-actions:
+    description: |
+      Whether to trust the ``ansys/actions``. Setting this option to true will allow using tags
+      with ``ansys/actions``.
+    required: false
+    default: true
+    type: boolean
 
 runs:
   using: "composite"
@@ -63,7 +71,7 @@ runs:
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor
+        uv tool install zizmor==1.6.0
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -71,6 +79,20 @@ runs:
       shell: bash
       run: |  # zizmor: ignore[template-injection]
         echo 'GH_TOKEN=${{ inputs.token }}' >> "$GITHUB_ENV"
+
+    - name: "Write zizmor config file"
+      shell: bash
+      env:
+        ANSYS_ACTIONS_POLICY: ${{ inputs.trust-ansys-actions == 'true' && 'ref-pin' || 'hash-pin' }}
+      run: |
+        cat << _EOF_ > .zizmor.yml
+        rules:
+          unpinned-uses:
+            config:
+              policies:
+                ansys/*: ${ANSYS_ACTIONS_POLICY}
+                actions/*: hash-pin
+        _EOF_
 
     - name: "Output a summary of detected vulnerabilities"
       if: ${{ inputs.generate-summary == 'true' }}
