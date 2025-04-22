@@ -97,6 +97,9 @@ master_doc = "index"
 # Generate section labels for up to four levels
 autosectionlabel_maxdepth = 2
 
+# Ignore fa warnings during pdf documentation build
+suppress_warnings = ["design.fa-build"]
+
 # Ignore the following patterns when accessing links
 linkcheck_ignore = [
     r"https://github.com/ansys-internal/.*",
