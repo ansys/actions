@@ -85,7 +85,7 @@ runs:
       env:
         ANSYS_ACTIONS_POLICY: ${{ inputs.trust-ansys-actions == 'true' && 'ref-pin' || 'hash-pin' }}
       run: |
-        cat << _EOF_ > .zizmor.yml
+        cat << _EOF_ > zizmor.yml
         rules:
           unpinned-uses:
             config:
