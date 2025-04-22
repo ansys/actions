@@ -24,7 +24,9 @@ name: |
   Check actions security action.
 
 description: |
-  Detects common security issues in GitHub Actions yml files using `zizmor <https://woodruffw.github.io/zizmor/>`_.
+  This action helps audit GitHub workflows for vulnerabilities. It finds many common
+  security issues in typical GitHub Actions CI/CD setups using
+  `zizmor <https://woodruffw.github.io/zizmor/>`_.
 
 inputs:
 
@@ -37,7 +39,7 @@ inputs:
   generate-summary:
     description: |
       Whether to output a nicely formatted summary table showing the number
-      of security issues per workflow file.
+      of security issues per workflow file. Default value is ``true``.
     required: false
     default: true
     type: boolean
@@ -46,15 +48,16 @@ inputs:
     description: |
       Equivalent to 'persona' zizmor option, controls zizmor's auditing sensitivity.
       Possible values include 'normal', 'high', and 'strict', which map to 'regular', 'pedantic',
-      and 'auditor' persona options.
+      and 'auditor' persona options. Default value is ``high``.
     required: false
     default: 'high'
     type: string
 
   trust-ansys-actions:
     description: |
-      Whether to trust the ``ansys/actions``. Setting this option to true will allow using tags
-      with ``ansys/actions``.
+      Whether to trust the ``ansys/actions``. Setting this option to true will allow pinning
+      ``ansys/actions`` with tags. This option is ignored if a custom ``zizmor.yml`` file is
+      detected in the repository. Default value is ``true``.
     required: false
     default: true
     type: boolean
@@ -80,7 +83,19 @@ runs:
       run: |  # zizmor: ignore[template-injection]
         echo 'GH_TOKEN=${{ inputs.token }}' >> "$GITHUB_ENV"
 
+    - name: "Check if custom zizmor.yml file exists"
+      id: custom-zizmor
+      shell: bash
+      run: |
+        if [ -f zizmor.yml ]; then
+          echo "Custom zizmor.yml file detected. Ignoring 'trust-ansys-actions' option."
+          echo "CUSTOM_ZIZMOR=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "CUSTOM_ZIZMOR=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: "Write zizmor config file"
+      if: ${{ steps.custom-zizmor.outputs.CUSTOM_ZIZMOR == 'false' }}
       shell: bash
       env:
         ANSYS_ACTIONS_POLICY: ${{ inputs.trust-ansys-actions == 'true' && 'ref-pin' || 'hash-pin' }}

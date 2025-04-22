@@ -197,4 +197,4 @@ jobs:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
           auditing-level: 'high'
-          trust-ansys-actions: false
+          trust-ansys-actions: true
