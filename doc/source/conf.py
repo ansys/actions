@@ -98,7 +98,7 @@ master_doc = "index"
 autosectionlabel_maxdepth = 2
 
 # Avoid fa warnings during pdf documentation build
-sd_fontawesome_latex = True
+suppress_warnings = ["design.fa-build"]
 
 # Ignore the following patterns when accessing links
 linkcheck_ignore = [
