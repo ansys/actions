@@ -131,7 +131,7 @@ inputs:
     required: true
     type: boolean
 
-runs: # zizmor: ignore[github-env]
+runs:
   using: "composite"
   steps:
 
@@ -240,7 +240,7 @@ runs: # zizmor: ignore[github-env]
     - name: "Set poetry environment variable(s)"
       if: steps.environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV # zizmor: ignore[github-env]
 
     # NOTE: Install pipx in a location that can be used in following CICD jobs
     # but ensure that poetry is installed in a temporary folder cleaned before

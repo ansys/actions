@@ -186,25 +186,20 @@ runs:
         echo "DEPENDENCY_CHECK_PACKAGE_NAME=${PYTHON_PACKAGE_NAME}" >> ${GITHUB_ENV}
         echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ "${REPO_FULL_NAME}" == '' ]] && echo "${REPOSITORY}" || echo "${REPO_FULL_NAME}")" >> ${GITHUB_ENV}
 
-        if [[ "${DRY_RUN}" == 'true' ]];
-
-        then
+        if [[ "${DRY_RUN}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
         fi
-        if [[ "${EXIT_WITH_ERROR_ON_NEW_ADVISORY}" == 'true' ]];
 
-        then
+        if [[ "${EXIT_WITH_ERROR_ON_NEW_ADVISORY}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
         fi
-        if [[ "${DEV_MODE}" == 'true' ]];
 
-        then
+        if [[ "${DEV_MODE}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
         fi
-        if [[ "${CREATE_ISSUES}" == 'true' ]];
-
-        then
+        
+        if [[ "${CREATE_ISSUES}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_CREATE_ISSUES=1" >> $GITHUB_ENV
         fi
 
@@ -228,10 +223,8 @@ runs:
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
-
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
-
         fi
 
     - uses: ansys/actions/_logging@feat/check-actions-security-action
@@ -262,7 +255,6 @@ runs:
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: echo "${{ runner.temp }}/pipx/bin" >> ${GITHUB_PATH} # zizmor: ignore[github-env] no workaround for this
-
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -300,10 +292,8 @@ runs:
       run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
           echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
-
         else
           echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
-
         fi
 
     # ------------------------------------------------------------------------
@@ -314,7 +304,6 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         ${ACTIVATE_VENV}
-
         python -m pip install -U pip
 
     - name: "Install library"
@@ -331,11 +320,9 @@ runs:
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
             extra_targets=${EXTRA_TARGETS}
-
           else
             echo "Installing extra targets with pip: ${EXTRA_TARGETS}"
             extra_targets=[${EXTRA_TARGETS}]
-
           fi
         else
           echo "No extra targets to install"
@@ -344,10 +331,8 @@ runs:
 
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --extras "${extra_targets}"
-
         else
           python -m pip install ."${extra_targets}"
-
         fi
 
     - name: "Install action requirements"
@@ -372,7 +357,6 @@ runs:
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
       run: |
         ${ACTIVATE_VENV}
-
         # Load accepted safety vulnerabilities
         mapfile ignored_safety_vulnerabilities < ignored-safety.txt
         ignored_vulnerabilities=''
@@ -384,7 +368,6 @@ runs:
         safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
         bandit -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
-
     - name: "Run safety advisory checks"
       shell: bash
       env:
@@ -395,7 +378,6 @@ runs:
         ${ACTIVATE_VENV}
         if [[ "${HIDE_LOG}" == 'true' ]]; then
           python "${ACTION_PATH}/check_vulnerabilities.py" > /dev/null 2>&1
-
         else
           python "${ACTION_PATH}/check_vulnerabilities.py"
         fi
