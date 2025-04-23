@@ -198,7 +198,7 @@ runs:
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
         fi
-        
+
         if [[ "${CREATE_ISSUES}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_CREATE_ISSUES=1" >> $GITHUB_ENV
         fi
