@@ -100,7 +100,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: inputs.use-trusted-publisher == 'true'
       with:
         level: "ERROR"
@@ -121,7 +121,7 @@ runs:
         echo "::notice::We recommend using trusted publishers to securely publish packages on PyPI. You should consider moving to this approach."
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/check-actions-security-action
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
@@ -147,10 +147,10 @@ runs:
       env:
         SKIP_EXISTING: ${{ inputs.skip-existing }}
       run: |
-        if [[ "$SKIP_EXISTING" == 'true' ]]; then
-          echo "SKIP_EXISTING=$(echo '--skip-existing')" >> $GITHUB_OUTPUT
+        if [[ "${SKIP_EXISTING}" == 'true' ]]; then
+          echo "SKIP_EXISTING=$(echo '--skip-existing')" >> ${GITHUB_OUTPUT}
         else
-          echo "SKIP_EXISTING=$(echo '')" >> $GITHUB_OUTPUT
+          echo "SKIP_EXISTING=$(echo '')" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Upload artifacts to PyPi"

@@ -101,7 +101,7 @@ runs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       if: inputs.checkout == 'true'
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -114,9 +114,9 @@ runs:
       env:
         VALE_VERSION: ${{ inputs.vale-version }}
       run: |
-        version="$VALE_VERSION"
+        version="${VALE_VERSION}"
         vale_major_version=$( echo $version | cut -d '.' -f 1)
-        echo "VALE_MAJOR_VERSION=$(echo $vale_major_version)" >> $GITHUB_OUTPUT
+        echo "VALE_MAJOR_VERSION=$(echo $vale_major_version)" >> ${GITHUB_OUTPUT}
         echo "VALE_MAJOR_VERSION set to $vale_major_version"  # Add this line for debugging
 
     - name: "Verify Vale's configuration layout according to selected version"
@@ -148,7 +148,7 @@ runs:
       env:
        TOML_VERSION: ${{ inputs.toml-version }}
       run: |
-        python -m pip install --upgrade pip toml==$TOML_VERSION
+        python -m pip install --upgrade pip toml==${TOML_VERSION}
 
     - name: "Install docutils"
       shell: bash
@@ -189,10 +189,10 @@ runs:
         IGNORE_CHANGELOGD: ${{ inputs.ignore-changelogd }}
       run: |
         # If changelog.d is ignored and the TOWNCRIER_DIR exists in pyproject.toml, add the ignore glob
-        if [[ "$IGNORE_CHANGELOGD" == 'true' ]] && [[ -n "${{ env.TOWNCRIER_DIR }}" ]]; then
-          echo VALE_FLAGS="--config=$VALE_CONFIG --glob=!${{ env.TOWNCRIER_DIR }}/*.md" >> $GITHUB_OUTPUT
+        if [[ "${IGNORE_CHANGELOGD}" == 'true' ]] && [[ -n "${{ env.TOWNCRIER_DIR }}" ]]; then
+          echo VALE_FLAGS="--config=${VALE_CONFIG} --glob=!${{ env.TOWNCRIER_DIR }}/*.md" >> ${GITHUB_OUTPUT}
         else
-          echo VALE_FLAGS="--config=$VALE_CONFIG" >> $GITHUB_OUTPUT
+          echo VALE_FLAGS="--config=${VALE_CONFIG}" >> ${GITHUB_OUTPUT}
         fi
 
     # WARNING: This step is not meant to be executed and is here to track changes

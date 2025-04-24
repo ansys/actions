@@ -140,15 +140,6 @@ inputs:
     required: false
     type: boolean
 
-  skip-install:
-    description: |
-      Whether to skip the installation of the project or not. If ``true``, the
-      project is not installed. If ``false``, the project is installed. By
-      default, the project is not installed.
-    required: false
-    default: false
-    type: boolean
-
   release-from-main:
     description: |
       If ``false``, you pushed a tag from a release branch. This is applicable for most
@@ -201,7 +192,7 @@ runs:
         fetch-depth: 0
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/check-actions-security-action
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -212,7 +203,7 @@ runs:
       shell: bash
       run: |
         # /refs/tags/v0.1.0 -> 0.1.0
-        echo "TAG_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_OUTPUT
+        echo "TAG_VERSION=${GITHUB_REF##*/v}" >> ${GITHUB_OUTPUT}
 
     - name: "Install towncrier, toml, and the project"
       env:
@@ -222,26 +213,14 @@ runs:
       shell: bash
       run: |
         if [[ "$USE_UV" == "true" ]]; then
-          uv pip install --upgrade pip towncrier=="$TOWNCRIER_VERSION" toml=="$TOML_VERSION"
+          uv pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" toml=="${TOML_VERSION}"
         else
-          python -m pip install --upgrade pip towncrier=="$TOWNCRIER_VERSION" toml=="$TOML_VERSION"
-        fi
-
-    - name: "Install the project"
-      if: inputs.skip-install == 'false'
-      shell: bash
-      env:
-        USE_UV: ${{ inputs.use-uv }}
-      run: |
-        if [[ "$USE_UV" == "true" ]]; then
-          uv pip install .
-        else
-          python -m pip install .
+          python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" toml=="${TOML_VERSION}"
         fi
 
     # TODO: remove this deprecation in ansys/actions@v9
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
       with:
         level: "ERROR"
@@ -255,14 +234,14 @@ runs:
 
     # TODO: end
 
-    - name: "Get towncrier directory"
+    - name: "Get towncrier directory and project name"
       shell: python
       run: |
         import pathlib
         import os
         import toml
 
-        # Identify towncrier configuration file
+        # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
         towncrier_file = pathlib.Path("towncrier.toml")
         if not pyproject_file.exists() and not towncrier_file.exists():
@@ -275,13 +254,20 @@ runs:
         with open(towncrier_config, 'r') as f:
             config = toml.load(f)
             directory = config["tool"]["towncrier"]["directory"]
+            project_name = config["tool"]["towncrier"].get("package")
+
+        # If the project name is not specified, use the project name from the pyproject.toml
+        # Last resource - just call it DNE. In any case, based on our template, this value is not used
+        if project_name is None:
+            project_name = config.get("project", {"name": "DNE"}).get("name", "DNE")  # Bullet-proof package name retrieval
 
         # Get the GITHUB_ENV variable
         github_env = os.getenv('GITHUB_ENV')
 
-        # Append the TOWNCRIER_DIR with its value to GITHUB_ENV
+        # Append the TOWNCRIER_DIR and TOWNCRIER_NAME with its value to GITHUB_ENV
         with open(github_env, "a") as f:
-            f.write(f"TOWNCRIER_DIR={directory}")
+            f.write(f"TOWNCRIER_DIR={directory}\n")
+            f.write(f"TOWNCRIER_NAME={project_name}")
 
     - name: "Get main branch name"
       id: main-branch-name
@@ -290,7 +276,7 @@ runs:
         head_branch=$(git remote show origin | grep "HEAD branch:")
         formatted_head_branch=${head_branch#*: }
 
-        echo "MAIN_BRANCH=$formatted_head_branch" >> $GITHUB_OUTPUT
+        echo "MAIN_BRANCH=$formatted_head_branch" >> ${GITHUB_OUTPUT}
 
     - name: "Set the branch to update the CHANGELOG file on"
       shell: bash
@@ -300,13 +286,13 @@ runs:
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
         RELEASE_FROM_MAIN: ${{ inputs.release-from-main }}
       run: |
-        if [[ "$RELEASE_FROM_MAIN" == "true" ]]; then
-          echo "UPDATE_BRANCH=$MAIN_BRANCH" >> $GITHUB_OUTPUT
-          echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_OUTPUT
+        if [[ "${RELEASE_FROM_MAIN}" == "true" ]]; then
+          echo "UPDATE_BRANCH=${MAIN_BRANCH}" >> ${GITHUB_OUTPUT}
+          echo "RELEASE_BRANCH_EXISTS=true" >> ${GITHUB_OUTPUT}
         else
           # Assume release branch is "release/major.minor"
           # v0.1.0 (tag) -> release/0.1
-          tag_version=$TAG_VERSION
+          tag_version=${TAG_VERSION}
           release_branch="release/${tag_version%.*}"
 
           # Check release_branch exists on remote
@@ -315,11 +301,11 @@ runs:
           # If the release branch doesn't exist, then use the temporary branch
           if [ -z "$release_branch_exists" ]; then
             # maint/changelog-update-v0.1.0
-            echo "UPDATE_BRANCH=maint/changelog-update-v$TAG_VERSION" >> $GITHUB_OUTPUT
-            echo "RELEASE_BRANCH_EXISTS=false" >> $GITHUB_OUTPUT
+            echo "UPDATE_BRANCH=maint/changelog-update-v${TAG_VERSION}" >> ${GITHUB_OUTPUT}
+            echo "RELEASE_BRANCH_EXISTS=false" >> ${GITHUB_OUTPUT}
           else
-            echo "UPDATE_BRANCH=$release_branch" >> $GITHUB_OUTPUT
-            echo "RELEASE_BRANCH_EXISTS=true" >> $GITHUB_OUTPUT
+            echo "UPDATE_BRANCH=${release_branch}" >> ${GITHUB_OUTPUT}
+            echo "RELEASE_BRANCH_EXISTS=true" >> ${GITHUB_OUTPUT}
           fi
         fi
 
@@ -328,6 +314,7 @@ runs:
       env:
         FORMAT_DATE: ${{ inputs.format-date }}
       run: |
+        import os
         import datetime
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
@@ -335,7 +322,7 @@ runs:
         from parse_pr_title import save_env_variable
 
         # Whether or not to format the date in the CHANGELOG file - "true" or "false"
-        format_date = "$FORMAT_DATE"
+        format_date = os.environ.get("FORMAT_DATE")
 
         # Format the string depending on format_date being "true" or "false"
         fmt_string = "%B %d, %Y" if format_date == "true" else "%Y-%m-%d"
@@ -355,75 +342,62 @@ runs:
       shell: bash
       run: |
         # Get number of .md files in ${{ env.TOWNCRIER_DIR }}
-        count=$(find "$TOWNCRIER_DIR" -type f -name "*.md" | wc -l)
+        count=$(find "${TOWNCRIER_DIR}" -type f -name "*.md" | wc -l)
 
         if [ $count -gt 0 ]; then
-          echo "Using $UPDATE_BRANCH to update the CHANGELOG file"
-          if [[ $RELEASE_BRANCH_EXISTS == "false" ]]; then
-            git checkout -b "$UPDATE_BRANCH"
+          echo "Using ${UPDATE_BRANCH} to update the CHANGELOG file"
+          if [[ ${RELEASE_BRANCH_EXISTS} == "false" ]]; then
+            git checkout -b "${UPDATE_BRANCH}"
           else
-            git checkout "$UPDATE_BRANCH"
+            git checkout "${UPDATE_BRANCH}"
             git pull
           fi
 
-          # Update the changelog with the package version from pyproject.toml
-          # The [tool.towncrier] section in pyproject.toml requires the following line
-          # for the command to work:
-          # package = "ansys.<product>.<library>"
-          buildcmd=$(towncrier build --yes --date "$CURRENT_DATE" >> builderr.txt 2>&1 || true)
-          cat builderr.txt
-          version_err=$(grep "Error: '--version'" builderr.txt || true)
+          # Run towncrier with the tag specified
+          # Update changelog with the tag version
+          buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
 
           # Remove builderr.txt
           rm builderr.txt
 
-          # If version_err contains the error message, run with the tag specified
-          if [ -n "$version_err" ]; then
-            # Update changelog with the tag version
-            buildcmd=$(towncrier build --yes --version $TAG_VERSION --date "$CURRENT_DATE" >> builderr.txt 2>&1 || true)
-            section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
+          if [ -n "$section_exists_err" ]; then
+            # Print error message on how to fix this
+            message="Your changelog file already contains section ${TAG_VERSION} in the \
+            ${UPDATE_BRANCH} branch. Please checkout ${UPDATE_BRANCH}, revert \
+            the commit named 'chore: updating CHANGELOG for v${TAG_VERSION}', and \
+            re-run the workflow."
 
-            # Remove builderr.txt
-            rm builderr.txt
-
-            if [ -n "$section_exists_err" ]; then
-              # Print error message on how to fix this
-              message="Your changelog file already contains section $TAG_VERSION in the \
-        $UPDATE_BRANCH branch. Please checkout $UPDATE_BRANCH, revert \
-        the commit named 'chore: updating CHANGELOG for v$TAG_VERSION', and \
-        re-run the workflow."
-
-              echo -e "\033[1;91m[ERROR]: $message\033[0m"
-              exit 1
-            fi
+            echo -e "\033[1;91m[ERROR]: $message\033[0m"
+            exit 1
           fi
 
           # Configure git username & email
-          git config user.name "$BOT_USER"
-          git config user.email "$BOT_EMAIL"
+          git config user.name "${BOT_USER}"
+          git config user.email "${BOT_EMAIL}"
 
           # Add CHANGELOG.md file and deleted ${{ env.TOWNCRIER_DIR }}/*.md files
           git add .
 
           # Commit changes and save commit SHA
-          if [[ "$USE_UPPER_CASE" == "false" ]]; then
-            git commit -m "chore: updating CHANGELOG for v$TAG_VERSION"
+          if [[ "${USE_UPPER_CASE}" == "false" ]]; then
+            git commit -m "chore: updating CHANGELOG for v${TAG_VERSION}"
           else
-            git commit -m "CHORE: updating CHANGELOG for v$TAG_VERSION"
+            git commit -m "CHORE: updating CHANGELOG for v${TAG_VERSION}"
           fi
-          echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "COMMIT_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
 
           # Push CHANGELOG.md changes
-          if [[ "$RELEASE_BRANCH_EXISTS" == "true" ]]; then
+          if [[ "${RELEASE_BRANCH_EXISTS}" == "true" ]]; then
             git push
           else
-            git push -u origin "$UPDATE_BRANCH"
+            git push -u origin "${UPDATE_BRANCH}"
           fi
 
-          echo "UPDATED_CHANGELOG=true" >> $GITHUB_OUTPUT
+          echo "UPDATED_CHANGELOG=true" >> ${GITHUB_OUTPUT}
         else
-          echo "There are no changelog fragment files to update the CHANGELOG for v$TAG_VERSION"
-          echo "UPDATED_CHANGELOG=false" >> $GITHUB_OUTPUT
+          echo "There are no changelog fragment files to update the CHANGELOG for v${TAG_VERSION}"
+          echo "UPDATED_CHANGELOG=false" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Create PR into main with the CHANGELOG file changes"
@@ -438,7 +412,7 @@ runs:
       shell: bash
       run: |
         # Checkout main & create a branch
-        git checkout $MAIN_BRANCH
+        git checkout ${MAIN_BRANCH}
         git pull
 
         # Set branch for PR
@@ -456,7 +430,7 @@ runs:
         # Create a new $pr_branch
         git checkout -b $pr_branch
 
-        cherrypick=$(git cherry-pick "$COMMIT_SHA" >> cherrypickerr.txt 2>&1 || true)
+        cherrypick=$(git cherry-pick "${COMMIT_SHA}" >> cherrypickerr.txt 2>&1 || true)
         cat cherrypickerr.txt
         conflict=$(grep "CONFLICT" cherrypickerr.txt || true)
 
@@ -478,18 +452,18 @@ runs:
         # Push CHANGELOG.md changes to $pr_branch
         git push -u origin $pr_branch
 
-        if [[ "$USE_UPPER_CASE" == "false" ]] ; then
-          pr_title="chore: update CHANGELOG for v$TAG_VERSION"
+        if [[ "${USE_UPPER_CASE}" == "false" ]] ; then
+          pr_title="chore: update CHANGELOG for v${TAG_VERSION}"
         else
-          pr_title="CHORE: update CHANGELOG for v$TAG_VERSION"
+          pr_title="CHORE: update CHANGELOG for v${TAG_VERSION}"
         fi
 
-        body_msg="Update CHANGELOG for v$TAG_VERSION and remove .md files in $TOWNCRIER_DIR."
+        body_msg="Update CHANGELOG for v${TAG_VERSION} and remove .md files in ${TOWNCRIER_DIR}."
 
         > [!CAUTION]
         > Do not merge this pull request until the release has been successfully made."
 
-        gh pr create --title "$pr_title" --body "$body_msg" --reviewer "$GITHUB_ACTOR"
+        gh pr create --title "$pr_title" --body "${body_msg}" --reviewer "${GITHUB_ACTOR}"
 
     - name: "Delete & Re-create tag"
       env:
@@ -501,24 +475,24 @@ runs:
       shell: bash
       run: |
           # Checkout branch created from tag with CHANGELOG update & pull
-          git checkout "$UPDATE_BRANCH"
+          git checkout "${UPDATE_BRANCH}"
           git pull
 
           # Delete the tag locally
-          git tag -d v$TAG_VERSION
+          git tag -d v${TAG_VERSION}
 
           # Delete the tag on remote
-          git push origin --delete v$TAG_VERSION
+          git push origin --delete v${TAG_VERSION}
 
           # Create the tag locally
-          git tag v$TAG_VERSION
+          git tag v${TAG_VERSION}
 
           # Create the tag on remote
-          git push origin v$TAG_VERSION
+          git push origin v${TAG_VERSION}
 
-          if [[ "$RELEASE_BRANCH_EXISTS" == "false" ]]; then
+          if [[ "${RELEASE_BRANCH_EXISTS}" == "false" ]]; then
             # Delete branch created from deleted tag with CHANGELOG update
-            git push origin --delete "$UPDATE_BRANCH"
+            git push origin --delete "${UPDATE_BRANCH}"
           fi
 
           # Exit on error if the CHANGELOG is updated to prevent the release action from running

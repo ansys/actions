@@ -190,24 +190,24 @@ runs:
         DEV_MODE: ${{ inputs.dev-mode }}
         CREATE_ISSUES: ${{ inputs.create-issues }}
       run: |  # zizmor: ignore[github-env]
-        echo "DEPENDENCY_CHECK_TOKEN=$TOKEN" >> $GITHUB_ENV
-        echo "DEPENDENCY_CHECK_PACKAGE_NAME=$PYTHON_PACKAGE_NAME" >> $GITHUB_ENV
-        echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ "$REPO_FULL_NAME" == '' ]] && echo "$REPOSITORY" || echo "$REPO_FULL_NAME")" >> $GITHUB_ENV
-        if [[ "$DRY_RUN" == 'true' ]];
-        then
+        echo "DEPENDENCY_CHECK_TOKEN=${TOKEN}" >> ${GITHUB_ENV}
+        echo "DEPENDENCY_CHECK_PACKAGE_NAME=${PYTHON_PACKAGE_NAME}" >> ${GITHUB_ENV}
+        echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ "${REPO_FULL_NAME}" == '' ]] && echo "${REPOSITORY}" || echo "${REPO_FULL_NAME}")" >> ${GITHUB_ENV}
+
+        if [[ "${DRY_RUN}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
         fi
-        if [[ "$EXIT_WITH_ERROR_ON_NEW_ADVISORY" == 'true' ]];
-        then
+
+        if [[ "${EXIT_WITH_ERROR_ON_NEW_ADVISORY}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
         fi
-        if [[ "$DEV_MODE" == 'true' ]];
-        then
+
+        if [[ "${DEV_MODE}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
         fi
-        if [[ "$CREATE_ISSUES" == 'true' ]];
-        then
+
+        if [[ "${CREATE_ISSUES}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_CREATE_ISSUES=1" >> $GITHUB_ENV
         fi
 
@@ -219,7 +219,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -232,14 +232,14 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
-        elif [[ "$USE_UV" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+        elif [[ "${USE_UV}" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -247,14 +247,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/check-actions-security-action
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
@@ -267,7 +267,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+      run: echo "${{ runner.temp }}/pipx/bin" >> ${GITHUB_PATH} # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -306,9 +306,9 @@ runs:
       shell: bash
       run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
         fi
 
     # ------------------------------------------------------------------------
@@ -319,8 +319,8 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         USE_UV: ${{ inputs.use-uv }}
       run: |
-        $ACTIVATE_VENV
-        if [[ "$USE_UV" == 'true' ]]; then
+        ${ACTIVATE_VENV}
+        if [[ "${USE_UV}" == 'true' ]]; then
           uv pip install -U pip
         else
           python -m pip install -U pip
@@ -335,25 +335,25 @@ runs:
       # the shell expansion messes with the quotes in the poetry case.
       run: |
         $ACTIVATE_VENV
-        if [[ "$EXTRA_TARGETS" != '' ]]; then
-          if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
-            echo "Installing extra targets with poetry: $EXTRA_TARGETS"
-            extra_targets=$EXTRA_TARGETS
+        if [[ "${EXTRA_TARGETS}" != '' ]]; then
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
+            extra_targets=${EXTRA_TARGETS}
           else
-            echo "Installing extra targets with pip: $EXTRA_TARGETS"
-            extra_targets=[$EXTRA_TARGETS]
+            echo "Installing extra targets with pip: ${EXTRA_TARGETS}"
+            extra_targets=[${EXTRA_TARGETS}]
           fi
         else
           echo "No extra targets to install"
           extra_targets=""
         fi
 
-        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
-          poetry install --extras "$extra_targets"
-        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install ."$extra_targets"
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          poetry install --extras "${extra_targets}"
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install ."${extra_targets}"
         else
-          python -m pip install ."$extra_targets"
+          python -m pip install ."${extra_targets}"
         fi
 
     - name: "Install action requirements"
@@ -362,8 +362,8 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         ACTION_PATH: ${{ github.action_path }}
       run: |
-        $ACTIVATE_VENV
-        if [[ "$BUILD_BACKEND" == 'uv' ]]; then
+        ${ACTIVATE_VENV}
+        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           uv pip install -r "${ACTION_PATH}/requirements.txt"
         else
           python -m pip install -r "${ACTION_PATH}/requirements.txt"
@@ -380,7 +380,7 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
       run: |
-        $ACTIVATE_VENV
+        ${ACTIVATE_VENV}
         # Load accepted safety vulnerabilities
         mapfile ignored_safety_vulnerabilities < ignored-safety.txt
         ignored_vulnerabilities=''
@@ -390,7 +390,7 @@ runs:
 
         # Run security tools
         safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
-        bandit -r "$SOURCE_DIRECTORY" -o info_bandit.json -f json --exit-zero
+        bandit -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
     - name: "Run safety advisory checks"
       shell: bash
@@ -399,8 +399,8 @@ runs:
         ACTION_PATH: ${{ github.action_path }}
         HIDE_LOG: ${{ inputs.hide-log }}
       run: |
-        $ACTIVATE_VENV
-        if [[ "$HIDE_LOG" == 'true' ]]; then
+        ${ACTIVATE_VENV}
+        if [[ "${HIDE_LOG}" == 'true' ]]; then
           python "${ACTION_PATH}/check_vulnerabilities.py" > /dev/null 2>&1
         else
           python "${ACTION_PATH}/check_vulnerabilities.py"

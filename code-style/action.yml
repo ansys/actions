@@ -120,7 +120,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -133,14 +133,14 @@ runs:
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
-        elif [[ "$USE_UV" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+        elif [[ "${USE_UV}" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
@@ -148,14 +148,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       with:
         level: "INFO"
         message: >
           Set up python to check code style.
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/check-actions-security-action
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -207,9 +207,9 @@ runs:
       shell: bash
       run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
         fi
 
     # ------------------------------------------------------------------------
@@ -220,8 +220,8 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         USE_UV: ${{ inputs.use-uv }}
       run: |
-        $ACTIVATE_VENV
-        if [[ "$USE_UV" == 'true' ]]; then
+        ${ACTIVATE_VENV}
+        if [[ "${USE_UV}" == 'true' ]]; then
           uv pip install -U pip
         else
           python -m pip install -U pip
@@ -233,10 +233,10 @@ runs:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        $ACTIVATE_VENV
-        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+        ${ACTIVATE_VENV}
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install
-        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           uv pip install .
         else
           python -m pip install .
@@ -248,11 +248,11 @@ runs:
         PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        $ACTIVATE_VENV
-        if [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install "pre-commit==$PRE_COMMIT_VERSION"
+        ${ACTIVATE_VENV}
+        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
         else
-          python -m pip install "pre-commit==$PRE_COMMIT_VERSION"
+          python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
         pre-commit install
 
     - name: "Run pre-commit"
@@ -262,7 +262,7 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         $ACTIVATE_VENV
-        if [[ "$SHOW_DIFF_ON_FAILURE" == 'true' ]]; then
+        if [[ "${SHOW_DIFF_ON_FAILURE}" == 'true' ]]; then
           pre-commit run --all-files --show-diff-on-failure
         else
           pre-commit run --all-files
@@ -271,7 +271,7 @@ runs:
     # ------------------------------------------------------------------------
 
     # Trigger docker-style action if docker-lint is set to true.
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: inputs.docker-lint == 'true'
       with:
         level: "INFO"
@@ -280,7 +280,7 @@ runs:
 
     - name: "Run Dockerfile linting in directories 'docker' and '.devcontainer'"
       if: inputs.docker-lint == 'true'
-      uses: ansys/actions/docker-style@main
+      uses: ansys/actions/docker-style@feat/check-actions-security-action
       with:
         directory: "docker .devcontainer"
         recursive: ${{ inputs.docker-recursive }}
@@ -289,7 +289,7 @@ runs:
     # ------------------------------------------------------------------------
 
     # End action as docker-lint is set to false.
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ inputs.docker-lint == 'false' }}
       with:
         level: "INFO"

@@ -140,7 +140,7 @@ runs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/check-actions-security-action
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -167,8 +167,8 @@ runs:
       env:
         TARGET: ${{ inputs.target }}
       run: |
-        echo "install_target=$( [[ "$TARGET" == '' ]] && echo '.' || echo ".[$TARGET]")" >> $GITHUB_OUTPUT
-        echo "wheelhouse_target=$( [[ "$TARGET" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> $GITHUB_OUTPUT
+        echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '.' || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
+        echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
     - name: "Install the library"
       shell: bash
@@ -176,7 +176,7 @@ runs:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
       run: |
-        $INSTALL_COMMAND "$INSTALL_TARGET"
+        ${INSTALL_COMMAND} "${INSTALL_TARGET}"
 
     - name: "Verify if importlib-metadata needs to be installed"
       id: needs-importlib-metadata
@@ -184,15 +184,15 @@ runs:
       env:
         PYTHON_VERSION: ${{ inputs.python-version }}
       run: |
-        python_version="$PYTHON_VERSION"
+        python_version="${PYTHON_VERSION}"
         minor_python_version=$(echo "$python_version" | awk -F "." '{print $2}')
         major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
         if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 8 )) )); then
-          echo "needs_importlib_metadata=true" >> $GITHUB_OUTPUT
+          echo "needs_importlib_metadata=true" >> ${GITHUB_OUTPUT}
         elif (( $(( $major_python_version < 3 )) )); then
-          echo "needs_importlib_metadata=true" >> $GITHUB_OUTPUT
+          echo "needs_importlib_metadata=true" >> ${GITHUB_OUTPUT}
         else
-          echo "needs_importlib_metadata=false" >> $GITHUB_OUTPUT
+          echo "needs_importlib_metadata=false" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Install importlib-metadata (only for Python <= 3.7)"
@@ -210,9 +210,9 @@ runs:
         LIBRARY_NAME: ${{ inputs.library-name }}
         NEEDS_IMPORTLIB_METADATA: ${{ steps.needs-importlib-metadata.outputs.needs_importlib_metadata }}
       run: |
-        library_name="$LIBRARY_NAME"
+        library_name="${LIBRARY_NAME}"
 
-        if [ $NEEDS_IMPORTLIB_METADATA == 'true' ]; then
+        if [ ${NEEDS_IMPORTLIB_METADATA} == 'true' ]; then
           version=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
         else
           version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
@@ -223,14 +223,14 @@ runs:
         else
             echo "The library version is: $version";
         fi;
-        echo "library_version=$version" >> $GITHUB_OUTPUT
+        echo "library_version=${version}" >> ${GITHUB_OUTPUT}
 
     - name: "Generate the wheelhouse"
       shell: bash
       env:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
       run: |
-        python -m pip wheel "$INSTALL_TARGET" -w wheelhouse
+        python -m pip wheel "${INSTALL_TARGET}" -w wheelhouse
 
     - name: "Compress the wheelhouse"
       uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
@@ -252,7 +252,7 @@ runs:
         subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
-      uses: ansys/actions/check-licenses@main
+      uses: ansys/actions/check-licenses@feat/check-actions-security-action
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}

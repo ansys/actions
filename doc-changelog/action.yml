@@ -118,7 +118,7 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/check-actions-security-action
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -129,11 +129,11 @@ runs:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOML_VERSION: ${{ inputs.toml-version }}
       run: |
-        python -m pip install --upgrade pip towncrier==$TOWNCRIER_VERSION toml==$TOML_VERSION
+        python -m pip install --upgrade pip towncrier==${TOWNCRIER_VERSION} toml==${TOML_VERSION}
 
     # TODO: remove this deprecation in ansys/actions@v9
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/check-actions-security-action
       if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
       with:
         level: "ERROR"
@@ -203,7 +203,7 @@ runs:
 
         # Save the labels to an environment variable
         # For example, LABELS="enhancement maintenance"
-        echo LABELS='"'$pr_labels'"' >> $GITHUB_OUTPUT
+        echo LABELS='"'$pr_labels'"' >> ${GITHUB_OUTPUT}
 
     - name: "Set CHANGELOG category based on conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
@@ -354,8 +354,8 @@ runs:
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
         # Configure git username & email
-        git config user.name "$BOT_USER"
-        git config user.email "$BOT_EMAIL"
+        git config user.name "${BOT_USER}"
+        git config user.email "${BOT_EMAIL}"
 
         # Add towncrier fragment
         git add .

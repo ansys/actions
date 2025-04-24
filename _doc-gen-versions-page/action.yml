@@ -111,7 +111,7 @@ runs:
         html_file="index.html"
 
         # Get the ID of the element hosting the content
-        content_element_id=$CONTENT_ELEMENT_ID
+        content_element_id="${CONTENT_ELEMENT_ID}"
 
         # Declare the content of the script
         script_content=$(cat <<EOF

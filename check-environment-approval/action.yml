@@ -89,13 +89,13 @@ runs:
         DEPENDABOT_BRANCH: ${{ startsWith(github.head_ref, 'dependabot/') }}
       shell: bash
       run: |
-        if [[ "$TRIGGERING_ACTOR" == "dependabot[bot]" ]]; then
-          echo "environment=$MANUAL_CHECK_ENVIRONMENT" >> "$GITHUB_OUTPUT"
+        if [[ "${TRIGGERING_ACTOR}" == "dependabot[bot]" ]]; then
+          echo "environment=${MANUAL_CHECK_ENVIRONMENT}" >> "${GITHUB_OUTPUT}"
           echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
-        elif [[ "$TRIGGERING_ACTOR" == "pyansys-ci-bot" && "$DEPENDABOT_BRANCH" == "true" ]]; then
-          echo "environment=$MANUAL_CHECK_ENVIRONMENT" >> "$GITHUB_OUTPUT"
+        elif [[ "${TRIGGERING_ACTOR}" == "pyansys-ci-bot" && "${DEPENDABOT_BRANCH}" == "true" ]]; then
+          echo "environment=${MANUAL_CHECK_ENVIRONMENT}" >> "${GITHUB_OUTPUT}"
           echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
         else
-          echo "environment=$SKIP_MANUAL_CHECK_ENVIRONMENT" >> "$GITHUB_OUTPUT"
-          echo "::notice::Workflow triggered by $TRIGGERING_ACTOR."
+          echo "environment=${SKIP_MANUAL_CHECK_ENVIRONMENT}" >> "${GITHUB_OUTPUT}"
+          echo "::notice::Workflow triggered by ${TRIGGERING_ACTOR}."
         fi
