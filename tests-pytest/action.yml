@@ -316,7 +316,7 @@ runs:
        PYTEST_MARKERS: ${{ inputs.pytest-markers }}
        PYTEST_EXTRA_ARGS: ${{ inputs.pytest-extra-args }}
        PYTEST_POST_ARGS: ${{ inputs.pytest-postargs }}
-       PYTEST_RUN: ${{ steps.output.pytest-run-command.PYTEST_RUN }}
+       PYTEST_RUN: ${{ steps.pytest-run-command.outputs.PYTEST_RUN }}
        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         $ACTIVATE_VENV
