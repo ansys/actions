@@ -80,8 +80,10 @@ runs:
     - name: "Optionally set GH_TOKEN"
       if: ${{ inputs.token != '' }}
       shell: bash
-      run: |  # zizmor: ignore[template-injection]
-        echo 'GH_TOKEN=${{ inputs.token }}' >> "$GITHUB_ENV"
+      env:
+        TOKEN: ${{ inputs.token }}
+      run: | # zizmor: ignore[github-env]
+        echo "GH_TOKEN=${TOKEN}" >> ${GITHUB_ENV}
 
     - name: "Check if custom zizmor.yml file exists"
       id: custom-zizmor

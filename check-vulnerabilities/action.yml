@@ -173,19 +173,10 @@ runs:
     - name: "Declare needed environment variables"
       shell: bash
       env:
-        TOKEN: ${{ inputs.token }}
-        PYTHON_PACKAGE_NAME: ${{ inputs.python-package-name }}
-        REPO_FULL_NAME: ${{ inputs.repo-full-name }}
-        REPOSITORY: ${{ github.repository }}
         DRY_RUN: ${{ inputs.dry-run }}
         EXIT_WITH_ERROR_ON_NEW_ADVISORY: ${{ inputs.exit-with-error-on-new-advisory }}
         DEV_MODE: ${{ inputs.dev-mode }}
-        CREATE_ISSUES: ${{ inputs.create-issues }}
       run: |  # zizmor: ignore[github-env]
-        echo "DEPENDENCY_CHECK_TOKEN=${TOKEN}" >> ${GITHUB_ENV}
-        echo "DEPENDENCY_CHECK_PACKAGE_NAME=${PYTHON_PACKAGE_NAME}" >> ${GITHUB_ENV}
-        echo "DEPENDENCY_CHECK_REPOSITORY=$( [[ "${REPO_FULL_NAME}" == '' ]] && echo "${REPOSITORY}" || echo "${REPO_FULL_NAME}")" >> ${GITHUB_ENV}
-
         if [[ "${DRY_RUN}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
         fi
@@ -197,10 +188,6 @@ runs:
         if [[ "${DEV_MODE}" == 'true' ]]; then
           echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
           echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
-        fi
-
-        if [[ "${CREATE_ISSUES}" == 'true' ]]; then
-          echo "DEPENDENCY_CHECK_CREATE_ISSUES=1" >> $GITHUB_ENV
         fi
 
     - name: "Install Git and clone project"
@@ -315,7 +302,7 @@ runs:
       # Note: we need to use an array to store the extra targets, otherwise
       # the shell expansion messes with the quotes in the poetry case.
       run: |
-        $ACTIVATE_VENV
+        ${ACTIVATE_VENV}
         if [[ "${EXTRA_TARGETS}" != '' ]]; then
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
@@ -342,7 +329,6 @@ runs:
         ACTION_PATH: ${{ github.action_path }}
       run: |
         ${ACTIVATE_VENV}
-
         python -m pip install -r "${ACTION_PATH}/requirements.txt"
 
     - name: "Download the list of ignored safety vulnerabilities"
@@ -374,6 +360,10 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         ACTION_PATH: ${{ github.action_path }}
         HIDE_LOG: ${{ inputs.hide-log }}
+        DEPENDENCY_CHECK_TOKEN: ${{ inputs.token }}
+        DEPENDENCY_CHECK_PACKAGE_NAME: ${{ inputs.python-package-name }}
+        DEPENDENCY_CHECK_REPOSITORY: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
+        DEPENDENCY_CHECK_CREATE_ISSUES: ${{ inputs.create-issues == 'true' && '1' || '' }}
       run: |
         ${ACTIVATE_VENV}
         if [[ "${HIDE_LOG}" == 'true' ]]; then
