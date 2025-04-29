@@ -52,7 +52,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
