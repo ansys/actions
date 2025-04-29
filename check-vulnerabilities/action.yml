@@ -171,8 +171,8 @@ inputs:
     description: |
       Whether to use uv for installation operations instead of pip. By default it is set
       to ``true``.
-    required: true
     default: true
+    required: false
     type: boolean
 
 runs:
@@ -206,7 +206,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/uv-as-default-package-manager
       with:
         level: "INFO"
         message: >
@@ -226,7 +226,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/uv-as-default-package-manager
       with:
         level: "INFO"
         message: >
@@ -234,14 +234,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/uv-as-default-package-manager
       with:
         level: "INFO"
         message: >
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/uv-as-default-package-manager
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false

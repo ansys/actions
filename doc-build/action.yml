@@ -184,7 +184,6 @@ inputs:
   use-uv:
     description: >
       Whether to use uv as the default package manager instead of pip. Default value is ``true``.
-
     default: true
     required: false
     type: boolean
@@ -200,7 +199,7 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/uv-as-default-package-manager
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -210,7 +209,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@main
+      uses: ansys/actions/_doc-build-linux@feat/uv-as-default-package-manager
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -228,7 +227,7 @@ runs:
 
     - name: Check input (Windows)
       if: ${{ (runner.os == 'Windows') && (inputs.requires-xvfb == 'true') }}
-      uses: ansys/actions/_logging@main
+      uses: ansys/actions/_logging@feat/uv-as-default-package-manager
       with:
         level: "WARNING"
         message: >
@@ -236,7 +235,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@main
+      uses: ansys/actions/_doc-build-windows@feat/uv-as-default-package-manager
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
