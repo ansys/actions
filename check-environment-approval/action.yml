@@ -82,15 +82,20 @@ runs:
 
     - name: Decide which environment should be used
       id: decision
+      env:
+        MANUAL_CHECK_ENVIRONMENT: ${{ inputs.manual-check-environment }}
+        SKIP_MANUAL_CHECK_ENVIRONMENT: ${{ inputs.skip-manual-check-environment }}
+        TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+        DEPENDABOT_BRANCH: ${{ startsWith(github.head_ref, 'dependabot/') }}
       shell: bash
       run: |
-        if [[ "${{ github.triggering_actor }}" == "dependabot[bot]" ]]; then
-          echo "environment=${{ inputs.manual-check-environment }}" >> "$GITHUB_OUTPUT"
+        if [[ "${TRIGGERING_ACTOR}" == "dependabot[bot]" ]]; then
+          echo "environment=${MANUAL_CHECK_ENVIRONMENT}" >> "${GITHUB_OUTPUT}"
           echo "::warning::Dependabot is not allowed to trigger this workflow. Please review carefully the changes before running the workflow manually."
-        elif [[ "${{ github.triggering_actor }}" == "pyansys-ci-bot" && "${{ startsWith(github.head_ref, 'dependabot/') }}" == "true" ]]; then
-          echo "environment=${{ inputs.manual-check-environment }}" >> "$GITHUB_OUTPUT"
+        elif [[ "${TRIGGERING_ACTOR}" == "pyansys-ci-bot" && "${DEPENDABOT_BRANCH}" == "true" ]]; then
+          echo "environment=${MANUAL_CHECK_ENVIRONMENT}" >> "${GITHUB_OUTPUT}"
           echo "::warning::PyAnsys CI bot is not allowed to trigger this workflow in dependabot's PR. Please review carefully the changes before running the workflow manually."
         else
-          echo "environment=${{ inputs.skip-manual-check-environment }}" >> "$GITHUB_OUTPUT"
-          echo "::notice::Workflow triggered by ${{ github.triggering_actor }}."
+          echo "environment=${SKIP_MANUAL_CHECK_ENVIRONMENT}" >> "${GITHUB_OUTPUT}"
+          echo "::notice::Workflow triggered by ${TRIGGERING_ACTOR}."
         fi

@@ -48,39 +48,43 @@ runs:
   steps:
 
     - name: Verify allowed PRs (dependabot and pre-commit.ci)
+      id: verify-allowed-prs
       shell: bash
+      env:
+        AUTHOR: ${{ github.event.pull_request.user.login }}
+        HEAD_REF: ${{ github.head_ref }}
       run: |
         # Check if the author is either dependabot or pre-commit.ci.
-        if [[ ${{ github.event.pull_request.user.login }} == 'dependabot[bot]' ]] || [[ ${{ github.event.pull_request.user.login }} == 'pre-commit-ci[bot]' ]]; then
+        if [[ "${AUTHOR}" == 'dependabot[bot]' ]] || [[ "${AUTHOR}" == 'pre-commit-ci[bot]' ]]; then
           echo "PR author is allowed to be automerged."
         else
           echo "PR is not allowed to be automerged. Invalid PR author. Exiting gracefully..."
-          echo "SKIP_ACTION=1" >> $GITHUB_ENV
+          echo "SKIP_ACTION=1" >> ${GITHUB_OUTPUT}
           exit 0
         fi
 
-        if [[ ${{ github.head_ref }} == 'dependabot/'* ]] || [[ ${{ github.head_ref }} == 'pre-commit-ci-update-config' ]]; then
+        if [[ "$HEAD_REF" == 'dependabot/'* ]] || [[ "$HEAD_REF" == 'pre-commit-ci-update-config' ]]; then
           echo "PR branch name is allowed to be automerged."
         else
           echo "PR is not allowed to be automerged. Invalid branch name. Exiting gracefully..."
-          echo "SKIP_ACTION=1" >> $GITHUB_ENV
+          echo "SKIP_ACTION=1" >> $GITHUB_OUTPUT
           exit 0
         fi
 
         # If we reach this point, the PR is allowed to be automerged.
-        echo "SKIP_ACTION=0" >> $GITHUB_ENV
+        echo "SKIP_ACTION=0" >> $GITHUB_OUTPUT
 
         # If it is a dependabot PR, create a new variable (bool type)
         # to be used in the next steps.
-        if [[ ${{ github.head_ref }} == 'dependabot/'* ]]; then
-          echo "DEPENDABOT_PR=1" >> $GITHUB_ENV
+        if [[ "$HEAD_REF" == 'dependabot/'* ]]; then
+          echo "DEPENDABOT_PR=1" >> $GITHUB_OUTPUT
         else
-          echo "DEPENDABOT_PR=0" >> $GITHUB_ENV
+          echo "DEPENDABOT_PR=0" >> $GITHUB_OUTPUT
         fi
 
     - name: Approve a PR
       shell: bash
-      if: env.SKIP_ACTION == '0'
+      if: steps.verify-allowed-prs.outputs.SKIP_ACTION == '0'
       run: gh pr review --approve "$PR_URL"
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
@@ -88,7 +92,7 @@ runs:
 
     - name: Merge a PR
       shell: bash
-      if: ${{ env.SKIP_ACTION == '0' && env.DEPENDABOT_PR == '0' }}
+      if: ${{ steps.verify-allowed-prs.outputs.SKIP_ACTION == '0' && steps.verify-allowed-prs.outputs.DEPENDABOT_PR == '0' }}
       run: gh pr merge --auto --squash "$PR_URL"
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
@@ -97,25 +101,25 @@ runs:
     # On dependabot PRs, auto-merge is only enabled iif it is a patch
     # or minor version bump. Major version bumps are not auto-merged.
     - name: Dependabot metadata (if dependabot PR only)
-      if: ${{ env.SKIP_ACTION == '0' && env.DEPENDABOT_PR == '1' }}
+      if: ${{ steps.verify-allowed-prs.outputs.SKIP_ACTION == '0' && steps.verify-allowed-prs.outputs.DEPENDABOT_PR == '1' }}
       id: metadata
       uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7 # v2.3.0
       with:
         github-token: ${{ inputs.approver-token }}
 
     - name: Enable auto-merge for Dependabot PRs
+      if: ${{ steps.verify-allowed-prs.outputs.SKIP_ACTION == '0' && steps.verify-allowed-prs.outputs.DEPENDABOT_PR == '1' }}
       shell: bash
-      if: ${{ env.SKIP_ACTION == '0' && env.DEPENDABOT_PR == '1' }}
       run: |
         # If only-allow-dependabot-patch is enabled, only patch versions should be auto-merged.
-        if [[ ${{ inputs.only-allow-dependabot-patch }} == 'true' ]]; then
-          if [[ ${{ steps.metadata.outputs.update-type }} != 'version-update:semver-patch' ]]; then
+        if [[ "$ONLY_ALLOW_DEPENDABOT_PATCH" == 'true' ]]; then
+          if [[ "$UPDATE_TYPE" != 'version-update:semver-patch' ]]; then
             echo "Only patch version updates are allowed. Skipping auto-merge."
             exit 0
           fi
         fi
 
-        if [[ ${{ steps.metadata.outputs.update-type }} != 'version-update:semver-major' ]]; then
+        if [[ "$UPDATE_TYPE" != 'version-update:semver-major' ]]; then
           gh pr merge --auto --squash "$PR_URL"
         else
           echo "Major version bump detected. Skipping auto-merge."
@@ -123,3 +127,5 @@ runs:
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
         GH_TOKEN: ${{ inputs.approver-token }}
+        ONLY_ALLOW_DEPENDABOT_PATCH: ${{ inputs.only-allow-dependabot-patch }}
+        UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}

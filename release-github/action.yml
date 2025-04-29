@@ -256,8 +256,10 @@ runs:
     - name: "Move wheel artifacts to dist/${{ inputs.library-name }}-artifacts directory"
       if: inputs.only-code == 'false'
       shell: bash
+      env:
+        LIBRARY_NAME: ${{ inputs.library-name }}
       run: |
-        mv /tmp/artifacts/${{ inputs.library-name }}-artifacts dist/${{ inputs.library-name }}-artifacts
+        mv /tmp/artifacts/${LIBRARY_NAME}-artifacts dist/${LIBRARY_NAME}-artifacts
 
     # ------------------------------------------------------------------------
 
@@ -272,9 +274,11 @@ runs:
     - name: "Move additional artifacts to dist/wheelhouse directory"
       shell: bash
       if: inputs.additional-artifacts != ''
+      env:
+        ADDITIONAL_ARTIFACTS: ${{ inputs.additional-artifacts }}
       run: |
         mkdir -p dist/extra
-        for artifact in ${{ inputs.additional-artifacts }}; do
+        for artifact in $ADDITIONAL_ARTIFACTS; do
           mv /tmp/artifacts/$artifact dist/extra/$artifact
         done
 
@@ -298,9 +302,12 @@ runs:
 
     - name: "Install toml and pypandoc"
       shell: bash
+      env:
+        TOML_VERSION: ${{ inputs.toml-version }}
+        PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
       run: |
-        python -m pip install --upgrade pip toml==${{ inputs.toml-version }}
-        python -m pip install pypandoc-binary==${{ inputs.pypandoc-binary-version }}
+        python -m pip install --upgrade pip toml=="$TOML_VERSION"
+        python -m pip install pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
 
     - name: "Get the release notes body"
       if: inputs.changelog-release-notes == 'true'
@@ -325,9 +332,11 @@ runs:
     - name: "Extend RELEASE_NOTES_BODY with attestation notes"
       if: inputs.add-artifact-attestation-notes == 'true'
       shell: bash
+      env:
+        LIBRARY_NAME: ${{ inputs.library-name }}
       run: |
-        SDIST_FILE=$(find dist/${{ inputs.library-name }}-artifacts -name '*.tar.gz' | sort | tail -n 1 | xargs basename)
-        WHEEL_FILE=$(find dist/${{ inputs.library-name }}-artifacts -name '*.whl' | sort | tail -n 1 | xargs basename)
+        SDIST_FILE=$(find dist/${LIBRARY_NAME}-artifacts -name '*.tar.gz' | sort | tail -n 1 | xargs basename)
+        WHEEL_FILE=$(find dist/${LIBRARY_NAME}-artifacts -name '*.whl' | sort | tail -n 1 | xargs basename)
 
         {
           echo "RELEASE_NOTES_BODY<<EOF"

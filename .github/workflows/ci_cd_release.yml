@@ -13,15 +13,21 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
 
   rolling-release:
     name: "Rolling release"
     runs-on: ubuntu-latest
-    permissions: write-all
+    env:
+      REF_NAME: ${{ github.ref_name }}
+      BASE_REF: ${{ github.event.base_ref }}
+    permissions:
+      contents: write
     steps:
 
-    - name: "Checkout repository"
+    - name: "Checkout repository" # zizmor: ignore[artipacked] git credentials need to be persisted on this job
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         fetch-tags: true
@@ -33,47 +39,59 @@ jobs:
         git config user.email github-actions@github.com
 
     - name: "Decompose tag into components"
+      id: tag-components
       run: |
-        if [[ ${{ github.ref_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           # Split the tag into its components
-          IFS='.' read -ra PARTS <<< "${{ github.ref_name }}"
-          echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_ENV
-          echo "MINOR=${PARTS[1]}" >> $GITHUB_ENV
-          echo "PATCH=${PARTS[2]}" >> $GITHUB_ENV
+          IFS='.' read -ra PARTS <<< "$REF_NAME"
+          echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_OUTPUT
+          echo "MINOR=${PARTS[1]}" >> $GITHUB_OUTPUT
+          echo "PATCH=${PARTS[2]}" >> $GITHUB_OUTPUT
         else
-          echo "Invalid tag format. Expected vX.Y.Z but got ${{ github.ref_name }}"
+          echo "Invalid tag format. Expected vX.Y.Z but got $REF_NAME"
           exit 1
         fi
 
     - name: "Check tag is valid for current branch"
+      id: current-branch-tag-validity
+      env:
+        V_AND_MAJOR: ${{ steps.tag-components.outputs.V_AND_MAJOR }}
+        MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
         # Remove leading "v" from env.X
-        V_AND_MAJOR=${{ env.V_AND_MAJOR }}
         MAJOR="${V_AND_MAJOR#v}"
-        echo "MAJOR=${MAJOR}" >> $GITHUB_ENV
-        if [[ ${{ github.event.base_ref }} != "refs/heads/release/$MAJOR.${{ env.MINOR }}" ]]; then
-          echo "::error::Tag ${{ github.ref_name }} does not match branch version. wrong branch."
+        echo "MAJOR=${MAJOR}" >> $GITHUB_OUTPUT
+        if [[ "$BASE_REF" != "refs/heads/release/${MAJOR}.${MINOR}" ]]; then
+          echo "::error::Tag $REF_NAME does not match branch version. wrong branch."
           exit 1
         fi
 
-    - name: "Remove v${{ env.MAJOR }} tag"
+    - name: "Remove v${{ steps.current-branch-tag-validity.outputs.MAJOR }} tag"
+      env:
+        MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
       run: |
-        git push --delete origin v${{ env.MAJOR }} && \
-          echo "Deleted v${{ env.MAJOR }} tag" || \
-          echo "Tag v${{ env.MAJOR }} not found"
+        git push --delete origin v${MAJOR} && \
+          echo "Deleted v${MAJOR} tag" || \
+          echo "Tag v${MAJOR} not found"
 
-    - name: "Remove v${{ env.MAJOR }}.${{ env.MINOR }} tag"
+    - name: "Remove v${{ steps.current-branch-tag-validity.outputs.MAJOR }}.${{ steps.tag-components.outputs.MINOR }} tag"
+      env:
+        MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
+        MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
-        git push --delete origin v${{ env.MAJOR }}.${{ env.MINOR }} && \
-          echo "Deleted v${{ env.MAJOR }}.${{ env.MINOR }} tag" || \
-          echo "Tag v${{ env.MAJOR }}.${{ env.MINOR }} not found"
+        git push --delete origin v${MAJOR}.${MINOR} && \
+          echo "Deleted v${MAJOR}.${MINOR} tag" || \
+          echo "Tag v${MAJOR}.${MINOR} not found"
 
     - name: "Create new tags"
+      env:
+        MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
+        MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
-        git tag v${{ env.MAJOR }}.${{ env.MINOR }}
-        git tag v${{ env.MAJOR }}
-        git push origin v${{ env.MAJOR }}.${{ env.MINOR }}
-        git push origin v${{ env.MAJOR }}
+        git tag v${MAJOR}.${MINOR}
+        git tag v${MAJOR}
+        git push origin v${MAJOR}.${MINOR}
+        git push origin v${MAJOR}
 
   changelog-deployment:
     name: "Changelog"
@@ -104,6 +122,8 @@ jobs:
     name: "Doc style"
     runs-on: ubuntu-latest
     needs: rolling-release
+    permissions:
+      contents: write
     steps:
       - uses: ansys/actions/doc-style@main
         with:
@@ -132,6 +152,8 @@ jobs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        persist-credentials: false
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -221,6 +243,8 @@ jobs:
     name: "Deploy stable documentation"
     runs-on: ubuntu-latest
     needs: release
+    permissions:
+      contents: write
     steps:
       - uses: ansys/actions/doc-deploy-stable@main
         with:

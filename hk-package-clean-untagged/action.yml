@@ -67,6 +67,10 @@ runs:
 
     - name: "Clone script"
       shell: bash
+      env:
+        PACKAGE_ORG: ${{ inputs.package-org }}
+        PACKAGE_NAME: ${{ inputs.package-name }}
+        ALLOW_LAST_DAYS: ${{ inputs.allow-last-days }}
       run: |
         cat > clean-untagged.py << 'EOF'
 
@@ -79,9 +83,9 @@ runs:
 
         PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-        org_str = "${{ inputs.package-org }}"
-        pck_str = "${{ inputs.package-name }}"
-        last_days_str = "${{ inputs.allow-last-days }}"
+        org_str = os.environ.get("PACKAGE_ORG")
+        pck_str = os.environ.get("PACKAGE_NAME")
+        last_days_str = os.environ.get("ALLOW_LAST_DAYS")
 
         last_days = int(last_days_str) if last_days_str != "" else None
         if last_days:
