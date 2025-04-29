@@ -200,7 +200,7 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@feat/check-actions-security-action
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -210,7 +210,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@feat/check-actions-security-action
+      uses: ansys/actions/_doc-build-linux@main
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -228,7 +228,7 @@ runs:
 
     - name: Check input (Windows)
       if: ${{ (runner.os == 'Windows') && (inputs.requires-xvfb == 'true') }}
-      uses: ansys/actions/_logging@feat/check-actions-security-action
+      uses: ansys/actions/_logging@main
       with:
         level: "WARNING"
         message: >
@@ -236,7 +236,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@feat/check-actions-security-action
+      uses: ansys/actions/_doc-build-windows@main
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
