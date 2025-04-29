@@ -210,6 +210,11 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_OUTPUT
         fi
+        if [[ -f "pyproject.toml" ]] && grep -q "\[project.optional-dependencies\]" "pyproject.toml"; then
+          echo "USE_PIP_DEPENDENCY_GROUPS=true" >> $GITHUB_OUTPUT
+        else
+          echo "USE_PIP_DEPENDENCY_GROUPS=false" >> $GITHUB_OUTPUT
+        fi
 
     - uses: ansys/actions/_logging@main
       with:
@@ -308,12 +313,17 @@ runs:
       if: steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false'
       env:
         BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
+        USE_PIP_DEPENDENCY_GROUPS: ${{ steps.environment-variables.outputs.USE_PIP_DEPENDENCY_GROUPS }}
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --with doc
         else
-          python -m pip install .[doc]
+          if [[ "${USE_PIP_DEPENDENCY_GROUPS}" == 'true' ]]; then
+            python -m pip install --group doc .
+          else
+            python -m pip install .[doc]
+          fi
         fi
 
     # ------------------------------------------------------------------------
