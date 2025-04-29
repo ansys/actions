@@ -233,6 +233,7 @@ runs:
           uv pip install -U pip
         else
           python -m pip install -U pip
+        fi
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'

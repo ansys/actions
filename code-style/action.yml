@@ -225,6 +225,7 @@ runs:
           uv pip install -U pip
         else
           python -m pip install -U pip
+        fi
 
     - name: "Install project (if required)"
       if: inputs.skip-install == 'false'
@@ -253,6 +254,7 @@ runs:
           uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
         else
           python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
+        fi
         pre-commit install
 
     - name: "Run pre-commit"

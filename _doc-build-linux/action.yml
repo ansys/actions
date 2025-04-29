@@ -292,6 +292,7 @@ runs:
           uv pip install -U pip
         else
           python -m pip install -U pip
+        fi
 
 
     - name: "Check if requirements.txt file exists"
@@ -314,6 +315,7 @@ runs:
           uv pip install -r "${REQUIREMENTS_FILE}"
         else
           python -m pip install -r "${REQUIREMENTS_FILE}"
+        fi
 
     - name: "Install Python library"
       shell: bash
