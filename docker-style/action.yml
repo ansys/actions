@@ -110,7 +110,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       if: steps.check-docker-directory-exists.outputs.HAS_DOCKER_DIR == 'false'
       with:
         level: "WARNING"
@@ -151,7 +151,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}
       with:
         level: "INFO"
@@ -182,19 +182,19 @@ runs:
       if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}
       uses: jbergstroem/hadolint-gh-action@39e57273ed8f513872326b228217828be6a42730 # v1.12.2
       with:
-        dockerfile: ${{ steps.format-hadolint-dockerfile-input.output.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
+        dockerfile: ${{ steps.format-hadolint-dockerfile-input.outputs.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
         error_level: ${{ inputs.error-level }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       if: ${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS != '' && contains(steps.filter-input-directory.outputs.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
         message: >
           Non existing directories: '${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS }}'
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       if: ${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS != '' && !contains(steps.filter-input-directory.outputs.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"

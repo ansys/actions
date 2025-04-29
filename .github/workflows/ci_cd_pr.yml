@@ -192,7 +192,7 @@ jobs:
     name: "Check actions security"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/check-actions-security@feat/check-actions-security-action # TODO: change to main before merging
+      - uses: ansys/actions/check-actions-security@main
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}

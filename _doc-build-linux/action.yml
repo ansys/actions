@@ -185,6 +185,7 @@ runs:
       uses: quarto-dev/quarto-actions/setup@9e48da27e184aa238fcb49f5db75469626d43adb # v2.1.9
       with:
         tinytex: true
+        version: 1.6.43
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}
@@ -363,7 +364,7 @@ runs:
       run: |
         source .venv/bin/activate
         ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINX_OPTS}"
-        $SPHINX_BUILD_MAKE -C doc pdf
+        ${SPHINX_BUILD_MAKE} -C doc pdf
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
           $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINX_OPTS}"
@@ -449,7 +450,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d "${EXPECTED_BUILD_DIR}" ] && echo 'true' || echo 'false' )" >> ${GITHUB_OUTPUT}
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-build-dir.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
@@ -474,7 +475,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d "${EXPECTED_DOWNLOAD_DIR}" ] && echo 'true' || echo 'false' )" >> ${GITHUB_OUTPUT}
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"

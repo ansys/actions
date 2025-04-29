@@ -199,7 +199,7 @@ runs:
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install quarto -y
+        choco install quarto --version=1.6.43 -y
         echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     # ------------------------------------------------------------------------
@@ -446,7 +446,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$(if (Test-Path "$env:EXPECTED_BUILD_DIR") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-build-directory.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
@@ -471,7 +471,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$(if (Test-Path "$env:EXPECTED_DOWNLOAD_DIR") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
-    - uses: ansys/actions/_logging@feat/check-actions-security-action
+    - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"

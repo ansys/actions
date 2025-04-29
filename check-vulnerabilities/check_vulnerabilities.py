@@ -23,9 +23,7 @@ DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
 ERROR_IF_NEW_ADVISORY = (
     True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 )
-CREATE_ISSUES = (
-    True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES", None) else False
-)
+CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
 
 
 def dict_hash(dictionary: Dict[str, Any]) -> str:
@@ -225,9 +223,9 @@ On file {v_filename}:
 {v_code}
 ```
 
-#### CWE - {v_cwe['id']}
+#### CWE - {v_cwe["id"]}
 
-For more information see {v_cwe['link']}
+For more information see {v_cwe["link"]}
 
 #### More information
 
