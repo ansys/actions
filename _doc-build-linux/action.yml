@@ -177,6 +177,7 @@ runs:
       uses: quarto-dev/quarto-actions/setup@9e48da27e184aa238fcb49f5db75469626d43adb # v2.1.9
       with:
         tinytex: true
+        version: 1.6.43
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}

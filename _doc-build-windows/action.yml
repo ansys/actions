@@ -191,7 +191,7 @@ runs:
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install quarto -y
+        choco install quarto --version=1.6.43 -y
         echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     # ------------------------------------------------------------------------
