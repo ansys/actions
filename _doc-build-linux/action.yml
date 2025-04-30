@@ -210,7 +210,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_OUTPUT
         fi
-        if [[ -f "pyproject.toml" ]] && grep -q "\[project.optional-dependencies\]" "pyproject.toml"; then
+        if [[ -f "pyproject.toml" ]] && grep -q "\[dependency-groups\]" "pyproject.toml"; then
           echo "USE_PIP_DEPENDENCY_GROUPS=true" >> $GITHUB_OUTPUT
         else
           echo "USE_PIP_DEPENDENCY_GROUPS=false" >> $GITHUB_OUTPUT
