@@ -109,11 +109,11 @@ runs:
       with:
         level: "ERROR"
         message: >
-          Following the use of dependency groups in the Python ecosystem, the ``toml``
-          library is no longer used as it cannot load a ``pyproject.toml`` file
-          where such groups are including other groups. This action now leverages
-          ``tomli`` instead, please provide a value to the ``tomli-version`` input
-          if you want to use a specific version of this library.
+          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
+          is no longer used because it cannot parse ``pyproject.toml`` files where groups
+          include other groups. This action now uses the ``tomli`` library instead. If you
+          want to use a specific version of ``tomli``, please set the ``tomli-version``
+          input accordingly.
 
     - name: "Install Git and clone project"
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
