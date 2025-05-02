@@ -324,7 +324,7 @@ runs:
         TOMLI_VERSION: ${{ inputs.tomli-version }}
         PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
       run: |
-        python -m pip install --upgrade pip tomli=="$TOMLI_VERSION"
+        python -m pip install --upgrade pip tomli==${TOMLI_VERSION}
         python -m pip install pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
 
     - name: "Get the release notes body"
