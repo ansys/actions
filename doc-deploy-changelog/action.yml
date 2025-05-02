@@ -226,7 +226,7 @@ runs:
       run: |
         import pathlib
         import os
-        import i
+        import tomli
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
