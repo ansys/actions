@@ -282,7 +282,7 @@ runs:
           poetry install --with "$OPTIONAL_DEPENDENCIES_NAME"
         else
           if [[ "${USE_PIP_DEPENDENCY_GROUPS}" == 'true' ]]; then
-            python -m pip install --group "$OPTIONAL_DEPENDENCIES_NAME" .
+            python -m pip install $(IFS=','; for group in $OPTIONAL_DEPENDENCIES_NAME; do echo --group "$group"; done) .
           else
             python -m pip install .["$OPTIONAL_DEPENDENCIES_NAME"]
           fi
