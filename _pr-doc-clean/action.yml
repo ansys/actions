@@ -154,11 +154,11 @@ runs:
         # This conditional helps when a PR is closed before actual deployment.
         if [[ -d pull/${PR_NUMBER} ]]; then
           rm -rf pull/${PR_NUMBER}
-          echo "PR_DIRECTORY_DELETED=true" >> ${{ GITHUB_OUTPUT }}
+          echo "PR_DIRECTORY_DELETED=true" >> ${GITHUB_OUTPUT}
           echo "Documentation for pull-request ${PR_NUMBER} removed."
         else
           echo "Documentation for pull-request ${PR_NUMBER} does not exist."
-          echo "PR_DIRECTORY_DELETED=false" >> ${{ GITHUB_OUTPUT }}
+          echo "PR_DIRECTORY_DELETED=false" >> ${GITHUB_OUTPUT}
         fi
 
     # ------------------------------------------------------------------------
