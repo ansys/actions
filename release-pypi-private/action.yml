@@ -119,7 +119,7 @@ runs:
   steps:
 
     - name: "Release to PyAnsys private index"
-      uses: ansys/actions/_release-pypi@feat/uv-as-default-package-manager
+      uses: ansys/actions/_release-pypi@main
       with:
         library-name: ${{ inputs.library-name }}
         index-name: ${{ inputs.index-name }}

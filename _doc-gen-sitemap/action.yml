@@ -52,7 +52,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/uv-as-default-package-manager
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >

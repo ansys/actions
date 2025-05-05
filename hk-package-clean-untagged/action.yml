@@ -53,7 +53,7 @@ runs:
   steps:
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@feat/uv-as-default-package-manager
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
