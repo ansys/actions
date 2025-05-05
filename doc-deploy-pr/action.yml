@@ -204,6 +204,7 @@ runs:
         else
           mkdir pr/${PR_NUMBER}
           echo "Directory for deploying documentation of the PR created."
+        fi
 
     - name: "Download the pr documentation artifact"
       uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
