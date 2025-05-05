@@ -32,6 +32,12 @@ description: |
 inputs:
 
   # Required inputs
+  
+  cname:
+    description: |
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
 
   token:
     description: |
@@ -238,6 +244,19 @@ runs:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
         ls -R pull/${PR_NUMBER}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate the "robots.txt" file for guiding web crawlers (spiders)
+
+    - name: "Generate 'robots.txt' file"
+      uses: ansys/actions/_doc-gen-robots@main
+      with:
+        cname: ${{ inputs.cname }}
 
     # ------------------------------------------------------------------------
 

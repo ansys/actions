@@ -71,6 +71,7 @@ runs:
                     tail -n +2); do
             echo "Disallow: /version/${version}" >> robots.txt
         done
+        echo "Disallow: /pr/" >> robots.txt
 
     - name: "Include the location of the sitemap.xml file"
       shell: bash

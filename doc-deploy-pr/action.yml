@@ -33,6 +33,12 @@ inputs:
 
   # Required inputs
 
+  cname:
+    description: |
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
+
   token:
     description: |
       Required password, key or token with the correct credentials for deploying the
@@ -114,6 +120,7 @@ runs:
     - uses: ansys/actions/_pr-doc-deployment@feat/pr-documentation-deployment-and-cleanup
       if: github.event.pull_request.state == 'open'
       with:
+        cname: ${{ inputs.cname }}
         token: ${{ inputs.token }}
         bot-user: ${{ inputs.bot-user }}
         bot-email: ${{ inputs.bot-email }}
