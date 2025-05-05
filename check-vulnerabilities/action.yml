@@ -202,7 +202,7 @@ runs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       if: ${{ inputs.checkout == 'true' }}
       with:
-        repository: ${{ env.DEPENDENCY_CHECK_REPOSITORY }}
+        repository: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
 
     # ------------------------------------------------------------------------
 
