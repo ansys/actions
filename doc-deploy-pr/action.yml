@@ -27,7 +27,7 @@ description: |
   This action deploys the HTML documentation artifact corresponding to the
   pull request that triggers it. By default, the ``gh-pages`` branch of the
   current repository is assumed, and the documentation will be available at
-  ``https://<cname>/pr/<pr-number>/``
+  ``https://<cname>/pull/<pr-number>/``
 
 inputs:
 
@@ -186,10 +186,10 @@ runs:
     - name: "Ensure existence of the root PR documentation directory"
       shell: bash
       run: |
-        if [[ -d pr/ ]]; then
+        if [[ -d pull/ ]]; then
           echo "PR documentation folder already exists."
         else
-          mkdir pr/
+          mkdir pull/
           echo "PR documentation folder created."
         fi
 
@@ -198,11 +198,11 @@ runs:
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        if [[ -d pr/${PR_NUMBER} ]]; then
+        if [[ -d pull/${PR_NUMBER} ]]; then
           echo "Directory corresponding to this PR's documentation detected, cleaning ..."
-          rm -rf pr/${PR_NUMBER} && mkdir pr/${PR_NUMBER}
+          rm -rf pull/${PR_NUMBER} && mkdir pull/${PR_NUMBER}
         else
-          mkdir pr/${PR_NUMBER}
+          mkdir pull/${PR_NUMBER}
           echo "Directory for deploying documentation of the PR created."
         fi
 
@@ -210,7 +210,7 @@ runs:
       uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         name: ${{ inputs.doc-artifact-name }}
-        path: pr/${{ github.event.pull_request.number }}
+        path: pull/${{ github.event.pull_request.number }}
 
     - name: "Update apt-get"
       shell: bash
@@ -226,18 +226,18 @@ runs:
         sudo apt-get install -y cargo && cargo install ouch
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd PR/${PR_NUMBER} && compressed_artifact=$(ls .)
+        cd pull/${PR_NUMBER} && compressed_artifact=$(ls .)
         ouch decompress $compressed_artifact
         decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
         mv $decompressed_artifact/* .
         rm -rf $compressed_artifact $decompressed_artifact
 
-    - name: "Display structure of pr/${{ github.event.pull_request.number }}"
+    - name: "Display structure of pull/${{ github.event.pull_request.number }}"
       shell: bash
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        ls -R pr/${PR_NUMBER}
+        ls -R pull/${PR_NUMBER}
 
     # ------------------------------------------------------------------------
 
