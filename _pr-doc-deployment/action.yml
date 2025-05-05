@@ -32,7 +32,7 @@ description: |
 inputs:
 
   # Required inputs
-  
+
   cname:
     description: |
       The canonical name (CNAME) containing the documentation.
