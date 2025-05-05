@@ -254,7 +254,7 @@ runs:
           Generate the "robots.txt" file for guiding web crawlers (spiders)
 
     - name: "Generate 'robots.txt' file"
-      uses: ansys/actions/_doc-gen-robots@main
+      uses: ansys/actions/_doc-gen-robots@feat/pr-documentation-deployment-and-cleanup
       with:
         cname: ${{ inputs.cname }}
 
