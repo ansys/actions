@@ -85,6 +85,13 @@ inputs:
     required: false
     default: false
     type: boolean
+  
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
@@ -98,11 +105,14 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
 
     - name: "Install build and twine"
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        python -m pip install build twine
+        ${INSTALL_COMMAND} build twine
 
     - name: "Build distribution artifacts"
       shell: bash
