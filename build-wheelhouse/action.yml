@@ -144,7 +144,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
-        provision-uv: ${{ inputs.use-uv == 'true' && 'true' || 'false' }}
+        provision-uv: ${{ inputs.use-uv }}
 
     - name: "Update pip"
       shell: bash
