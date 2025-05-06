@@ -257,6 +257,7 @@ runs:
       uses: ansys/actions/_doc-gen-robots@feat/pr-documentation-deployment-and-cleanup
       with:
         cname: ${{ inputs.cname }}
+        disallow-pr: true
 
     # ------------------------------------------------------------------------
 
