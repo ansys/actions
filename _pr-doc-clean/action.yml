@@ -206,7 +206,7 @@ runs:
       uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
-        body: |
+        body: >
           The documentation for this pull request has been deleted and will no longer be available at
           [https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }})
           shortly.
