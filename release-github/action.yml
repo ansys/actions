@@ -148,20 +148,6 @@ runs:
   using: "composite"
   steps:
 
-    # TODO: remove this deprecation in ansys/actions@v9
-
-    - uses: ansys/actions/_logging@main
-      if: ${{ inputs.token == '' }}
-      with:
-        level: "ERROR"
-        message: >
-          Ansys Actions v9 will require the token input in the ``release-github`` action.
-          Please add the token input to this action and see
-          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
-          for more information.
-
-    # TODO: end
-
     # Only one of both can be true: generate_release_notes, changelog-release-notes
     - name: "Sanity check on release notes"
       uses: ansys/actions/_logging@main
