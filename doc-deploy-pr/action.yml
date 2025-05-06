@@ -25,9 +25,10 @@ name: |
 
 description: |
   This action deploys the HTML documentation artifact corresponding to the
-  pull request event that triggers it. By default, the ``gh-pages`` branch of the
+  pull request that triggers it. By default, the ``gh-pages`` branch of the
   current repository is assumed, and the documentation will be available at
-  ``https://<cname>/pull/<pr-number>/``
+  ``https://<cname>/pull/<pr-number>/``. The action also removes the deployed
+  PR documentation once the pull request is closed.
 
 inputs:
 
