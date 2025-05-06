@@ -134,6 +134,7 @@ runs:
     - uses: ansys/actions/_pr-doc-clean@feat/pr-documentation-deployment-and-cleanup
       if: github.event.pull_request.state == 'closed'
       with:
+        cname: ${{ inputs.cname }}
         token: ${{ inputs.token }}
         bot-user: ${{ inputs.bot-user }}
         bot-email: ${{ inputs.bot-email }}

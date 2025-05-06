@@ -200,6 +200,7 @@ runs:
         fi
 
     - name: "Ensure existence of the clean sub-directory corresponding to the current PR"
+      id: create-pr-directory
       shell: bash
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -210,6 +211,8 @@ runs:
         else
           mkdir pull/${PR_NUMBER}
           echo "Directory for deploying documentation of the PR created."
+          # This means this is the first time the PR documentation is being deployed
+          echo "FIRST_TIME_DEPLOYMENT=true" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Download the pr documentation artifact"
@@ -292,3 +295,13 @@ runs:
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
         force_orphan: ${{ inputs.force-orphan }}
+
+    - name: "Make a PR comment the first time a PR documentation is deployed"
+      if: steps.create-pr-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true'
+      uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          The documentation for this pull request will be available at
+          [https://{{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://{{ inputs.cname }}/pull/${{ github.event.pull_request.number }}).
+          Please allow some time for the documentation to be deployed.
