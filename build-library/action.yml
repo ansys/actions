@@ -85,7 +85,7 @@ inputs:
     required: false
     default: false
     type: boolean
-  
+
   use-uv:
     description: |
       Whether to use uv as the default package manager instead of pip. Default value is ``true``.
