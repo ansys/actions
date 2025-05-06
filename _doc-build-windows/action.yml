@@ -309,9 +309,9 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:USE_UV -eq "true") {
-            uv pip install -U pip
+          uv pip install -U pip
         } else {
-            python -m pip install -U pip
+          python -m pip install -U pip
         }
 
     - name: "Check if requirements.txt file exists"
@@ -331,9 +331,9 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:USE_UV -eq "true") {
-            uv pip install -r "$env:REQUIREMENTS_FILE"
+          uv pip install -r "$env:REQUIREMENTS_FILE"
         } else {
-            python -m pip install -r "$env:REQUIREMENTS_FILE"
+          python -m pip install -r "$env:REQUIREMENTS_FILE"
         }
 
     - name: Install Python library
@@ -344,11 +344,11 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
-            poetry install
+          poetry install
         } elseif ($env:BUILD_BACKEND -eq "uv") {
-            uv pip install .
+          uv pip install .
         } else {
-            python -m pip install .
+          python -m pip install .
         }
 
     - name: Install documentation dependencies from pyproject.toml
@@ -359,11 +359,11 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
-            poetry install --with doc
+          poetry install --with doc
         } elseif ($env:BUILD_BACKEND -eq "uv") {
-            uv pip install .[doc]
+          uv pip install .[doc]
         } else {
-            python -m pip install .[doc]
+          python -m pip install .[doc]
         }
 
     # ------------------------------------------------------------------------
