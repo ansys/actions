@@ -32,10 +32,10 @@ inputs:
 
   # Required inputs
   cname:
-  description: |
-    The canonical name (CNAME) containing the documentation.
-  required: true
-  type: string
+    description: |
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
 
   token:
     description: |
