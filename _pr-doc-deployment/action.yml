@@ -303,5 +303,5 @@ runs:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           The documentation for this pull request will be available at
-          [https://{{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://{{ inputs.cname }}/pull/${{ github.event.pull_request.number }}).
+          [https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}).
           Please allow some time for the documentation to be deployed.

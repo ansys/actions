@@ -208,5 +208,5 @@ runs:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           The documentation for this pull request has been deleted and will no longer be available at
-          [https://{{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://{{ inputs.cname }}/pull/${{ github.event.pull_request.number }})
+          [https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }})
           shortly.
