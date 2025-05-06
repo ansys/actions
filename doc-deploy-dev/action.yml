@@ -132,24 +132,6 @@ runs:
   using: "composite"
   steps:
 
-    # TODO: remove this deprecation in ansys/actions@v9
-
-    - uses: ansys/actions/_logging@v9.0
-      if: ${{ (inputs.bot-user == '') || (inputs.bot-email == '') }}
-      with:
-        level: "ERROR"
-        message: >
-          Ansys Actions v8 will require bot username and email inputs in the
-          ``doc-changelog``, ``doc-deploy-changelog``, ``doc-deploy-dev`` and
-          ``doc-deploy-stable`` actions. Please add the bot-user and bot-email inputs
-          to the respective workflows and see
-          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
-          for more information.
-
-    # TODO: end
-
-    # ------------------------------------------------------------------------
-
     - uses: ansys/actions/_logging@v9.0
       with:
         level: "INFO"
@@ -307,8 +289,6 @@ runs:
           sed -i 's/action="search.html"/action="version\/stable\/search.html"/g' index.html
           sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/stable/_static/js/meilisearch_theme_wrap.js"|g' index.html
           sed -i 's|const SEARCH_FILE = ".*_static/search.json";|const SEARCH_FILE = "version/stable/_static/search.json";|g' index.html
-          # TODO: remove this line in ansys/actions@v9
-          sed -i 's|var searchPath = ".*_static/search.json";|var searchPath = "version/stable/_static/search.json";|g' index.html
           sed -i 's|<html lang="en" data-content_root="./" >|<html lang="en" data-content_root="./version/stable/" >|g' index.html
         elif [[ -f 'version/dev/index.html' ]]; then
           cp version/dev/index.html index.html
