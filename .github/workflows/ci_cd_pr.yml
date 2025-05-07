@@ -132,7 +132,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
           needs-quarto: true
-        
+
   doc-deploy-pr:
     name: "Deploy PR documentation"
     runs-on: ubuntu-latest
