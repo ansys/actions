@@ -136,6 +136,8 @@ jobs:
   doc-deploy-pr:
     name: "Deploy PR documentation"
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: doc-build
     # Run when the PR is closed i.e. when doc-build job is skipped
     if: ${{ always() }} && (needs.doc-build.result == 'success' || needs.doc-build.result == 'skipped')
