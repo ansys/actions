@@ -127,7 +127,7 @@ inputs:
     description: |
       Whether to use uv for installation operations instead of pip. By default it is set
       to ``true``.
-    default: true
+    default: false
     required: false
     type: boolean
 
