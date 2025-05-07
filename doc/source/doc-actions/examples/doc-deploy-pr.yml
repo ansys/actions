@@ -1,6 +1,6 @@
 # The same action takes care of both deployment and cleanup of PR documentation
-# Add these lines to your pull request workflow file to ensure
-# the action will be triggered when the PR is closed to ensure documentation cleanup:
+# Add these lines to your pull request workflow file to also trigger
+# the action when the PR is closed to ensure documentation cleanup:
 # on:
 #   pull_request:
 #     # opened, reopened, and synchronize are default for pull_request

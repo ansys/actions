@@ -44,7 +44,7 @@ inputs:
       is enough. For workflows deploying to other repositories, `generate and
       use a token with writing access
       <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
-      to that repository.
+      to that repository. ``contents: write`` and ``pull-requests: write`` are minimum permissions required for this token.
     required: true
     type: string
 
