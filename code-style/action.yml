@@ -105,8 +105,7 @@ inputs:
 
   use-uv:
     description: |
-      Whether to use uv for installation operations instead of pip. By default it is set
-      to ``true``.
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
     default: true
     required: false
     type: boolean
