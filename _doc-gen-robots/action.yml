@@ -68,8 +68,22 @@ runs:
       run: |
         echo -e "User-agent: *\n" >> robots.txt
 
+    # This is needed so that pull/ is not removed from the robots.txt file
+    # if it already exists when `doc-deploy-dev` or `doc-deploy-stable` is run.
+    - name: "Check for the presence of pull/ in robots.txt"
+      id: check-robots-for-pull-directory
+      shell: bash
+      run: |
+        if grep -q "Disallow: /pull/" robots.txt; then
+          echo "EXISTS_PULL_DIRECTORY=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "EXISTS_PULL_DIRECTORY=false" >> ${GITHUB_OUTPUT}
+        fi
+
     - name: "Iterate over all versions except the "
       shell: bash
+      env:
+        EXISTS_PULL_DIRECTORY: ${{ steps.check-robots-for-pull-directory.outputs.EXISTS_PULL_DIRECTORY }}
       run: |
         for version in $(ls version |
                     grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
@@ -78,9 +92,13 @@ runs:
                     tail -n +2); do
             echo "Disallow: /version/${version}" >> robots.txt
         done
+        if [[ "${EXISTS_PULL_DIRECTORY}" == "true" ]]; then
+          echo "Disallow: /pull/" >> robots.txt
+        fi
 
+    # This is triggered the first time a project uses `doc-deploy-pr`
     - name: "Disallow the pull request documentation directory"
-      if: ${{ inputs.disallow-pr == 'true' }}
+      if: ${{ inputs.disallow-pr == 'true' && steps.check-robots-for-pull-directory.outputs.EXISTS_PULL_DIRECTORY == 'false' }}
       shell: bash
       run: |
         echo "Disallow: /pull/" >> robots.txt
