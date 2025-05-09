@@ -39,7 +39,7 @@ inputs:
     required: true
     type: string
 
-  disallow-pr:
+  disallow-pull:
     description: |
       Disallow the pull request documentation.
     required: false
@@ -98,7 +98,7 @@ runs:
 
     # This is triggered the first time a project uses `doc-deploy-pr`
     - name: "Disallow the pull request documentation directory"
-      if: ${{ inputs.disallow-pr == 'true' && steps.check-robots-for-pull-directory.outputs.EXISTS_PULL_DIRECTORY == 'false' }}
+      if: ${{ inputs.disallow-pull == 'true' && steps.check-robots-for-pull-directory.outputs.EXISTS_PULL_DIRECTORY == 'false' }}
       shell: bash
       run: |
         echo "Disallow: /pull/" >> robots.txt
