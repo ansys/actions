@@ -168,6 +168,16 @@ runs:
       run: |
         $INSTALL_COMMAND build wheel
 
+    - name: "Identify the build system"
+      id: build-system
+      shell: bash
+      run: |
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+        else
+          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
+        fi
+
     - name: "Check if specific target is requested"
       id: specific-target-requested
       shell: bash
@@ -175,16 +185,25 @@ runs:
         TARGET: ${{ inputs.target }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "${WORKING_DIRECTORY}" || echo "${WORKING_DIRECTORY}[${TARGET}]")" >> ${GITHUB_OUTPUT}
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '' || echo "--with ${TARGET}")" >> ${GITHUB_OUTPUT}
+        else
+          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "${WORKING_DIRECTORY}" || echo "${WORKING_DIRECTORY}[${TARGET}]")" >> ${GITHUB_OUTPUT}
+        fi
         echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
-    - name: "Install the library"
-      shell: bash
+    - name: "Install the library with the desired targets"
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+      shell: bash
       run: |
-        ${INSTALL_COMMAND} "${INSTALL_TARGET}"
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          poetry install ${INSTALL_TARGET}
+        else
+           ${INSTALL_COMMAND} "${INSTALL_TARGET}"
+        fi
 
     - name: "Verify if importlib-metadata needs to be installed"
       id: needs-importlib-metadata
