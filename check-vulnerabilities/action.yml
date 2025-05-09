@@ -167,6 +167,13 @@ inputs:
     required: false
     type: string
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -207,9 +214,13 @@ runs:
     - name: "Determine GitHub environment variables"
       id: github-environment-variables
       shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+        elif [[ "${USE_UV}" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
@@ -233,6 +244,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
+        provision-uv: ${{ inputs.use-uv }}
 
     # NOTE: Installation of poetry in a separate environment to the project to
     # avoid situations in which both poetry and the project have shared
@@ -262,13 +274,15 @@ runs:
       run: |
         python -m pip install pipx
         python -m pipx install poetry
-        python -m venv .venv
       env:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
     - name: "Create a virtual environment"
-      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'pip'
       shell: bash
       run: |
         python -m venv .venv
@@ -289,9 +303,14 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         ${ACTIVATE_VENV}
-        python -m pip install -U pip
+        if [[ "${USE_UV}" == 'true' ]]; then
+          uv pip install -U pip
+        else
+          python -m pip install -U pip
+        fi
 
     - name: "Install library"
       shell: bash
@@ -318,6 +337,8 @@ runs:
 
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --extras "${extra_targets}"
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install ."${extra_targets}"
         else
           python -m pip install ."${extra_targets}"
         fi
@@ -329,7 +350,11 @@ runs:
         ACTION_PATH: ${{ github.action_path }}
       run: |
         ${ACTIVATE_VENV}
-        python -m pip install -r "${ACTION_PATH}/requirements.txt"
+        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install -r "${ACTION_PATH}/requirements.txt"
+        else
+          python -m pip install -r "${ACTION_PATH}/requirements.txt"
+        fi
 
     - name: "Download the list of ignored safety vulnerabilities"
       shell: bash
