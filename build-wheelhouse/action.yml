@@ -102,6 +102,14 @@ inputs:
     default: true
     type: boolean
 
+  working-directory:
+      description: |
+        Directory to execute this action. Useful for repositories containing
+        various Python libraries.
+      required: false
+      default: '.'
+      type: string
+
   attest-provenance:
     description: |
       Whether to generate build provenance attestations for wheelhouse
@@ -151,7 +159,7 @@ runs:
     - name: "Check if specific target is requested"
       shell: bash
       run: |
-        echo "install_target=$( [[ '${{ inputs.target }}' == '' ]] && echo '.' || echo '.[${{ inputs.target }}]')" >> $GITHUB_ENV
+        echo "install_target=$( [[ '${{ inputs.target }}' == '' ]] && echo '${{ inputs.working-directory }}' || echo '${{ inputs.working-directory }}[${{ inputs.target }}]')" >> $GITHUB_ENV
         echo "wheelhouse_target=$( [[ '${{ inputs.target }}' == '' ]] && echo 'wheelhouse' || echo '${{ inputs.target }}-wheelhouse')" >> $GITHUB_ENV
 
     - name: "Install the library"
