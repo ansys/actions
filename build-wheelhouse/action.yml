@@ -102,6 +102,14 @@ inputs:
     default: true
     type: boolean
 
+  working-directory:
+     description: |
+       Directory to execute this action. Useful for repositories containing
+       various Python libraries.
+     required: false
+     default: '.'
+     type: string
+
   attest-provenance:
     description: |
       Whether to generate build provenance attestations for wheelhouse
@@ -123,6 +131,13 @@ inputs:
     default: false
     type: boolean
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -136,17 +151,22 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
 
     - name: "Update pip"
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        python -m pip install --upgrade pip
+        $INSTALL_COMMAND -U pip
 
     - name: "Optionally install build and wheel"
       if: ${{ inputs.install-build-and-wheel == 'true' }}
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        python -m pip install build wheel
+        $INSTALL_COMMAND build wheel
 
     - name: "Identify the build system"
       id: build-system
@@ -163,16 +183,18 @@ runs:
       shell: bash
       env:
         TARGET: ${{ inputs.target }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '' || echo "--with ${TARGET}")" >> ${GITHUB_OUTPUT}
         else
-          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '.' || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
+          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "${WORKING_DIRECTORY}" || echo "${WORKING_DIRECTORY}[${TARGET}]")" >> ${GITHUB_OUTPUT}
         fi
         echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
     - name: "Install the library with the desired targets"
       env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       shell: bash
@@ -180,7 +202,7 @@ runs:
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install ${INSTALL_TARGET}
         else
-          python -m pip install "${INSTALL_TARGET}"
+           ${INSTALL_COMMAND} "${INSTALL_TARGET}"
         fi
 
     - name: "Verify if importlib-metadata needs to be installed"
@@ -203,8 +225,10 @@ runs:
     - name: "Install importlib-metadata (only for Python <= 3.7)"
       if: steps.needs-importlib-metadata.outputs.needs_importlib_metadata == 'true'
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        python -m pip install importlib-metadata
+        $INSTALL_COMMAND importlib-metadata
 
     - name: "Verify library is properly installed and get its version number"
       id: library-version
