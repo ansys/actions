@@ -47,6 +47,12 @@ inputs:
     default: '3.11'
     required: false
     type: string
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
 
 runs:
   using: "composite"
@@ -57,13 +63,16 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
+        provision-uv: ${{ inputs.use-uv }}
 
     - name: "Install ghapi"
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
 
-        python -m pip install --upgrade pip
-        pip install ghapi
+        ${INSTALL_COMMAND} --upgrade pip
+        ${INSTALL_COMMAND} ghapi
 
     - name: "Clone script"
       shell: bash

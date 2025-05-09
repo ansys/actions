@@ -151,6 +151,13 @@ inputs:
     required: false
     type: boolean
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -165,20 +172,6 @@ runs:
           include other groups. This action now uses the ``tomli`` library instead. If you
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly.
-
-    # TODO: remove this deprecation in ansys/actions@v9
-
-    - uses: ansys/actions/_logging@main
-      if: ${{ inputs.token == '' }}
-      with:
-        level: "ERROR"
-        message: >
-          Ansys Actions v9 will require the token input in the ``release-github`` action.
-          Please add the token input to this action and see
-          https://actions.docs.ansys.com/version/dev/migrations/index.html#migration-guide
-          for more information.
-
-    # TODO: end
 
     # Only one of both can be true: generate_release_notes, changelog-release-notes
     - name: "Sanity check on release notes"
@@ -313,7 +306,7 @@ runs:
       run: ls -R dist/
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@v8
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -323,9 +316,10 @@ runs:
       env:
         TOMLI_VERSION: ${{ inputs.tomli-version }}
         PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        python -m pip install --upgrade pip tomli==${TOMLI_VERSION}
-        python -m pip install pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
+        ${INSTALL_COMMAND} --upgrade pip toml=="$TOMLI_VERSION"
+        ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
 
     - name: "Get the release notes body"
       if: inputs.changelog-release-notes == 'true'

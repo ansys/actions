@@ -102,6 +102,14 @@ inputs:
     default: true
     type: boolean
 
+  working-directory:
+     description: |
+       Directory to execute this action. Useful for repositories containing
+       various Python libraries.
+     required: false
+     default: '.'
+     type: string
+
   attest-provenance:
     description: |
       Whether to generate build provenance attestations for wheelhouse
@@ -123,6 +131,13 @@ inputs:
     default: false
     type: boolean
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -136,33 +151,40 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
 
     - name: "Update pip"
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        python -m pip install --upgrade pip
+        $INSTALL_COMMAND -U pip
 
     - name: "Optionally install build and wheel"
       if: ${{ inputs.install-build-and-wheel == 'true' }}
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        python -m pip install build wheel
+        $INSTALL_COMMAND build wheel
 
     - name: "Check if specific target is requested"
       id: specific-target-requested
       shell: bash
       env:
         TARGET: ${{ inputs.target }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '.' || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
+        echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "${WORKING_DIRECTORY}" || echo "${WORKING_DIRECTORY}[${TARGET}]")" >> ${GITHUB_OUTPUT}
         echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
     - name: "Install the library"
       shell: bash
       env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
       run: |
-        python -m pip install "${INSTALL_TARGET}"
+        ${INSTALL_COMMAND} "${INSTALL_TARGET}"
 
     - name: "Verify if importlib-metadata needs to be installed"
       id: needs-importlib-metadata
@@ -184,8 +206,10 @@ runs:
     - name: "Install importlib-metadata (only for Python <= 3.7)"
       if: steps.needs-importlib-metadata.outputs.needs_importlib_metadata == 'true'
       shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        python -m pip install importlib-metadata
+        $INSTALL_COMMAND importlib-metadata
 
     - name: "Verify library is properly installed and get its version number"
       id: library-version
