@@ -86,7 +86,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: ansys/actions/doc-changelog@main
+      - uses: ansys/actions/doc-changelog@fix/uv-in-actions-without-venv-creation
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-conventional-commits: true
