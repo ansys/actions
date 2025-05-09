@@ -181,6 +181,13 @@ inputs:
     required: false
     type: boolean
 
+  use-uv:
+    description: >
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -196,6 +203,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
 
     # ------------------------------------------------------------------------
 
@@ -213,6 +221,7 @@ runs:
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
+        use-uv: ${{ inputs.use-uv }}
 
     # ------------------------------------------------------------------------
 
@@ -237,3 +246,4 @@ runs:
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
+        use-uv: ${{ inputs.use-uv }}
