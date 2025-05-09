@@ -160,7 +160,7 @@ runs:
     - name: "Update pip"
       shell: bash
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
         $INSTALL_COMMAND -U pip
 
@@ -174,7 +174,7 @@ runs:
     - name: Install ansys/pip-licenses main branch
       shell: bash
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --no-cache' || 'python -m pip install --no-cache-dir' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system --no-cache' || 'python -m pip install --no-cache-dir' }}
       run: |
         $INSTALL_COMMAND external/pip-licenses
 
@@ -191,7 +191,7 @@ runs:
       shell: bash
       env:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: ${INSTALL_COMMAND} "$INSTALL_TARGET"
 
     - name:  "Install wget on Windows"
