@@ -79,11 +79,11 @@ runs:
             echo "Disallow: /version/${version}" >> robots.txt
         done
 
-    - name: "Disallow the pull request documentatio directory"
+    - name: "Disallow the pull request documentation directory"
       if: ${{ inputs.disallow-pr == 'true' }}
       shell: bash
       run: |
-        echo "Disallow: /pr/" >> robots.txt
+        echo "Disallow: /pull/" >> robots.txt
 
     - name: "Include the location of the sitemap.xml file"
       shell: bash

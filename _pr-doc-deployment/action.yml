@@ -149,10 +149,10 @@ runs:
         BOT_EMAIL: ${{ inputs.bot-email }}
         BRANCH: ${{ inputs.branch }}
       run: | # zizmor: ignore[template-injection] I can't think of any other way to expand input.branch within comments
-        # Check the ${{ inputs.branch }} branch exists on remote
+        # Check the ${{ env.BRANCH }} branch exists on remote
         branch_exists=$(git ls-remote --heads origin "refs/heads/${BRANCH}" 2>&1)
 
-        # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
+        # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
           echo "The $BRANCH branch does not exist. Creating $BRANCH."
 
@@ -169,11 +169,11 @@ runs:
           git config user.name "$BOT_USER"
           git config user.email "$BOT_EMAIL"
 
-          # Commit ${{ inputs.branch }} & push to origin
+          # Commit ${{ env.BRANCH }} & push to origin
           git commit --allow-empty -m "Create $BRANCH branch"
           git push -u origin "$BRANCH"
         else
-          # Fetch and switch to ${{ inputs.branch }}
+          # Fetch and switch to ${{ env.BRANCH }}
           git fetch origin "${BRANCH}:${BRANCH}"
           git switch "$BRANCH"
         fi
