@@ -43,7 +43,7 @@ runs:
   steps:
 
     # NOTE: When a workflow is triggered without using the cache, it can lead to a failure
-    # in the Post Run action sayng that the cache folder doesn't exist on disk.
+    # in the Post Run action saying that the cache folder doesn't exist on disk.
     # This is related to our use of uv to install packages, see https://github.com/ansys/actions/pull/811
     - name: "Set up Python using cache"
       if: ${{ inputs.use-cache == 'true' && inputs.provision-uv == 'false'}}
