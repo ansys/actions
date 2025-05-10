@@ -29,7 +29,7 @@ inputs:
     required: true
     type: string
   use-cache:
-    description: 'Whether to use Python cache or not. Requires a pyproject.toml file.'
+    description: 'Whether to use Python/uv cache or not. Requires a pyproject.toml file.'
     required: true
     type: boolean
   provision-uv:
@@ -42,20 +42,25 @@ runs:
   using: "composite"
   steps:
 
+    # NOTE: When a workflow is triggered without using the cache, it can lead to a failure
+    # in the Post Run action sayng that the cache folder doesn't exist on disk.
+    # This is related to our use of uv to install packages, see https://github.com/ansys/actions/pull/811
     - name: "Set up Python using cache"
+      if: ${{ inputs.use-cache == 'true' && inputs.provision-uv == 'false'}}
       uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
-      if: inputs.use-cache == 'true'
       with:
         python-version: ${{ inputs.python-version }}
         cache: 'pip'
         cache-dependency-path: 'pyproject.toml'
 
     - name: "Set up Python without using cache"
+      if: ${{ inputs.use-cache == 'false' || (inputs.use-cache == 'true' && inputs.provision-uv == 'true') }}
       uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
-      if: inputs.use-cache == 'false'
       with:
         python-version: ${{ inputs.python-version }}
 
     - name: "Set up uv"
-      uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5.4.1
       if: ${{ inputs.provision-uv == 'true' }}
+      uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5.4.1
+      with:
+        enable-cache: ${{ inputs.use-cache }}
