@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 import toml
@@ -61,7 +62,50 @@ def get_first_letter_case(pr_title: str):
         save_env_variable("FIRST_LETTER", "uppercase")
 
 
-def get_conventional_commit_type(pr_title: str):
+def has_title_breaking_changes(pr_title: str) -> bool:
+    """Check if the pull request title indicates a breaking change.
+
+    Parameters
+    ----------
+    pr_title: str
+        The pull request title.
+
+    Returns
+    -------
+    bool
+        True if the pull request title indicates a breaking change, False otherwise.
+    """
+    colon_count = pr_title.count(":")
+    if colon_count != 1:
+        raise ValueError(f"Expected exactly one ':', found {colon_count}")
+
+    colon_index = pr_title.index(":")
+    exclam_index = pr_title.find("!")
+
+    return 0 <= exclam_index < colon_index
+
+
+def has_body_breaking_changes(pr_body: str) -> bool:
+    """Check if the pull request body indicates a breaking change.
+
+    Parameters
+    ----------
+    pr_body: str
+        The pull request body.
+
+    Returns
+    -------
+    bool
+        True if the pull request body indicates a breaking change, False otherwise.
+    """
+    if not pr_body:
+        raise False
+
+    pattern = r"(?i)^breaking[- ]changes?:"
+    return any(re.match(pattern, line.strip()) for line in pr_body.splitlines())
+
+
+def get_conventional_commit_type(pr_title: str, pr_body: str):
     """Get the conventional commit type from the pull request title.
 
     Parameters
@@ -69,12 +113,16 @@ def get_conventional_commit_type(pr_title: str):
     pr_title: str
         The pull request title.
     """
-    # Get the index where the first colon is found in the pull request title
-    colon_index = pr_title.index(":")
-    # Get the conventional commit type from the pull request title (everything before the colon)
-    cc_type = '"' + pr_title[:colon_index] + '"'
-    # Save the conventional commit type as an environment variable, CC_TYPE
-    save_env_variable("CC_TYPE", cc_type)
+    if has_title_breaking_changes(pr_title) or has_body_breaking_changes(pr_body):
+        # Save the conventional commit type as an environment variable, CC_TYPE
+        save_env_variable("CC_TYPE", '"breaking"')
+    else:
+        # Get the index where the first colon is found in the pull request title
+        colon_index = pr_title.index(":")
+        # Get the conventional commit type from the pull request title (everything before the colon)
+        cc_type = '"' + pr_title[:colon_index] + '"'
+        # Save the conventional commit type as an environment variable, CC_TYPE
+        save_env_variable("CC_TYPE", cc_type)
 
 
 def changelog_category_cc(cc_type: str):
@@ -91,6 +139,7 @@ def changelog_category_cc(cc_type: str):
     # Dictionary whose keys are the conventional commit type and values are
     # the changelog section
     cc_type_changelog_dict = {
+        "breaking": "breaking",
         "feat": "added",
         "fix": "fixed",
         "docs": "documentation",
@@ -129,6 +178,7 @@ def changelog_cateogry_labels(labels: str):
     # Dictionary with the key as a label from .github/workflows/label.yml and
     # value as the corresponding section in the changelog
     pr_labels = {
+        "breaking": "breaking",
         "enhancement": "added",
         "bug": "fixed",
         "documentation": "documentation",
@@ -222,13 +272,14 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
         exit(1)
 
     towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
-    with towncrier_config.open() as file:
+    with towncrier_config.open(mode="r+") as file:
         config = toml.load(towncrier_config)
         tool = config.get("tool", "DNE")
         towncrier = tool.get("towncrier", "DNE")
 
         # List containing changelog sections under each release
         changelog_sections = [
+            "breaking",
             "added",
             "dependencies",
             "documentation",

@@ -1,7 +1,7 @@
 # This file is required by the the action 'https://github.com/actions/labeler'
 # and used in the '.github/workflows/ci_cd_pr.yml' workflow
 
-# -- Labels based on PR title ------------------------------------------------
+# -- Labels based on PR head branch ------------------------------------------
 'fix':
   - head-branch: ['fix']
 
