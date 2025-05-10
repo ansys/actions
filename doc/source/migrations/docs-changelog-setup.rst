@@ -144,7 +144,7 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
 
     [[tool.towncrier.type]]
     directory = "breaking"
-    name = "Breaking change"
+    name = "Breaking"
     showcontent = true
 
     [[tool.towncrier.type]]
@@ -248,7 +248,7 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
 
     [[tool.towncrier.type]]
     directory = "breaking"
-    name = "Breaking change"
+    name = "Breaking"
     showcontent = true
 
     [[tool.towncrier.type]]

@@ -79,7 +79,7 @@
   description: Docker maintenance related
   color: 000075
 
-- name: 'breaking change'
+- name: 'breaking'
   description: Changes that break backward compatibility
   color: ff0000
 
