@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-import toml
+import tomli
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -222,8 +222,8 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
         exit(1)
 
     towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
-    with towncrier_config.open() as file:
-        config = toml.load(towncrier_config)
+    with towncrier_config.open("rb") as file:
+        config = tomli.load(file)
         tool = config.get("tool", "DNE")
         towncrier = tool.get("towncrier", "DNE")
 
@@ -384,8 +384,8 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
 
     if pyproject_toml.is_file():
         # Load pyproject.toml
-        with pyproject_toml.open() as pyproj:
-            config = toml.load(pyproj)
+        with pyproject_toml.open("rb") as pyproj:
+            config = tomli.load(pyproj)
             # Get the tool category in pyproject.toml
             tool = config.get("tool", "")
             if tool:
