@@ -143,6 +143,11 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
     issue_format = "`#{issue} <https://github.com/{org-name}/{repo-name}/pull/{issue}>`_"
 
     [[tool.towncrier.type]]
+    directory = "breaking"
+    name = "Breaking change"
+    showcontent = true
+
+    [[tool.towncrier.type]]
     directory = "added"
     name = "Added"
     showcontent = true
@@ -240,6 +245,11 @@ Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.modu
     template = "doc/changelog.d/changelog_template.jinja"
     title_format = "## [{version}](https://github.com/ansys/{repo-name}/releases/tag/v{version}) - {project_date}"
     issue_format = "[#{issue}](https://github.com/ansys/{repo-name}/pull/{issue})"
+
+    [[tool.towncrier.type]]
+    directory = "breaking"
+    name = "Breaking change"
+    showcontent = true
 
     [[tool.towncrier.type]]
     directory = "added"

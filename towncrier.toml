@@ -9,6 +9,11 @@ title_format = "`{version} <https://github.com/ansys/actions/releases/tag/v{vers
 issue_format = "`#{issue} <https://github.com/ansys/actions/pull/{issue}>`_"
 
 [[tool.towncrier.type]]
+directory = "breaking"
+name = "Breaking change"
+showcontent = true
+
+[[tool.towncrier.type]]
 directory = "added"
 name = "Added"
 showcontent = true
