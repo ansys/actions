@@ -99,7 +99,7 @@ def has_body_breaking_changes(pr_body: str) -> bool:
         True if the pull request body indicates a breaking change, False otherwise.
     """
     if not pr_body:
-        raise False
+        return False
 
     pattern = r"(?i)^breaking[- ]changes?:"
     return any(re.match(pattern, line.strip()) for line in pr_body.splitlines())
