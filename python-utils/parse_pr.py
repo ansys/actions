@@ -139,6 +139,7 @@ def changelog_category_cc(cc_type: str):
     # Dictionary whose keys are the conventional commit type and values are
     # the changelog section
     cc_type_changelog_dict = {
+        "breaking": "breaking",
         "feat": "added",
         "fix": "fixed",
         "docs": "documentation",
@@ -150,7 +151,6 @@ def changelog_category_cc(cc_type: str):
         "test": "test",
         "chore": "maintenance",
         "ci": "maintenance",
-        "breaking": "breaking change",
     }
 
     for key, value in cc_type_changelog_dict.items():
@@ -178,6 +178,7 @@ def changelog_cateogry_labels(labels: str):
     # Dictionary with the key as a label from .github/workflows/label.yml and
     # value as the corresponding section in the changelog
     pr_labels = {
+        "breaking": "breaking",
         "enhancement": "added",
         "bug": "fixed",
         "documentation": "documentation",
@@ -185,7 +186,6 @@ def changelog_cateogry_labels(labels: str):
         "dependencies": "dependencies",
         "CI/CD": "maintenance",
         "maintenance": "maintenance",
-        "breaking": "breaking change",
     }
 
     # Save the changelog section to the CHANGELOG_SECTION environment variable
@@ -272,14 +272,14 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
         exit(1)
 
     towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
-    with towncrier_config.open() as file:
+    with towncrier_config.open(mode="r+") as file:
         config = toml.load(towncrier_config)
         tool = config.get("tool", "DNE")
         towncrier = tool.get("towncrier", "DNE")
 
         # List containing changelog sections under each release
         changelog_sections = [
-            "breaking change",
+            "breaking",
             "added",
             "dependencies",
             "documentation",
