@@ -133,6 +133,13 @@ inputs:
     default: true
     type: boolean
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
   release-from-main:
     description: |
       If ``false``, you pushed a tag from a release branch. This is applicable for most
@@ -189,6 +196,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
 
     - name: Save tag version
       id: save-tag-version
@@ -201,9 +209,14 @@ runs:
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOML_VERSION: ${{ inputs.toml-version }}
+        USE_UV: ${{ inputs.use-uv }}
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" toml=="${TOML_VERSION}"
+        if [[ "$USE_UV" == "true" ]]; then
+          uv pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" toml=="${TOML_VERSION}"
+        else
+          python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" toml=="${TOML_VERSION}"
+        fi
 
     - name: "Get towncrier directory and project name"
       shell: python

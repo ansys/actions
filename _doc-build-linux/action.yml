@@ -131,6 +131,13 @@ inputs:
     required: true
     type: boolean
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -202,10 +209,15 @@ runs:
     - name: "Determine GitHub environment variables"
       id: environment-variables
       shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
           echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_OUTPUT
+        elif [[ "$USE_UV" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
+          echo "SPHINX_BUILD_MAKE=$(echo 'uv run --no-sync -- make')" >> $GITHUB_OUTPUT
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_OUTPUT
@@ -254,13 +266,15 @@ runs:
       run: |
         python -m pip install pipx
         python -m pipx install poetry
-        python -m venv .venv
       env:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
     - name: "Create a virtual environment"
-      if: steps.environment-variables.outputs.BUILD_BACKEND == 'pip'
       shell: bash
       run: |
         python -m venv .venv
@@ -269,9 +283,16 @@ runs:
 
     - name: "Update pip"
       shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         source .venv/bin/activate
-        python -m pip install -U pip
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv pip install -U pip
+        else
+          python -m pip install -U pip
+        fi
+
 
     - name: "Check if requirements.txt file exists"
       id: check-requirement-file-exists
@@ -282,13 +303,18 @@ runs:
         echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f "${REQUIREMENTS_FILE}" ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
 
     - name: "Install documentation dependencies from requirements file"
+      if: steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
       shell: bash
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
-      if: steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         source .venv/bin/activate
-        python -m pip install -r "${REQUIREMENTS_FILE}"
+        if [[ "${USE_UV}" == 'true' ]]; then
+          uv pip install -r "${REQUIREMENTS_FILE}"
+        else
+          python -m pip install -r "${REQUIREMENTS_FILE}"
+        fi
 
     - name: "Install Python library"
       shell: bash
@@ -299,6 +325,8 @@ runs:
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install
+        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
+          uv pip install .
         else
           python -m pip install .
         fi
@@ -312,6 +340,8 @@ runs:
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --with doc
+        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
+          uv pip install .[doc]
         else
           python -m pip install .[doc]
         fi
