@@ -111,7 +111,7 @@ runs:
   steps:
 
     - name: "Release to test PyPI index"
-      uses: ansys/actions/_release-pypi@fix/pip-cache-with-uv
+      uses: ansys/actions/_release-pypi@main
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://test.pypi.org/legacy/"

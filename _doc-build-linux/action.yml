@@ -200,7 +200,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -223,7 +223,7 @@ runs:
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -232,7 +232,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -348,7 +348,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -398,7 +398,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -412,14 +412,14 @@ runs:
         source .venv/bin/activate
         python ${{ github.action_path }}/../python-utils/parse_doc_conf.py
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
       with:
         level: "ERROR"
         message: >
           Unable to determine PDF filename using conf.py file.
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
       with:
         level: "INFO"
@@ -428,7 +428,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -451,7 +451,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d "${EXPECTED_BUILD_DIR}" ] && echo 'true' || echo 'false' )" >> ${GITHUB_OUTPUT}
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-build-dir.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
@@ -476,7 +476,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d "${EXPECTED_DOWNLOAD_DIR}" ] && echo 'true' || echo 'false' )" >> ${GITHUB_OUTPUT}
 
-    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
+    - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"
@@ -495,7 +495,7 @@ runs:
 
     - name: Check build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: ansys/actions/_logging@fix/pip-cache-with-uv
+      uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
