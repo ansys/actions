@@ -157,7 +157,7 @@ runs:
 
     # Only one of both can be true: generate_release_notes, changelog-release-notes
     - name: "Sanity check on release notes"
-      uses: ansys/actions/_logging@main
+      uses: ansys/actions/_logging@fix/pip-cache-with-uv
       if: ${{ inputs.generate_release_notes == 'true' && inputs.changelog-release-notes == 'true' }}
       with:
         level: "ERROR"
@@ -170,7 +170,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       with:
         level: "INFO"
         message: >
@@ -188,7 +188,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -221,7 +221,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -238,7 +238,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -256,7 +256,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -277,7 +277,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       with:
         level: "INFO"
         message: >
@@ -288,7 +288,7 @@ runs:
       run: ls -R dist/
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@fix/pip-cache-with-uv
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

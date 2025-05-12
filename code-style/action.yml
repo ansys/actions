@@ -119,7 +119,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       with:
         level: "INFO"
         message: >
@@ -139,7 +139,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       with:
         level: "INFO"
         message: >
@@ -147,14 +147,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       with:
         level: "INFO"
         message: >
           Set up python to check code style.
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@fix/pip-cache-with-uv
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -272,7 +272,7 @@ runs:
     # ------------------------------------------------------------------------
 
     # Trigger docker-style action if docker-lint is set to true.
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       if: inputs.docker-lint == 'true'
       with:
         level: "INFO"
@@ -281,7 +281,7 @@ runs:
 
     - name: "Run Dockerfile linting in directories 'docker' and '.devcontainer'"
       if: inputs.docker-lint == 'true'
-      uses: ansys/actions/docker-style@main
+      uses: ansys/actions/docker-style@fix/pip-cache-with-uv
       with:
         directory: "docker .devcontainer"
         recursive: ${{ inputs.docker-recursive }}
@@ -290,7 +290,7 @@ runs:
     # ------------------------------------------------------------------------
 
     # End action as docker-lint is set to false.
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@fix/pip-cache-with-uv
       if: ${{ inputs.docker-lint == 'false' }}
       with:
         level: "INFO"
