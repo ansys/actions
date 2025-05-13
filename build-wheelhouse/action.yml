@@ -184,6 +184,7 @@ runs:
       env:
         TARGET: ${{ inputs.target }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '' || echo "--with ${TARGET}")" >> ${GITHUB_OUTPUT}
@@ -192,14 +193,35 @@ runs:
         fi
         echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
+    - name: "Install poetry if needed (and configure it as needed - no auto poetry env + pipx + dedicated virtualenv)"
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
+      id: poetry-env
+      shell: bash
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME: ${{ runner.temp }}/pipx/home
+      run: |
+        python -m pip install pipx
+        python -m pipx install poetry
+        echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env]
+        echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+        python -m venv .venv
+        if [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "activate_env=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
+        else
+          echo "activate_env=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
+        fi
+
     - name: "Install the library with the desired targets"
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+        ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       shell: bash
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          ${ACTIVATE_VENV}
           poetry install ${INSTALL_TARGET}
         else
            ${INSTALL_COMMAND} "${INSTALL_TARGET}"
@@ -234,9 +256,14 @@ runs:
       id: library-version
       shell: bash
       env:
+        ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         LIBRARY_NAME: ${{ inputs.library-name }}
         NEEDS_IMPORTLIB_METADATA: ${{ steps.needs-importlib-metadata.outputs.needs_importlib_metadata }}
       run: |
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          ${ACTIVATE_VENV}
+        fi
         library_name="${LIBRARY_NAME}"
 
         if [ ${NEEDS_IMPORTLIB_METADATA} == 'true' ]; then
@@ -256,8 +283,16 @@ runs:
       shell: bash
       env:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+        ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       run: |
-        python -m pip wheel "${INSTALL_TARGET}" -w wheelhouse
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          ${ACTIVATE_VENV}
+          pip freeze | sed 's/\r$//' > wheel_reqs.txt
+          pip wheel -w wheelhouse -r wheel_reqs.txt
+        else
+          python -m pip wheel "${INSTALL_TARGET}" -w wheelhouse
+        fi
 
     - name: "Compress the wheelhouse"
       uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
