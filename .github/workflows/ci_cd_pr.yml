@@ -144,7 +144,7 @@ jobs:
     # Run when the PR is closed i.e. when doc-build job is skipped
     if: ${{ always() }} && (needs.doc-build.result == 'success' || needs.doc-build.result == 'skipped')
     steps:
-      - uses: ansys/actions/doc-deploy-pr@feat/pr-documentation-deployment-and-cleanup
+      - uses: ansys/actions/doc-deploy-pr@main
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
