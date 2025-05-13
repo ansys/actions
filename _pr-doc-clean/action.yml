@@ -40,9 +40,9 @@ inputs:
   token:
     description: |
       Required password, key or token with the correct credentials for deploying the
-      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token is
+      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token
       is enough. For workflows deploying to other repositories, `generate and
-      use a token with writing access
+      use a token with write access
       <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
       to that repository. ``contents: write`` and ``pull-requests: write`` are minimum permissions required for this token.
     required: true
