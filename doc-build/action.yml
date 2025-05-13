@@ -134,22 +134,6 @@ inputs:
     required: false
     type: boolean
 
-  skip-json-build:
-    description: |
-      Whether to skip the generation of JSON documentation. Default value is
-      ``true``.
-    default: true
-    required: false
-    type: boolean
-
-  check-links:
-    description: |
-      Whether to perform external link checks during the generation of
-      documentation. Default value is ``true``.
-    default: true
-    required: false
-    type: boolean
-
   add-pdf-html-docs-as-assets:
     description: |
       Whether to add PDF and HTML documentation as assets of the HTML
@@ -217,7 +201,6 @@ runs:
         requires-xvfb: ${{ inputs.requires-xvfb }}
         skip-install: ${{ inputs.skip-install }}
         requirements-file: ${{ inputs.requirements-file }}
-        skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
@@ -242,7 +225,6 @@ runs:
         skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
         skip-install: ${{ inputs.skip-install }}
         requirements-file: ${{ inputs.requirements-file }}
-        skip-json-build: ${{ inputs.skip-json-build }}
         check-links: ${{ inputs.check-links }}
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
