@@ -1,0 +1,211 @@
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  Remove the documentation for a closed pull-request.
+
+description: |
+  This action removes the html documentation when the corresponding pull request is closed.
+  By default, the ``gh-pages`` branch of the current repository is assumed, and the documentation
+  is removed from ``https://<cname>/pull/<pr-number>/``.
+
+inputs:
+
+  # Required inputs
+  cname:
+    description: |
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
+
+  token:
+    description: |
+      Required password, key or token with the correct credentials for deploying the
+      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token
+      is enough. For workflows deploying to other repositories, `generate and
+      use a token with write access
+      <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
+      to that repository. ``contents: write`` and ``pull-requests: write`` are minimum permissions required for this token.
+    required: true
+    type: string
+
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  repository:
+    description: |
+      Repository name in the form of ``username/repository`` to be used for
+      deploying the documentation. The current repository is assumed by default.
+    required: false
+    default: 'current'
+    type: string
+
+  branch:
+    description: |
+      Branch name for deploying the documentation. The ``gh-pages`` branch is
+      used by default.
+    required: false
+    default: 'gh-pages'
+    type: string
+
+  commit-message:
+    description: |
+      Commit message used when deploying the documentation.
+    required: false
+    default: 'DOC: remove pull request documentation'
+    type: string
+
+  force-orphan:
+    description: |
+      Whether to force the deployment branch to be orphan or not. Default value
+      is ``true``.
+    required: false
+    default: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Checkout the repository branch for removing the documentation. If this
+          step fails, then it means that the provided token is not valid.
+
+    - name: "Get the name of the repository"
+      shell: bash
+      id: get-repository-name
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+      run: |
+        if [[ "$INPUT_REPOSITORY" == "current" ]]; then
+          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
+        else
+          echo "REPOSITORY=${INPUT_REPOSITORY}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
+        token: ${{ inputs.token }}
+
+    - name: "Ensure that the desired branch exists"
+      shell: bash
+      env:
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+        BRANCH: ${{ inputs.branch }}
+      run: | # zizmor: ignore[template-injection] I can't think of any other way to expand input.branch within comments
+        # Check the ${{ env.BRANCH }} branch exists on remote
+        branch_exists=$(git ls-remote --heads origin "refs/heads/${BRANCH}" 2>&1)
+
+        # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
+        if [ -z "$branch_exists" ]; then
+          echo "The $BRANCH branch does not exist. Failing the workflow."
+          exit 1
+        else
+          # Fetch and switch to ${{ env.BRANCH }}
+          git fetch origin "${BRANCH}:${BRANCH}"
+          git switch "$BRANCH"
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Clean the desired PR documentation from the pull/ directory
+
+    - name: "Delete the documentation directory for the PR"
+      id: delete-pr-directory
+      shell: bash
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        # This conditional helps when a PR is closed before actual deployment.
+        if [[ -d pull/${PR_NUMBER} ]]; then
+          rm -rf pull/${PR_NUMBER}
+          echo "PR_DIRECTORY_DELETED=true" >> ${GITHUB_OUTPUT}
+          echo "Documentation for pull-request ${PR_NUMBER} removed."
+        else
+          echo "Documentation for pull-request ${PR_NUMBER} does not exist."
+          echo "PR_DIRECTORY_DELETED=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: steps.delete-pr-directory.outputs.PR_DIRECTORY_DELETED == true
+      with:
+        level: "INFO"
+        message: >
+          For deploying the documentation, a GitHub token or a deployment token
+          is required. The GitHub token is used when deploying to the current
+          repository while the deployment token is used to deploy to an external
+          repository.
+
+    - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
+      if: inputs.repository == 'current' && steps.delete-pr-directory.outputs.PR_DIRECTORY_DELETED == 'true'
+      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      with:
+        publish_dir: .
+        publish_branch: ${{ inputs.branch }}
+        github_token: ${{ inputs.token }}
+        commit_message: ${{ inputs.commit-message }}
+        keep_files: true
+        force_orphan: ${{ inputs.force-orphan }}
+
+    - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
+      if: inputs.repository != 'current' && steps.delete-pr-directory.outputs.PR_DIRECTORY_DELETED == 'true'
+      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      with:
+        publish_dir: .
+        publish_branch: ${{ inputs.branch }}
+        personal_token: ${{ inputs.token }}
+        external_repository: ${{ inputs.repository }}
+        commit_message: ${{ inputs.commit-message }}
+        keep_files: true
+        force_orphan: ${{ inputs.force-orphan }}
+
+    - name: "Make a PR comment when PR documentation is deleted"
+      if: steps.delete-pr-directory.outputs.PR_DIRECTORY_DELETED == 'true'
+      uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: >
+          This PR has been closed. Documentation for this pull request will shortly be removed from its
+          [former deployment address](https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}).

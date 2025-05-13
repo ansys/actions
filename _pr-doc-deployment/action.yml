@@ -1,0 +1,306 @@
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  Deploy the documentation for a pull-request.
+
+description: |
+  This action deploys the HTML documentation artifact corresponding to the
+  pull request event that triggers it. By default, the ``gh-pages`` branch of the
+  current repository is assumed, and the documentation will be available at
+  ``https://<cname>/pull/<pr-number>/``.
+
+inputs:
+
+  # Required inputs
+
+  cname:
+    description: |
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
+
+  token:
+    description: |
+      Required password, key or token with the correct credentials for deploying the
+      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token is
+      is enough. For workflows deploying to other repositories, `generate and
+      use a token with writing access
+      <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
+      to that repository. ``contents: write`` and ``pull-requests: write`` are minimum permissions required for this token.
+    required: true
+    type: string
+
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  doc-artifact-name:
+    description: |
+        Name of the HTML documentation artifact. This artifact is expected to
+        contain all the HTML and static files. If it contains a compressed file,
+        make sure you enable the ``decompress-artifact`` option.
+    required: false
+    default: 'documentation-html'
+    type: string
+
+  decompress-artifact:
+    description: |
+      Whether to decompress the ``doc-artifact-name`` file using `ouch
+      <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
+      is ``false``.
+    required: false
+    default: false
+    type: string
+
+  repository:
+    description: |
+      Repository name in the form of ``username/repository`` to be used for
+      deploying the documentation. The current repository is assumed by default.
+    required: false
+    default: 'current'
+    type: string
+
+  branch:
+    description: |
+      Branch name for deploying the documentation. The ``gh-pages`` branch is
+      used by default.
+    required: false
+    default: 'gh-pages'
+    type: string
+
+  commit-message:
+    description: |
+      Commit message used when deploying the documentation.
+    required: false
+    default: 'DOC: update pull request documentation'
+    type: string
+
+  force-orphan:
+    description: |
+      Whether to force the deployment branch to be orphan or not. Default value
+      is ``true``.
+    required: false
+    default: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Checkout the repository branch for deploying the documentation. If this
+          step fails, then it means that the provided token is not valid.
+
+    - name: "Get the name of the repository"
+      shell: bash
+      id: get-repository-name
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+      run: |
+        if [[ "$INPUT_REPOSITORY" == "current" ]]; then
+          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
+        else
+          echo "REPOSITORY=${INPUT_REPOSITORY}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
+        token: ${{ inputs.token }}
+
+    - name: "Ensure that the desired branch exists"
+      shell: bash
+      env:
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+        BRANCH: ${{ inputs.branch }}
+      run: | # zizmor: ignore[template-injection] I can't think of any other way to expand input.branch within comments
+        # Check the ${{ env.BRANCH }} branch exists on remote
+        branch_exists=$(git ls-remote --heads origin "refs/heads/${BRANCH}" 2>&1)
+
+        # If the ${{ env.BRANCH }} doesn't exist, then print error message and exit 1
+        if [ -z "$branch_exists" ]; then
+          echo "The $BRANCH branch does not exist. Creating $BRANCH."
+
+          # Create orphan branch
+          git checkout --orphan "$BRANCH"
+
+          # Unstage files to be committed
+          git rm --cached -r .
+
+          # Remove untracked files
+          git clean -fd
+
+          # Configure git username & email
+          git config user.name "$BOT_USER"
+          git config user.email "$BOT_EMAIL"
+
+          # Commit ${{ env.BRANCH }} & push to origin
+          git commit --allow-empty -m "Create $BRANCH branch"
+          git push -u origin "$BRANCH"
+        else
+          # Fetch and switch to ${{ env.BRANCH }}
+          git fetch origin "${BRANCH}:${BRANCH}"
+          git switch "$BRANCH"
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Download the pr documentation artifact in a folder that has the same
+          name as the version number. Decompress artifact if required. Finally,
+          display the structure of the directory to verify that it has the right
+          layout.
+
+    - name: "Ensure existence of the root PR documentation directory"
+      shell: bash
+      run: |
+        if [[ -d pull/ ]]; then
+          echo "PR documentation folder already exists."
+        else
+          mkdir pull/
+          echo "PR documentation folder created."
+        fi
+
+    - name: "Ensure existence of the clean sub-directory corresponding to the current PR"
+      id: create-pr-directory
+      shell: bash
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        if [[ -d pull/${PR_NUMBER} ]]; then
+          echo "Directory corresponding to this PR's documentation detected, cleaning ..."
+          rm -rf pull/${PR_NUMBER} && mkdir pull/${PR_NUMBER}
+        else
+          mkdir pull/${PR_NUMBER}
+          echo "Directory for deploying documentation of the PR created."
+          # This means this is the first time the PR documentation is being deployed
+          echo "FIRST_TIME_DEPLOYMENT=true" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Download the pr documentation artifact"
+      uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+      with:
+        name: ${{ inputs.doc-artifact-name }}
+        path: pull/${{ github.event.pull_request.number }}
+
+    - name: "Update apt-get"
+      shell: bash
+      run: |
+        sudo apt-get update
+
+    - name: "Decompress artifact content"
+      shell: bash
+      if: inputs.decompress-artifact == 'true'
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        sudo apt-get install -y cargo && cargo install ouch
+        export PATH="$HOME/.cargo/bin/:$PATH"
+        ouch --version
+        cd pull/${PR_NUMBER} && compressed_artifact=$(ls .)
+        ouch decompress $compressed_artifact
+        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
+        mv $decompressed_artifact/* .
+        rm -rf $compressed_artifact $decompressed_artifact
+
+    - name: "Display structure of pull/${{ github.event.pull_request.number }}"
+      shell: bash
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        ls -R pull/${PR_NUMBER}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate the "robots.txt" file for guiding web crawlers (spiders)
+
+    - name: "Generate 'robots.txt' file"
+      uses: ansys/actions/_doc-gen-robots@main
+      with:
+        cname: ${{ inputs.cname }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          For deploying the documentation, a GitHub token or a deployment token
+          is required. The GitHub token is used when deploying to the current
+          repository while the deployment token is used to deploy to an external
+          repository.
+
+    - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
+      if: inputs.repository == 'current'
+      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      with:
+        publish_dir: .
+        publish_branch: ${{ inputs.branch }}
+        github_token: ${{ inputs.token }}
+        commit_message: ${{ inputs.commit-message }}
+        keep_files: true
+        force_orphan: ${{ inputs.force-orphan }}
+
+    - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
+      if: inputs.repository != 'current'
+      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      with:
+        publish_dir: .
+        publish_branch: ${{ inputs.branch }}
+        personal_token: ${{ inputs.token }}
+        external_repository: ${{ inputs.repository }}
+        commit_message: ${{ inputs.commit-message }}
+        keep_files: true
+        force_orphan: ${{ inputs.force-orphan }}
+
+    - name: "Make a PR comment the first time a PR documentation is deployed"
+      if: steps.create-pr-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true'
+      uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: >
+          The documentation for this pull request will be available at
+          [https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}).
+          Please allow some time for the documentation to be deployed.
