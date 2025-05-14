@@ -63,6 +63,12 @@ inputs:
     required: true
     type: string
 
+  maximum-pr-doc-deployments:
+    description: |
+      The maximum number of deployable pull requests documentation.
+    required: true
+    type: number
+      
   # Optional inputs
 
   doc-artifact-name:
@@ -131,6 +137,7 @@ runs:
         branch: ${{ inputs.branch }}
         commit-message: ${{ inputs.commit-message }}
         force-orphan: ${{ inputs.force-orphan }}
+        maximum-pr-doc-deployments: ${{ inputs.maximum-pr-doc-deployments }}
 
     - uses: ansys/actions/_pr-doc-clean@main
       if: github.event.pull_request.state == 'closed'
