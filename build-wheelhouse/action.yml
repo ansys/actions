@@ -287,7 +287,7 @@ runs:
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          ${ACTIVATE_VENV}
+          #${ACTIVATE_VENV}
           python -m pip freeze | sed 's/\r$//' > wheel_reqs.txt
           python -m pip wheel -w wheelhouse -r wheel_reqs.txt
         else
