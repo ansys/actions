@@ -150,7 +150,7 @@ runs:
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import get_first_letter_case
+        from parse_pr import get_first_letter_case
 
         pr_title = os.environ.get("PR_TITLE")
         get_first_letter_case(pr_title)
@@ -168,20 +168,23 @@ runs:
         token: ${{ inputs.token }}
         use-upper-case: true
 
-    - name: "Get conventional commit type from title"
+    - name: "Get conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_BODY: ${{ github.event.pull_request.body }}
       shell: python
       run: |
         import os
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import get_conventional_commit_type
+        from parse_pr import get_conventional_commit_type
 
         pr_title = os.environ.get("PR_TITLE")
-        get_conventional_commit_type(pr_title)
+        pr_body = os.environ.get("PR_BODY")
+
+        get_conventional_commit_type(pr_title, pr_body)
 
     - name: "Get labels in the pull request"
       id: get-labels
@@ -205,7 +208,7 @@ runs:
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import changelog_category_cc
+        from parse_pr import changelog_category_cc
 
         cc_type = ${{ env.CC_TYPE }}
         changelog_category_cc(cc_type)
@@ -220,7 +223,7 @@ runs:
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import changelog_cateogry_labels
+        from parse_pr import changelog_cateogry_labels
 
         labels = os.environ.get("LABELS")
         changelog_cateogry_labels(labels)
@@ -248,7 +251,7 @@ runs:
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import clean_pr_title
+        from parse_pr import clean_pr_title
 
         pr_title = os.environ.get("PR_TITLE")
         use_cc = True if os.environ.get("USE_CONVENTIONAL_COMMITS") == "true" else False
@@ -294,7 +297,7 @@ runs:
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import add_towncrier_config
+        from parse_pr import add_towncrier_config
 
         repo_name = os.environ.get("REPO_NAME")
         org_name = "${{ github.repository_owner }}"
@@ -311,7 +314,7 @@ runs:
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import rewrite_template
+        from parse_pr import rewrite_template
 
         template_status = rewrite_template(os.getenv('TEMPLATE'), os.getenv('FILENAME'))
 

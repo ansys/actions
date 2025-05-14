@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 import pypandoc
-from parse_pr_title import get_towncrier_config_value, save_env_variable
+from parse_pr import get_towncrier_config_value, save_env_variable
 
 """Semantic version regex as found on semver.org:
 https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string"""
