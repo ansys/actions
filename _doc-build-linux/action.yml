@@ -363,7 +363,7 @@ runs:
           $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINX_OPTS}"
         fi
 
-    - name: "Build HTML and documentation using xvfb"
+    - name: "Build HTML and PDF documentation using xvfb"
       if: inputs.requires-xvfb == 'true'
       env:
         SPHINXOPTS: ${{ inputs.sphinxopts }}
