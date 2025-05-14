@@ -72,6 +72,14 @@ inputs:
     default: true
     type: boolean
 
+  working-directory:
+     description: |
+       Directory to execute this action. Useful for repositories containing
+       various Python libraries.
+     required: false
+     default: '.'
+     type: string
+
   attest-provenance:
     description: |
       Whether to generate build provenance attestations for distribution
@@ -116,8 +124,10 @@ runs:
 
     - name: "Build distribution artifacts"
       shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        python -m build
+        python -m build --outdir dist "${WORKING_DIRECTORY}"
 
     - name: "Check build health"
       shell: bash

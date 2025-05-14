@@ -26,6 +26,12 @@ Doc deploy stable action
 .. jinja:: doc-deploy-stable
     :file: _templates/action.rst.jinja
 
+Doc deploy pr action
+---------------------
+
+.. jinja:: doc-deploy-pr
+    :file: _templates/action.rst.jinja
+
 Doc changelog action
 --------------------
 

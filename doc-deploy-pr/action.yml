@@ -1,0 +1,145 @@
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  Doc deploy pr action
+
+description: |
+  This action deploys the HTML documentation artifact corresponding to the
+  pull request that triggers it. By default, the ``gh-pages`` branch of the
+  current repository is assumed, and the documentation will be available at
+  ``https://<cname>/pull/<pr-number>/``. The action also removes the deployed
+  PR documentation once the pull request is closed.
+
+inputs:
+
+  # Required inputs
+
+  cname:
+    description: |
+      The canonical name (CNAME) containing the documentation.
+    required: true
+    type: string
+
+  token:
+    description: |
+      Required password, key or token with the correct credentials for deploying the
+      documentation. If deploying to the current repository, the ``secrets.GITHUB_TOKEN`` token is
+      is enough. For workflows deploying to other repositories, `generate and
+      use a token with writing access
+      <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
+      to that repository. ``contents: write`` and ``pull-requests: write`` are minimum permissions required for this token.
+    required: true
+    type: string
+
+  bot-user:
+    description: |
+      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  doc-artifact-name:
+    description: |
+        Name of the HTML documentation artifact. This artifact is expected to
+        contain all the HTML and static files. If it contains a compressed file,
+        make sure you enable the ``decompress-artifact`` option.
+    required: false
+    default: 'documentation-html'
+    type: string
+
+  decompress-artifact:
+    description: |
+      Whether to decompress the ``doc-artifact-name`` file using `ouch
+      <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
+      is ``false``.
+    required: false
+    default: false
+    type: string
+
+  repository:
+    description: |
+      Repository name in the form of ``username/repository`` to be used for
+      deploying the documentation. The current repository is assumed by default.
+    required: false
+    default: 'current'
+    type: string
+
+  branch:
+    description: |
+      Branch name for deploying the documentation. The ``gh-pages`` branch is
+      used by default.
+    required: false
+    default: 'gh-pages'
+    type: string
+
+  commit-message:
+    description: |
+      Commit message used when deploying the documentation.
+    required: false
+    default: 'DOC: update pull request documentation'
+    type: string
+
+  force-orphan:
+    description: |
+      Whether to force the deployment branch to be orphan or not. Default value
+      is ``true``.
+    required: false
+    default: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - uses: ansys/actions/_pr-doc-deployment@main
+      if: github.event.pull_request.state == 'open'
+      with:
+        cname: ${{ inputs.cname }}
+        token: ${{ inputs.token }}
+        bot-user: ${{ inputs.bot-user }}
+        bot-email: ${{ inputs.bot-email }}
+        doc-artifact-name: ${{ inputs.doc-artifact-name }}
+        decompress-artifact: ${{ inputs.decompress-artifact }}
+        repository: ${{ inputs.repository }}
+        branch: ${{ inputs.branch }}
+        commit-message: ${{ inputs.commit-message }}
+        force-orphan: ${{ inputs.force-orphan }}
+
+    - uses: ansys/actions/_pr-doc-clean@main
+      if: github.event.pull_request.state == 'closed'
+      with:
+        cname: ${{ inputs.cname }}
+        token: ${{ inputs.token }}
+        bot-user: ${{ inputs.bot-user }}
+        bot-email: ${{ inputs.bot-email }}
+        repository: ${{ inputs.repository }}
+        branch: ${{ inputs.branch }}
+        commit-message: ${{ inputs.commit-message }}
+        force-orphan: ${{ inputs.force-orphan }}
