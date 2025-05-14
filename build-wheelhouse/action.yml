@@ -176,7 +176,7 @@ runs:
         NEEDS_UV: ${{ inputs.use-uv }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        if [[ ${NEEDS_UV }]]; then
+        if [[ ${NEEDS_UV} == 'true' ]]; then
           uv venv --seed
         else
           python -m venv .venv
