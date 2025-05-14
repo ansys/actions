@@ -128,7 +128,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
       with:
         level: "INFO"
         message: >
@@ -153,7 +153,7 @@ runs:
           echo "USE_DEPENDENCY_GROUPS=false" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
       with:
         level: "INFO"
         message: >
@@ -161,14 +161,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
       with:
         level: "INFO"
         message: >
           Set up python to test.
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/work-with-dependency-groups
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

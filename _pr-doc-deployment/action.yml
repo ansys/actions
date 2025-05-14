@@ -117,7 +117,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
       with:
         level: "INFO"
         message: >
@@ -180,7 +180,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
       with:
         level: "INFO"
         message: >
@@ -250,20 +250,20 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
       with:
         level: "INFO"
         message: >
           Generate the "robots.txt" file for guiding web crawlers (spiders)
 
     - name: "Generate 'robots.txt' file"
-      uses: ansys/actions/_doc-gen-robots@main
+      uses: ansys/actions/_doc-gen-robots@feat/work-with-dependency-groups
       with:
         cname: ${{ inputs.cname }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
       with:
         level: "INFO"
         message: >

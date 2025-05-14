@@ -51,7 +51,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
       with:
         level: "INFO"
         message: >
