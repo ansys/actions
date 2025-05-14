@@ -118,7 +118,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_pr-doc-deployment@feat/work-with-dependency-groups
+    - uses: ansys/actions/_pr-doc-deployment@main
       if: github.event.pull_request.state == 'open'
       with:
         cname: ${{ inputs.cname }}
@@ -132,7 +132,7 @@ runs:
         commit-message: ${{ inputs.commit-message }}
         force-orphan: ${{ inputs.force-orphan }}
 
-    - uses: ansys/actions/_pr-doc-clean@feat/work-with-dependency-groups
+    - uses: ansys/actions/_pr-doc-clean@main
       if: github.event.pull_request.state == 'closed'
       with:
         cname: ${{ inputs.cname }}

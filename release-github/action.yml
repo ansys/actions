@@ -162,7 +162,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       if: inputs.toml-version != ''
       with:
         level: "ERROR"
@@ -175,7 +175,7 @@ runs:
 
     # Only one of both can be true: generate_release_notes, changelog-release-notes
     - name: "Sanity check on release notes"
-      uses: ansys/actions/_logging@feat/work-with-dependency-groups
+      uses: ansys/actions/_logging@main
       if: ${{ inputs.generate_release_notes == 'true' && inputs.changelog-release-notes == 'true' }}
       with:
         level: "ERROR"
@@ -188,7 +188,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -206,7 +206,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -239,7 +239,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -256,7 +256,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -274,7 +274,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -295,7 +295,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -306,7 +306,7 @@ runs:
       run: ls -R dist/
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@feat/work-with-dependency-groups
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

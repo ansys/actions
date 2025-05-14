@@ -205,7 +205,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -225,7 +225,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -233,14 +233,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/work-with-dependency-groups
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@feat/work-with-dependency-groups
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
