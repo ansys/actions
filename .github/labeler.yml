@@ -30,3 +30,12 @@
   - any:
       - changed-files:
           - any-glob-to-any-file: ['tests/**']
+
+# HACK: the following labels are declared with the only purpose of avoiding the
+# GitHub labeler bot to remove those. This is a known issue reported in the
+# official action/labeler repo https://github.com/actions/labeler/issues/763
+
+'deploy-pr-doc':
+  - all:
+      - changed-files:
+          - all-globs-to-all-files: ['THIS-NEVER-MATCHES-A-FILE']
