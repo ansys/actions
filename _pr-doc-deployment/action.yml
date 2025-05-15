@@ -217,7 +217,7 @@ runs:
 
           echo "Directory corresponding to this PR's documentation detected, cleaning ..."
           rm -rf pull/${PR_NUMBER}
-          
+
           # Count the number of deployments before creating the sub-directory
           # This ensures correct behaviour in the case of redeployments
           echo "DEPLOYMENT_COUNT=$(ls pull/ | wc -l)" >> ${GITHUB_OUTPUT}

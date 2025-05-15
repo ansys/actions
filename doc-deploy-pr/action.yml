@@ -68,7 +68,7 @@ inputs:
       The maximum number of deployable pull requests documentation.
     required: true
     type: number
-      
+
   # Optional inputs
 
   doc-artifact-name:
