@@ -34,7 +34,19 @@ inputs:
     type: boolean
   provision-uv:
     description: 'Whether to provision uv alongside Python'
-    default: false
+    required: true
+    type: boolean
+  prune-uv-cache:
+    description: |
+      Whether to prune uv cache or not. This input only has an effect if
+      ``provision-uv`` is set to ``true``. If ``true``, the cache is pruned. If ``false``,
+      the cache is not pruned. By default it is set to ``true``.
+
+      .. note::
+
+        When uv cache is pruned, pre-built wheels are removed but wheels built from source
+        are retained.
+
     required: true
     type: boolean
 
@@ -61,6 +73,7 @@ runs:
 
     - name: "Set up uv"
       if: ${{ inputs.provision-uv == 'true' }}
-      uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5.4.1
+      uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
       with:
         enable-cache: ${{ inputs.use-cache }}
+        prune-cache: ${{ inputs.prune-uv-cache }}
