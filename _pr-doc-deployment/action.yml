@@ -235,14 +235,24 @@ runs:
           echo "DEPLOYMENT_COUNT=$(ls pull/ | wc -l)" >> ${GITHUB_OUTPUT}
         fi
 
+    - name: "Detect if deployment rejection comment had been previously added to the same PR"
+      if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
+      id: find-comment
+      uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body-includes: The documentation for this pull request will not be deployed.
+
     - name: "Make a PR comment stating reason for not deploying pr documentation"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
       uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        edit-mode: replace
         body: >
           The documentation for this pull request will not be deployed. This is because the maximum number
-          of allowed deployments (${{ fromJSON(inputs.maximum-pr-doc-deployments) }}) set for this repository has been
+          of allowed deployments (${{ inputs.maximum-pr-doc-deployments }}) set for this repository has been
           reached.
 
     - name: "Download the pr documentation artifact"
