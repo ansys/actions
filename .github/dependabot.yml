@@ -60,6 +60,7 @@ updates:
         patterns:
           - "docker/setup-qemu-action"
           - "pypa/cibuildwheel"
+          - "astral-sh/setup-uv"
       # Actions associated to our release composite actions
       release-related-actions:
         patterns:
