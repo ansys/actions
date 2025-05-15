@@ -236,7 +236,7 @@ runs:
         fi
 
     - name: "Make a PR comment stating reason for not deploying pr documentation"
-      if: steps.create-pull-directory.outputs.DEPLOYMENT_COUNT > ${{ inputs.maximum-pr-doc-deployments }})
+      if: ${{ steps.create-pull-directory.outputs.DEPLOYMENT_COUNT > inputs.maximum-pr-doc-deployments }}
       uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -246,21 +246,21 @@ runs:
           reached.
 
     - name: "Download the pr documentation artifact"
-      if: steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }}
+      if: ${{ steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: pull/${{ github.event.pull_request.number }}
 
     - name: "Update apt-get"
-      if: steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }}
+      if: ${{ steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       shell: bash
       run: |
         sudo apt-get update
 
     - name: "Decompress artifact content"
       shell: bash
-      if: inputs.decompress-artifact == 'true' && (steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }})
+      if: ${{ inputs.decompress-artifact == 'true' && steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
@@ -274,7 +274,7 @@ runs:
         rm -rf $compressed_artifact $decompressed_artifact
 
     - name: "Display structure of pull/${{ github.event.pull_request.number }}"
-      if: steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }}
+      if: ${{ steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       shell: bash
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -284,14 +284,14 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }}
+      if: ${{ steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       with:
         level: "INFO"
         message: >
           Generate the "robots.txt" file for guiding web crawlers (spiders)
 
     - name: "Generate 'robots.txt' file"
-      if: steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }}
+      if: ${{ steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       uses: ansys/actions/_doc-gen-robots@main
       with:
         cname: ${{ inputs.cname }}
@@ -299,7 +299,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }}
+      if: ${{ steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       with:
         level: "INFO"
         message: >
@@ -309,7 +309,7 @@ runs:
           repository.
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
-      if: inputs.repository == 'current' && (steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }})
+      if: ${{ inputs.repository == 'current' && steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
       with:
         publish_dir: .
@@ -320,7 +320,7 @@ runs:
         force_orphan: ${{ inputs.force-orphan }}
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
-      if: inputs.repository != 'current' && (steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }})
+      if: ${{ inputs.repository != 'current' && steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
       with:
         publish_dir: .
@@ -332,7 +332,7 @@ runs:
         force_orphan: ${{ inputs.force-orphan }}
 
     - name: "Make a PR comment the first time a PR documentation is deployed"
-      if: steps.create-pull-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true' && (steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= ${{ inputs.maximum-pr-doc-deployments }})
+      if: ${{ steps.create-pull-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true' && steps.create-pull-directory.outputs.DEPLOYMENT_COUNT <= inputs.maximum-pr-doc-deployments }}
       uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
