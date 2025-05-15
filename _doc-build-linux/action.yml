@@ -215,6 +215,12 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_OUTPUT
         fi
+        # NOTE: Dependency groups are only used with pip and uv
+        if [[ -f "pyproject.toml" ]] && grep -q "\[dependency-groups\]" "pyproject.toml"; then
+          echo "USE_DEPENDENCY_GROUPS=true" >> $GITHUB_OUTPUT
+        else
+          echo "USE_DEPENDENCY_GROUPS=false" >> $GITHUB_OUTPUT
+        fi
 
     - uses: ansys/actions/_logging@main
       with:
@@ -222,6 +228,7 @@ runs:
         message: >
           Build backend: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
           Sphinx build make: ${{ steps.environment-variables.outputs.SPHINX_BUILD_MAKE }}
+          Use of dependency groups: ${{ steps.environment-variables.outputs.USE_DEPENDENCY_GROUPS }}
 
     # ------------------------------------------------------------------------
 
@@ -329,14 +336,25 @@ runs:
       if: steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false'
       env:
         BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
+        USE_DEPENDENCY_GROUPS: ${{ steps.environment-variables.outputs.USE_DEPENDENCY_GROUPS }}
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --with doc
-        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install .[doc]
         else
-          python -m pip install .[doc]
+          if [[ "${USE_DEPENDENCY_GROUPS}" == 'true' ]]; then
+            if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+              uv pip install --group doc .
+            else
+              python -m pip install --group doc .
+            fi
+          else
+            if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+              uv pip install .[doc]
+            else
+              python -m pip install .[doc]
+            fi
+          fi
         fi
 
     # ------------------------------------------------------------------------

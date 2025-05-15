@@ -147,6 +147,12 @@ runs:
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
         fi
+        # NOTE: Dependency groups are only used with pip and uv
+        if [[ -f "pyproject.toml" ]] && grep -q "\[dependency-groups\]" "pyproject.toml"; then
+          echo "USE_DEPENDENCY_GROUPS=true" >> $GITHUB_OUTPUT
+        else
+          echo "USE_DEPENDENCY_GROUPS=false" >> $GITHUB_OUTPUT
+        fi
 
     - uses: ansys/actions/_logging@main
       with:
@@ -292,17 +298,28 @@ runs:
       shell: bash
       if: steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS == 'false'
       env:
-        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
-        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        USE_DEPENDENCY_GROUPS: ${{ steps.github-environment-variables.outputs.USE_DEPENDENCY_GROUPS }}
       run: |
         $ACTIVATE_VENV
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           poetry install --with "$OPTIONAL_DEPENDENCIES_NAME"
-        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install ".[${OPTIONAL_DEPENDENCIES_NAME}]"
         else
-          python -m pip install ".[${OPTIONAL_DEPENDENCIES_NAME}]"
+          if [[ "${USE_DEPENDENCY_GROUPS}" == 'true' ]]; then
+            if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+              uv pip install $(IFS=','; for group in $OPTIONAL_DEPENDENCIES_NAME; do echo --group "$group"; done) .
+            else
+              python -m pip install $(IFS=','; for group in $OPTIONAL_DEPENDENCIES_NAME; do echo --group "$group"; done) .
+            fi
+          else
+            if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+              uv pip install .["$OPTIONAL_DEPENDENCIES_NAME"]
+            else
+              python -m pip install .["$OPTIONAL_DEPENDENCIES_NAME"]
+            fi
+          fi
         fi
 
     - name: "Set up pytest run command"
