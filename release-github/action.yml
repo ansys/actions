@@ -96,7 +96,14 @@ inputs:
   toml-version:
     description: |
       Toml version used for retrieving the towncrier directory.
-    default: '0.10.2'
+    default: ''
+    required: false
+    type: string
+
+  tomli-version:
+    description: |
+      Tomli version used for retrieving the towncrier directory.
+    default: '2.2.1'
     required: false
     type: string
 
@@ -154,6 +161,17 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - uses: ansys/actions/_logging@main
+      if: inputs.toml-version != ''
+      with:
+        level: "ERROR"
+        message: >
+          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
+          is no longer used because it cannot parse ``pyproject.toml`` files where groups
+          include other groups. This action now uses the ``tomli`` library instead. If you
+          want to use a specific version of ``tomli``, please set the ``tomli-version``
+          input accordingly.
 
     # Only one of both can be true: generate_release_notes, changelog-release-notes
     - name: "Sanity check on release notes"
@@ -296,11 +314,11 @@ runs:
     - name: "Install toml and pypandoc"
       shell: bash
       env:
-        TOML_VERSION: ${{ inputs.toml-version }}
+        TOMLI_VERSION: ${{ inputs.tomli-version }}
         PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip toml=="$TOML_VERSION"
+        ${INSTALL_COMMAND} --upgrade pip toml=="$TOMLI_VERSION"
         ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
 
     - name: "Get the release notes body"
