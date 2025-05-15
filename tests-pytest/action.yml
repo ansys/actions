@@ -147,6 +147,7 @@ runs:
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
         fi
+        # NOTE: Dependency groups are only used with pip and uv
         if [[ -f "pyproject.toml" ]] && grep -q "\[dependency-groups\]" "pyproject.toml"; then
           echo "USE_DEPENDENCY_GROUPS=true" >> $GITHUB_OUTPUT
         else
