@@ -248,6 +248,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
+        # NOTE: Dependency groups are only used with pip and uv
         if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern '\[dependency-groups\]')) {
           echo "USE_DEPENDENCY_GROUPS=$(echo 'false')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         } else {
