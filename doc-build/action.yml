@@ -134,6 +134,14 @@ inputs:
     required: false
     type: boolean
 
+  check-links:
+    description: |
+      Whether to perform external link checks during the generation of
+      documentation. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
   add-pdf-html-docs-as-assets:
     description: |
       Whether to add PDF and HTML documentation as assets of the HTML
