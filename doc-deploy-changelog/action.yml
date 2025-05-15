@@ -223,7 +223,7 @@ runs:
       run: |
         import pathlib
         import os
-        import toml
+        import tomli
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -235,8 +235,8 @@ runs:
         towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
 
         # Load pyproject.toml
-        with open(towncrier_config, 'r') as f:
-            config = toml.load(f)
+        with open(towncrier_config, 'rb') as f:
+            config = tomli.load(f)
             directory = config["tool"]["towncrier"]["directory"]
             project_name = config["tool"]["towncrier"].get("package")
 
