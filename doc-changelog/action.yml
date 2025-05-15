@@ -71,7 +71,14 @@ inputs:
   toml-version:
     description: |
       Toml version used for retrieving the towncrier directory.
-    default: '0.10.2'
+    default: ''
+    required: false
+    type: string
+
+  tomli-version:
+    description: |
+      Tomli version used for retrieving the towncrier directory.
+    default: '2.2.1'
     required: false
     type: string
 
@@ -115,6 +122,18 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - uses: ansys/actions/_logging@main
+      if: inputs.toml-version != ''
+      with:
+        level: "ERROR"
+        message: >
+          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
+          is no longer used because it cannot parse ``pyproject.toml`` files where groups
+          include other groups. This action now uses the ``tomli`` library instead. If you
+          want to use a specific version of ``tomli``, please set the ``tomli-version``
+          input accordingly.
+
     - name: "Install Git and clone project"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
@@ -131,14 +150,14 @@ runs:
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
 
-    - name: "Install towncrier"
+    - name: "Install towncrier and tomli"
       shell: bash
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOML_VERSION: ${{ inputs.toml-version }}
+        TOMLI_VERSION: ${{ inputs.tomli-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} toml==${TOML_VERSION}
+        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
 
     - name: "Get first letter of conventional commit type"
       if: ${{ inputs.use-conventional-commits == 'true' }}
@@ -260,7 +279,7 @@ runs:
       run: |
         import pathlib
         import os
-        import toml
+        import tomli
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -272,8 +291,8 @@ runs:
         towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
 
         # Load pyproject.toml
-        with open(towncrier_config, 'r') as f:
-            config = toml.load(f)
+        with open(towncrier_config, 'rb') as f:
+            config = tomli.load(f)
             template = config["tool"]["towncrier"]["template"]
             filename = config["tool"]["towncrier"]["filename"]
 
