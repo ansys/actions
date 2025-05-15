@@ -34,3 +34,4 @@ doc-deploy-pr:
         token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
         bot-user: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
         bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
+        maximum-pr-doc-deployments: 3
