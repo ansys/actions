@@ -63,12 +63,6 @@ inputs:
     required: true
     type: string
 
-  maximum-pr-doc-deployments:
-    description: |
-      The maximum number of deployable pull requests documentation.
-    required: true
-    type: number
-
   # Optional inputs
 
   doc-artifact-name:
@@ -119,6 +113,13 @@ inputs:
     required: false
     default: true
     type: string
+
+  maximum-pr-doc-deployments:
+    description: |
+      The maximum number of deployable pull requests documentation.
+    required: false
+    default: 5
+    type: number
 
 runs:
   using: "composite"

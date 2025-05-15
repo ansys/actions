@@ -62,12 +62,6 @@ inputs:
     required: true
     type: string
 
-  maximum-pr-doc-deployments:
-    description: |
-      The maximum number of pull requests documentation allowed to be deployed.
-    required: true
-    type: number
-
   # Optional inputs
 
   doc-artifact-name:
@@ -118,6 +112,13 @@ inputs:
     required: false
     default: true
     type: string
+
+  maximum-pr-doc-deployments:
+    description: |
+      The maximum number of pull requests documentation allowed to be deployed.
+    required: false
+    default: 5
+    type: number
 
 runs:
   using: "composite"
@@ -241,7 +242,7 @@ runs:
       uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
-        body-includes: The documentation for this pull request will not be deployed.
+        body-includes: Pull request documentation preview limit
 
     - name: "Make a PR comment stating reason for not deploying pr documentation"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
@@ -251,9 +252,8 @@ runs:
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
         edit-mode: replace
         body: >
-          The documentation for this pull request will not be deployed. This is because the maximum number
-          of allowed deployments (${{ inputs.maximum-pr-doc-deployments }}) set for this repository has been
-          reached.
+          Pull request documentation preview limit (${{ inputs.maximum-pr-doc-deployments }})
+          reached: skipping documentation deployment for this pull request.
 
     - name: "Download the pr documentation artifact"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
