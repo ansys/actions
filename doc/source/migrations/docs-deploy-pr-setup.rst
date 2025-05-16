@@ -30,7 +30,7 @@ Two different ways of setting up the action are proposed below, depending on the
    This configuration implies documentation deployment for every pull request, as long
    the limit set by ``maximum-pr-doc-deployments`` is not exceeded. This configuration is especially
    suitable for documentation-only projects where deploying the documentation for every pull request may be
-   desirable (since most pull requests will involve editing the documentation work). Configure your workflow
+   desirable (since most pull requests will involve editing the documentation). Configure your workflow
    file like below:
 
 .. code:: yaml
