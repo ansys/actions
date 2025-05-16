@@ -203,6 +203,7 @@ runs:
       run: |
         python -m pip install pipx
         python -m pipx install poetry
+        python -m pipx inject poetry poetry-plugin-export
         echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env]
         echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
         python -m venv .venv
@@ -288,7 +289,7 @@ runs:
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           ${ACTIVATE_VENV}
-          pip freeze | sed 's/\r$//' > wheel_reqs.txt
+          poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
           pip wheel -w wheelhouse -r wheel_reqs.txt
         else
           python -m pip wheel "${INSTALL_TARGET}" -w wheelhouse
