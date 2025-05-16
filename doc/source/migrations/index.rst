@@ -13,14 +13,22 @@ Version ``v10.0``
 **New Features:**
 
 - Added a new action named ``ansys/action/check-actions-security``. This action audits your workflow files
-  for common security and vulnerability issues, providing summary and detailed reports of issues that are detected.
+  for common security and vulnerability issues, providing summary and detailed reports of detected issues.
   This action is based on `zizmor <https://docs.zizmor.sh/>`_ which is a static analysis tool for Github
   actions. Consult `zizmor audit rules <https://docs.zizmor.sh/audits/>`_ for more information about
   detected issues and how to remediate them.
+
 - Added a new action named ``ansys/action/doc-deploy-pr``. This action deploys the HTML documentation for
   a pull request. The documentation is made available at ``https://<cname>/pull/<pr-number>/`` and
   the deployed documentation is removed automatically once the pull request is closed. Consult
-  :ref:`doc-deploy-pr-setup` for more information on how to set this action up.
+  :ref:`docs-deploy-pr-setup` for detailed information on setting up this action.
+
+- A ``use-uv`` option that defaults to true has been added to the following actions: ``build-library``,
+  ``build-wheelhouse``, ``check-licenses``, ``check-vulnerabilities``, ``code-style``, ``doc-build``,
+  ``doc-changelog``, ``doc-deply-changelog``, ``hk-package-clean-except``, ``hk-package-clean-untagged``,
+  ``release-github``, and ``tests-pytest``. With this option, these actions now take advantage of
+  `uv <https://docs.astral.sh/uv/>`_ for fast package installation. This helps speed up workflows,
+  especially when bottlenecked by package installation.
 
 **Breaking changes:**
 
@@ -325,5 +333,5 @@ Version ``v4``
    docs-changelog-setup
    docs-deploy-changelog-setup
    docs-style-vale-version-update
-   doc-deploy-pr-setup
+   docs-deploy-pr-setup
    release-pypi-trusted-publisher

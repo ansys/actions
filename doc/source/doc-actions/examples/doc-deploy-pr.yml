@@ -5,7 +5,7 @@
 #   pull_request:
 #     # opened, reopened, and synchronize are default for pull_request
 #     # closed - when the PR is closed (via merge or otherwise)
-#     types: [opened, reopened, synchronize, edited, labeled, closed]
+#     types: [opened, reopened, synchronize, edited, closed]
 
 # Add a condition to skip other jobs in the workflow when the PR is closed
 # For example, for the doc-build job which must be run before the PR can be deployed,
