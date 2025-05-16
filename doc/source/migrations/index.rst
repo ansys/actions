@@ -8,6 +8,7 @@ from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
 Version ``v10.0``
+-----------------
 
 **Breaking changes:**
 
