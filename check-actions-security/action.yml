@@ -26,7 +26,8 @@ name: |
 description: |
   This action helps audit GitHub workflows for vulnerabilities. It finds many common
   security issues in typical GitHub Actions CI/CD setups using
-  `zizmor <https://woodruffw.github.io/zizmor/>`_.
+  `zizmor <https://docs.zizmor.sh/>`_. Consult `zizmor audit rules <https://docs.zizmor.sh/audits/>`_
+  for more information about detected issues and how to remediate them.
 
 inputs:
 
