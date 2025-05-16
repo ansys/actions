@@ -16,6 +16,7 @@ achieved via a labeling strategy.
 
 The following comments are automatically added to the pull request depending on the exact operation
 carried out by the action:
+
 - A URL pointing to the deployed documentation when a fresh PR documentation deployment
   occurs.
 - A confirmation of the removal of the documentation when the PR is closed.
