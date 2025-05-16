@@ -7,6 +7,14 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v10.0``
+-----------------
+
+**Breaking changes:**
+
+- The ``ansys/actions/doc-build`` does no longer support the ``JSON`` builder
+  for rendering the documentation of a project.
+
 Version ``v9.0``
 ----------------
 

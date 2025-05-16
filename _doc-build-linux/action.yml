@@ -35,8 +35,7 @@ description: |
   to generate documentation from the source. It requires that all the
   documentation is contained in the ``doc/`` directory of a project. The
   action locates the ``doc/Makefile`` and runs the ``make html`` and
-  ``make pdf`` commands. If desired, the ``make json`` command can
-  also be executed to generate JSON documentation.
+  ``make pdf`` commands.
 
 inputs:
 
@@ -89,12 +88,6 @@ inputs:
       file in the root of the project.
     required: true
     type: string
-
-  skip-json-build:
-    description: |
-      Whether to skip the generation of JSON documentation.
-    required: true
-    type: boolean
 
   check-links:
     description: |
@@ -370,13 +363,12 @@ runs:
       with:
         level: "INFO"
         message: >
-          Build HTML, PDF and JSON documentation.
+          Build HTML and PDF
 
-    - name: "Build HTML, PDF, and JSON documentation"
+    - name: "Build HTML and PDF"
       if: inputs.requires-xvfb == 'false'
       env:
         SPHINXOPTS: ${{ inputs.sphinxopts }}
-        SKIP_JSON_BUILD: ${{ inputs.skip-json-build }}
         CHECK_LINKS: ${{ inputs.check-links }}
         SPHINX_BUILD_MAKE: ${{ steps.environment-variables.outputs.SPHINX_BUILD_MAKE }}
       shell: bash
@@ -388,16 +380,11 @@ runs:
         then
           $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINX_OPTS}"
         fi
-        if [[ "${SKIP_JSON_BUILD}" == 'false' ]];
-        then
-          ${SPHINX_BUILD_MAKE} -C doc json SPHINXOPTS="${SPHINX_OPTS}"
-        fi
 
-    - name: "Build HTML, PDF, and JSON documentation using xvfb"
+    - name: "Build HTML and PDF documentation using xvfb"
       if: inputs.requires-xvfb == 'true'
       env:
         SPHINXOPTS: ${{ inputs.sphinxopts }}
-        SKIP_JSON_BUILD: ${{ inputs.skip-json-build }}
         CHECK_LINKS: ${{ inputs.check-links }}
         SPHINX_BUILD_MAKE: ${{ steps.environment-variables.outputs.SPHINX_BUILD_MAKE }}
       shell: bash
@@ -408,10 +395,6 @@ runs:
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
           xvfb-run $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="$SPHINX_OPTS"
-        fi
-        if [[ "$SKIP_JSON_BUILD" == 'false' ]];
-        then
-          xvfb-run ${SPHINX_BUILD_MAKE} -C doc json SPHINXOPTS="${SPHINX_OPTS}"
         fi
 
     # ------------------------------------------------------------------------
@@ -557,12 +540,4 @@ runs:
       with:
         name: documentation-pdf
         path: doc/_build/latex/*.pdf
-        retention-days: 7
-
-    - name: "Upload JSON documentation artifact"
-      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
-      if: inputs.skip-json-build == 'false'
-      with:
-        name: documentation-json
-        path: doc/_build/json
         retention-days: 7
