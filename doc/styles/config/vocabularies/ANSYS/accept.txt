@@ -1,6 +1,7 @@
 Ansys
 ansys
 automerge
+bottlenecked
 CI
 cooldown
 dependabot
@@ -17,3 +18,4 @@ robots.txt
 rulesets
 rst
 uv
+zizmor
