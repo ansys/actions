@@ -27,7 +27,7 @@ Two different ways of setting up the action are proposed below, depending on the
 
 1. Basic setup
 
-   This configuration implies that documentation will be deployed for every pull request, as long
+   This configuration implies documentation deployment for every pull request, as long
    the limit set by ``maximum-pr-doc-deployments`` is not exceeded. This configuration is especially
    suitable for documentation-only projects where deploying the documentation for every pull request may be
    desirable (since most pull requests will involve editing the documentation work). Configure your workflow
@@ -147,7 +147,7 @@ Two different ways of setting up the action are proposed below, depending on the
              bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
              maximum-pr-doc-deployments: 10
 
-   With the instructions in the above steps implemented, the documentation for a pull
-   request will only be deployed when ``deploy-pr-doc`` label is added to the desired
+   With the instructions in the preceding steps implemented, the documentation for a pull
+   request only gets deployed when ``deploy-pr-doc`` label is added to the desired
    PR. For an actual example, see `the setup <https://github.com/ansys/actions/pull/802/files>`_
    for ``ansys/actions``.
