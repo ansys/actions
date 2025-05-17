@@ -1,0 +1,1033 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Migration guide &#8212; Ansys Actions</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/ansys_sphinx_theme.css?v=0909a4fa" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="../_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="../_static/documentation_options.js?v=759788f0"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'migrations/index';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://actions.docs.ansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Doc-changelog action setup" href="docs-changelog-setup.html" />
+    <link rel="prev" title="Vulnerability actions" href="../vulnerability-actions/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="9.1.dev0" />
+  <link rel="canonical" href="https://actions.docs.ansys.com/version/stable/migrations/index.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="Ansys Actions - Home"/>
+    <img src="../_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="Ansys Actions - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../style-actions/index.html">
+    Style actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tests-actions/index.html">
+    Tests actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../doc-actions/index.html">
+    Documentation actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../licenses-actions/index.html">
+    Licenses actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../build-actions/index.html">
+    Build actions
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../release-actions/index.html">
+    Release actions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../housekeeping-actions/index.html">
+    Housekeeping actions
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../vulnerability-actions/index.html">
+    Vulnerability actions
+  </a>
+</li>
+
+
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    Migration guide
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../changelog.html">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/actions" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    <div id="announcement_msg"></div>
+<script>
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(
+      (text) => (document.getElementById("announcement_msg").innerHTML = text),
+    )
+    .catch((error) => console.error(`Fetch problem: ${error.message}`));
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../style-actions/index.html">
+    Style actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tests-actions/index.html">
+    Tests actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../doc-actions/index.html">
+    Documentation actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../licenses-actions/index.html">
+    Licenses actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../build-actions/index.html">
+    Build actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release-actions/index.html">
+    Release actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../housekeeping-actions/index.html">
+    Housekeeping actions
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../vulnerability-actions/index.html">
+    Vulnerability actions
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Migration guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../changelog.html">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/actions" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="docs-changelog-setup.html">Doc-changelog action setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs-deploy-changelog-setup.html">Doc-deploy-changelog action setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs-style-vale-version-update.html">Doc-style action - migrating from Vale <code class="docutils literal notranslate"><span class="pre">2.X</span></code> to <code class="docutils literal notranslate"><span class="pre">3.X</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="release-pypi-trusted-publisher.html">Release to PyPI as a trusted publishers</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+         
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="https://docs.pyansys.com/" class="nav-link">PyAnsys</a>
+    </li>
+       
+    <li class="breadcrumb-item">
+      <a href="https://dev.docs.pyansys.com/" class="nav-link">PyAnsys Developer’s Guide</a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a
+        href="../index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Migration guide</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="migration-guide">
+<span id="id1"></span><h1>Migration guide<a class="headerlink" href="#migration-guide" title="Link to this heading">#</a></h1>
+<p>This guide provides information on new features, breaking changes, how to migrate
+from one version of the actions to another, and other upstream dependencies that
+have been updated.</p>
+<section id="version-v10-0">
+<h2>Version <code class="docutils literal notranslate"><span class="pre">v10.0</span></code><a class="headerlink" href="#version-v10-0" title="Link to this heading">#</a></h2>
+<p><strong>Breaking changes:</strong></p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-build</span></code> does no longer support the <code class="docutils literal notranslate"><span class="pre">JSON</span></code> builder
+for rendering the documentation of a project.</p></li>
+</ul>
+</section>
+<section id="version-v9-0">
+<h2>Version <code class="docutils literal notranslate"><span class="pre">v9.0</span></code><a class="headerlink" href="#version-v9-0" title="Link to this heading">#</a></h2>
+<p><strong>Breaking changes:</strong></p>
+<ul>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">ansys/actions/check-licenses</span></code> actions with Python version 3.10 or higher.</p></li>
+<li><p>To use <code class="docutils literal notranslate"><span class="pre">check-licenses:</span> <span class="pre">true</span></code> with the <code class="docutils literal notranslate"><span class="pre">ansys/actions/build-wheelhouse</span></code> action, use Python version 3.10 or higher.</p></li>
+<li><p>Update your workflow to not use <code class="docutils literal notranslate"><span class="pre">use-trusted-publisher:</span> <span class="pre">true</span></code> with our pypi release actions.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Using the trusted publisher approach in <code class="docutils literal notranslate"><span class="pre">ansys/release-pypi-public</span></code> and <code class="docutils literal notranslate"><span class="pre">ansys/release-pypi-private</span></code> actions is
+not possible anymore. The reason for that is related to the action
+<a class="reference external" href="https://github.com/pypa/gh-action-pypi-publish">pypa/gh-action-pypi-publish</a> which allows to use the trusted
+publisher. Indeed, it is no longer possible to use the action in a composite action for versions after <code class="docutils literal notranslate"><span class="pre">v1.12.0</span></code>, see
+<a class="reference external" href="https://github.com/pypa/gh-action-pypi-publish/releases/tag/v1.12.0">pypa/gh-action-pypi-publish&#64;v1.12.0</a>.
+However, the latest versions of this action is required to upload
+<a class="reference external" href="https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression">PEP 639 licensing metadata</a>
+to PyPI. This allows to avoid adding upper bounds on build system like <code class="docutils literal notranslate"><span class="pre">setuptools&lt;=67.0.0</span></code>, <code class="docutils literal notranslate"><span class="pre">wheel&lt;0.46.0</span></code> or
+<code class="docutils literal notranslate"><span class="pre">flit_core&gt;=3.2,&lt;3.11</span></code>.</p>
+</div>
+</li>
+</ul>
+<p><strong>Migration Steps:</strong></p>
+<ul>
+<li><p>Update input <code class="docutils literal notranslate"><span class="pre">python-version</span></code> to <code class="docutils literal notranslate"><span class="pre">3.10</span></code> or higher in the <code class="docutils literal notranslate"><span class="pre">ansys/actions/check-licenses</span></code> action or in
+the <code class="docutils literal notranslate"><span class="pre">ansys/actions/build-wheelhouse</span></code> action if you are using the <code class="docutils literal notranslate"><span class="pre">check-licenses</span></code> input.</p>
+<p>For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build-wheelhouse</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build wheelhouse</span>
+<span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span>
+<span class="nt">strategy</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">matrix</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">os</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">ubuntu-latest</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">windows-latest</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;3.10&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.11&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.12&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;3.13&#39;</span><span class="p p-Indicator">]</span>
+<span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build wheelhouse and perform smoke test</span>
+<span class="w">    </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansys/actions/build-wheelhouse@v9</span>
+<span class="w">    </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">library-name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ env.PACKAGE_NAME }}</span>
+<span class="w">      </span><span class="nt">operating-system</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.os }}</span>
+<span class="w">      </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ matrix.python-version }}</span>
+</pre></div>
+</div>
+</li>
+<li><p>When using trusted publisher to publish to PyPI, define you own release job instead of using the
+<code class="docutils literal notranslate"><span class="pre">ansys/actions/release-pypi-*</span></code> actions. See <a class="reference internal" href="release-pypi-trusted-publisher.html#release-pypi-trusted-publisher"><span class="std std-ref">Release to PyPI as a trusted publishers</span></a> for more details.</p></li>
+</ul>
+</section>
+<section id="version-v8-2">
+<h2>Version <code class="docutils literal notranslate"><span class="pre">v8.2</span></code><a class="headerlink" href="#version-v8-2" title="Link to this heading">#</a></h2>
+<p><strong>New Features:</strong></p>
+<ul>
+<li><p>Added a new action named <code class="docutils literal notranslate"><span class="pre">ansys/actions/hk-automerge-prs</span></code>. This action allows maintainers to auto-approve and merge
+<code class="docutils literal notranslate"><span class="pre">dependabot</span></code> PRs and <code class="docutils literal notranslate"><span class="pre">pre-commit.ci</span></code> PRs. It is recommended to add the action at the end of the workflow, once all the
+stages have finished successfully. That way, in case a repository has failing stages, it is not run. This action will run in case
+the PR has been created by <code class="docutils literal notranslate"><span class="pre">dependabot</span></code> or <code class="docutils literal notranslate"><span class="pre">pre-commit.ci</span></code>. You can see an example of its implementation
+<a class="reference external" href="https://github.com/ansys/pyansys/blob/e00400f3b0ad3c09d82d91a97045e6b4d3d7692c/.github/workflows/ci-build.yml#L226-L239">here</a>
+and the <a class="reference external" href="https://github.com/ansys/pyansys/commit/e9f221428a9cc7fc64dd5f775699871288063512">associated PR/commit</a>.</p></li>
+<li><p>Added a new input parameter <code class="docutils literal notranslate"><span class="pre">use-ansys-default-template</span></code> to the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-changelog</span></code> action.
+This input allows users to utilize the default template provided by the <code class="docutils literal notranslate"><span class="pre">ansys/actions</span></code> repository.
+For migration instructions, see the migration steps below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default template is only available for the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-changelog</span></code> action and is in the reStructuredText (rst) format.</p>
+</div>
+</li>
+<li><p>Added a new input parameter <code class="docutils literal notranslate"><span class="pre">fail-level</span></code> to the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-style</span></code> action.
+This input allows users to select the report level used to control check results.
+Default value is <code class="docutils literal notranslate"><span class="pre">&quot;error&quot;</span></code> but it can be changed to <code class="docutils literal notranslate"><span class="pre">&quot;any&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;info&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;warning&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;error&quot;</span></code>.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">release-github/action.yml</span></code> action has been improved with the ability to extend a Github release note with
+instructions on how to verify the release’s artifacts attestations with
+<a class="reference external" href="https://cli.github.com/">Github’s command-line tool</a>.</p>
+<ul>
+<li><p>Added a new input <code class="docutils literal notranslate"><span class="pre">attest-provenance</span></code> to the <code class="docutils literal notranslate"><span class="pre">ansys/actions/build-library</span></code> and <code class="docutils literal notranslate"><span class="pre">ansys/actions/build-wheelhouse</span></code>
+actions. Note that adding provenance attestations requires write permissions for <cite>id-token</cite> and <cite>attestation</cite>.
+For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build-library</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build library</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">  </span><span class="nt">permissions</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">attestations</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span>
+<span class="w">    </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span>
+<span class="w">    </span><span class="nt">id-token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">library</span><span class="nv"> </span><span class="s">source</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">wheel</span><span class="nv"> </span><span class="s">artifacts&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansys/actions/build-library@v8</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">library-name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ env.PACKAGE_NAME }}</span>
+<span class="w">        </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ env.MAIN_PYTHON_VERSION }}</span>
+<span class="w">        </span><span class="nt">attest-provenance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</li>
+<li><p>Added two inputs to the <code class="docutils literal notranslate"><span class="pre">release-github/action.yml</span></code> action. The first input parameter
+<code class="docutils literal notranslate"><span class="pre">add-artifact-attestation-notes</span></code> allows users to add artifact attestation notes to the Github release notes.
+The second input parameter <code class="docutils literal notranslate"><span class="pre">generate_release_notes</span></code> allows users to deactivate the notes automatically generated
+by default.</p></li>
+</ul>
+</li>
+<li><p>Added a new input parameter <code class="docutils literal notranslate"><span class="pre">randomize</span></code> to the <code class="docutils literal notranslate"><span class="pre">ansys/actions/tests-pytest</span></code> action to randomize the order of the tests.</p></li>
+</ul>
+<p><strong>Migration Steps:</strong></p>
+<ul>
+<li><p>The default documentation includes tabs and tab items, providing a clean changelog reStructuredText (rst) file. To use this feature,
+add <code class="docutils literal notranslate"><span class="pre">sphinx-design</span></code> as a dependency in your <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file and include <code class="docutils literal notranslate"><span class="pre">sphinx_design</span></code> as an extension in your <code class="docutils literal notranslate"><span class="pre">conf.py</span></code> file.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.optional-dependencies]</span>
+<span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;sphinx-design&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>In your <code class="docutils literal notranslate"><span class="pre">conf.py</span></code> file, add the following line:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">extensions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;sphinx_design&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>After updating the actions to v9, a comment is made in the PR with the changelog file, suggesting to add <code class="docutils literal notranslate"><span class="pre">sphinx-design</span></code> as a dependency.
+You can ignore that comment if you have already added the dependency.</p>
+<p>After merging the PR, the changelog file updates with the new template, and the new release changelog is created using the new template.</p>
+</section>
+<section id="version-v8">
+<h2>Version <code class="docutils literal notranslate"><span class="pre">v8</span></code><a class="headerlink" href="#version-v8" title="Link to this heading">#</a></h2>
+<p><strong>Breaking changes:</strong></p>
+<ul class="simple">
+<li><p>Use secrets for commit and push credentials within <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-changelog</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-changelog</span></code>, <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-dev</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-stable</span></code>.</p></li>
+<li><p>The token input is required in the <code class="docutils literal notranslate"><span class="pre">ansys/actions/release-github</span></code> action.</p></li>
+</ul>
+<p><strong>Deprecated features:</strong></p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-index</span></code> action has been deprecated and will be
+removed in the next release. With the deprecation of <code class="docutils literal notranslate"><span class="pre">pymeilisearch</span></code> and
+the adoption of a static search index via the <code class="docutils literal notranslate"><span class="pre">ansys-sphinx-theme</span></code>, the
+<code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-index</span></code> action is no longer necessary.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ansys/actions/commit-style</span></code> action has been renamed to
+<code class="docutils literal notranslate"><span class="pre">ansys/actions/check-pr-title</span></code>.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ansys/actions/branch-name-style</span></code> actions has been removed in favor of
+<a class="reference external" href="https://dev.docs.pyansys.com/how-to/repository-protection.html#branch-protection">GitHub rulesets</a>.</p></li>
+</ul>
+<p><strong>Migration steps:</strong></p>
+<ul class="simple">
+<li><p>Add the following required inputs to <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-changelog</span></code>, <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-changelog</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-dev</span></code>, and <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-stable</span></code>:</p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">bot-user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.PYANSYS_CI_BOT_USERNAME }}</span>
+<span class="nt">bot-email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.PYANSYS_CI_BOT_EMAIL }}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Add the permissions and token to the <code class="docutils literal notranslate"><span class="pre">ansys/actions/release-github</span></code> action as follows:</p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">release-github</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Release</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">GitHub&quot;</span>
+<span class="w">  </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">  </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">build-library</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.event_name == &#39;push&#39; &amp;&amp; contains(github.ref, &#39;refs/tags&#39;)</span>
+<span class="w">  </span><span class="nt">permissions</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span>
+<span class="w">  </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Release</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">GitHub&quot;</span>
+<span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansys/actions/release-github@{{ version }}</span>
+<span class="w">      </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">library-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ansys-&lt;product&gt;-&lt;library&gt;&quot;</span>
+<span class="w">        </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span>
+</pre></div>
+</div>
+</section>
+<section id="version-v7">
+<h2>Version <code class="docutils literal notranslate"><span class="pre">v7</span></code><a class="headerlink" href="#version-v7" title="Link to this heading">#</a></h2>
+<p><strong>New features:</strong></p>
+<ul class="simple">
+<li><p>Added an optional input to the <code class="docutils literal notranslate"><span class="pre">ansys/actions/build-library</span></code> action to disable library build
+validation on demand using the <code class="docutils literal notranslate"><span class="pre">validate-build:</span> <span class="pre">false</span></code> argument. This is useful when you want to
+skip the library build validation step in the action.</p></li>
+<li><p>Incorporated the usage of <a class="reference external" href="https://docs.pypi.org/trusted-publishers/">Trusted Publisher</a> in the
+<code class="docutils literal notranslate"><span class="pre">ansys/actions/release-pypi-*</span></code> actions. This is useful when you want to sign the package before
+uploading it to PyPI.</p></li>
+</ul>
+<p><strong>Migration steps:</strong></p>
+<ul class="simple">
+<li><p>To set up your repository to use the <code class="docutils literal notranslate"><span class="pre">ansys/actions/release-pypi-*</span></code> action with the <a class="reference external" href="https://docs.pypi.org/trusted-publishers/">Trusted Publisher</a> approach,
+see the <a class="reference internal" href="release-pypi-trusted-publisher.html#release-pypi-trusted-publisher"><span class="std std-ref">Release to PyPI as a trusted publishers</span></a>.</p></li>
+</ul>
+</section>
+<section id="version-v6">
+<h2>Version <code class="docutils literal notranslate"><span class="pre">v6</span></code><a class="headerlink" href="#version-v6" title="Link to this heading">#</a></h2>
+<p><strong>New features:</strong></p>
+<ul class="simple">
+<li><p>Added the <code class="docutils literal notranslate"><span class="pre">ansys/actions/check-vulnerabilities</span></code> action to check for third-party and first-party vulnerabilities.
+This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.</p></li>
+<li><p>Avoid creating issues by default if vulnerabilities are found in the <code class="docutils literal notranslate"><span class="pre">ansys/actions/check-vulnerabilities</span></code> action.</p></li>
+<li><p>Create a changelog fragment file for each pull request using <code class="docutils literal notranslate"><span class="pre">towncrier</span></code> in the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-changelog</span></code> action.</p></li>
+<li><p>Generate a new section in <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code> if fragment files exist using <code class="docutils literal notranslate"><span class="pre">towncrier</span></code> in the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-changelog</span></code> action.
+By default, it updates the CHANGELOG in the release branch and creates a pull request into the main branch with the updated CHANGELOG and
+deleted fragment files.</p></li>
+<li><p>SEO improvements. These are implemented inside the <a class="reference external" href="https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-dev-action">doc-deploy-dev</a>
+and the <a class="reference external" href="https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-stable-action">doc-deploy-stable</a>.
+Users are not required to apply any changes to their <code class="docutils literal notranslate"><span class="pre">conf.py</span></code> or
+<code class="docutils literal notranslate"><span class="pre">.github/workflows/*.yml</span></code> files. Noticable changes include:</p>
+<ul>
+<li><p>No more redirect from landing page to <cite>version/stable/index.html</cite></p></li>
+<li><p>Generation of <code class="docutils literal notranslate"><span class="pre">robots.txt</span></code> file for avoiding indexing old documentation versions</p></li>
+<li><p>Generation of <cite>sitemap.xml</cite> file for quicker indexing of <cite>version/stable/</cite> pages</p></li>
+<li><p>Inclusion of <cite>canonical</cite> link tags in all HTML files for SEO purposes</p></li>
+</ul>
+</li>
+<li><p>Extend <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-build</span></code> to be able to run in Windows runners.
+To buid the documentation in a Windows runner, we install <code class="docutils literal notranslate"><span class="pre">Chocolatey</span></code> and <code class="docutils literal notranslate"><span class="pre">Miktex</span></code>.</p></li>
+<li><p>Allow <code class="docutils literal notranslate"><span class="pre">ansys/actions/commit-style</span></code> to work with upper case in the type field of a commit.
+Expected types are upper cases of  <a class="reference external" href="https://github.com/commitizen/conventional-commit-types/blob/master/index.json">conventional commit types</a>.</p></li>
+</ul>
+<p><strong>Breaking changes:</strong></p>
+<ul class="simple">
+<li><p>Upgrade default <code class="docutils literal notranslate"><span class="pre">vale</span></code> version from <code class="docutils literal notranslate"><span class="pre">2.29.6</span></code> to <code class="docutils literal notranslate"><span class="pre">3.4.1</span></code> in <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-style</span></code> action.</p></li>
+<li><p>Vale configuration file <code class="docutils literal notranslate"><span class="pre">.vale.ini</span></code> and <code class="docutils literal notranslate"><span class="pre">Vocab/ANSYS</span></code> has to be changed.</p></li>
+</ul>
+<p><strong>Migration steps:</strong></p>
+<ul class="simple">
+<li><p>To set up your repository to use the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-changelog</span></code> action, see the <a class="reference internal" href="docs-changelog-setup.html#docs-changelog-action-setup"><span class="std std-ref">Doc-changelog action setup</span></a>.</p></li>
+<li><p>To set up your repository to use the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-changelog</span></code> action, see the <a class="reference internal" href="docs-deploy-changelog-setup.html#docs-deploy-changelog-action-setup"><span class="std std-ref">Doc-deploy-changelog action setup</span></a>.</p></li>
+<li><p>To set up your repository to use the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-style</span></code> action, see the <a class="reference internal" href="docs-style-vale-version-update.html#docs-style-vale-update"><span class="std std-ref">Doc-style action - migrating from Vale 2.X to 3.X</span></a>.</p></li>
+</ul>
+</section>
+<section id="version-v5">
+<h2>Version <code class="docutils literal notranslate"><span class="pre">v5</span></code><a class="headerlink" href="#version-v5" title="Link to this heading">#</a></h2>
+<p><strong>New features:</strong></p>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">ansys/action/check-vulnerabilities</span></code> to verify third party and first party vulnerabilities.
+This action uses <code class="docutils literal notranslate"><span class="pre">bandit</span></code> and <code class="docutils literal notranslate"><span class="pre">safety</span></code> to detect vulnerabilities in the code and dependencies, respectively.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">ansys/actions/docker-style</span></code> to detect Dockerfile style issues using <code class="docutils literal notranslate"><span class="pre">hadolint</span></code>.</p></li>
+<li><p>Allow <code class="docutils literal notranslate"><span class="pre">vale</span></code> version input in <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-style</span></code> action. By default, <code class="docutils literal notranslate"><span class="pre">2.29.6</span></code> is used.</p></li>
+<li><p>Allow using the twine <code class="docutils literal notranslate"><span class="pre">--skip-existing</span></code> flag in the <code class="docutils literal notranslate"><span class="pre">ansys/actions/release-pypi-*</span></code> actions.</p></li>
+<li><p>Allow using the <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-build</span></code> action to build documentation using a dedicated requirements file (and
+consequently, no need to have a Python project to use it).</p></li>
+<li><p>Allow for independent documentation releases in case of patch release when using <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-stable</span></code> action.
+This will create independent documentation versions for patch releases.</p></li>
+</ul>
+<p><strong>Breaking changes:</strong></p>
+<ul class="simple">
+<li><p>Upgrade <code class="docutils literal notranslate"><span class="pre">actions/upload-artifact</span></code> and <code class="docutils literal notranslate"><span class="pre">actions/download-artifact</span></code> to version <code class="docutils literal notranslate"><span class="pre">v4</span></code>.</p></li>
+<li><p>Upgrade <code class="docutils literal notranslate"><span class="pre">actions/setup-python</span></code> to version <code class="docutils literal notranslate"><span class="pre">v5</span></code>.</p></li>
+</ul>
+<p><strong>Migration steps:</strong></p>
+<ul class="simple">
+<li><p>Since artifacts are uploaded/downloaded using the new <code class="docutils literal notranslate"><span class="pre">actions/*-artifact</span></code>, artifact names cannot
+be duplicated inside the workflow. Also, versions <code class="docutils literal notranslate"><span class="pre">v3</span></code> and <code class="docutils literal notranslate"><span class="pre">v4</span></code> are incompatible with each other. If you are using
+version <code class="docutils literal notranslate"><span class="pre">v3</span></code> independently inside your workflow, you need to upgrade to version <code class="docutils literal notranslate"><span class="pre">v4</span></code>.</p></li>
+<li><p>The upgrade to <code class="docutils literal notranslate"><span class="pre">actions/setup-python</span></code> version <code class="docutils literal notranslate"><span class="pre">v5</span></code> is not mandatory, but it is recommended to use the latest version.
+However, it has been seen that in Windows self-hosted runners, if a certain Python version is not already stored in the
+cache, the action fails. This is a known issue and the workaround is to use the previous version of the action.</p></li>
+</ul>
+<p><strong>Dependency changes:</strong></p>
+<ul class="simple">
+<li><p>Upgrade <code class="docutils literal notranslate"><span class="pre">actions/checkout</span></code> to version <code class="docutils literal notranslate"><span class="pre">v4</span></code>.</p></li>
+<li><p>Upgrade <code class="docutils literal notranslate"><span class="pre">pypa/cibuildwheel</span></code> to version <code class="docutils literal notranslate"><span class="pre">v2.16.2</span></code>.</p></li>
+<li><p>Upgrade <code class="docutils literal notranslate"><span class="pre">peter-evans/create-or-update-comment</span></code> to version <code class="docutils literal notranslate"><span class="pre">v4</span></code>.</p></li>
+<li><p>Upgrade <code class="docutils literal notranslate"><span class="pre">vimtor/action-zip</span></code> to version <code class="docutils literal notranslate"><span class="pre">v1.2</span></code>.</p></li>
+</ul>
+</section>
+<section id="version-v4">
+<h2>Version <code class="docutils literal notranslate"><span class="pre">v4</span></code><a class="headerlink" href="#version-v4" title="Link to this heading">#</a></h2>
+<p><strong>Breaking changes:</strong></p>
+<ul class="simple">
+<li><p>Multi-version documentation deployment using <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-stable</span></code> and <code class="docutils literal notranslate"><span class="pre">ansys/actions/doc-deploy-dev</span></code>.</p></li>
+</ul>
+<p><strong>Migration steps:</strong></p>
+<ul class="simple">
+<li><p>Visit <a class="reference external" href="https://dev.docs.pyansys.com/how-to/documenting.html#enable-multi-version-documentation">Enable multi-version documentation</a>
+for a detailed migration guide.</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../vulnerability-actions/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Vulnerability actions</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="docs-changelog-setup.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Doc-changelog action setup</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-v10-0">Version <code class="docutils literal notranslate"><span class="pre">v10.0</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-v9-0">Version <code class="docutils literal notranslate"><span class="pre">v9.0</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-v8-2">Version <code class="docutils literal notranslate"><span class="pre">v8.2</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-v8">Version <code class="docutils literal notranslate"><span class="pre">v8</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-v7">Version <code class="docutils literal notranslate"><span class="pre">v7</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-v6">Version <code class="docutils literal notranslate"><span class="pre">v6</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-v5">Version <code class="docutils literal notranslate"><span class="pre">v5</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-v4">Version <code class="docutils literal notranslate"><span class="pre">v4</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item"> 
+<div class="tocsection editthispage">
+  <a href="https://github.com/ansys/actions/edit/main/doc/source/migrations/index.rst">
+    <i class="fa-solid fa-pencil"></i>
+       Edit
+    on GitHub  
+  </a>
+</div>
+
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="../_sources/migrations/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "../_static/search.json";
+</script>
+
+
+<script src="../_static/js/search.js"></script>
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2022-2025 ANSYS, Inc. and/or its affiliates..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the
+  <a href="https://sphinxdocs.ansys.com/version/stable/index.html"
+    >Ansys Sphinx Theme</a
+  >
+  1.3.3. <br />Last updated on
+  <span id="ast_build_date"></span>
+</p>
+<script>
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var ast_lastModifiedDate = new Date(document.lastModified);
+  var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+  document.getElementById("ast_build_date").innerHTML = ast_build_date;
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
