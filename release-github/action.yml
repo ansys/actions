@@ -93,7 +93,7 @@ inputs:
     default: false
     type: boolean
 
-  toml-version:
+  toml-version: # Deprecated input, remove in v11
     description: |
       Toml version used for retrieving the towncrier directory.
     default: ''
