@@ -28,7 +28,7 @@ Version ``v10.0``
   ``doc-changelog``, ``doc-deply-changelog``, ``hk-package-clean-except``, ``hk-package-clean-untagged``,
   ``release-github``, and ``tests-pytest``. With this option, these actions now take advantage of
   `uv <https://docs.astral.sh/uv/>`_ for fast package installation. This helps speed up workflows,
-  especially when bottlenecked by package installation.
+  especially for projects that require the install of multiple packages.
 
 **Breaking changes:**
 

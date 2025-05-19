@@ -5,23 +5,21 @@ Deploy documentation from a pull request
 
 The ``ansys/action/doc-deploy-pr`` action handles both the deployment of html documentation from
 a pull request as well as it's automatic removal once the pull request is closed. Therefore,
-the ``closed`` github event should be added to ``on.pull_request.types`` to ensure that the action is
-triggered for documentation removal upon PR closure.
+the ``closed`` github event must be added to ``on.pull_request.types`` to ensure that the action is
+triggered for documentation removal upon pull-request closure.
 
-To limit the number of deployed pull request documentation, a ``maximum-pr-doc-deployments`` input
-is provided, which is especially useful when a lot of pull requests can be opened at the same time
-in your repository or when the size of your documentation is quite large. In addition to this input,
+The ``maximum-pr-doc-deployments`` input can be used to limit the number of documentation deployments. This is useful when multiple pull-requests exist in your repository.
 more fine-grained control of which pull requests should have their documentation deployed can be
 achieved via a labeling strategy.
 
 The following comments are automatically added to the pull request depending on the exact operation
 carried out by the action:
 
-- A URL pointing to the deployed documentation when a fresh PR documentation deployment
-  occurs.
+- A URL pointing to the deployed documentation.
+  
 - A confirmation of the removal of the documentation when the PR is closed.
-- A comment when ``maximum-pr-doc-deployments`` is exceeded and the documentation for the current pull request
-  cannot be deployed.
+
+- A comment when ``maximum-pr-doc-deployments`` is exceeded
 
 Two different ways of setting up the action are proposed below, depending on the level of control desired.
 

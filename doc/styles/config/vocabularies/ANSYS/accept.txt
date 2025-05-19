@@ -1,7 +1,6 @@
 Ansys
 ansys
 automerge
-bottlenecked
 CI
 cooldown
 dependabot
