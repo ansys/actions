@@ -30,10 +30,29 @@ Version ``v10.0``
   `uv <https://docs.astral.sh/uv/>`_ for fast package installation. This helps speed up workflows,
   especially for projects that require the install of multiple packages.
 
+- `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups are now automatically detected and used
+  in:
+
+  - the ``doc-build`` action where ``doc`` must be the group name.
+  - the ``tests-pytest`` action where ``tests`` is the default group name targeted, or you may provide
+    specific group(s) through the ``optional-dependencies-name`` input.
+
+  .. warning::
+
+    Extras (defined in ``[project.optional-dependencies]`` table in ``pyproject.toml``) are
+    not supported alongside dependency groups for the ``optional-dependencies-name`` input.
+
+
 **Breaking changes:**
 
 - The ``ansys/actions/doc-build`` does no longer support the ``JSON`` builder
   for rendering the documentation of a project.
+
+- With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
+  is no longer used because it cannot parse ``pyproject.toml`` files where groups
+  include other groups. This action now uses the ``tomli`` library instead. If you
+  want to use a specific version of ``tomli``, please set the ``tomli-version``
+  input accordingly.
 
 Version ``v9.0``
 ----------------
