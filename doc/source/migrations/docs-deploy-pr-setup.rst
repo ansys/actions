@@ -16,7 +16,7 @@ The following comments are automatically added to the pull request depending on 
 carried out by the action:
 
 - A URL pointing to the deployed documentation.
-  
+
 - A confirmation of the removal of the documentation when the PR is closed.
 
 - A comment when ``maximum-pr-doc-deployments`` is exceeded
