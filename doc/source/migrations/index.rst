@@ -35,7 +35,7 @@ Version ``v10.0``
 
   - the ``doc-build`` action where ``doc`` must be the group name.
   - the ``tests-pytest`` action where ``tests`` is the default group name targeted, or you may provide
-    specific group(s) through the ``optional-dependencies-name`` input.
+    specific groups through the ``optional-dependencies-name`` input.
 
   .. warning::
 
