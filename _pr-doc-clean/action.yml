@@ -97,7 +97,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/add-sbom-to-wheelhouse-action
       with:
         level: "INFO"
         message: >
@@ -144,7 +144,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/add-sbom-to-wheelhouse-action
       with:
         level: "INFO"
         message: >
@@ -168,7 +168,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/add-sbom-to-wheelhouse-action
       if: steps.delete-pr-directory.outputs.PR_DIRECTORY_DELETED == true
       with:
         level: "INFO"

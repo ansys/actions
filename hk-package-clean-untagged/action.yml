@@ -59,7 +59,7 @@ runs:
   steps:
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/add-sbom-to-wheelhouse-action
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false

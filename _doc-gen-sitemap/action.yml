@@ -52,7 +52,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@feat/add-sbom-to-wheelhouse-action
       with:
         level: "INFO"
         message: >
