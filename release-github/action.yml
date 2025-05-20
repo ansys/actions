@@ -137,7 +137,7 @@ inputs:
     required: false
     type: boolean
 
-  generate_release_notes:
+  generate-release-notes:
     description: |
       Whether to automatically generate the name and body for this release.
 
@@ -173,14 +173,14 @@ runs:
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly.
 
-    # Only one of both can be true: generate_release_notes, changelog-release-notes
+    # Only one of both can be true: generate-release-notes, changelog-release-notes
     - name: "Sanity check on release notes"
       uses: ansys/actions/_logging@main
-      if: ${{ inputs.generate_release_notes == 'true' && inputs.changelog-release-notes == 'true' }}
+      if: ${{ inputs.generate-release-notes == 'true' && inputs.changelog-release-notes == 'true' }}
       with:
         level: "ERROR"
         message: >
-          Only one of the inputs ``generate_release_notes`` and ``changelog-release-notes``
+          Only one of the inputs ``generate-release-notes`` and ``changelog-release-notes``
           can be true. Please set one of them to false.
 
     - name: "Checkout repository"
@@ -375,7 +375,7 @@ runs:
       if: inputs.dry-run == 'false'
       with:
         fail_on_unmatched_files: false
-        generate_release_notes: ${{ inputs.generate_release_notes }}
+        generate_release_notes: ${{ inputs.generate-release-notes }}
         body: ${{ env.RELEASE_NOTES_BODY }}
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
         token: ${{ inputs.token }}
