@@ -161,7 +161,7 @@ runs:
           echo "Metadata version: $PYPROJECT_TOML_VERSION"
           exit 1
         fi
-        
+
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
       with:
