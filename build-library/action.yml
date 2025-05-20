@@ -115,7 +115,7 @@ runs:
         TAG_REF: ${{ github.ref_name }}
       run: |
         PYPROJECT_TOML_VERSION=$(grep '^version' pyproject.toml | sed -E 's/version = "(.*)"/\1/')
-        if [[ $PYPROJECT_TOML_VERSION == $TAG_REF ]]; then
+        if [[ v${PYPROJECT_TOML_VERSION} == $TAG_REF ]]; then
           echo "Tag version matches metadata version. Proceeding with the build."
         else
           echo "Tag version does not match metadata version. Exiting with error."
