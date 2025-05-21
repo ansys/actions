@@ -141,7 +141,6 @@ runs:
         $INSTALL_COMMAND importlib-metadata
 
     - name: "Install library"
-      if: steps.needs-importlib-metadata.outputs.needs_importlib_metadata == 'true'
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
