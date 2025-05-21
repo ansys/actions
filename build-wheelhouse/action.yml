@@ -138,6 +138,15 @@ inputs:
     required: false
     type: boolean
 
+  generate-sbom:
+    description: |
+      Whether to generate a Software Bill of Materials (SBOM) using Syft.
+      If ``true``, the SBOM is generated. If ``false``, no SBOM is generated.
+      By default it is set to ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -279,34 +288,6 @@ runs:
            ${INSTALL_COMMAND} "${INSTALL_TARGET}"
         fi
 
-
-
-
-    # - name: "Verify if importlib-metadata needs to be installed"
-    #   id: needs-importlib-metadata
-    #   shell: bash
-    #   env:
-    #     PYTHON_VERSION: ${{ inputs.python-version }}
-    #   run: |
-    #     python_version="${PYTHON_VERSION}"
-    #     minor_python_version=$(echo "$python_version" | awk -F "." '{print $2}')
-    #     major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
-    #     if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 8 )) )); then
-    #       echo "needs_importlib_metadata=true" >> ${GITHUB_OUTPUT}
-    #     elif (( $(( $major_python_version < 3 )) )); then
-    #       echo "needs_importlib_metadata=true" >> ${GITHUB_OUTPUT}
-    #     else
-    #       echo "needs_importlib_metadata=false" >> ${GITHUB_OUTPUT}
-    #     fi
-
-    # - name: "Install importlib-metadata (only for Python <= 3.7)"
-    #   if: steps.needs-importlib-metadata.outputs.needs_importlib_metadata == 'true'
-    #   shell: bash
-    #   env:
-    #     INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
-    #   run: |
-    #     $INSTALL_COMMAND importlib-metadata
-
     - name: "Verify library is properly installed and get its version number"
       id: library-version
       shell: bash
@@ -314,7 +295,6 @@ runs:
         ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         LIBRARY_NAME: ${{ inputs.library-name }}
-        NEEDS_IMPORTLIB_METADATA: ${{ steps.needs-importlib-metadata.outputs.needs_importlib_metadata }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           ${ACTIVATE_VENV}
@@ -346,23 +326,24 @@ runs:
           echo "Syft installation found"
         fi
 
-        syft .venv --source-name "${LIBRARY_NAME}" --source-version "${LIBRARY_VERSION}" -o spdx > sbom.spdx
+        echo "Creating SBOM file..."
+        ~/.local/bin/syft .venv --source-name "${LIBRARY_NAME}" --source-version "${LIBRARY_VERSION}" -o spdx > sbom.spdx
 
-        # TODO: See if we should add that or not
-        # syft .venv --source-name "${LIBRARY_NAME}"  -o spdx-json > sbom.spdx.json
+        echo "Renaming SBOM file..."
+        mv sbom.spdx "${LIBRARY_NAME}-v${LIBRARY_VERSION}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx"
 
     - name: "Upload the SBOM file"
       uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
-        name: sbom.spdx
-        path: sbom.spdx
+        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
+        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
       uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
       with:
-        subject-path: sbom.spdx
+        subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
 
     - name: "Optionally install build and wheel"
       if: ${{ inputs.install-build-and-wheel == 'true' }}
