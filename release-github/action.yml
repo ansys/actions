@@ -137,6 +137,13 @@ inputs:
     required: false
     type: boolean
 
+  generate_release_notes:
+    description: |
+      Deprecated. Use the `generate-release-notes` input parameter.
+    default: false
+    required: false
+    type: boolean
+
   generate-release-notes:
     description: |
       Whether to automatically generate the name and body for this release.
@@ -146,7 +153,6 @@ inputs:
         If this option is activated and the action is used to create text
         content for the release notes body, the content will be
         pre-pended to the automatically generated notes.
-
     default: false
     required: false
     type: boolean
@@ -172,6 +178,14 @@ runs:
           include other groups. This action now uses the ``tomli`` library instead. If you
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly.
+
+    - uses: ansys/actions/_logging@main
+      if: generate_release_notes == 'true'
+      with:
+        level: "WARNING"
+        message: >
+          The use of the ``generate_release_notes`` parameter is deprecated and will be removed in
+          ansys/actions@v11. Please, use the new ``generate-release-notes`` parameter.
 
     # Only one of both can be true: generate-release-notes, changelog-release-notes
     - name: "Sanity check on release notes"
@@ -375,7 +389,9 @@ runs:
       if: inputs.dry-run == 'false'
       with:
         fail_on_unmatched_files: false
-        generate_release_notes: ${{ inputs.generate-release-notes }}
+        # TODO: remove the ``generate_release_notes`` parameter in ansys/actions@v11
+        # https://github.com/ansys/actions/issues/835
+        generate_release_notes: ${{ inputs.generate-release-notes }} || ${{ inputs.generate_release_notes }}
         body: ${{ env.RELEASE_NOTES_BODY }}
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
         token: ${{ inputs.token }}
