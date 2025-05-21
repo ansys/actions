@@ -299,11 +299,9 @@ runs:
       shell: bash
       run: |
         if ! command -v syft > /dev/null; then
-          echo "Syft not found, installation in progress..."
+          echo "Syft not found, installation of v1.26.0 in progress..."
           mkdir -p ~/.local/bin
-          curl -LO https://github.com/anchore/syft/releases/download/v1.25.1/syft_1.25.1_linux_amd64.tar.gz
-          tar -xzf syft_1.25.1_linux_amd64.tar.gz -C ~/.local/bin syft
-          rm syft_1.25.1_linux_amd64.tar.gz
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ~/.local/bin v1.26.0
         else
           echo "Syft installation found"
         fi
