@@ -85,6 +85,14 @@ inputs:
     required: false
     type: string
 
+  bandit-configfile:
+    description: |
+      Optional config file to use for selecting plugins and overriding defaults, 
+      customizing checks performed by bandit.
+    default: ''
+    required: false
+    type: string
+
   source-directory:
     description: |
       The source folder of the repository to be evaluated by bandit.
@@ -365,6 +373,7 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
       run: |
         ${ACTIVATE_VENV}
@@ -377,7 +386,13 @@ runs:
 
         # Run security tools
         safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
-        bandit -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
+
+        if [[ "$BANDIT_CONFIGFILE" == "" ]]; then
+          CONFIGFILE=""
+        else
+          CONFIGFILE="-c $BANDIT_CONFIGFILE"
+        fi
+        bandit $CONFIGFILE -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
     - name: "Run safety advisory checks"
       shell: bash
