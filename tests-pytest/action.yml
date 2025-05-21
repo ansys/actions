@@ -96,12 +96,21 @@ inputs:
 
   optional-dependencies-name:
     description: |
-      Any valid install target or dependency group defined in the ``pyproject.toml`` file,
-      or the suffix of a requirement file. The associated dependencies are installed
-      before running the tests.
+      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      of a requirement file. The associated dependencies are installed before running
+      the tests.
       The default value is ``'tests'``. Therefore, in case of a requirement file, the
       default file is ``requirements/requirements_tests.txt``.
     default: 'tests'
+    required: false
+    type: string
+
+  group-dependencies-name:
+    description: |
+      Any valid dependency groups defined in the ``pyproject.toml`` file. The associated
+      dependencies are installed before running the tests.
+      The default value is ``'tests'``.
+    default: ''
     required: false
     type: string
 
@@ -146,12 +155,6 @@ runs:
           echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
-        fi
-        # NOTE: Dependency groups are only used with pip and uv
-        if [[ -f "pyproject.toml" ]] && grep -q "\[dependency-groups\]" "pyproject.toml"; then
-          echo "USE_DEPENDENCY_GROUPS=true" >> $GITHUB_OUTPUT
-        else
-          echo "USE_DEPENDENCY_GROUPS=false" >> $GITHUB_OUTPUT
         fi
 
     - uses: ansys/actions/_logging@main
@@ -301,24 +304,30 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
-        USE_DEPENDENCY_GROUPS: ${{ steps.github-environment-variables.outputs.USE_DEPENDENCY_GROUPS }}
+        GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
       run: |
         $ACTIVATE_VENV
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           poetry install --with "$OPTIONAL_DEPENDENCIES_NAME"
         else
-          if [[ "${USE_DEPENDENCY_GROUPS}" == 'true' ]]; then
-            if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-              uv pip install $(IFS=','; for group in $OPTIONAL_DEPENDENCIES_NAME; do echo --group "$group"; done) .
-            else
-              python -m pip install $(IFS=','; for group in $OPTIONAL_DEPENDENCIES_NAME; do echo --group "$group"; done) .
-            fi
+          # Optional dependencies
+          optional_dependencies_flag=""
+          if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
+            optional_dependencies_flag="[${OPTIONAL_DEPENDENCIES_NAME}]"
+          fi
+          # Group dependencies
+          group_dependencies_flag=""
+          if [ -n "${GROUP_DEPENDENCIES_NAME}" ]; then
+            IFS=',' read -ra group_list <<< "$groups"
+            for group in "${group_list[@]}"; do
+              group_dependencies_flag="$group_dependencies_flag --group $group"
+            done
+          fi
+          # Install dependencies (potentially mix of optional and group)
+          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            uv pip install $group_dependencies_flag .$optional_dependencies_flag
           else
-            if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-              uv pip install .["$OPTIONAL_DEPENDENCIES_NAME"]
-            else
-              python -m pip install .["$OPTIONAL_DEPENDENCIES_NAME"]
-            fi
+            python -m pip install $group_dependencies_flag .$optional_dependencies_flag
           fi
         fi
 
