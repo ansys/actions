@@ -54,6 +54,10 @@ Version ``v10.0``
   want to use a specific version of ``tomli``, please set the ``tomli-version``
   input accordingly.
 
+- ``build-wheelhouse`` and ``build-library`` actions now assumes Python version ``3.8`` or higher.
+  Therefore, the logic that installs ``importlib-metadata`` package for Python ``<=3.7`` has been
+  dropped as this is no longer required.
+
 Version ``v9.0``
 ----------------
 
