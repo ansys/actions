@@ -68,7 +68,7 @@ inputs:
     required: false
     type: string
 
-  toml-version: # Deprecated input, remove in v11
+  toml-version: # TODO: Remove deprecated input in v11
     description: |
       Toml version used for retrieving the towncrier directory.
     default: ''
@@ -132,7 +132,7 @@ runs:
           is no longer used because it cannot parse ``pyproject.toml`` files where groups
           include other groups. This action now uses the ``tomli`` library instead. If you
           want to use a specific version of ``tomli``, please set the ``tomli-version``
-          input accordingly.
+          input accordingly. The ``toml-version`` input will be removed in v11.
 
     - name: "Install Git and clone project"
       env:
