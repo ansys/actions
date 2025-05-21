@@ -87,7 +87,7 @@ inputs:
 
   bandit-configfile:
     description: |
-      Optional config file to use for selecting plugins and overriding defaults, 
+      Optional config file to use for selecting plugins and overriding defaults,
       customizing checks performed by bandit.
     default: ''
     required: false
