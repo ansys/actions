@@ -315,6 +315,7 @@ runs:
           if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
             optional_dependencies_flag="[${OPTIONAL_DEPENDENCIES_NAME}]"
           fi
+          echo "optional_dependencies_flag: $optional_dependencies_flag"
           # Group dependencies
           group_dependencies_flag=""
           if [ -n "${GROUP_DEPENDENCIES_NAME}" ]; then
@@ -323,6 +324,7 @@ runs:
               group_dependencies_flag="$group_dependencies_flag --group $group"
             done
           fi
+          echo "group_dependencies_flag: $group_dependencies_flag"
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             uv pip install $group_dependencies_flag .$optional_dependencies_flag
