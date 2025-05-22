@@ -45,6 +45,8 @@ Version ``v10.0``
 
 **Breaking changes:**
 
+- Python versions below ``3.9`` are no longer supported.
+
 - The ``ansys/actions/doc-build`` does no longer support the ``JSON`` builder
   for rendering the documentation of a project.
 
@@ -53,10 +55,6 @@ Version ``v10.0``
   include other groups. This action now uses the ``tomli`` library instead. If you
   want to use a specific version of ``tomli``, please set the ``tomli-version``
   input accordingly.
-
-- ``build-wheelhouse`` and ``build-library`` actions now assumes Python version ``3.8`` or higher.
-  Therefore, the logic that installs ``importlib-metadata`` package for Python ``<=3.7`` has been
-  dropped as this is no longer required.
 
 Version ``v9.0``
 ----------------
