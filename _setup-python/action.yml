@@ -47,9 +47,8 @@ inputs:
         When uv cache is pruned, pre-built wheels are removed but wheels built from source
         are retained.
 
-    required: false
+    required: true
     type: boolean
-    default: true
 
 runs:
   using: "composite"

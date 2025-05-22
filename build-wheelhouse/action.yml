@@ -152,6 +152,7 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: true
 
     - name: "Update pip"
       shell: bash
