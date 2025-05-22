@@ -7,7 +7,7 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
-Version ``v10.0``
+Version ``v10``
 -----------------
 
 **New Features:**
@@ -28,33 +28,35 @@ Version ``v10.0``
   ``doc-changelog``, ``doc-deply-changelog``, ``hk-package-clean-except``, ``hk-package-clean-untagged``,
   ``release-github``, and ``tests-pytest``. With this option, these actions now take advantage of
   `uv <https://docs.astral.sh/uv/>`_ for fast package installation. This helps speed up workflows,
-  especially for projects that require the install of multiple packages.
+  especially for projects that require the installation of multiple packages.
 
-- `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups are now automatically detected and used
-  in:
+- `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups are now supported in:
 
-  - the ``doc-build`` action where ``doc`` must be the group name.
-  - the ``tests-pytest`` action where ``tests`` is the default group name targeted, or you may provide
-    specific groups through the ``optional-dependencies-name`` input.
+  - the ``doc-build`` action where the ``doc`` group is targeted if ``[dependency-groups]``
+    table is detected in your ``pyproject.toml`` file, meaning projects starting to use dependency
+    groups must move documentation dependencies to the ``doc`` group.
+  - the ``tests-pytest`` action where you may provide specific groups through the ``group-dependencies-name``
+    input.
 
-  .. warning::
+  .. note::
 
-    Extras (defined in ``[project.optional-dependencies]`` table in ``pyproject.toml``) are
-    not supported alongside dependency groups for the ``optional-dependencies-name`` input.
-
+    For ``tests-pytest`` action, extras (defined in ``[project.optional-dependencies]``) are still
+    supported alongside dependency groups and can be passed through the usual ``optional-dependencies-name``
+    input.
 
 **Breaking changes:**
 
 - Python versions below ``3.9`` are no longer supported.
 
-- The ``ansys/actions/doc-build`` does no longer support the ``JSON`` builder
+- The ``ansys/actions/doc-build`` no longer supports the ``JSON`` builder
   for rendering the documentation of a project.
 
 - With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
-  is no longer used because it cannot parse ``pyproject.toml`` files where groups
-  include other groups. This action now uses the ``tomli`` library instead. If you
-  want to use a specific version of ``tomli``, please set the ``tomli-version``
-  input accordingly.
+  is no longer used in ``doc-style``, ``doc-changelog``, and ``release-github`` actions
+  because it cannot parse ``pyproject.toml`` files where groups include other groups.
+  Affected actions now use the ``tomli`` library instead and a ``tomli-version`` input
+  has replaced the former ``toml-version`` input for those that may desire to use a
+  specific version of ``tomli``.
 
 Version ``v9.0``
 ----------------
