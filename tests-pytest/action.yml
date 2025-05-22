@@ -320,7 +320,7 @@ runs:
           group_dependencies_flag=""
           if [ -n "${GROUP_DEPENDENCIES_NAME}" ]; then
             echo "Handling group dependencies"
-            IFS=',' read -ra group_list <<< "$groups"
+            IFS=',' read -ra group_list <<< "${GROUP_DEPENDENCIES_NAME}"
             for group in "${group_list[@]}"; do
               group_dependencies_flag="$group_dependencies_flag --group $group"
             done
