@@ -296,6 +296,9 @@ runs:
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
         LIBRARY_VERSION: ${{ steps.library-version.outputs.library_version }}
+        WHEELHOUSE_TARGET: ${{ steps.specific-target-requested.outputs.wheelhouse_target }}
+        OPERATING_SYSTEM: ${{ inputs.operating-system }}
+        PYTHON_VERSION: ${{ inputs.python-version }}
       shell: bash
       run: |
         if ! command -v syft > /dev/null; then
@@ -310,7 +313,7 @@ runs:
         ~/.local/bin/syft .venv --source-name "${LIBRARY_NAME}" --source-version "${LIBRARY_VERSION}" -o spdx > sbom.spdx
 
         echo "Renaming SBOM file..."
-        mv sbom.spdx "${LIBRARY_NAME}-v${LIBRARY_VERSION}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx"
+        mv sbom.spdx "${LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
 
     - name: "Upload the SBOM file"
       if: ${{ inputs.generate-sbom == 'true' }}
