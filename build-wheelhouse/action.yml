@@ -215,6 +215,7 @@ runs:
       run: |
         python -m pip install pipx
         python -m pipx install poetry
+        python -m pipx inject poetry poetry-plugin-export
       env:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
