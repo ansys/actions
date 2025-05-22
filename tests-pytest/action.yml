@@ -109,7 +109,7 @@ inputs:
     description: |
       Any valid dependency groups defined in the ``pyproject.toml`` file. The associated
       dependencies are installed before running the tests.
-      The default value is ``'tests'``.
+      The default value is ``''``.
     default: ''
     required: false
     type: string
