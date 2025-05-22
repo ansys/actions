@@ -162,13 +162,6 @@ runs:
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
 
-    # - name: "Update pip"
-    #   shell: bash
-    #   env:
-    #     INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
-    #   run: |
-    #     $INSTALL_COMMAND -U pip
-
     - name: "Identify the build system"
       id: build-system
       shell: bash
@@ -199,7 +192,7 @@ runs:
     # dependencies with different version. This can lead to CICD failures. For
     # more information, see https://github.com/ansys/actions/pull/560
     - name: "Add pipx/bin directory to Github Path"
-      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
 
@@ -207,7 +200,7 @@ runs:
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
     # in the GitHub environment.
     - name: "Set poetry environment variable(s)"
-      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
 
@@ -217,7 +210,7 @@ runs:
     # making it available in the following call and installed in a different
     # environment from the project.
     - name: "Install poetry and create a virtual environment"
-      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
       run: |
         python -m pip install pipx
