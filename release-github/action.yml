@@ -282,7 +282,7 @@ runs:
           Create a dist/extra directory and move all the desired additional
           artifacts inside this directory.
 
-    - name: "Move additional artifacts to dist/wheelhouse directory"
+    - name: "Move additional artifacts to dist/extra directory"
       shell: bash
       if: inputs.additional-artifacts != ''
       env:
@@ -347,8 +347,6 @@ runs:
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
       run: |
-        SDIST_FILE=$(find dist/${LIBRARY_NAME}-artifacts -name '*.tar.gz' | sort | tail -n 1 | xargs basename)
-        WHEEL_FILE=$(find dist/${LIBRARY_NAME}-artifacts -name '*.whl' | sort | tail -n 1 | xargs basename)
 
         {
           echo "RELEASE_NOTES_BODY<<EOF"
@@ -356,14 +354,15 @@ runs:
 
           echo "### Artifact Attestations"
           echo ""
-          echo "You can verify this release's artifact attestations using [GitHub's command-line tool](https://cli.github.com/). For example, download the source distribution and wheel from this release page or from [PyPI](https://pypi.org/). Then, run the following commands:"
+          echo "You can verify this release's artifact attestations using [GitHub's command-line tool](https://cli.github.com/). For example, download the files from this release page or from [PyPI](https://pypi.org/). Then, run the following commands:"
           echo ""
           echo "\`\`\`bash"
-          echo "$ gh attestation verify --owner ${{ github.repository_owner }} ${SDIST_FILE}"
-          echo "\`\`\`"
-          echo "and"
-          echo "\`\`\`bash"
-          echo "$ gh attestation verify --owner ${{ github.repository_owner }} ${WHEEL_FILE}"
+
+          # Find the following artifacts: wheels, source distribution, and wheelhouse files
+          for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o name "*wheelhouse*.zip" \)); do
+            echo "\$ gh attestation verify --owner ${{ github.repository_owner }} ${artifact}"
+          done
+
           echo "\`\`\`"
           echo "EOF"
         } >> "$GITHUB_ENV"
