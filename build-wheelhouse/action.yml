@@ -251,7 +251,7 @@ runs:
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.activate_env }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       shell: bash
       run: |
@@ -266,7 +266,7 @@ runs:
       id: library-version
       shell: bash
       env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.activate_env }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         LIBRARY_NAME: ${{ inputs.library-name }}
       run: |
