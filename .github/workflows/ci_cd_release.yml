@@ -233,7 +233,7 @@ jobs:
     - name: "Release to GitHub"
       uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
       with:
-        generate-release-notes: true
+        generate_release_notes: true
         files: |
           documentation-html.zip
           documentation-pdf.zip
