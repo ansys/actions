@@ -97,8 +97,8 @@ inputs:
   optional-dependencies-name:
     description: |
       Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
-      of a requirement file. The associated dependencies are installed before running
-      the tests.
+      of a requirement file. Multiple targets can be specified as a comma-separated
+      list. The associated dependencies are installed before running the tests.
       The default value is ``'tests'``. Therefore, in case of a requirement file, the
       default file is ``requirements/requirements_tests.txt``.
     default: 'tests'
