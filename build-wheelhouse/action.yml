@@ -247,7 +247,7 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         USE_UV: ${{ inputs.use-uv }}
       run: |
-        $ACTIVATE_VENV
+        ${ACTIVATE_VENV}
         if [[ "$USE_UV" == 'true' ]]; then
           uv pip install -U pip
         else
