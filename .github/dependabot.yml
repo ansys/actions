@@ -1,10 +1,17 @@
 version: 2
+enable-beta-ecosystems: true
 updates:
   - package-ecosystem: "pip"
     directories:
       - "/requirements"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 7
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys-sphinx-theme"
     commit-message:
       prefix: "build(pip)"
     labels:
