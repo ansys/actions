@@ -54,6 +54,31 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Verify if python version is supported"
+      id: python-version-support
+      shell: bash
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+      run: |
+        python_version="${PYTHON_VERSION}"
+        minor_python_version=$(echo "$python_version" | awk -F "." '{print $2}')
+        major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
+        if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 9 )) )); then
+          echo "python_version_supported=false" >> ${GITHUB_OUTPUT}
+        elif (( $(( $major_python_version < 3 )) )); then
+          echo "python_version_supported=false" >> ${GITHUB_OUTPUT}
+        else
+          echo "python_version_supported=true" >> ${GITHUB_OUTPUT}
+        fi
+
+    - uses: ansys/actions/_logging@main
+      if: steps.python-version-support.outputs.python_version_supported == 'false'
+      with:
+        level: "ERROR"
+        message: >
+          Python version ${{ inputs.python-version }} is no longer supported. Please use a
+          version greater than 3.8.
+
     # NOTE: When a workflow is triggered without using the cache, it can lead to a failure
     # in the Post Run action saying that the cache folder doesn't exist on disk.
     # This is related to our use of uv to install packages, see https://github.com/ansys/actions/pull/811
