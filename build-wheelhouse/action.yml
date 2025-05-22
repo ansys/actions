@@ -228,31 +228,6 @@ runs:
            ${INSTALL_COMMAND} "${INSTALL_TARGET}"
         fi
 
-    - name: "Verify if importlib-metadata needs to be installed"
-      id: needs-importlib-metadata
-      shell: bash
-      env:
-        PYTHON_VERSION: ${{ inputs.python-version }}
-      run: |
-        python_version="${PYTHON_VERSION}"
-        minor_python_version=$(echo "$python_version" | awk -F "." '{print $2}')
-        major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
-        if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 8 )) )); then
-          echo "needs_importlib_metadata=true" >> ${GITHUB_OUTPUT}
-        elif (( $(( $major_python_version < 3 )) )); then
-          echo "needs_importlib_metadata=true" >> ${GITHUB_OUTPUT}
-        else
-          echo "needs_importlib_metadata=false" >> ${GITHUB_OUTPUT}
-        fi
-
-    - name: "Install importlib-metadata (only for Python <= 3.7)"
-      if: steps.needs-importlib-metadata.outputs.needs_importlib_metadata == 'true'
-      shell: bash
-      env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
-      run: |
-        $INSTALL_COMMAND importlib-metadata
-
     - name: "Verify library is properly installed and get its version number"
       id: library-version
       shell: bash
@@ -260,18 +235,13 @@ runs:
         ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         LIBRARY_NAME: ${{ inputs.library-name }}
-        NEEDS_IMPORTLIB_METADATA: ${{ steps.needs-importlib-metadata.outputs.needs_importlib_metadata }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           ${ACTIVATE_VENV}
         fi
         library_name="${LIBRARY_NAME}"
 
-        if [ ${NEEDS_IMPORTLIB_METADATA} == 'true' ]; then
-          version=$(python -c "import importlib_metadata; print(importlib_metadata.version('$library_name'))")
-        else
-          version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
-        fi
+        version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
         if [ -z "$version" ]; then
             echo "Problem getting the library version"
             exit 1;
@@ -279,6 +249,22 @@ runs:
             echo "The library version is: $version";
         fi;
         echo "library_version=${version}" >> ${GITHUB_OUTPUT}
+
+    - name: "Ensure tag version matches metadata version when triggered by push of tags"
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+      shell: bash
+      env:
+        TAG_REF: ${{ github.ref_name }}
+        LIBRARY_VERSION: ${{ steps.library-version.outputs.library_version }}
+      run: |
+        if [[ v${LIBRARY_VERSION} == $TAG_REF ]]; then
+          echo "Tag version matches metadata version. Proceeding with the build."
+        else
+          echo "Tag version does not match metadata version. Exiting with error."
+          echo "Tag version: $TAG_REF"
+          echo "Metadata version: $LIBRARY_VERSION"
+          exit 1
+        fi
 
     - name: "Generate the wheelhouse"
       shell: bash
