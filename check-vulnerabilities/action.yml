@@ -387,12 +387,13 @@ runs:
         # Run security tools
         safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
 
-        if [[ "$BANDIT_CONFIGFILE" == "" ]]; then
+        if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
           CONFIGFILE=""
         else
-          CONFIGFILE="-c $BANDIT_CONFIGFILE"
+          CONFIGFILE="-c ${BANDIT_CONFIGFILE}"
         fi
-        bandit $CONFIGFILE -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
+        bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
+
 
     - name: "Run safety advisory checks"
       shell: bash
