@@ -60,6 +60,7 @@ jobs:
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
+        provision-uv: false
 
     - name: "Install build and twine"
       shell: bash
