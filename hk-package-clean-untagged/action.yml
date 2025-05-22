@@ -53,7 +53,7 @@ runs:
   steps:
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@v9.0.10
+      uses: ansys/actions/_setup-python@v9.0.11
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false

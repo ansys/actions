@@ -118,7 +118,7 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@v9.0.10
+      uses: ansys/actions/_setup-python@v9.0.11
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -145,13 +145,13 @@ runs:
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'lowercase') }}
-      uses: ansys/actions/check-pr-title@v9.0.10
+      uses: ansys/actions/check-pr-title@v9.0.11
       with:
         token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
       if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'uppercase') }}
-      uses: ansys/actions/check-pr-title@v9.0.10
+      uses: ansys/actions/check-pr-title@v9.0.11
       with:
         token: ${{ inputs.token }}
         use-upper-case: true

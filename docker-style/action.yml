@@ -91,7 +91,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.10
+    - uses: ansys/actions/_logging@v9.0.11
       with:
         level: "INFO"
         message: >
@@ -109,7 +109,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.10
+    - uses: ansys/actions/_logging@v9.0.11
       if: env.HAS_DOCKER_DIR == 'false'
       with:
         level: "WARNING"
@@ -120,7 +120,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.10
+    - uses: ansys/actions/_logging@v9.0.11
       with:
         level: "INFO"
         message: >
@@ -147,7 +147,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.10
+    - uses: ansys/actions/_logging@v9.0.11
       if: ${{ !!env.EXISTING_DIRS }}
       with:
         level: "INFO"
@@ -176,14 +176,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.10
+    - uses: ansys/actions/_logging@v9.0.11
       if: ${{ env.NON_EXISTING_DIRS != '' && contains(env.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
         message: >
           Non existing directories: '${{ env.NON_EXISTING_DIRS }}'
 
-    - uses: ansys/actions/_logging@v9.0.10
+    - uses: ansys/actions/_logging@v9.0.11
       if: ${{ env.NON_EXISTING_DIRS != '' && !contains(env.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
