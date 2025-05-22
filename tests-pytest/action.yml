@@ -107,8 +107,9 @@ inputs:
 
   group-dependencies-name:
     description: |
-      Any valid dependency groups defined in the ``pyproject.toml`` file. The associated
-      dependencies are installed before running the tests.
+      Any valid dependency groups defined in the ``pyproject.toml`` file. Multiple
+      targets can be specified as a comma-separated list. The associated dependencies
+      are installed before running the tests.
       The default value is ``''``.
     default: ''
     required: false
