@@ -245,6 +245,7 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: false
         provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: true
 
     # NOTE: Installation of poetry in a separate environment to the project to
     # avoid situations in which both poetry and the project have shared
