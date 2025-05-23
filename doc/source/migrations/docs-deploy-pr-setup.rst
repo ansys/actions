@@ -3,12 +3,12 @@
 Deploy Documentation from a Pull Request
 =========================================
 
-The ``ansys/action/doc-deploy-pr`` action automates the deployment of HTML documentation from a pull 
-request (PR) and its removal when the PR is closed. To enable this, include the ``closed`` GitHub 
+The ``ansys/action/doc-deploy-pr`` action automates the deployment of HTML documentation from a pull
+request (PR) and its removal when the PR is closed. To enable this, include the ``closed`` GitHub
 event in ``on.pull_request.types`` to trigger documentation cleanup upon PR closure.
 
-The ``maximum-pr-doc-deployments`` input limits the number of active documentation deployments, which 
-is useful for repositories with multiple PRs. You can further control deployments using a labeling 
+The ``maximum-pr-doc-deployments`` input limits the number of active documentation deployments, which
+is useful for repositories with multiple PRs. You can further control deployments using a labeling
 strategy.
 
 The action automatically adds the following comments to PRs:
@@ -21,8 +21,8 @@ Two setup options are provided based on the desired level of control:
 
 1. **Basic Setup**
 
-   Deploy documentation for every PR, provided the ``maximum-pr-doc-deployments`` limit is not 
-   exceeded. This setup is ideal for documentation-focused projects. Add the following to your 
+   Deploy documentation for every PR, provided the ``maximum-pr-doc-deployments`` limit is not
+   exceeded. This setup is ideal for documentation-focused projects. Add the following to your
    workflow file:
 
    .. code:: yaml
@@ -57,7 +57,7 @@ Two setup options are provided based on the desired level of control:
 
 2. **Setup with Labeling Strategy**
 
-   Deploy documentation only for PRs explicitly labeled for deployment. This setup is recommended for 
+   Deploy documentation only for PRs explicitly labeled for deployment. This setup is recommended for
    libraries where deploying documentation for all PRs may not be necessary.
 
    Steps:
@@ -117,6 +117,6 @@ Two setup options are provided based on the desired level of control:
                     bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
                     maximum-pr-doc-deployments: 10
 
-   With this setup, documentation is deployed only when the ``deploy-pr-doc`` label is added to a PR. 
-   For an example, see `this setup <https://github.com/ansys/actions/pull/802/files>`_ for 
+   With this setup, documentation is deployed only when the ``deploy-pr-doc`` label is added to a PR.
+   For an example, see `this setup <https://github.com/ansys/actions/pull/802/files>`_ for
    ``ansys/actions``.
