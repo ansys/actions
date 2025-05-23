@@ -287,9 +287,11 @@ runs:
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       shell: bash
       env:
-        TAG_REF: ${{ github.ref_name }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         LIBRARY_VERSION: ${{ steps.library-version.outputs.library_version }}
+        TAG_REF: ${{ github.ref_name }}
       run: |
+        ${ACTIVATE_VENV}
         if [[ v${LIBRARY_VERSION} == $TAG_REF ]]; then
           echo "Tag version matches metadata version. Proceeding with the build."
         else
@@ -341,19 +343,21 @@ runs:
       if: ${{ inputs.install-build-and-wheel == 'true' }}
       shell: bash
       env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
+        ${ACTIVATE_VENV}
         $INSTALL_COMMAND build wheel
 
     - name: "Generate the wheelhouse"
       shell: bash
       env:
-        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
       run: |
+        ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          ${ACTIVATE_VENV}
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
           pip wheel -w wheelhouse -r wheel_reqs.txt
         else
