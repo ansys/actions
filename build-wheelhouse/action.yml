@@ -226,7 +226,7 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ "$USE_UV" == 'true' ]]; then
-          uv python -m venv .venv
+          uv venv .venv
         else
           python -m venv .venv
         fi
@@ -276,6 +276,8 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         LIBRARY_NAME: ${{ inputs.library-name }}
+        USE_UV: ${{ inputs.use-uv }}
+        PYTHON_COMMAND: ${{ inputs.use-uv == 'true' && 'uv python' || 'python' }}
       run: |
         ${ACTIVATE_VENV}
         library_name="${LIBRARY_NAME}"
