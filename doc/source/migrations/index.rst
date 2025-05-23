@@ -12,13 +12,13 @@ Version ``v10``
 
 **New Features:**
 
-- **Workflow Security Audits:** Introduced ``ansys/action/check-actions-security`` to audit workflow files 
-  for security and vulnerability issues. Provides summary and detailed reports using the 
+- **Workflow Security Audits:** Introduced ``ansys/action/check-actions-security`` to audit workflow files
+  for security and vulnerability issues. Provides summary and detailed reports using the
   `zizmor <https://docs.zizmor.sh/>`_ static analysis tool. See `zizmor audit rules <https://docs.zizmor.sh/audits/>`_
   for information about detected issues and their remediation.
 
-- **PR Documentation Deployment:** Added ``ansys/action/doc-deploy-pr`` to deploy HTML documentation 
-  for pull requests at ``https://<cname>/pull/<pr-number>/``. Documentation is automatically removed 
+- **PR Documentation Deployment:** Added ``ansys/action/doc-deploy-pr`` to deploy HTML documentation
+  for pull requests at ``https://<cname>/pull/<pr-number>/``. Documentation is automatically removed
   when the pull request is closed. Refer to :ref:`docs-deploy-pr-setup` for setup details.
 
 - **Faster Package Installation:** Added a ``use-uv`` option (default: true) to ``build-library``,
@@ -27,20 +27,20 @@ Version ``v10``
   ``release-github``, and ``tests-pytest`` actions. This leverages `uv <https://docs.astral.sh/uv/>`_ for faster package installation,
   improving workflow speed for projects with multiple dependencies.
 
-- **Dependency Groups Support:** ``doc-build`` and ``tests-pytest`` actions now support 
-  `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups via the ``group-dependencies-name`` 
+- **Dependency Groups Support:** ``doc-build`` and ``tests-pytest`` actions now support
+  `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups via the ``group-dependencies-name``
   input. Extras remain supported through the ``optional-dependencies-name`` input.
 
 **Breaking Changes:**
 
 - **Python Version Support:** Dropped support for Python versions below ``3.9``.
 
-- **JSON Builder Removal:** ``ansys/actions/doc-build`` no longer supports the ``JSON`` builder 
+- **JSON Builder Removal:** ``ansys/actions/doc-build`` no longer supports the ``JSON`` builder
   for documentation rendering.
 
-- **Dependency Groups Parsing:** Replaced the ``toml`` library with ``tomli`` in ``doc-style``, 
-  ``doc-changelog``, and ``release-github`` actions due to improved support for ``pyproject.toml`` 
-  files with nested dependency groups. The ``tomli-version`` input replaces the former 
+- **Dependency Groups Parsing:** Replaced the ``toml`` library with ``tomli`` in ``doc-style``,
+  ``doc-changelog``, and ``release-github`` actions due to improved support for ``pyproject.toml``
+  files with nested dependency groups. The ``tomli-version`` input replaces the former
   ``toml-version`` input.
 
 Version ``v9.0``
