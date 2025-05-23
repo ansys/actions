@@ -263,7 +263,6 @@ runs:
       shell: bash
       run: |
         ${ACTIVATE_VENV}
-        which python
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install ${INSTALL_TARGET}
         else
@@ -282,7 +281,7 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         library_name="${LIBRARY_NAME}"
-        pip list
+
         version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
         if [ -z "$version" ]; then
             echo "Problem getting the library version"
