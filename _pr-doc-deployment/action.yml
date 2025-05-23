@@ -124,7 +124,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@feat/add-sbom-to-wheelhouse-action
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -187,7 +187,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/add-sbom-to-wheelhouse-action
+    - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
@@ -293,7 +293,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/add-sbom-to-wheelhouse-action
+    - uses: ansys/actions/_logging@main
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       with:
         level: "INFO"
@@ -302,13 +302,13 @@ runs:
 
     - name: "Generate 'robots.txt' file"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: ansys/actions/_doc-gen-robots@feat/add-sbom-to-wheelhouse-action
+      uses: ansys/actions/_doc-gen-robots@main
       with:
         cname: ${{ inputs.cname }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@feat/add-sbom-to-wheelhouse-action
+    - uses: ansys/actions/_logging@main
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       with:
         level: "INFO"

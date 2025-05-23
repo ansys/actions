@@ -20,7 +20,7 @@ jobs:
     name: "Doc build"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/doc-build@feat/add-sbom-to-wheelhouse-action
+      - uses: ansys/actions/doc-build@main
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -34,7 +34,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: ansys/actions/doc-deploy-dev@feat/add-sbom-to-wheelhouse-action
+      - uses: ansys/actions/doc-deploy-dev@main
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
