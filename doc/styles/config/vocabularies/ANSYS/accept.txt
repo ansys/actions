@@ -9,6 +9,7 @@ dependabot
 GitHub
 pytest
 PyPI
+SBOM
 toctree
 towncrier
 TXT
