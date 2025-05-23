@@ -12,51 +12,36 @@ Version ``v10``
 
 **New Features:**
 
-- Added a new action named ``ansys/action/check-actions-security``. This action audits your workflow files
-  for common security and vulnerability issues, providing summary and detailed reports of detected issues.
-  This action is based on `zizmor <https://docs.zizmor.sh/>`_ which is a static analysis tool for Github
-  actions. Consult `zizmor audit rules <https://docs.zizmor.sh/audits/>`_ for more information about
-  detected issues and how to remediate them.
+- **Workflow Security Audits:** Introduced ``ansys/action/check-actions-security`` to audit workflow files 
+  for security and vulnerability issues. Provides summary and detailed reports using the 
+  `zizmor <https://docs.zizmor.sh/>`_ static analysis tool. See `zizmor audit rules <https://docs.zizmor.sh/audits/>`_
+  for information about detected issues and their remediation.
 
-- Added a new action named ``ansys/action/doc-deploy-pr``. This action deploys the HTML documentation for
-  a pull request. The documentation is made available at ``https://<cname>/pull/<pr-number>/`` and
-  the deployed documentation is removed automatically once the pull request is closed. Consult
-  :ref:`docs-deploy-pr-setup` for detailed information on setting up this action.
+- **PR Documentation Deployment:** Added ``ansys/action/doc-deploy-pr`` to deploy HTML documentation 
+  for pull requests at ``https://<cname>/pull/<pr-number>/``. Documentation is automatically removed 
+  when the pull request is closed. Refer to :ref:`docs-deploy-pr-setup` for setup details.
 
-- A ``use-uv`` option that defaults to true has been added to the following actions: ``build-library``,
+- **Faster Package Installation:** Added a ``use-uv`` option (default: true) to ``build-library``,
   ``build-wheelhouse``, ``check-licenses``, ``check-vulnerabilities``, ``code-style``, ``doc-build``,
   ``doc-changelog``, ``doc-deply-changelog``, ``hk-package-clean-except``, ``hk-package-clean-untagged``,
-  ``release-github``, and ``tests-pytest``. With this option, these actions now take advantage of
-  `uv <https://docs.astral.sh/uv/>`_ for fast package installation. This helps speed up workflows,
-  especially for projects that require the installation of multiple packages.
+  ``release-github``, and ``tests-pytest`` actions. This leverages `uv <https://docs.astral.sh/uv/>`_ for faster package installation,
+  improving workflow speed for projects with multiple dependencies.
 
-- `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups are now supported in:
+- **Dependency Groups Support:** ``doc-build`` and ``tests-pytest`` actions now support 
+  `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups via the ``group-dependencies-name`` 
+  input. Extras remain supported through the ``optional-dependencies-name`` input.
 
-  - the ``doc-build`` action where the ``doc`` group is targeted if ``[dependency-groups]``
-    table is detected in your ``pyproject.toml`` file, meaning projects starting to use dependency
-    groups must move documentation dependencies to the ``doc`` group.
-  - the ``tests-pytest`` action where you may provide specific groups through the ``group-dependencies-name``
-    input.
+**Breaking Changes:**
 
-  .. note::
+- **Python Version Support:** Dropped support for Python versions below ``3.9``.
 
-    For ``tests-pytest`` action, extras (defined in ``[project.optional-dependencies]``) are still
-    supported alongside dependency groups and can be passed through the usual ``optional-dependencies-name``
-    input.
+- **JSON Builder Removal:** ``ansys/actions/doc-build`` no longer supports the ``JSON`` builder 
+  for documentation rendering.
 
-**Breaking changes:**
-
-- Python versions below ``3.9`` are no longer supported.
-
-- The ``ansys/actions/doc-build`` no longer supports the ``JSON`` builder
-  for rendering the documentation of a project.
-
-- With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
-  is no longer used in ``doc-style``, ``doc-changelog``, and ``release-github`` actions
-  because it cannot parse ``pyproject.toml`` files where groups include other groups.
-  Affected actions now use the ``tomli`` library instead and a ``tomli-version`` input
-  has replaced the former ``toml-version`` input for those that may desire to use a
-  specific version of ``tomli``.
+- **Dependency Groups Parsing:** Replaced the ``toml`` library with ``tomli`` in ``doc-style``, 
+  ``doc-changelog``, and ``release-github`` actions due to improved support for ``pyproject.toml`` 
+  files with nested dependency groups. The ``tomli-version`` input replaces the former 
+  ``toml-version`` input.
 
 Version ``v9.0``
 ----------------
