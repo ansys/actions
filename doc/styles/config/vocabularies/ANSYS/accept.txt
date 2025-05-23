@@ -17,3 +17,4 @@ robots.txt
 rulesets
 rst
 uv
+zizmor
