@@ -152,9 +152,9 @@ inputs:
       Import path of a Python module to test (e.g. ansys.product.core). If
       provided, the action will run a simple smoke test to verify that the
       module can be imported and that it defines a __version__ attribute.
+    default: ''
     required: false
-    default: false
-    type: boolean
+    type: string
 
 runs:
   using: "composite"
@@ -409,11 +409,12 @@ runs:
         checkout: false
         whitelist-license-check: ${{ inputs.whitelist-license-check }}
 
-    - name: "Run smoke test"
+    - name: Run smoke test
       if: inputs.smoke-test-module != ''
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         MODULE: ${{ inputs.smoke-test-module }}
+      shell: bash
       run: |
         ${ACTIVATE_VENV}
         python -c "import ${MODULE}; from ${MODULE} import __version__; print(f'Imported: {${MODULE}}, version: {__version__}')"
