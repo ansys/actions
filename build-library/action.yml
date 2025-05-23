@@ -115,6 +115,37 @@ runs:
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
 
+    - name: "Install library"
+      shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+      run: |
+        $INSTALL_COMMAND .
+
+    - name: "Ensure tag version matches metadata version when triggered by push of tags"
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+      shell: bash
+      env:
+        TAG_REF: ${{ github.ref_name }}
+        LIBRARY_NAME: ${{ inputs.library-name }}
+      run: |
+        LIBRARY_VERSION=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$LIBRARY_NAME'))")
+        if [ -z "$LIBRARY_VERSION" ]; then
+            echo "Problem getting the library version. Exiting with error."
+            exit 1
+        else
+            echo "The library version is: $LIBRARY_VERSION";
+        fi
+
+        if [[ v${LIBRARY_VERSION} == $TAG_REF ]]; then
+          echo "Tag version matches metadata version. Proceeding with the build."
+        else
+          echo "Tag version does not match metadata version. Exiting with error."
+          echo "Tag version: $TAG_REF"
+          echo "Metadata version: $LIBRARY_VERSION"
+          exit 1
+        fi
+
     - name: "Install build and twine"
       shell: bash
       env:
@@ -136,7 +167,7 @@ runs:
         python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: ${{ inputs.library-name }}-artifacts
         path: dist/
@@ -144,6 +175,6 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
+      uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
       with:
         subject-path: dist/

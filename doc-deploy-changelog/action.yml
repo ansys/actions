@@ -46,13 +46,13 @@ description: |
   a) Find a release branch that has the same major and minor version of the
   tag that was pushed. For example, if your tag was "v0.1.2", it looks for
   a release branch named "release/0.1". If the release branch cannot be found, a
-  temporary branch is used named "maint/changelog-update-vTAG_VERSION".
+  temporary branch is used named "docs/changelog-update-vTAG_VERSION".
 
   b) Checkout the release or temporary branch, update the CHANGELOG file
   using ``towncrier``, and push the updates to the respective branch.
 
   c) Checkout the main branch and create a pull request branch named
-  "maint/vTAG_VERSION-changelog". Delete the pull request branch from the remote
+  "docs/vTAG_VERSION-changelog". Delete the pull request branch from the remote
   if it exists, checkout the pull request branch, cherry pick the commit
   containing the CHANGELOG file changes from the previous step, push the
   pull request branch, and create a pull request from the branch into main.
@@ -284,8 +284,8 @@ runs:
 
           # If the release branch doesn't exist, then use the temporary branch
           if [ -z "$release_branch_exists" ]; then
-            # maint/changelog-update-v0.1.0
-            echo "UPDATE_BRANCH=maint/changelog-update-v${TAG_VERSION}" >> ${GITHUB_OUTPUT}
+            # docs/changelog-update-v0.1.0
+            echo "UPDATE_BRANCH=docs/changelog-update-v${TAG_VERSION}" >> ${GITHUB_OUTPUT}
             echo "RELEASE_BRANCH_EXISTS=false" >> ${GITHUB_OUTPUT}
           else
             echo "UPDATE_BRANCH=${release_branch}" >> ${GITHUB_OUTPUT}
@@ -400,7 +400,7 @@ runs:
         git pull
 
         # Set branch for PR
-        pr_branch=maint/v${TAG_VERSION}-changelog
+        pr_branch=docs/v${TAG_VERSION}-changelog
 
         # Check if pr_branch exists on remote
         remote_branch_exists=$(git ls-remote --heads origin refs/heads/$pr_branch 2>&1)
