@@ -324,7 +324,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
-        prune-uv-cache: true
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
     - name: "Install toml and pypandoc"
       shell: bash

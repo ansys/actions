@@ -159,7 +159,7 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
-        prune-uv-cache: true
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
     # NOTE: Installation of poetry in a separate environment to the project to
     # avoid situations in which both poetry and the project have shared
