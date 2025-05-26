@@ -303,7 +303,7 @@ runs:
         fi
 
     - name: "Check if requirements.txt file exists"
-      id: check-exists-requirements-file
+      id: check-requirement-file-exists
       shell: bash
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
@@ -312,7 +312,7 @@ runs:
 
     - name: "Install doc dependencies from the requirements file"
       shell: bash
-      if: steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
+      if: steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
         USE_UV: ${{ inputs.use-uv }}
