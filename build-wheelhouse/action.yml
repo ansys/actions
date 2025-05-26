@@ -138,6 +138,15 @@ inputs:
     required: false
     type: boolean
 
+  smoke-test-module:
+    description: |
+      Import path of a Python module to test (e.g. ansys.product.core). If
+      provided, the action will run a simple smoke test to verify that the
+      module can be imported and that it defines a __version__ attribute.
+    default: ''
+    required: false
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -153,21 +162,6 @@ runs:
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
-
-    - name: "Update pip"
-      shell: bash
-      env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
-      run: |
-        $INSTALL_COMMAND -U pip
-
-    - name: "Optionally install build and wheel"
-      if: ${{ inputs.install-build-and-wheel == 'true' }}
-      shell: bash
-      env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
-      run: |
-        $INSTALL_COMMAND build wheel
 
     - name: "Identify the build system"
       id: build-system
@@ -194,36 +188,83 @@ runs:
         fi
         echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
-    - name: "Install poetry if needed (and configure it as needed - no auto poetry env + pipx + dedicated virtualenv)"
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
-      id: poetry-env
       shell: bash
-      env:
-        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
-        PIPX_HOME: ${{ runner.temp }}/pipx/home
+      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
+      shell: bash
       run: |
         python -m pip install pipx
         python -m pipx install poetry
         python -m pipx inject poetry poetry-plugin-export
-        echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env]
-        echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
-        python -m venv .venv
-        if [[ ${{ runner.os }} == 'Windows' ]]; then
-          echo "activate_env=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME : ${{ runner.temp }}/pipx/home
+
+    - name: "Create a virtual environment"
+      shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv venv .venv
         else
-          echo "activate_env=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
+          python -m venv .venv
+        fi
+
+    - name: "Set up virtual environment activation command"
+      id: virtual-environment-activation-command
+      shell: bash
+      run: |
+        if [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Update pip"
+      shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv pip install -U pip
+        else
+          python -m pip install -U pip
         fi
 
     - name: "Install the library with the desired targets"
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       shell: bash
       run: |
+        ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          ${ACTIVATE_VENV}
           poetry install ${INSTALL_TARGET}
         else
            ${INSTALL_COMMAND} "${INSTALL_TARGET}"
@@ -233,13 +274,13 @@ runs:
       id: library-version
       shell: bash
       env:
-        ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         LIBRARY_NAME: ${{ inputs.library-name }}
+        USE_UV: ${{ inputs.use-uv }}
+        PYTHON_COMMAND: ${{ inputs.use-uv == 'true' && 'uv python' || 'python' }}
       run: |
-        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          ${ACTIVATE_VENV}
-        fi
+        ${ACTIVATE_VENV}
         library_name="${LIBRARY_NAME}"
 
         version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
@@ -255,9 +296,11 @@ runs:
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
       shell: bash
       env:
-        TAG_REF: ${{ github.ref_name }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         LIBRARY_VERSION: ${{ steps.library-version.outputs.library_version }}
+        TAG_REF: ${{ github.ref_name }}
       run: |
+        ${ACTIVATE_VENV}
         if [[ v${LIBRARY_VERSION} == $TAG_REF ]]; then
           echo "Tag version matches metadata version. Proceeding with the build."
         else
@@ -267,15 +310,61 @@ runs:
           exit 1
         fi
 
+    - name: "Create Software Bill of Materials (SBOM) using Syft"
+      env:
+        LIBRARY_NAME: ${{ inputs.library-name }}
+        LIBRARY_VERSION: ${{ steps.library-version.outputs.library_version }}
+        WHEELHOUSE_TARGET: ${{ steps.specific-target-requested.outputs.wheelhouse_target }}
+        OPERATING_SYSTEM: ${{ inputs.operating-system }}
+        PYTHON_VERSION: ${{ inputs.python-version }}
+      shell: bash
+      run: |
+        if ! command -v syft > /dev/null; then
+          echo "Syft not found, installation of v1.26.0 in progress..."
+          mkdir -p ~/.local/bin
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/ac883f52edb8ca1f5a0a61d12c288d4b34ea3897/install.sh | sh -s -- -b ~/.local/bin v1.26.0
+        else
+          echo "Syft installation found"
+        fi
+
+        echo "Creating SBOM file..."
+        ~/.local/bin/syft .venv --source-name "${LIBRARY_NAME}" --source-version "${LIBRARY_VERSION}" -o spdx > sbom.spdx
+
+        echo "Renaming SBOM file..."
+        mv sbom.spdx "${LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
+
+    - name: "Upload the SBOM file"
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      with:
+        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
+        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+        retention-days: 7
+
+    - name: Generate build provenance attestation
+      if: ${{ inputs.attest-provenance == 'true' }}
+      uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
+      with:
+        subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+
+    - name: "Optionally install build and wheel"
+      if: ${{ inputs.install-build-and-wheel == 'true' }}
+      shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
+      run: |
+        ${ACTIVATE_VENV}
+        $INSTALL_COMMAND build wheel
+
     - name: "Generate the wheelhouse"
       shell: bash
       env:
-        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        ACTIVATE_VENV: ${{ steps.poetry-env.outputs.activate_env }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
       run: |
+        ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          ${ACTIVATE_VENV}
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
           pip wheel -w wheelhouse -r wheel_reqs.txt
         else
@@ -309,3 +398,14 @@ runs:
         skip-install: true
         checkout: false
         whitelist-license-check: ${{ inputs.whitelist-license-check }}
+
+    - name: Run smoke test
+      if: inputs.smoke-test-module != ''
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        MODULE: ${{ inputs.smoke-test-module }}
+      shell: bash
+      run: |
+        ${ACTIVATE_VENV}
+        python -c "import ${MODULE}; from ${MODULE} import __version__; print(f'Imported: {${MODULE}}, version: {__version__}')"
+
