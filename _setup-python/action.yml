@@ -54,12 +54,37 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Verify if python version is supported"
+      id: python-version-support
+      shell: bash
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+      run: |
+        python_version="${PYTHON_VERSION}"
+        minor_python_version=$(echo "$python_version" | awk -F "." '{print $2}')
+        major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
+        if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 9 )) )); then
+          echo "python_version_supported=false" >> ${GITHUB_OUTPUT}
+        elif (( $(( $major_python_version < 3 )) )); then
+          echo "python_version_supported=false" >> ${GITHUB_OUTPUT}
+        else
+          echo "python_version_supported=true" >> ${GITHUB_OUTPUT}
+        fi
+
+    - uses: ansys/actions/_logging@main
+      if: steps.python-version-support.outputs.python_version_supported == 'false'
+      with:
+        level: "ERROR"
+        message: >
+          Python version ${{ inputs.python-version }} is no longer supported. Please use a
+          version greater than 3.8.
+
     # NOTE: When a workflow is triggered without using the cache, it can lead to a failure
     # in the Post Run action saying that the cache folder doesn't exist on disk.
     # This is related to our use of uv to install packages, see https://github.com/ansys/actions/pull/811
     - name: "Set up Python using cache"
       if: ${{ inputs.use-cache == 'true' && inputs.provision-uv == 'false'}}
-      uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
         python-version: ${{ inputs.python-version }}
         cache: 'pip'
@@ -67,7 +92,7 @@ runs:
 
     - name: "Set up Python without using cache"
       if: ${{ inputs.use-cache == 'false' || (inputs.use-cache == 'true' && inputs.provision-uv == 'true') }}
-      uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
         python-version: ${{ inputs.python-version }}
 
