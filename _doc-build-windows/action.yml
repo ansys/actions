@@ -119,9 +119,25 @@ inputs:
   use-uv:
     description: |
       Whether to use uv as the default package manager instead of pip. Default value is ``true``.
-    default: true
-    required: false
+    required: true
     type: boolean
+
+  optional-dependencies-name:
+    description: |
+      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      of a requirement file. Multiple targets can be specified as a comma-separated
+      list. The associated dependencies are installed before building the documentation.
+    required: true
+    type: string
+
+  group-dependencies-name:
+    description: |
+      Any valid dependency groups defined in the ``pyproject.toml`` file. Multiple
+      targets can be specified as a comma-separated list. The associated dependencies
+      are installed before running the documentation build. If set to ``''``, the action
+      will not use dependency groups.
+    required: true
+    type: string
 
 runs:
   using: "composite"
@@ -241,12 +257,6 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
-        # NOTE: Dependency groups are only used with pip and uv
-        if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern '\[dependency-groups\]')) {
-          echo "USE_DEPENDENCY_GROUPS=$(echo 'false')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        } else {
-          echo "USE_DEPENDENCY_GROUPS=$(echo 'true')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        }
 
     - uses: ansys/actions/_logging@main
       with:
@@ -355,28 +365,32 @@ runs:
       if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false' }}
       env:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
-        USE_DEPENDENCY_GROUPS: ${{ steps.environment-variables.outputs.USE_DEPENDENCY_GROUPS }}
+        GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
           poetry install --with doc
         }
         else {
-          if ($env:USE_DEPENDENCY_GROUPS -eq "true") {
-            if ($env:BUILD_BACKEND -eq "uv") {
-              uv pip install --group doc .
-            }
-            else {
-              python -m pip install --group doc .
-            }
+          # Optional dependencies
+          $optional_dependencies_flag = ""
+          if ($env:OPTIONAL_DEPENDENCIES_NAME) {
+              $optional_dependencies_flag = "[{0}]" -f $env:OPTIONAL_DEPENDENCIES_NAME
           }
-          else {
-            if ($env:BUILD_BACKEND -eq "uv") {
-              uv pip install .[doc]
-            }
-            else {
-              python -m pip install .[doc]
-            }
+          # Group dependencies
+          $group_dependencies_flag = ""
+          if ($env:GROUP_DEPENDENCIES_NAME) {
+              $groups = $env:GROUP_DEPENDENCIES_NAME -split ','
+              foreach ($group in $groups) {
+                  $group_dependencies_flag += " --group $group"
+              }
+          }
+          # Install dependencies (potentially mix of optional and group)
+          if ($env:BUILD_BACKEND -eq "uv") {
+              uv pip install $group_dependencies_flag .${optional_dependencies_flag}
+          } else {
+              python -m pip install $group_dependencies_flag .${optional_dependencies_flag}
           }
         }
 
