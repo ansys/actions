@@ -366,11 +366,9 @@ runs:
           fi
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            echo "uv pip install $group_dependencies_flag .$optional_dependencies_flag"
-            uv pip install $group_dependencies_flag .$optional_dependencies_flag
+            uv pip install${group_dependencies_flag} .$optional_dependencies_flag
           else
-            echo "python -m pip install $group_dependencies_flag .$optional_dependencies_flag"
-            python -m pip install $group_dependencies_flag .$optional_dependencies_flag
+            python -m pip install${group_dependencies_flag} .$optional_dependencies_flag
           fi
         fi
 
