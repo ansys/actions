@@ -196,7 +196,7 @@ def clean_pr_title(pr_title: str, use_cc: str):
     clean_title = clean_title.strip()
 
     # Add backslash in front of backtick and double quote
-    clean_title = clean_title.replace("`", "\\`").replace('"', '\\"')
+    clean_title = clean_title.replace("`", "\\`").replace('"', '\\"').capitalize()
 
     # Save the clean pull request title as the CLEAN_TITLE environment variable
     save_env_variable("CLEAN_TITLE", clean_title)
