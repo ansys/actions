@@ -324,7 +324,7 @@ runs:
         }
 
     - name: "Check if requirements.txt file exists"
-      id: check-requirement-file-exists
+      id: check-requirements-file-exists
       shell: powershell
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
@@ -336,7 +336,7 @@ runs:
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
         USE_UV: ${{ inputs.use-uv }}
-      if: ${{ steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
+      if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:USE_UV -eq "true") {
@@ -362,7 +362,7 @@ runs:
 
     - name: Install documentation dependencies from pyproject.toml
       shell: powershell
-      if: ${{ steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false' }}
+      if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false' }}
       env:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
         GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}

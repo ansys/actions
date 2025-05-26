@@ -303,22 +303,22 @@ runs:
         fi
 
     - name: "Check if requirements.txt file exists"
-      id: check-requirement-file-exists
+      id: check-requirements-file-exists
       shell: bash
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f "${REQUIREMENTS_FILE}" ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
 
-    - name: "Install doc dependencies from the requirements file"
+    - name: "Install documentation dependencies from requirements file"
+      if: steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
       shell: bash
-      if: steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
         USE_UV: ${{ inputs.use-uv }}
       run: |
         source .venv/bin/activate
-        if [[ "$USE_UV" == 'true' ]]; then
+        if [[ "${USE_UV}" == 'true' ]]; then
           uv pip install -r "${REQUIREMENTS_FILE}"
         else
           python -m pip install -r "${REQUIREMENTS_FILE}"
@@ -341,7 +341,7 @@ runs:
 
     - name: "Install documentation dependencies from pyproject.toml"
       shell: bash
-      if: steps.check-requirement-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false'
+      if: steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false'
       env:
         BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
         GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
@@ -349,7 +349,7 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install --with "$OPTIONAL_DEPENDENCIES_NAME"
+          poetry install --with "${OPTIONAL_DEPENDENCIES_NAME}"
         else
           # Optional dependencies
           optional_dependencies_flag=""
