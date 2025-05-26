@@ -187,7 +187,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -204,7 +204,7 @@ runs:
           echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_ENV
         fi
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -213,7 +213,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -302,7 +302,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -342,7 +342,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -356,14 +356,14 @@ runs:
         source .venv/bin/activate
         python ${{ github.action_path }}/../python-utils/parse_doc_conf.py
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
       with:
         level: "ERROR"
         message: >
           Unable to determine PDF filename using conf.py file.
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
       with:
         level: "INFO"
@@ -372,7 +372,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -391,7 +391,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d ${{ env.EXPECTED_BUILD_DIR }} ] && echo 'true' || echo 'false' )" >> $GITHUB_ENV
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
@@ -410,7 +410,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d '${{ env.EXPECTED_DOWNLOAD_DIR }}' ] && echo 'true' || echo 'false' )" >> $GITHUB_ENV
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"
@@ -427,7 +427,7 @@ runs:
 
     - name: Check build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: ansys/actions/_logging@v9.0.11
+      uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >

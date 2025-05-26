@@ -92,11 +92,11 @@ jobs:
       pull-requests: write
     steps:
 
-      - uses: ansys/actions/check-pr-title@v9.0.11
+      - uses: ansys/actions/check-pr-title@v9.0.12
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: ansys/actions/doc-changelog@v9.0.11
+      - uses: ansys/actions/doc-changelog@v9.0.12
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-conventional-commits: true
@@ -111,7 +111,7 @@ jobs:
     if: success() || needs.changelog-fragment.result == 'success'
     steps:
       - name: "Run code style checks"
-        uses: ansys/actions/code-style@v9.0.11
+        uses: ansys/actions/code-style@v9.0.12
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -122,7 +122,7 @@ jobs:
     needs: changelog-fragment
     if: success() || needs.changelog-fragment.result == 'success'
     steps:
-      - uses: ansys/actions/doc-style@v9.0.11
+      - uses: ansys/actions/doc-style@v9.0.12
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -132,7 +132,7 @@ jobs:
     needs: doc-style
     if: success() || needs.doc-style.result == 'success'
     steps:
-      - uses: ansys/actions/doc-build@v9.0.11
+      - uses: ansys/actions/doc-build@v9.0.12
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -153,7 +153,7 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@v9.0.11
+      uses: ansys/actions/_setup-python@v9.0.12
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false

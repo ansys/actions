@@ -111,7 +111,7 @@ runs:
   steps:
 
     - name: "Release to test PyPI index"
-      uses: ansys/actions/_release-pypi@v9.0.11
+      uses: ansys/actions/_release-pypi@v9.0.12
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://test.pypi.org/legacy/"

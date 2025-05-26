@@ -127,7 +127,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -143,7 +143,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -191,7 +191,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -212,7 +212,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -229,7 +229,7 @@ runs:
           echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         }
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -238,7 +238,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -326,7 +326,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -348,7 +348,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -362,14 +362,14 @@ runs:
         .venv\Scripts\Activate.ps1
         python ${{ github.action_path }}\..\python-utils\parse_doc_conf.py
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
       with:
         level: "ERROR"
         message: >
           Unable to determine PDF filename using conf.py file.
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
       with:
         level: "INFO"
@@ -378,7 +378,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -394,7 +394,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$(if (Test-Path '${{ env.EXPECTED_BUILD_DIR }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
@@ -413,7 +413,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$(if (Test-Path '${{ env.EXPECTED_DOWNLOAD_DIR }}') { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (env.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"
@@ -449,7 +449,7 @@ runs:
 
     - name: Check build directory
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: ansys/actions/_logging@v9.0.11
+      uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
@@ -471,7 +471,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v9.0.11
+    - uses: ansys/actions/_logging@v9.0.12
       with:
         level: "INFO"
         message: >
