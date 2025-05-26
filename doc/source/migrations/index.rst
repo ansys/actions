@@ -43,6 +43,11 @@ Version ``v10``
   files with nested dependency groups. The ``tomli-version`` input replaces the former
   ``toml-version`` input.
 
+- **Build-Wheelhouse Changes:**  ``build-wheelhouse`` action no longer installs packages at the system level
+  but uses a virtual environment instead. As this change will disrupt workflows relying on system-level
+  installations for smoke tests immediately after calling the ``build-wheelhouse`` action, a new
+  ``smoke-test-module`` input has been added to enable on-the-fly smoke testing.
+
 Version ``v9.0``
 ----------------
 
