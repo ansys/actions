@@ -331,7 +331,7 @@ runs:
         if ! command -v syft > /dev/null; then
           echo "Syft not found, installation of v1.26.0 in progress..."
           mkdir -p ~/.local/bin
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ~/.local/bin v1.26.0
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/ac883f52edb8ca1f5a0a61d12c288d4b34ea3897/install.sh | sh -s -- -b ~/.local/bin v1.26.0
         else
           echo "Syft installation found"
         fi
