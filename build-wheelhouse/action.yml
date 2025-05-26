@@ -391,7 +391,7 @@ runs:
         subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
-      uses: ansys/actions/check-licenses@fix/check-licenses-logic
+      uses: ansys/actions/check-licenses@main
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}
