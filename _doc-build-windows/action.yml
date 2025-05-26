@@ -379,19 +379,19 @@ runs:
               $optional_dependencies_flag = "[{0}]" -f $env:OPTIONAL_DEPENDENCIES_NAME
           }
           # Group dependencies
-          $group_dependencies_flag = ""
+          $group_dependencies_flag = @()
           if ($env:GROUP_DEPENDENCIES_NAME) {
               $groups = $env:GROUP_DEPENDENCIES_NAME -split ','
               foreach ($group in $groups) {
-                  $group_dependencies_flag += " --group $group"
+                  $group_dependencies_flag += "--group"
+                  $group_dependencies_flag += $group
               }
           }
           # Install dependencies (potentially mix of optional and group)
           if ($env:BUILD_BACKEND -eq "uv") {
-              #uv pip install --group doc .[io]
-              uv pip install $group_dependencies_flag ".${optional_dependencies_flag}"
+              uv pip install @group_dependencies_flag ".${optional_dependencies_flag}"
           } else {
-              python -m pip install $group_dependencies_flag ".${optional_dependencies_flag}"
+              python -m pip install @group_dependencies_flag ".${optional_dependencies_flag}"
           }
         }
 
