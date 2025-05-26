@@ -174,54 +174,54 @@ runs:
       run: |
         echo "NEEDED_DEPS=$(echo "$env:DEPENDENCIES")" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
-    - name: Cache Chocolatey packages
-      id: cache
-      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-      if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
-      with:
-        path: ~\AppData\Local\Temp\chocolatey
-        key: choco-${{ steps.collect-system-dependencies.outputs.DEPENDENCIES }}
-        restore-keys: choco
+    # - name: Cache Chocolatey packages
+    #   id: cache
+    #   uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+    #   if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
+    #   with:
+    #     path: ~\AppData\Local\Temp\chocolatey
+    #     key: choco-${{ steps.collect-system-dependencies.outputs.DEPENDENCIES }}
+    #     restore-keys: choco
 
-    - name: Install packages with Chocolatey
-      if: ${{ (steps.cache.outputs.cache-hit != 'true') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
-      shell: powershell
-      env:
-        NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.DEPENDENCIES }}
-      run: choco install $env:NEEDED_DEPS -y
+    # - name: Install packages with Chocolatey
+    #   if: ${{ (steps.cache.outputs.cache-hit != 'true') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
+    #   shell: powershell
+    #   env:
+    #     NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.DEPENDENCIES }}
+    #   run: choco install $env:NEEDED_DEPS -y
 
-    - name: Install Miktex and update PATH with Miktex binaries
-      shell: powershell
-      run: | # zizmor: ignore[github-env]
-        choco install miktex -y
-        echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+    # - name: Install Miktex and update PATH with Miktex binaries
+    #   shell: powershell
+    #   run: | # zizmor: ignore[github-env]
+    #     choco install miktex -y
+    #     echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
-    - name: "Install Poppler for PDF to PNG conversion"
-      if: ${{ inputs.needs-quarto == 'true' }}
-      shell: powershell
-      run: | # zizmor: ignore[github-env]
-        choco install poppler -y
-        echo "C:\Program Files\poppler\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+    # - name: "Install Poppler for PDF to PNG conversion"
+    #   if: ${{ inputs.needs-quarto == 'true' }}
+    #   shell: powershell
+    #   run: | # zizmor: ignore[github-env]
+    #     choco install poppler -y
+    #     echo "C:\Program Files\poppler\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
-    - name: "Install quarto for cheatsheet"
-      if: ${{ inputs.needs-quarto == 'true' }}
-      shell: powershell
-      run: | # zizmor: ignore[github-env]
-        choco install quarto --version=1.6.43 -y
-        echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+    # - name: "Install quarto for cheatsheet"
+    #   if: ${{ inputs.needs-quarto == 'true' }}
+    #   shell: powershell
+    #   run: | # zizmor: ignore[github-env]
+    #     choco install quarto --version=1.6.43 -y
+    #     echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
-    # ------------------------------------------------------------------------
+    # # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
-          Set up Miktex to allow downloading missing packages when building documentation.
+    # - uses: ansys/actions/_logging@main
+    #   with:
+    #     level: "INFO"
+    #     message: >
+    #       Set up Miktex to allow downloading missing packages when building documentation.
 
-    - name: Set up Miktex to automatically install packages
-      shell: powershell
-      run: |
-        initexmf --set-config-value [MPM]AutoInstall=1
+    # - name: Set up Miktex to automatically install packages
+    #   shell: powershell
+    #   run: |
+    #     initexmf --set-config-value [MPM]AutoInstall=1
 
     # ------------------------------------------------------------------------
 
@@ -388,6 +388,7 @@ runs:
           }
           # Install dependencies (potentially mix of optional and group)
           if ($env:BUILD_BACKEND -eq "uv") {
+              uv version
               echo "uv pip install $group_dependencies_flag .${optional_dependencies_flag}"
               uv pip install $group_dependencies_flag .${optional_dependencies_flag}
           } else {
