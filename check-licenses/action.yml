@@ -156,6 +156,7 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
     - name: "Update pip"
       shell: bash
@@ -278,7 +279,7 @@ runs:
         ignored_packages_from_txt=${ignored_packages_from_txt::-1}
 
         # Verify if the Python environment contains invalid licenses
-        if [[ -z $(pip-licenses --summary --ignore-packages $ignored_packages | grep '^[[:space:]]*[0-9]' | grep -v $accepted_licenses ) ]]; then
+        if [[ -z $(pip-licenses --ignore-packages $ignored_packages | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses) ]]; then
           echo "All licenses are valid."
         else
           echo -e "\nInvalid licenses found:\n"

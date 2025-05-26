@@ -68,6 +68,7 @@ runs:
         python-version: ${{ inputs.python-version }}
         use-cache: false
         provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: true
 
     - name: "Install ghapi"
       shell: bash
