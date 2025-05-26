@@ -247,18 +247,12 @@ runs:
       run: |
         if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"')) {
           echo "BUILD_BACKEND=$(echo 'poetry')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_PREFIX=$(echo 'poetry run --')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_SCRIPT=$(echo 'make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
         elseif ($env:USE_UV -eq "true") {
           echo "BUILD_BACKEND=$(echo 'uv')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_PREFIX=$(echo 'uv run --no-sync --')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_SCRIPT=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
         else {
           echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_PREFIX=$(echo '')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_SCRIPT=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
 
     - uses: ansys/actions/_logging@main
@@ -266,8 +260,6 @@ runs:
         level: "INFO"
         message: >
           Build backend: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
-          Sphinx build prefix: ${{ steps.determine-environment-variables.outputs.SPHINX_BUILD_PREFIX }}
-          Sphinx build script: ${{ steps.determine-environment-variables.outputs.SPHINX_BUILD_SCRIPT }}
 
     # ------------------------------------------------------------------------
 
@@ -410,17 +402,34 @@ runs:
     - name: Build HTML and PDF documentation
       shell: powershell
       env:
-        SPHINXOPTS: ${{ inputs.sphinxopts }}
+        BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
         CHECK_LINKS: ${{ inputs.check-links }}
-        SPHINX_BUILD_PREFIX: ${{ steps.determine-environment-variables.outputs.SPHINX_BUILD_PREFIX }}
-        SPHINX_BUILD_SCRIPT: ${{ steps.determine-environment-variables.outputs.SPHINX_BUILD_SCRIPT }}
+        SPHINXOPTS: ${{ inputs.sphinxopts }}
       run: |
         .venv\Scripts\Activate.ps1
         cd doc
-        & $env:SPHINX_BUILD_PREFIX $env:SPHINX_BUILD_SCRIPT html SPHINXOPTS="$env:SPHINXOPTS"
-        & $env:SPHINX_BUILD_PREFIX $env:SPHINX_BUILD_SCRIPT pdf
-        if ($env:CHECK_LINKS -eq 'true') {
-          & $env:SPHINX_BUILD_PREFIX $env:SPHINX_BUILD_SCRIPT linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+        if ($env:BUILD_BACKEND -eq "poetry") {
+          poetry run -- make.bat html SPHINXOPTS="$env:SPHINXOPTS"
+          poetry run -- make.bat pdf
+          if ($env:CHECK_LINKS -eq 'true') {
+            poetry run -- make.bat pdf linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+          }
+        }
+        else {
+          if ($env:BUILD_BACKEND -eq "uv") {
+            uv run --no-sync -- .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
+            uv run --no-sync -- .\make.bat pdf
+            if ($env:CHECK_LINKS -eq 'true') {
+              uv run --no-sync -- .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+            }
+          }
+          else {
+            .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
+            .\make.bat pdf
+            if ($env:CHECK_LINKS -eq 'true') {
+              .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+            }
+          }
         }
 
     # ------------------------------------------------------------------------
