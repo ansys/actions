@@ -1,6 +1,6 @@
 .. _docs-deploy-pr-setup:
 
-Deploy Documentation from a Pull Request
+Deploy documentation from a pull request
 =========================================
 
 The ``ansys/action/doc-deploy-pr`` action automates the deployment of HTML documentation from a pull
