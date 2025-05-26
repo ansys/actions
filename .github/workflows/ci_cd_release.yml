@@ -160,7 +160,7 @@ jobs:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
         provision-uv: false
-        prune-uv-cache: true
+        prune-uv-cache: false
 
     - name: "Install build and twine"
       shell: bash
