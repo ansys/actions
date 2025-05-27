@@ -77,10 +77,6 @@ runs:
 
     - name: "Clone script"
       shell: bash
-      env:
-        PACKAGE_ORG: ${{ inputs.package-org }}
-        PACKAGE_NAME: ${{ inputs.package-name }}
-        ALLOW_LAST_DAYS: ${{ inputs.allow-last-days }}
       run: |
         cat > clean-untagged.py << 'EOF'
 
@@ -142,6 +138,9 @@ runs:
     - name: "Run package cleanup"
       shell: bash
       env:
+        ALLOW_LAST_DAYS: ${{ inputs.allow-last-days }}
+        PACKAGE_ORG: ${{ inputs.package-org }}
+        PACKAGE_NAME: ${{ inputs.package-name }}
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
       run: |
         python clean-untagged.py
