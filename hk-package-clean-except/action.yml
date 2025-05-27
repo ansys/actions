@@ -81,11 +81,6 @@ runs:
 
     - name: "Declare Python script"
       shell: bash
-      env:
-        PACKAGE_ORG: ${{ inputs.package-org }}
-        PACKAGE_NAME: ${{ inputs.package-name }}
-        ALLOW_LAST_DAYS: ${{ inputs.allow-last-days }}
-        VALID_TAGS_STR: ${{ inputs.tags-kept }}
       run: |
         cat > clean-except.py << 'EOF'
 
@@ -155,7 +150,11 @@ runs:
     - name: "Run package cleanup"
       shell: bash
       env:
+        ALLOW_LAST_DAYS: ${{ inputs.allow-last-days }}
+        PACKAGE_ORG: ${{ inputs.package-org }}
+        PACKAGE_NAME: ${{ inputs.package-name }}
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
+        VALID_TAGS_STR: ${{ inputs.tags-kept }}
       run: |
         python clean-except.py
 
