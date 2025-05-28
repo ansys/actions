@@ -138,6 +138,15 @@ inputs:
     required: false
     type: boolean
 
+outputs:
+
+  activate-venv:
+    description: |
+      Command used to activate the virtual environment set up by this action.
+      It can be reused in later steps of the same job to execute tasks within
+      the virtual environment, such as running smoke tests.
+    value: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+
 runs:
   using: "composite"
   steps:
