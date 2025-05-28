@@ -247,11 +247,11 @@ jobs:
       uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
       with:
         body: >
-          If you are migrating the actions of your project to a new major release, breaking changes can be expected!
+          If you are migrating the actions of your project to a new major release, breaking changes can be expected.
 
-          To make sure everything is compatible with your current workflow, please refer to the
+          To make sure everything is compatible with your current workflow, refer to the
           [Migration Guide](${{ steps.link-migration-guide.outputs.LINK }}) to find out more about new features
-          and potential breaking changes!
+          and potential breaking changes.
         generate_release_notes: true
         files: |
           documentation-html.zip
