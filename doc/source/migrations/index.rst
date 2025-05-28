@@ -33,6 +33,7 @@ Version ``v10``
 
 - **SBOM Generation:** ``build-wheelhouse`` action now generates a Software Bill of Materials (SBOM) in
   SPDX format and uploads it as an artifact. This SBOM is generated using `Syft <https://github.com/anchore/syft>`_.
+  Note that the SBOM artifacts are now included in the Github release.
 
 **Breaking Changes:**
 
