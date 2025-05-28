@@ -69,7 +69,7 @@ Version ``v10``
           operating-system: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
           check-licenses: true
-      - name: Perform smoke test
+      - name: Perform additional smoke tests
         run: |
           ${{ steps.build-wheelhouse.outputs.activate-venv }}
           <smoke-test-command>
