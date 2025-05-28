@@ -18,7 +18,9 @@ def find_module_from_dist(pkg_name: str, attr="__version__"):
 
     # Drop the paths that are longer than the shortest one
     shortest_length = len(candidate_paths[0].parts)
-    candidate_paths = [path for path in candidate_paths if len(path.parts) == shortest_length]
+    candidate_paths = [
+        path for path in candidate_paths if len(path.parts) == shortest_length
+    ]
 
     # Try to import each parent package and check for the desired attribute
     for path in candidate_paths:
@@ -30,7 +32,9 @@ def find_module_from_dist(pkg_name: str, attr="__version__"):
         except Exception:
             continue
 
-    raise ImportError(f"Could not find a module in '{pkg_name}' with attribute '{attr}'")
+    raise ImportError(
+        f"Could not find a module in '{pkg_name}' with attribute '{attr}'"
+    )
 
 
 ###########################################################################################
