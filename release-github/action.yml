@@ -275,6 +275,23 @@ runs:
       with:
         level: "INFO"
         message: >
+          Create a dist/sbom directory and move all SBOM artifacts
+          inside this folder.
+
+    - name: "Move SBOM artifacts to dist/sbom directory"
+      if: inputs.only-code == 'false'
+      shell: bash
+      run: |
+        mkdir -p dist/sbom
+        mv /tmp/artifacts/**/*.sbom.spdx dist/sbom/
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: inputs.only-code == 'false'
+      with:
+        level: "INFO"
+        message: >
           Create a dist/${{ inputs.library-name }}-artifacts directory and move all wheel artifacts
           inside this folder.
 
@@ -362,7 +379,6 @@ runs:
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
       run: |
-
         {
           echo "RELEASE_NOTES_BODY<<EOF"
           echo "${RELEASE_NOTES_BODY}"
@@ -402,6 +418,9 @@ runs:
 
           # [COMMENT] Include wheelhouse artifacts
           dist/wheelhouse/**/*-wheelhouse-*.zip
+
+          # [COMMENT] Include SBOM artifacts
+          dist/sbom/**/*.sbom.spdx
 
           # [COMMENT] Include HTML and PDF documentation artifacts
           dist/documentation/documentation-html.zip
