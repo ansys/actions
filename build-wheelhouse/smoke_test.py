@@ -22,8 +22,6 @@ def find_module_from_dist(pkg_name: str, attr="__version__"):
 
     # Try to import each parent package and check for the desired attribute
     for path in candidate_paths:
-        if not str(path).endswith("__init__.py"):
-            continue
         import_path = ".".join(path.parent.parts)
         try:
             mod = importlib.import_module(import_path)
