@@ -31,6 +31,9 @@ Version ``v10``
   `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups via the ``group-dependencies-name``
   input. Extras remain supported through the ``optional-dependencies-name`` input.
 
+- **SBOM Generation:** ``build-wheelhouse`` action now generates a Software Bill of Materials (SBOM) in
+  SPDX format and uploads it as an artifact. This SBOM is generated using `Syft <https://github.com/anchore/syft>`_.
+
 **Breaking Changes:**
 
 - **Python Version Support:** Dropped support for Python versions below ``3.9``.
@@ -43,10 +46,33 @@ Version ``v10``
   files with nested dependency groups. The ``tomli-version`` input replaces the former
   ``toml-version`` input.
 
-- **Build-Wheelhouse Changes:**  ``build-wheelhouse`` action no longer installs packages at the system level
-  but uses a virtual environment instead. As this change will disrupt workflows relying on system-level
-  installations for smoke tests immediately after calling the ``build-wheelhouse`` action, a new
-  ``smoke-test-module`` input has been added to enable on-the-fly smoke testing.
+- **Build-Wheelhouse Changes:**  the ``build-wheelhouse`` action now installs packages in a virtual environment
+  instead of at the system level. If you have subsequent workflow steps (e.g., running smoke tests) that depend on
+  these packages, activate the virtual environment using the action's ``activate-venv`` output. For example:
+
+  .. code-block:: yaml
+
+    build-wheelhouse-and-smoke-test:
+      name: Build wheelhouse and perform smoke test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+      - name: Build wheelhouse
+        id: build-wheelhouse
+        uses: ansys/actions/build-wheelhouse@v10
+        with:
+          library-name: ${{ env.PACKAGE_NAME }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          check-licenses: true
+      - name: Perform smoke test
+        run: |
+          ${{ steps.build-wheelhouse.outputs.activate-venv }}
+          <smoke-test-command>
+
 
 Version ``v9.0``
 ----------------
