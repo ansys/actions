@@ -10,6 +10,7 @@ GitHub
 pytest
 PyPI
 SBOM
+Syft
 toctree
 towncrier
 TXT
