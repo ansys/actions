@@ -2,7 +2,29 @@ import importlib
 from importlib.metadata import PackageNotFoundError, distribution
 
 
-def find_module_from_dist(pkg_name: str, attr="__version__"):
+def find_module_from_dist(pkg_name: str, attr: str):
+    """
+    Find a module in a package distribution's top-level __init__.py file
+    and retrieve an attribute from it.
+
+    Parameters
+    ----------
+    pkg_name : str
+        The name of the package to search for.
+    attr : str
+        The attribute to look for in the package's module, e.g., '__version__'.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the module path and the value of the specified attribute.
+
+    Raises
+    ------
+    ImportError
+        If the package is not found or if the specified attribute does not exist.
+
+    """
     try:
         dist = distribution(pkg_name)
     except PackageNotFoundError:
@@ -43,7 +65,10 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: python smoke_test.py <package_name> [attribute_name]")
+        print("Usage: python smoke_test.py <package_name> [attribute_name]\n")
+        print("Default attribute is '__version__'.\n")
+        print("Example: python smoke_test.py my_package __version__")
+        print("Example: python smoke_test.py my_package")
         sys.exit(1)
 
     package_name = sys.argv[1]
