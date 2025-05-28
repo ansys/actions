@@ -310,6 +310,16 @@ runs:
           exit 1
         fi
 
+    - name: Run smoke test for the library
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        LIBRARY_NAME: ${{ inputs.library-name }}
+      shell: bash
+      run: |
+        ${ACTIVATE_VENV}
+        python ${ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
+
     - name: "Create Software Bill of Materials (SBOM) using Syft"
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
