@@ -138,15 +138,6 @@ inputs:
     required: false
     type: boolean
 
-  smoke-test-module:
-    description: |
-      Import path of a Python module to test (e.g. ansys.product.core). If
-      provided, the action will run a simple smoke test to verify that the
-      module can be imported and that it defines a __version__ attribute.
-    default: ''
-    required: false
-    type: string
-
 runs:
   using: "composite"
   steps:
@@ -310,6 +301,16 @@ runs:
           exit 1
         fi
 
+    - name: Run smoke test for the library
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        LIBRARY_NAME: ${{ inputs.library-name }}
+      shell: bash
+      run: |
+        ${ACTIVATE_VENV}
+        python ${ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
+
     - name: "Create Software Bill of Materials (SBOM) using Syft"
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
@@ -398,14 +399,3 @@ runs:
         skip-install: true
         checkout: false
         whitelist-license-check: ${{ inputs.whitelist-license-check }}
-
-    - name: Run smoke test
-      if: inputs.smoke-test-module != ''
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        MODULE: ${{ inputs.smoke-test-module }}
-      shell: bash
-      run: |
-        ${ACTIVATE_VENV}
-        python -c "import ${MODULE}; from ${MODULE} import __version__; print(f'Imported: {${MODULE}}, version: {__version__}')"
-
