@@ -151,10 +151,9 @@ outputs:
 
   activate-venv:
     description: |
-      Command to activate the virtual environment created by this action.
-      This can be used in subsequent steps within the same job to perform
-      certain actions in the context of the virtual environment, such as
-      running smoke tests.
+      Command used to activate the virtual environment set up by this action.
+      It can be reused in later steps of the same job to execute tasks within
+      the virtual environment, such as running smoke tests.
     value: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
 
 runs:
