@@ -461,6 +461,7 @@ runs:
           sed -i 's/action="search.html"/action="version\/stable\/search.html"/g' index.html
           sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/stable/_static/js/meilisearch_theme_wrap.js"|g' index.html
           sed -i 's|const SEARCH_FILE = ".*_static/search.json";|const SEARCH_FILE = "version/stable/_static/search.json";|g' index.html
+          sed -i '/const ADVANCE_SEARCH_PATH = "search.html";/s|search.html|version/stable/search.html|' index.html
           sed -i 's|<html lang="en" data-content_root="./" >|<html lang="en" data-content_root="./version/stable/" >|g' index.html
         else
           echo "Error: The 'index.html' file does not exist." >&2
