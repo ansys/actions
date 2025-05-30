@@ -180,6 +180,26 @@ inputs:
     required: false
     type: boolean
 
+  optional-dependencies-name:
+    description: |
+      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      of a requirement file. Multiple targets can be specified as a comma-separated
+      list. The associated dependencies are installed before building the documentation.
+      Default value is ``doc``.
+    default: 'doc'
+    required: false
+    type: string
+
+  group-dependencies-name:
+    description: |
+      Any valid dependency groups defined in the ``pyproject.toml`` file. Multiple
+      targets can be specified as a comma-separated list. The associated dependencies
+      are installed before running the documentation build. Default value is ``''``
+      in which case the action will not use dependency groups.
+    default: ''
+    required: false
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -202,7 +222,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@main
+      uses: ansys/actions/_doc-build-linux@chore/update-pytest-inputs
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -214,6 +234,8 @@ runs:
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
         use-uv: ${{ inputs.use-uv }}
+        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
+        group-dependencies-name: ${{ inputs.group-dependencies-name }}
 
     # ------------------------------------------------------------------------
 
@@ -227,7 +249,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@main
+      uses: ansys/actions/_doc-build-windows@chore/update-pytest-inputs
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -238,3 +260,5 @@ runs:
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
         use-uv: ${{ inputs.use-uv }}
+        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
+        group-dependencies-name: ${{ inputs.group-dependencies-name }}
