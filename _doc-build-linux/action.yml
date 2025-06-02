@@ -509,9 +509,8 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - name: Log add assets
+    - uses: ansys/actions/_logging@main
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
