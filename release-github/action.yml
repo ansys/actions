@@ -283,7 +283,7 @@ runs:
       shell: bash
       run: |
         mkdir -p dist/sbom
-        mv /tmp/artifacts/**/*.sbom.spdx dist/sbom/
+        mv /tmp/artifacts/**/*-sbom.spdx dist/sbom/
 
     # ------------------------------------------------------------------------
 
