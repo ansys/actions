@@ -474,7 +474,7 @@ runs:
       id: set-expected-build-directory
       shell: powershell
       run: |
-        echo "EXPECTED_BUILD_DIR=$(echo '_build')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        echo "EXPECTED_BUILD_DIR=$(echo 'doc\_build')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
     - name: Check expected build directory
       id: set-exists-expected-build-directory
@@ -526,7 +526,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - name: Verify the docs have been generated properly
+    - name: Verify that documentation has been generated properly
       if: ${{ steps.set-exists-expected-build-directory.outputs.EXISTS_EXPECTED_BUILD_DIR == 'true' }}
       shell: powershell
       env:
@@ -534,20 +534,20 @@ runs:
       run: |
         # Check if the HTML files have been generated
         if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\html\index.html") {
-          Write-Host "Docs have been generated successfully"
+          Write-Host "Documentation has been generated successfully"
         } else {
-          Write-Error "Docs have not been generated properly"
+          Write-Error "Documentation has not been generated properly"
         }
         # Check if the PDF files have been generated
         if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }}") {
-          Write-Host "PDF has been generated successfully"
+          Write-Host "PDF file has been generated successfully"
         } else {
-          Write-Error "PDF has not been generated properly"
+          Write-Error "PDF file has not been generated properly"
         }
 
     # ------------------------------------------------------------------------
 
-    - name: Check build directory
+    - name: Log add assets
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       uses: ansys/actions/_logging@main
       with:

@@ -509,7 +509,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - name: Check build directory
+    - name: Log add assets
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       uses: ansys/actions/_logging@main
       with:
