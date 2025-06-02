@@ -351,7 +351,7 @@ runs:
         PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip toml=="$TOMLI_VERSION"
+        ${INSTALL_COMMAND} --upgrade pip tomli=="$TOMLI_VERSION"
         ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
 
     - name: "Get the release notes body"
