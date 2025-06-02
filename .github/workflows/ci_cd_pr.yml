@@ -18,218 +18,27 @@ concurrency:
 
 jobs:
 
-  check-environment-approval:
-    name: Check environment approval
-    runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
-    outputs:
-      environment: ${{ steps.block.outputs.environment }}
+  check-docs-step:
+    name: Check cd doc step
+    runs-on: windows-latest
     steps:
-      - name: Decide which environment should be used
-        id: block
-        uses: ansys/actions/check-environment-approval@main
+      - name: Checkout project
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
-  # NOTE: We do not allow dependabot to trigger the CI/CD pipeline automatically.
-  # This is to mitigate supply chain attacks, where a malicious dependency update
-  # could execute arbitrary code in our build environment.
-  # Dependabot PRs must be reviewed carefully and approved manually before
-  # running the CI.
-  check-dependabot-pr:
-    needs: [check-environment-approval]
-    name: Manual approval (on dependabot PRs)
-    runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
-    environment: ${{ needs.check-environment-approval.outputs.environment }}
-    steps:
-      - name: Proceed after approval
-        if: ${{ needs.check-environment-approval.outputs.environment == 'dependabot'}}
+      - name: "echo PWD"
+        shell: powershell
         run: |
-          echo "::notice::Workflow approved."
-      - name: Approval skipped
-        if: ${{ needs.check-environment-approval.outputs.environment == ''}}
+          Get-Location
+
+      - name: "echo PWD after move doc"
+        shell: powershell
         run: |
-          echo "::notice::Workflow approval skipped."
+          cd doc
+          Get-Location
 
-  labeler:
-    name: "Labels"
-    needs: check-dependabot-pr
-    if: github.event.action != 'closed'
-    permissions:
-      contents: read
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-
-     - name: "Checkout project"
-       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-       with:
-        persist-credentials: false
-
-     - name: "Sync labels"
-       uses: micnncim/action-label-syncer@3abd5ab72fda571e69fffd97bd4e0033dd5f495c # v1.3.0
-       env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-     - name: "Label pull-request"
-       # HACK: skip if contributor does not have write permissions (forks)
-       if: github.event.pull_request.head.repo.full_name == github.repository
-       uses: actions/labeler@8558fd74291d67161a8a78ce36a881fa63b766a9 # v5.0.0
-       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-  changelog-fragment:
-    name: "Create changelog fragment"
-    runs-on: ubuntu-latest
-    needs: labeler
-    if: github.event.action != 'closed'
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-
-      - uses: ansys/actions/check-pr-title@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: ansys/actions/doc-changelog@main
-        with:
-          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-          use-conventional-commits: true
-          use-default-towncrier-config: true
-          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
-
-  code-style:
-    name: "Code style"
-    runs-on: ubuntu-latest
-    needs: changelog-fragment
-    if: github.event.action != 'closed'
-    steps:
-      - name: "Run code style checks"
-        uses: ansys/actions/code-style@main
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-python-cache: false
-
-  doc-style:
-    name: "Doc style"
-    runs-on: ubuntu-latest
-    needs: changelog-fragment
-    if: github.event.action != 'closed'
-    steps:
-      - uses: ansys/actions/doc-style@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  doc-build:
-    name: "Doc build"
-    runs-on: ubuntu-latest
-    needs: doc-style
-    if: github.event.action != 'closed'
-    steps:
-      - uses: ansys/actions/doc-build@main
-        with:
-          skip-install: true
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-python-cache: false
-          needs-quarto: true
-
-  doc-deploy-pr:
-    name: "Deploy PR documentation"
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    needs: doc-build
-    # Run when the PR is closed i.e. when doc-build job is skipped
-    # Also run only when appropriate label is added
-    if: |
-      always() &&
-      (needs.doc-build.result == 'success' || needs.doc-build.result == 'skipped') &&
-      contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
-    steps:
-      - uses: ansys/actions/doc-deploy-pr@main
-        with:
-          cname: ${{ env.DOCUMENTATION_CNAME }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
-          maximum-pr-doc-deployments: 10
-
-  tests:
-    name: "Tests"
-    runs-on: ubuntu-latest
-    needs: code-style
-    if: github.event.action != 'closed'
-    permissions:
-      id-token: write
-      contents: write
-    steps:
-
-    - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      with:
-        persist-credentials: false
-
-    - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
-      with:
-        python-version: ${{ env.MAIN_PYTHON_VERSION }}
-        use-cache: false
-        provision-uv: false
-        prune-uv-cache: false
-
-    - name: "Install build and twine"
-      shell: bash
-      run: |
-        python -m pip install build twine
-
-    - name: "Build distribution artifacts and check their health"
-      shell: bash
-      run: |
-        python -m build .ci/${{ env.LIBRARY_NAME }}
-        ls -R .ci/${{ env.LIBRARY_NAME }}/dist
-        python -m twine check .ci/${{ env.LIBRARY_NAME }}/dist/**
-
-    - name: "Upload distribution artifacts"
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      with:
-        name: ${{ env.LIBRARY_NAME }}-artifacts
-        path: .ci/${{ env.LIBRARY_NAME }}/dist
-        retention-days: 7
-
-  test-release:
-    name: "Test release"
-    runs-on: ubuntu-latest
-    needs: tests
-    if: github.event.action != 'closed'
-    permissions:
-      id-token: write
-      contents: write
-    steps:
-
-    - name: "Download distribution artifacts"
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-      with:
-        name: ${{ env.LIBRARY_NAME }}-artifacts
-        path: dist
-
-    - name: "Upload artifacts to test PyPI using trusted publisher"
-      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
-      with:
-        repository-url: "https://test.pypi.org/legacy/"
-        print-hash: true
-        skip-existing: true
-        verbose: true
-
-  actions-security:
-    name: "Check actions security"
-    runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
-    steps:
-      - uses: ansys/actions/check-actions-security@main
-        with:
-          generate-summary: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          auditing-level: 'high'
-          trust-ansys-actions: true
+      - name: "echo PWD"
+        shell: powershell
+        run: |
+          Get-Location
