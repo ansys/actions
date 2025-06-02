@@ -420,7 +420,7 @@ runs:
           dist/wheelhouse/**/*-wheelhouse-*.zip
 
           # [COMMENT] Include SBOM artifacts
-          dist/sbom/**/*.sbom.spdx
+          dist/sbom/**/*-sbom.spdx
 
           # [COMMENT] Include HTML and PDF documentation artifacts
           dist/documentation/documentation-html.zip
