@@ -127,7 +127,7 @@ jobs:
     # needs: doc-style
     if: github.event.action != 'closed'
     steps:
-      - uses: ansys/actions/doc-build@main
+      - uses: ansys/actions/doc-build@chore/update-pytest-inputs
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
