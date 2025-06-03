@@ -236,11 +236,12 @@ jobs:
 
     - name: "Generate link to migration guide for current release"
       id: link-migration-guide
+      env:
+        MAJOR: ${{ needs.rolling-release.outputs.tag_major }}
       run: |
         BASE_LINK="https://actions.docs.ansys.com/version/stable/migrations/index.html#version-v"
         # Append version number to point to specific entry in the migration guide
-        MAJOR="${{ needs.rolling-release.outputs.tag_major }}"
-        LINK="${BASE_LINK}${MAJOR}"
+        LINK="${BASE_LINK}${{ env.MAJOR }}"
         echo "LINK=${LINK}" >> $GITHUB_OUTPUT
 
     - name: "Release to GitHub"
