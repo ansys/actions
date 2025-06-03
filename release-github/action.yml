@@ -283,7 +283,7 @@ runs:
       shell: bash
       run: |
         mkdir -p dist/sbom
-        mv /tmp/artifacts/**/*.sbom.spdx dist/sbom/
+        mv /tmp/artifacts/**/*-sbom.spdx dist/sbom/
 
     # ------------------------------------------------------------------------
 
@@ -341,6 +341,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
     - name: "Install toml and pypandoc"
@@ -350,7 +351,7 @@ runs:
         PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip toml=="$TOMLI_VERSION"
+        ${INSTALL_COMMAND} --upgrade pip tomli=="$TOMLI_VERSION"
         ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
 
     - name: "Get the release notes body"
@@ -420,7 +421,7 @@ runs:
           dist/wheelhouse/**/*-wheelhouse-*.zip
 
           # [COMMENT] Include SBOM artifacts
-          dist/sbom/**/*.sbom.spdx
+          dist/sbom/**/*-sbom.spdx
 
           # [COMMENT] Include HTML and PDF documentation artifacts
           dist/documentation/documentation-html.zip
