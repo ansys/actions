@@ -213,39 +213,22 @@ runs:
         # /refs/tags/v0.1.0 -> 0.1.0
         echo "TAG_VERSION=${GITHUB_REF##*/v}" >> ${GITHUB_OUTPUT}
 
-    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
-    # the installation speed "uv pip" offers is what needs to be taken advantage of,
-    # using "uv venv" in a separate step is not necessary since "uv pip" will still
-    # work with existing virtual environments.
-    - name: "Create a virtual environment"
-      shell: bash
-      run: |
-        python -m venv .venv
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: "Set up virtual environment activation command"
-      id: virtual-environment-activation-command
+    - name: "Install towncrier and tomli"
       shell: bash
-      run: |
-        if [[ ${{ runner.os }} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
-        else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
-        fi
-
-    - name: "Install towncrier, toml, and the project"
       env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOMLI_VERSION: ${{ inputs.tomli-version }}
-        USE_UV: ${{ inputs.use-uv }}
-      shell: bash
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${ACTIVATE_VENV}
-        if [[ "$USE_UV" == "true" ]]; then
-          uv pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}"
-        else
-          python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}"
-        fi
+        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
 
     - name: "Get towncrier directory and project name"
       shell: python
