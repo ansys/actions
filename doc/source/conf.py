@@ -191,6 +191,8 @@ def generate_inputs_table_from_action_file(action_file):
         inputs = file_content.get("inputs", None)
         if inputs:
             for input_name, values in inputs.items():
+                if input_name == "toml-version":  # Remove this check in v11 (See #794)
+                    continue
                 values = [
                     values.get(field, None) for field in field_names if field != "input"
                 ]
