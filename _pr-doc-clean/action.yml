@@ -97,7 +97,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v10.0.0
+    - uses: ansys/actions/_logging@v10.0.1
       with:
         level: "INFO"
         message: >
@@ -144,7 +144,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.0
+    - uses: ansys/actions/_logging@v10.0.1
       with:
         level: "INFO"
         message: >
@@ -168,7 +168,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.0
+    - uses: ansys/actions/_logging@v10.0.1
       if: steps.delete-pr-directory.outputs.PR_DIRECTORY_DELETED == true
       with:
         level: "INFO"
