@@ -32,6 +32,34 @@ def find_module_from_dist(pkg_name: str, attr: str):
 
     # Examine files in the distribution to find likely module paths
     candidate_paths = [path for path in dist.files if path.name == "__init__.py"]
+
+    # If no __init__.py files are found, let's check for the ".pth" file
+    # Inside this file (ASCII) we can find the path to the source code... this is
+    # a hack for poetry packages installed in editable mode.
+    if not candidate_paths:
+        from pathlib import Path
+
+        pth_file = next((f for f in dist.files if f.as_posix().endswith(".pth")), None)
+        if pth_file:
+            source_code_folder = None
+            # Read the .pth file to find the source code path
+            with open(pth_file, "r") as file:
+                for line in file:
+                    # Check if the path is a valid directory
+                    path = Path(line.strip())
+                    if path.exists():
+                        source_code_folder = path
+                        break
+
+            # Traverse the source code folder to find __init__.py files
+            if source_code_folder:
+                candidate_paths = list(source_code_folder.rglob("__init__.py"))
+                # From all paths, let's remove the "source_code_folder" itself
+                # to make sure we only keep the last part of the path
+                candidate_paths = [
+                    path.relative_to(source_code_folder) for path in candidate_paths
+                ]
+
     if not candidate_paths:
         raise ImportError(f"No __init__.py found in package '{pkg_name}'")
 
