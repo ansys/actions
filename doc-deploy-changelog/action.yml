@@ -206,6 +206,15 @@ runs:
         # /refs/tags/v0.1.0 -> 0.1.0
         echo "TAG_VERSION=${GITHUB_REF##*/v}" >> ${GITHUB_OUTPUT}
 
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
+    - name: "Create a virtual environment"
+      shell: bash
+      run: |
+        python -m venv .venv
+
     - name: "Install towncrier, toml, and the project"
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
