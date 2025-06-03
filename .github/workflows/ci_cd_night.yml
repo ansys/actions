@@ -21,7 +21,7 @@ jobs:
     name: "Doc build"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/doc-build@v10.0.1
+      - uses: ansys/actions/doc-build@v10.0.2
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -35,7 +35,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: ansys/actions/doc-deploy-dev@v10.0.1
+      - uses: ansys/actions/doc-deploy-dev@v10.0.2
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,7 +56,7 @@ jobs:
         persist-credentials: false
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@v10.0.1
+      uses: ansys/actions/_setup-python@v10.0.2
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false

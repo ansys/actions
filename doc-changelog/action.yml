@@ -123,7 +123,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v10.0.1
+    - uses: ansys/actions/_logging@v10.0.2
       if: inputs.toml-version != ''
       with:
         level: "ERROR"
@@ -144,7 +144,7 @@ runs:
         token: ${{ inputs.token }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@v10.0.1
+      uses: ansys/actions/_setup-python@v10.0.2
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -177,13 +177,13 @@ runs:
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'lowercase') }}
-      uses: ansys/actions/check-pr-title@v10.0.1
+      uses: ansys/actions/check-pr-title@v10.0.2
       with:
         token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
       if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'uppercase') }}
-      uses: ansys/actions/check-pr-title@v10.0.1
+      uses: ansys/actions/check-pr-title@v10.0.2
       with:
         token: ${{ inputs.token }}
         use-upper-case: true
