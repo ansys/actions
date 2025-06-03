@@ -140,13 +140,6 @@ inputs:
     default: true
     type: boolean
 
-  use-uv:
-    description: |
-      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
-    default: true
-    required: false
-    type: boolean
-
   release-from-main:
     description: |
       If ``false``, you pushed a tag from a release branch. This is applicable for most
@@ -203,7 +196,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
-        provision-uv: ${{ inputs.use-uv }}
+        provision-uv: false
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
     - name: Save tag version
@@ -213,22 +206,13 @@ runs:
         # /refs/tags/v0.1.0 -> 0.1.0
         echo "TAG_VERSION=${GITHUB_REF##*/v}" >> ${GITHUB_OUTPUT}
 
-    - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
-      with:
-        python-version: ${{ inputs.python-version }}
-        use-cache: ${{ inputs.use-python-cache }}
-        provision-uv: ${{ inputs.use-uv }}
-        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
-
-    - name: "Install towncrier and tomli"
-      shell: bash
+    - name: "Install towncrier, toml, and the project"
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOMLI_VERSION: ${{ inputs.tomli-version }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+      shell: bash
       run: |
-        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
+        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}"
 
     - name: "Get towncrier directory and project name"
       shell: python
