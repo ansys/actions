@@ -39,7 +39,7 @@ def find_module_from_dist(pkg_name: str, attr: str):
     if not candidate_paths:
         from pathlib import Path
 
-        pth_file = next((f for f in dist.files if f.as_posix().endswith(".pth")), None)
+        pth_file = next((f for f in dist.files if f.name.endswith(".pth")), None)
         if pth_file:
             source_code_folder = None
             # Read the .pth file to find the source code path
