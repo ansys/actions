@@ -119,9 +119,25 @@ inputs:
   use-uv:
     description: |
       Whether to use uv as the default package manager instead of pip. Default value is ``true``.
-    default: true
-    required: false
+    required: true
     type: boolean
+
+  optional-dependencies-name:
+    description: |
+      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      of a requirement file. Multiple targets can be specified as a comma-separated
+      list. The associated dependencies are installed before building the documentation.
+    required: true
+    type: string
+
+  group-dependencies-name:
+    description: |
+      Any valid dependency groups defined in the ``pyproject.toml`` file. Multiple
+      targets can be specified as a comma-separated list. The associated dependencies
+      are installed before running the documentation build. If set to ``''``, the action
+      will not use dependency groups.
+    required: true
+    type: string
 
 runs:
   using: "composite"
@@ -231,21 +247,12 @@ runs:
       run: |
         if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern 'build-backend = "poetry\.core\.masonry\.api"')) {
           echo "BUILD_BACKEND=$(echo 'poetry')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
         elseif ($env:USE_UV -eq "true") {
           echo "BUILD_BACKEND=$(echo 'uv')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_MAKE=$(echo 'uv run --no-sync -- .\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
         else {
           echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "SPHINX_BUILD_MAKE=$(echo '.\make.bat')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        }
-        # NOTE: Dependency groups are only used with pip and uv
-        if ((Test-Path "pyproject.toml") -and (Get-Content "pyproject.toml" | Select-String -Pattern '\[dependency-groups\]')) {
-          echo "USE_DEPENDENCY_GROUPS=$(echo 'false')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        } else {
-          echo "USE_DEPENDENCY_GROUPS=$(echo 'true')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
 
     - uses: ansys/actions/_logging@main
@@ -253,7 +260,6 @@ runs:
         level: "INFO"
         message: >
           Build backend: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
-          Sphinx build make: ${{ steps.determine-environment-variables.outputs.SPHINX_BUILD_MAKE }}
 
     # ------------------------------------------------------------------------
 
@@ -355,28 +361,33 @@ runs:
       if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false' }}
       env:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
-        USE_DEPENDENCY_GROUPS: ${{ steps.environment-variables.outputs.USE_DEPENDENCY_GROUPS }}
+        GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
           poetry install --with doc
         }
         else {
-          if ($env:USE_DEPENDENCY_GROUPS -eq "true") {
-            if ($env:BUILD_BACKEND -eq "uv") {
-              uv pip install --group doc .
-            }
-            else {
-              python -m pip install --group doc .
-            }
+          # Optional dependencies
+          $optional_dependencies_flag = ""
+          if ($env:OPTIONAL_DEPENDENCIES_NAME) {
+              $optional_dependencies_flag = "[{0}]" -f $env:OPTIONAL_DEPENDENCIES_NAME
           }
-          else {
-            if ($env:BUILD_BACKEND -eq "uv") {
-              uv pip install .[doc]
-            }
-            else {
-              python -m pip install .[doc]
-            }
+          # Group dependencies
+          $group_dependencies_flag = @()
+          if ($env:GROUP_DEPENDENCIES_NAME) {
+              $groups = $env:GROUP_DEPENDENCIES_NAME -split ','
+              foreach ($group in $groups) {
+                  $group_dependencies_flag += "--group"
+                  $group_dependencies_flag += $group
+              }
+          }
+          # Install dependencies (potentially mix of optional and group)
+          if ($env:BUILD_BACKEND -eq "uv") {
+              uv pip install @group_dependencies_flag ".${optional_dependencies_flag}"
+          } else {
+              python -m pip install @group_dependencies_flag ".${optional_dependencies_flag}"
           }
         }
 
@@ -391,16 +402,34 @@ runs:
     - name: Build HTML and PDF documentation
       shell: powershell
       env:
-        SPHINXOPTS: ${{ inputs.sphinxopts }}
+        BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
         CHECK_LINKS: ${{ inputs.check-links }}
-        SPHINX_BUILD_MAKE: ${{ steps.determine-environment-variables.outputs.SPHINX_BUILD_MAKE }}
+        SPHINXOPTS: ${{ inputs.sphinxopts }}
       run: |
         .venv\Scripts\Activate.ps1
         cd doc
-        & $env:SPHINX_BUILD_MAKE html SPHINXOPTS="$env:SPHINXOPTS"
-        & $env:SPHINX_BUILD_MAKE pdf
-        if ($env:CHECK_LINKS -eq 'true') {
-          & $env:SPHINX_BUILD_MAKE linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+        if ($env:BUILD_BACKEND -eq "poetry") {
+          poetry run -- make.bat html SPHINXOPTS="$env:SPHINXOPTS"
+          poetry run -- make.bat pdf
+          if ($env:CHECK_LINKS -eq 'true') {
+            poetry run -- make.bat pdf linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+          }
+        }
+        else {
+          if ($env:BUILD_BACKEND -eq "uv") {
+            uv run --no-sync -- .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
+            uv run --no-sync -- .\make.bat pdf
+            if ($env:CHECK_LINKS -eq 'true') {
+              uv run --no-sync -- .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+            }
+          }
+          else {
+            .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
+            .\make.bat pdf
+            if ($env:CHECK_LINKS -eq 'true') {
+              .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+            }
+          }
         }
 
     # ------------------------------------------------------------------------
@@ -497,7 +526,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - name: Verify the docs have been generated properly
+    - name: Verify that documentation has been generated properly
       if: ${{ steps.set-exists-expected-build-directory.outputs.EXISTS_EXPECTED_BUILD_DIR == 'true' }}
       shell: powershell
       env:
@@ -505,22 +534,21 @@ runs:
       run: |
         # Check if the HTML files have been generated
         if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\html\index.html") {
-          Write-Host "Docs have been generated successfully"
+          Write-Host "Documentation has been generated successfully"
         } else {
-          Write-Error "Docs have not been generated properly"
+          Write-Error "Documentation has not been generated properly"
         }
         # Check if the PDF files have been generated
         if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }}") {
-          Write-Host "PDF has been generated successfully"
+          Write-Host "PDF file has been generated successfully"
         } else {
-          Write-Error "PDF has not been generated properly"
+          Write-Error "PDF file has not been generated properly"
         }
 
     # ------------------------------------------------------------------------
 
-    - name: Check build directory
+    - uses: ansys/actions/_logging@main
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: ansys/actions/_logging@main
       with:
         level: "INFO"
         message: >
