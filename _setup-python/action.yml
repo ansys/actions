@@ -71,7 +71,7 @@ runs:
           echo "python_version_supported=true" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       if: steps.python-version-support.outputs.python_version_supported == 'false'
       with:
         level: "ERROR"

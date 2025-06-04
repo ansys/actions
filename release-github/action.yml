@@ -168,7 +168,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       if: inputs.toml-version != ''
       with:
         level: "ERROR"
@@ -179,7 +179,7 @@ runs:
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly. The ``toml-version`` input will be removed in v11.
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       if: ${{ inputs.generate_release_notes == 'true' }}
       with:
         level: "WARNING"
@@ -189,7 +189,7 @@ runs:
 
     # Only one of both can be true: generate-release-notes, changelog-release-notes
     - name: "Sanity check on release notes"
-      uses: ansys/actions/_logging@v10.0.3
+      uses: ansys/actions/_logging@v10.0.4
       if: ${{ inputs.generate-release-notes == 'true' && inputs.changelog-release-notes == 'true' }}
       with:
         level: "ERROR"
@@ -202,7 +202,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       with:
         level: "INFO"
         message: >
@@ -220,7 +220,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -253,7 +253,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -270,7 +270,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -287,7 +287,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -305,7 +305,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -326,7 +326,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.0.3
+    - uses: ansys/actions/_logging@v10.0.4
       with:
         level: "INFO"
         message: >
@@ -337,7 +337,7 @@ runs:
       run: ls -R dist/
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@v10.0.3
+      uses: ansys/actions/_setup-python@v10.0.4
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
