@@ -381,7 +381,7 @@ runs:
         fi
 
     - name: "Create PR into main with the CHANGELOG file changes"
-      if: ${{ (inputs.release-from-main == 'false' ) && (env.UPDATED_CHANGELOG == 'true') }}
+      if: ${{ (inputs.release-from-main == 'false' ) && (steps.new-section-changelog.outputs.UPDATED_CHANGELOG == 'true') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
         GITHUB_ACTOR: ${{ github.actor }}
@@ -438,7 +438,7 @@ runs:
           pr_title="CHORE: update CHANGELOG for v${TAG_VERSION}"
         fi
 
-        body_msg="Update CHANGELOG for v${TAG_VERSION} and remove .md files in ${TOWNCRIER_DIR}."
+        body_msg="Update CHANGELOG for v${TAG_VERSION} and remove .md files in ${TOWNCRIER_DIR}.
 
         > [!CAUTION]
         > Do not merge this pull request until the release has been successfully made."
@@ -451,7 +451,7 @@ runs:
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
         UPDATE_BRANCH: ${{ steps.set-branch-changelog.outputs.UPDATE_BRANCH }}
         RELEASE_BRANCH_EXISTS: ${{ steps.set-branch-changelog.outputs.RELEASE_BRANCH_EXISTS }}
-      if: contains(env.UPDATED_CHANGELOG, 'true')
+      if: contains(steps.new-section-changelog.outputs.UPDATED_CHANGELOG, 'true')
       shell: bash
       run: |
           # Checkout branch created from tag with CHANGELOG update & pull
