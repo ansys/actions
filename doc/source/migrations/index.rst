@@ -70,6 +70,7 @@ Version ``v10``
           python-version: ${{ matrix.python-version }}
           check-licenses: true
       - name: Perform additional smoke tests
+        shell: bash
         run: |
           ${{ steps.build-wheelhouse.outputs.activate-venv }}
           <smoke-test-command>
