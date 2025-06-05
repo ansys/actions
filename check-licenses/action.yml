@@ -138,7 +138,7 @@ runs:
         fi
 
     - name: Break if Python version is too old
-      uses: ansys/actions/_logging@v10.0.4
+      uses: ansys/actions/_logging@v10.0.5
       if: steps.check-python-version.outputs.PYTHON_TOO_OLD == 'true'
       with:
         level: "ERROR"
@@ -151,7 +151,7 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@v10.0.4
+      uses: ansys/actions/_setup-python@v10.0.5
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -252,7 +252,7 @@ runs:
         echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> ${GITHUB_OUTPUT}
 
     - name: Log ignored packages and accepted licenses
-      uses: ansys/actions/_logging@v10.0.4
+      uses: ansys/actions/_logging@v10.0.5
       with:
         level: "INFO"
         message: |
