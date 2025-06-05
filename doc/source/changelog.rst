@@ -9,6 +9,35 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.0.6 <https://github.com/ansys/actions/releases/tag/v10.0.6>`_ - June 05, 2025
+=================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Use bash shell for windows
+          - `#879 <https://github.com/ansys/actions/pull/879>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Raise warning if not using trusted publishers
+          - `#883 <https://github.com/ansys/actions/pull/883>`_
+
+        * - Missing skip-existing command handling
+          - `#884 <https://github.com/ansys/actions/pull/884>`_
+
+
 `10.0.5 <https://github.com/ansys/actions/releases/tag/v10.0.5>`_ - June 05, 2025
 =================================================================================
 
