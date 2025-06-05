@@ -110,6 +110,17 @@ runs:
   using: "composite"
   steps:
 
+    # TODO: ansys/actions@v11 will enforce the use of trusted publishers
+    - name: "Warn user if not using trusted publishers"
+      if: ${{ inputs.use-trusted-publisher == 'false' }}
+      uses: ansys/actions/_logging@main
+      with:
+        level: "WARNING"
+        message: >
+          Ansys Actions v11 will remove support for releases using PyPI tokens.
+          Please contact the PyAnsys Core Team at pyansys.core@ansys.com for
+          enabling trusted publishers releases in your project.
+
     - name: "Release to test PyPI index"
       uses: ansys/actions/_release-pypi@main
       with:
