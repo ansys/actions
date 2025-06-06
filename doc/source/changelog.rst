@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.0.7 <https://github.com/ansys/actions/releases/tag/v10.0.7>`_ - June 06, 2025
+=================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Doc build on windows input issues
+          - `#888 <https://github.com/ansys/actions/pull/888>`_
+
+
 `10.0.6 <https://github.com/ansys/actions/releases/tag/v10.0.6>`_ - June 05, 2025
 =================================================================================
 
