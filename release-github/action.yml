@@ -391,7 +391,7 @@ runs:
           echo "\`\`\`bash"
 
           # Find the following artifacts: wheels, source distribution, and wheelhouse files
-          for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o name "*wheelhouse*.zip" \)); do
+          for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" \)); do
             echo "\$ gh attestation verify --owner ${{ github.repository_owner }} ${artifact}"
           done
 
