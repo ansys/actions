@@ -107,7 +107,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v10.0.7
+    - uses: ansys/actions/_logging@v10.0.8
       if: inputs.use-trusted-publisher == 'true'
       with:
         level: "ERROR"
@@ -128,7 +128,7 @@ runs:
         echo "::notice::We recommend using trusted publishers to securely publish packages on PyPI. You should consider moving to this approach."
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@v10.0.7
+      uses: ansys/actions/_setup-python@v10.0.8
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
