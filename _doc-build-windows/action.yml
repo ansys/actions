@@ -177,17 +177,17 @@ runs:
     - name: Cache Chocolatey packages
       id: cache
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-      if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
+      if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
-        key: choco-${{ steps.collect-system-dependencies.outputs.DEPENDENCIES }}
+        key: choco-${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
         restore-keys: choco
 
     - name: Install packages with Chocolatey
-      if: ${{ (steps.cache.outputs.cache-hit != 'true') && (steps.collect-system-dependencies.outputs.DEPENDENCIES != '') }}
+      if: ${{ (steps.cache.outputs.cache-hit != 'true') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
       shell: powershell
       env:
-        NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.DEPENDENCIES }}
+        NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
       run: choco install $env:NEEDED_DEPS -y
 
     - name: Install Miktex and update PATH with Miktex binaries
