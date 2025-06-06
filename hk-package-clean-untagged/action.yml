@@ -33,7 +33,7 @@ inputs:
     required: true
     type: string
   package-org:
-    description: "Organization at which packages are published."
+    description: "Organization where packages are published."
     required: false
     default: 'ansys'
     type: string
