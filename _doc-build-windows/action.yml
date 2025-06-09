@@ -314,7 +314,7 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:USE_UV -eq "true") {
-          uv pip install -U pip
+          uv pip install --prerelease allow -U pip
         } else {
           python -m pip install -U pip
         }
@@ -336,7 +336,7 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:USE_UV -eq "true") {
-          uv pip install -r "$env:REQUIREMENTS_FILE"
+          uv pip install --prerelease allow -r "$env:REQUIREMENTS_FILE"
         } else {
           python -m pip install -r "$env:REQUIREMENTS_FILE"
         }
@@ -351,7 +351,7 @@ runs:
         if ($env:BUILD_BACKEND -eq "poetry") {
           poetry install
         } elseif ($env:BUILD_BACKEND -eq "uv") {
-          uv pip install .
+          uv pip install --prerelease allow .
         } else {
           python -m pip install .
         }
@@ -385,7 +385,7 @@ runs:
           }
           # Install dependencies (potentially mix of optional and group)
           if ($env:BUILD_BACKEND -eq "uv") {
-              uv pip install @group_dependencies_flag ".${optional_dependencies_flag}"
+              uv pip install --prerelease allow @group_dependencies_flag ".${optional_dependencies_flag}"
           } else {
               python -m pip install @group_dependencies_flag ".${optional_dependencies_flag}"
           }

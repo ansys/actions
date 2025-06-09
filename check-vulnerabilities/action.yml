@@ -317,7 +317,7 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         if [[ "${USE_UV}" == 'true' ]]; then
-          uv pip install -U pip
+          uv pip install --prerelease allow -U pip
         else
           python -m pip install -U pip
         fi
@@ -348,7 +348,7 @@ runs:
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --extras "${extra_targets}"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install ."${extra_targets}"
+          uv pip install --prerelease allow ."${extra_targets}"
         else
           python -m pip install ."${extra_targets}"
         fi
@@ -361,7 +361,7 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install -r "${ACTION_PATH}/requirements.txt"
+          uv pip install --prerelease allow -r "${ACTION_PATH}/requirements.txt"
         else
           python -m pip install -r "${ACTION_PATH}/requirements.txt"
         fi

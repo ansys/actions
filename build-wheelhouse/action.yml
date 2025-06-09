@@ -250,14 +250,14 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         if [[ "$USE_UV" == 'true' ]]; then
-          uv pip install -U pip
+          uv pip install --prerelease allow -U pip
         else
           python -m pip install -U pip
         fi
 
     - name: "Install the library with the desired targets"
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --prerelease allow --no-managed-python' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
@@ -361,7 +361,7 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --prerelease allow --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
         $INSTALL_COMMAND build wheel

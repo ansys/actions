@@ -241,7 +241,7 @@ runs:
       run: |
         $ACTIVATE_VENV
         if [[ "$USE_UV" == 'true' ]]; then
-          uv pip install -U pip
+          uv pip install --prerelease allow -U pip
         else
           python -m pip install -U pip
         fi
@@ -257,7 +257,7 @@ runs:
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           poetry install
         elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install .
+          uv pip install --prerelease allow .
         else
           python -m pip install .
         fi
@@ -294,7 +294,7 @@ runs:
       run: |
         $ACTIVATE_VENV
         if [[ "$USE_UV" == 'true' ]]; then
-          uv pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
+          uv pip install --prerelease allow -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
         else
           python -m pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
         fi
@@ -327,7 +327,7 @@ runs:
           fi
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install $group_dependencies_flag .$optional_dependencies_flag
+            uv pip install --prerelease allow $group_dependencies_flag .$optional_dependencies_flag
           else
             python -m pip install $group_dependencies_flag .$optional_dependencies_flag
           fi
@@ -352,7 +352,7 @@ runs:
       if: inputs.randomize == 'true'
       run: |
         if [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install pytest-randomly
+          uv pip install --prerelease allow pytest-randomly
         else
           python -m pip install pytest-randomly
         fi

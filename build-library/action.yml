@@ -119,7 +119,7 @@ runs:
     - name: "Install library"
       shell: bash
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --prerelease allow --no-managed-python --system' || 'python -m pip install' }}
       run: |
         $INSTALL_COMMAND .
 
@@ -150,7 +150,7 @@ runs:
     - name: "Install build and twine"
       shell: bash
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --prerelease allow --no-managed-python --system' || 'python -m pip install' }}
       run: |
         ${INSTALL_COMMAND} build twine
 

@@ -297,7 +297,7 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ "$USE_UV" == 'true' ]]; then
-          uv pip install -U pip
+          uv pip install --prerelease allow -U pip
         else
           python -m pip install -U pip
         fi
@@ -319,7 +319,7 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ "${USE_UV}" == 'true' ]]; then
-          uv pip install -r "${REQUIREMENTS_FILE}"
+          uv pip install --prerelease allow -r "${REQUIREMENTS_FILE}"
         else
           python -m pip install -r "${REQUIREMENTS_FILE}"
         fi
@@ -334,7 +334,7 @@ runs:
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install
         elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install .
+          uv pip install --prerelease allow .
         else
           python -m pip install .
         fi
@@ -366,7 +366,7 @@ runs:
           fi
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install $group_dependencies_flag .$optional_dependencies_flag
+            uv pip install --prerelease allow $group_dependencies_flag .$optional_dependencies_flag
           else
             python -m pip install $group_dependencies_flag .$optional_dependencies_flag
           fi
