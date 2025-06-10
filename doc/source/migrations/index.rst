@@ -27,11 +27,11 @@ Version ``v10``
   ``release-github``, and ``tests-pytest`` actions. This leverages `uv <https://docs.astral.sh/uv/>`_ for faster package installation,
   improving workflow speed for projects with multiple dependencies.
 
-  .. admonition:: About pre-releases
+  .. admonition:: About prereleases
 
-      The installation of pre-releases by ``uv`` is only supported if these are
+      The installation of prereleases by ``uv`` is only supported if these are
       listed in the ``pyproject.toml`` file. If you wish to install
-      pre-releases at all levels, you must set the ``UV_PRERELEASE=allow``
+      prereleases at all levels, you must set the ``UV_PRERELEASE=allow``
       environment variable.
 
 - **Dependency Groups Support:** ``doc-build`` and ``tests-pytest`` actions now support
