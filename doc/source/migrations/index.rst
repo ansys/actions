@@ -27,12 +27,16 @@ Version ``v10``
   ``release-github``, and ``tests-pytest`` actions. This leverages `uv <https://docs.astral.sh/uv/>`_ for faster package installation,
   improving workflow speed for projects with multiple dependencies.
 
-  .. admonition:: About pre-releases
+  .. admonition:: About pre-releases and extra indices
 
       The installation of pre-releases by ``uv`` is only supported if these are
       listed in the ``pyproject.toml`` file. If you wish to install
       pre-releases at all levels, you must set the ``UV_PRERELEASE=allow``
       environment variable.
+
+      Regarding extra indices, ``uv`` supports the ``UV_EXTRA_INDEX_URL`` for
+      specifying extra indices. This is the equivalent to the
+      ``PIP_EXTRA_INDEX_URL`` environment variable.
 
 - **Dependency Groups Support:** ``doc-build`` and ``tests-pytest`` actions now support
   `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups via the ``group-dependencies-name``
