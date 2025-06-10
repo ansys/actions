@@ -342,7 +342,7 @@ runs:
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           echo "PYTEST_RUN=$(echo 'poetry run pytest')" >> $GITHUB_OUTPUT
         elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          echo "PYTEST_RUN=$(echo 'uv run --no-sync pytest')" >> $GITHUB_OUTPUT
+          echo "PYTEST_RUN=$(echo 'uv run --no-project --no-sync pytest')" >> $GITHUB_OUTPUT
         else
           echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_OUTPUT
         fi
