@@ -16,7 +16,7 @@
           - all-globs-to-all-files: ['!doc/styles/**', '!doc/.vale.ini']
 
 ## -- Other labels ------------------------------------------------------------
-'code-style':
+'style':
   - any:
       - changed-files:
           - any-glob-to-any-file: ['.pre-commit-config.yaml', 'doc/.vale.ini']
