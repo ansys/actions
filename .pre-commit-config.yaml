@@ -1,5 +1,12 @@
 repos:
 
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: v0.10.0.1
+  hooks:
+  - id: shellcheck
+    entry: python shellcheck.py
+    language: python
+
 - repo: https://github.com/psf/black
   rev: 25.1.0
   hooks:
