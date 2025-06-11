@@ -1,0 +1,36 @@
+import pathlib
+import subprocess
+
+import yaml
+
+ACTIONS_DIRECTORY = pathlib.Path(__file__).parent.resolve()
+
+for actionfile in ACTIONS_DIRECTORY.glob("**/*.yml"):
+    if any(substring in str(actionfile) for substring in [".venv", "doc", ".github"]):
+        continue
+
+    print(f"Reading {actionfile}", flush=True)
+
+    try:
+        action = yaml.safe_load(actionfile.read_text(encoding="utf-8"))
+    except yaml.YAMLError as e:
+        print(f"YAML parse error in {actionfile}: {e}", flush=True)
+        continue
+
+    # Check for existence of "runs" and "steps"
+    runs = action.get("runs", {})
+    steps = runs.get("steps", [])
+
+    for step in steps:
+        if step.get("shell") != "bash":
+            continue
+        if "run" not in step:
+            continue
+
+        run_content = "#!/bin/bash\n" + step["run"]
+        result = subprocess.run(
+            ["shellcheck", "-"],
+            input=run_content,
+            capture_output=True,
+            text=True,
+        )
