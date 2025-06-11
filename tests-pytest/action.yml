@@ -367,8 +367,8 @@ runs:
        PYTEST_RUN: ${{ steps.pytest-run-command.outputs.PYTEST_RUN }}
        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        $ACTIVATE_VENV
-        $PYTEST_RUN $PYTEST_MARKERS $PYTEST_EXTRA_ARGS $PYTEST_POST_ARGS
+        ${ACTIVATE_VENV}
+        eval "${PYTEST_RUN} ${PYTEST_MARKERS} ${PYTEST_EXTRA_ARGS} ${PYTEST_POST_ARGS}"
 
     - name: "Executing test suite using xvfb"
       if: inputs.requires-xvfb == 'true'
@@ -380,5 +380,5 @@ runs:
        PYTEST_RUN: ${{ steps.pytest-run-command.outputs.PYTEST_RUN }}
        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
-        $ACTIVATE_VENV
-        xvfb-run ${PYTEST_RUN} ${PYTEST_MARKERS} ${PYTEST_EXTRA_ARGS} ${PYTEST_POST_ARGS}
+        ${ACTIVATE_VENV}
+        eval "xvfb-run ${PYTEST_RUN} ${PYTEST_MARKERS} ${PYTEST_EXTRA_ARGS} ${PYTEST_POST_ARGS}"
