@@ -389,11 +389,11 @@ runs:
       shell: bash
       run: |
         source .venv/bin/activate
-        ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINX_OPTS}"
+        ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINXOPTS}"
         ${SPHINX_BUILD_MAKE} -C doc pdf
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINX_OPTS}"
+          $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
         fi
 
     - name: "Build HTML and PDF documentation using xvfb"
@@ -405,11 +405,11 @@ runs:
       shell: bash
       run: |
         source .venv/bin/activate
-        xvfb-run ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINX_OPTS}"
+        xvfb-run ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINXOPTS}"
         xvfb-run ${SPHINX_BUILD_MAKE} -C doc pdf
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          xvfb-run $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="$SPHINX_OPTS"
+          xvfb-run $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
         fi
 
     # ------------------------------------------------------------------------
