@@ -1,11 +1,17 @@
 repos:
 
-- repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.10.0.1
+#- repo: https://github.com/shellcheck-py/shellcheck-py
+#  rev: v0.10.0.1
+#  hooks:
+#  - id: shellcheck
+
+- repo: local
   hooks:
-  - id: shellcheck
+  - id: style
+    name: custom-script
     entry: python shellcheck.py
     language: python
+    additional_dependencies: [shellcheck-py, pyyaml]
 
 - repo: https://github.com/psf/black
   rev: 25.1.0
