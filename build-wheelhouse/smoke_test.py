@@ -75,13 +75,17 @@ def find_module_from_dist(pkg_name: str, attr: str):
     # Try to import each parent package and check for the desired attribute
     for path in candidate_paths:
         import_path = ".".join(path.parent.parts)
+        # Performing smoke test import
         try:
             mod = importlib.import_module(import_path)
             if hasattr(mod, attr):
                 return import_path, getattr(mod, attr)
-        except Exception:
-            continue
+        except Exception as e:
+            raise ImportError(
+                f"Smoke test failed for package '{pkg_name}' with error: {e}"
+            ) from e
 
+    # No module with the specified attribute was found in the package
     raise ImportError(
         f"Could not find a module in '{pkg_name}' with attribute '{attr}'"
     )
