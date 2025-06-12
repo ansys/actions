@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.0.11 <https://github.com/ansys/actions/releases/tag/v10.0.11>`_ - June 12, 2025
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improving error message for smoke tests
+          - `#908 <https://github.com/ansys/actions/pull/908>`_
+
+
 `10.0.10 <https://github.com/ansys/actions/releases/tag/v10.0.10>`_ - June 11, 2025
 ===================================================================================
 
