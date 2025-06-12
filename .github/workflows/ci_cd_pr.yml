@@ -233,3 +233,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           auditing-level: 'high'
           trust-ansys-actions: true
+  build-library:
+    name: "Build library basic example"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Build library source and wheel artifacts"
+        uses: ansys/actions/build-library@fix/unify-artifacts-file-names
+        with:
+          library-name: "ansys-actions-core"
