@@ -240,5 +240,5 @@ jobs:
       - name: "Build library source and wheel artifacts"
         uses: ansys/actions/build-library@fix/unify-artifacts-file-names
         with:
-          library-name: "ansys-actions-core"
-          working-directory: ".ci/ansys-actions"
+          library-name: ${{ env.LIBRARY_NAME }}
+          working-directory: ".ci"
