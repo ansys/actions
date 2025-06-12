@@ -241,3 +241,4 @@ jobs:
         uses: ansys/actions/build-library@fix/unify-artifacts-file-names
         with:
           library-name: "ansys-actions-core"
+          working-directory: ".ci/ansys-actions"
