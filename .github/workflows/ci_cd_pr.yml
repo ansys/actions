@@ -241,4 +241,4 @@ jobs:
         uses: ansys/actions/build-library@fix/unify-artifacts-file-names
         with:
           library-name: ${{ env.LIBRARY_NAME }}
-          working-directory: ".ci"
+          working-directory: ${{ github.workspace }}/.ci/ansys-actions
