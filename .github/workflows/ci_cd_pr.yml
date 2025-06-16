@@ -172,7 +172,7 @@ jobs:
     steps:
       - uses: ansys/actions/build-wheelhouse@fix/unify-artifacts-file-names
         with:
-          library-name: ${{ env.PACKAGE_NAME }}
+          library-name: ${{ env.LIBRARY_NAME }}
           operating-system: ${{ matrix.os }}
           python-version: ${{ matrix.python }}
           working-directory: .ci/ansys-actions
