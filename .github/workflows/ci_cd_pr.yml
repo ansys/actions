@@ -172,8 +172,10 @@ jobs:
     steps:
       - uses: ansys/actions/build-wheelhouse@fix/unify-artifacts-file-names
         with:
+          library-name: ${{ env.PACKAGE_NAME }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
           working-directory: .ci/ansys-actions
-
   tests:
     name: "Tests"
     runs-on: ubuntu-latest
