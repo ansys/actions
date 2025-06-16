@@ -159,9 +159,9 @@ runs:
         SKIP_EXISTING: ${{ inputs.skip-existing }}
       run: |
         if [[ "${SKIP_EXISTING}" == 'true' ]]; then
-          echo "SKIP_EXISTING_CMD=$(echo '--skip-existing')" >> ${GITHUB_OUTPUT}
+          echo "SKIP_EXISTING_CMD=--skip-existing" >> ${GITHUB_OUTPUT}
         else
-          echo "SKIP_EXISTING_CMD=$(echo '')" >> ${GITHUB_OUTPUT}
+          echo "SKIP_EXISTING_CMD=''" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Upload artifacts to PyPi"
