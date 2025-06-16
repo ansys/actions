@@ -385,20 +385,20 @@ runs:
       uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
       with:
         files: wheelhouse
-        dest: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        dest: ${{ inputs.library-name }}_v${{ steps.library-version.outputs.library_version }}_${{ steps.specific-target-requested.outputs.wheelhouse_target }}_${{ inputs.operating-system }}_${{ inputs.python-version }}.zip
 
     - name: "Upload the compressed wheelhouse"
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
-        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        name: ${{ inputs.library-name }}_v${{ steps.library-version.outputs.library_version }}_${{ steps.specific-target-requested.outputs.wheelhouse_target }}_${{ inputs.operating-system }}_${{ inputs.python-version }}
+        path: ${{ inputs.library-name }}_v${{ steps.library-version.outputs.library_version }}_${{ steps.specific-target-requested.outputs.wheelhouse_target }}_${{ inputs.operating-system }}_${{ inputs.python-version }}.zip
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
       uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
       with:
-        subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        subject-path: ${{ inputs.library-name }}_v${{ steps.library-version.outputs.library_version }}_${{ steps.specific-target-requested.outputs.wheelhouse_target }}_${{ inputs.operating-system }}_${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
       uses: ansys/actions/check-licenses@main
