@@ -177,7 +177,7 @@ jobs:
           python-version: ${{ matrix.python }}
           working-directory: .ci/ansys-actions
   
-  package:
+  package-library:
     name: "Package library"
     needs: wheelhouse
     runs-on: ubuntu-22.04
@@ -188,7 +188,7 @@ jobs:
           library-name: ${{ env.LIBRARY_NAME }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           working-directory: .ci/ansys-actions
-
+  
   tests:
     name: "Tests"
     runs-on: ubuntu-latest
