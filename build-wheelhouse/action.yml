@@ -341,13 +341,13 @@ runs:
         ~/.local/bin/syft .venv --source-name "${LIBRARY_NAME}" --source-version "${LIBRARY_VERSION}" -o spdx > sbom.spdx
 
         echo "Renaming SBOM file..."
-        mv sbom.spdx "${LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
+        mv sbom.spdx "${LIBRARY_NAME}_v${LIBRARY_VERSION}_${WHEELHOUSE_TARGET}_${OPERATING_SYSTEM}_${PYTHON_VERSION}_sbom.spdx"
 
     - name: "Upload the SBOM file"
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
-        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+        name: ${{ inputs.library-name }}_v${{ steps.library-version.outputs.library_version }}_${{ steps.specific-target-requested.outputs.wheelhouse_target }}_${{ inputs.operating-system }}_${{ inputs.python-version }}_sbom
+        path: ${{ inputs.library-name }}_v${{ steps.library-version.outputs.library_version }}_${{ steps.specific-target-requested.outputs.wheelhouse_target }}_${{ inputs.operating-system }}_${{ inputs.python-version }}_sbom.spdx
         retention-days: 7
 
     - name: Generate build provenance attestation
