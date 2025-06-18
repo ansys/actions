@@ -179,7 +179,7 @@ jobs:
   
   package:
     name: "Package library"
-    needs: [wheelhouse]
+    needs: wheelhouse
     runs-on: ubuntu-22.04
     steps:
       - name: "Build library source and wheel artifacts"
