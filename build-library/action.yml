@@ -120,8 +120,9 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        $INSTALL_COMMAND .
+        $INSTALL_COMMAND  $WORKING_DIRECTORY
 
     - name: "Ensure tag version matches metadata version when triggered by push of tags"
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
