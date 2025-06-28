@@ -353,6 +353,19 @@ runs:
           python -m pip install ."${extra_targets}"
         fi
 
+    - name: "Save installed packages"
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip freeze > "${ACTION_PATH}/requirements-for-safety.txt"
+        else
+          python -m pip freeze > "${ACTION_PATH}/requirements-for-safety.txt"
+        fi
+
     - name: "Install action requirements"
       shell: bash
       env:
@@ -374,6 +387,7 @@ runs:
     - name: "Run safety and bandit"
       shell: bash
       env:
+        ACTION_PATH: ${{ github.action_path }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
@@ -387,7 +401,7 @@ runs:
         echo "Ignored safety vulnerabilities: $ignored_vulnerabilities"
 
         # Run security tools
-        safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
+        safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities -r "${ACTION_PATH}/requirements-for-safety.txt"
 
         if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
           CONFIGFILE=""
