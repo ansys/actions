@@ -312,6 +312,12 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install package and save installed packages in requirements-for-safety.txt
+
     - name: "Update pip"
       shell: bash
       env:
@@ -372,6 +378,12 @@ runs:
         fi
 
     # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install and run security tools without installing the library.
 
     - name: "Update pip"
       shell: bash
