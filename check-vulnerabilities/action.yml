@@ -296,6 +296,7 @@ runs:
       shell: bash
       run: |
         python -m venv .venv
+        python -m venv .venv_bandit_safety
 
     - name: "Set up virtual environment activation command"
       id: virtual-environment-activation-command
@@ -303,11 +304,19 @@ runs:
       run: |
         if [[ ${{ runner.os }} == 'Windows' ]]; then
           echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
+          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/scripts/activate')" >> ${GITHUB_OUTPUT}
         else
           echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
+          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/bin/activate')" >> ${GITHUB_OUTPUT}
         fi
 
     # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install package and save installed packages in requirements-for-safety.txt
 
     - name: "Update pip"
       shell: bash
@@ -353,13 +362,51 @@ runs:
           python -m pip install ."${extra_targets}"
         fi
 
+    - name: "Save installed packages"
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          poetry export --without-hashes --format=requirements.txt > requirements-for-safety.txt
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip freeze > "${ACTION_PATH}/requirements-for-safety.txt"
+        else
+          python -m pip freeze > "${ACTION_PATH}/requirements-for-safety.txt"
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install and run security tools without installing the library.
+
+    - name: "Update pip"
+      shell: bash
+      env:
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
+        if [[ "${USE_UV}" == 'true' ]]; then
+          uv pip install -U pip
+        else
+          python -m pip install -U pip
+        fi
+
     - name: "Install action requirements"
       shell: bash
       env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         ACTION_PATH: ${{ github.action_path }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
       run: |
-        ${ACTIVATE_VENV}
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           uv pip install -r "${ACTION_PATH}/requirements.txt"
         else
@@ -374,11 +421,12 @@ runs:
     - name: "Run safety and bandit"
       shell: bash
       env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        ACTION_PATH: ${{ github.action_path }}
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
       run: |
-        ${ACTIVATE_VENV}
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
         # Load accepted safety vulnerabilities
         mapfile ignored_safety_vulnerabilities < ignored-safety.txt
         ignored_vulnerabilities=''
@@ -387,7 +435,7 @@ runs:
         echo "Ignored safety vulnerabilities: $ignored_vulnerabilities"
 
         # Run security tools
-        safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities
+        safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities -r "${ACTION_PATH}/requirements-for-safety.txt"
 
         if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
           CONFIGFILE=""
@@ -400,7 +448,7 @@ runs:
     - name: "Run safety advisory checks"
       shell: bash
       env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         ACTION_PATH: ${{ github.action_path }}
         HIDE_LOG: ${{ inputs.hide-log }}
         DEPENDENCY_CHECK_TOKEN: ${{ inputs.token }}
@@ -408,7 +456,7 @@ runs:
         DEPENDENCY_CHECK_REPOSITORY: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
         DEPENDENCY_CHECK_CREATE_ISSUES: ${{ inputs.create-issues == 'true' && '1' || '' }}
       run: |
-        ${ACTIVATE_VENV}
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${HIDE_LOG}" == 'true' ]]; then
           python "${ACTION_PATH}/check_vulnerabilities.py" > /dev/null 2>&1
         else
