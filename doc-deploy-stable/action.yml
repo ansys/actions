@@ -151,6 +151,13 @@ inputs:
     default: true
     type: string
 
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -161,58 +168,90 @@ runs:
         message: >
           Collect the version number from the tag or the branch name according
           to the reference type. Tags names are expected to follow
-          'v<MAJOR>.<MINOR>' or 'v<MAJOR>.<MINOR>.<PATCH>'. Braches must follow
+          'v<MAJOR>.<MINOR>' or 'v<MAJOR>.<MINOR>.<PATCH>'. Branches must follow
           'release/<MAJOR>.<MINOR>'.
 
-    - name: "Collect version number from the tag"
-      id: version-raw-tag
-      env:
-        REF_NAME: ${{ github.ref_name }}
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - name: "Install packaging"
       shell: bash
-      if: github.ref_type == 'tag'
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        tag="$REF_NAME"
-        version=$( echo $tag | cut -d 'v' -f 2)
+        ${INSTALL_COMMAND} --upgrade pip packaging
 
-        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_OUTPUT
-        else
-          echo -e "\033[1;91m[ERROR]: Tag names must follow 'v<MAJOR>.<MINOR>.<PATCH> name convention.'\033[0m"
-          exit 1
-        fi
+      # A regex testing against minor pre-releases
+      # An output for the kind of release matched i.e. final / pre-release
+      # Error message should also mention pre-release versioning allowed
+    # - name: "Collect version number from the tag"
+    #   id: version-raw-tag
+    #   env:
+    #     REF_NAME: ${{ github.ref_name }}
+    #   shell: bash
+    #   if: github.ref_type == 'tag'
+    #   run: |
+    #     tag="$REF_NAME"
+    #     version=$( echo $tag | cut -d 'v' -f 2)
 
-    - name: "Collect version number from the release branch"
-      id: version-raw-branch
-      env:
-        REF_NAME: ${{ github.ref_name }}
-      shell: bash
-      if: github.ref_type == 'branch'
-      run: |
-        tag="$REF_NAME"
-        version=$( echo $tag | cut -d '/' -f 2)
+    #     if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+    #       echo "VERSION_RAW=$(echo $version)" >> $GITHUB_OUTPUT
+    #     else
+    #       echo -e "\033[1;91m[ERROR]: Tag names must follow 'v<MAJOR>.<MINOR>.<PATCH> name convention.'\033[0m"
+    #       exit 1
+    #     fi
 
-        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ ]]; then
-          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_OUTPUT
-        else
-          echo -e "\033[1;91m[ERROR]: Branch names must follow 'release/<MAJOR>.<MINOR>' name convention.\033[0m"
-          echo -e "\033[1;91m[ERROR]: or 'release/<MAJOR>.<MINOR>.<PATCH>' name convention.\033[0m"
-          exit 1
-        fi
+      # A regex testing against minor pre-releases
+      # An output for the kind of release matched i.e. final / pre-release
+      # Error message should also mention pre-release versioning allowed
+    # - name: "Collect version number from the release branch"
+    #   id: version-raw-branch
+    #   env:
+    #     REF_NAME: ${{ github.ref_name }}
+    #   shell: bash
+    #   if: github.ref_type == 'branch'
+    #   run: |
+    #     tag="$REF_NAME"
+    #     version=$( echo $tag | cut -d '/' -f 2)
 
-    - name: "Assemble the version number using the collected major and minor numbers"
-      shell: bash
+    #     if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ ]]; then
+    #       echo "VERSION_RAW=$(echo $version)" >> $GITHUB_OUTPUT
+    #     else
+    #       echo -e "\033[1;91m[ERROR]: Branch names must follow 'release/<MAJOR>.<MINOR>' name convention.\033[0m"
+    #       echo -e "\033[1;91m[ERROR]: or 'release/<MAJOR>.<MINOR>.<PATCH>' name convention.\033[0m"
+    #       exit 1
+    #     fi
+
+      # Add logic for what VERSION should be for minor pre-releases
+    # - name: "Assemble the version number using the collected major and minor numbers"
+    #   shell: bash
+    #   id: version-number
+    #   env:
+    #     INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
+    #     VERSION_RAW: ${{ github.ref_type == 'tag' && steps.version-raw-tag.outputs.VERSION_RAW || steps.version-raw-branch.outputs.VERSION_RAW }}
+    #   run: |
+    #       if [[ $INDEPENDENT_PATCH_RELEASE_DOCS == 'true' ]]; then
+    #         echo "VERSION=$VERSION_RAW" >> $GITHUB_OUTPUT
+    #       else
+    #         major=$(echo "$VERSION_RAW" | cut -d . -f 1)
+    #         minor=$(echo "$VERSION_RAW" | cut -d . -f 2)
+    #         echo "VERSION=$major.$minor" >> $GITHUB_OUTPUT
+    #       fi
+
+    - name: "Determine the version number"
+      shell: python
       id: version-number
       env:
+        REF_NAME: ${{ github.ref_name }}
         INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
-        VERSION_RAW: ${{ github.ref_type == 'tag' && steps.version-raw-tag.outputs.VERSION_RAW || steps.version-raw-branch.outputs.VERSION_RAW }}
+        REF_TYPE: ${{ github.ref_type }}
       run: |
-          if [[ $INDEPENDENT_PATCH_RELEASE_DOCS == 'true' ]]; then
-            echo "VERSION=$VERSION_RAW" >> $GITHUB_OUTPUT
-          else
-            major=$(echo "$VERSION_RAW" | cut -d . -f 1)
-            minor=$(echo "$VERSION_RAW" | cut -d . -f 2)
-            echo "VERSION=$major.$minor" >> $GITHUB_OUTPUT
-          fi
+        from python-utils.versions import set_version_variable
+        set_version_variable()
 
     # ------------------------------------------------------------------------
 
@@ -279,6 +318,18 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    # This section for some logic that handles:
+    # 1. Listing the current versions in version/ matching MAJOR.MINOR.PATCH or MAJOR.MINOR[PRE-RELEASE]
+    # 2. Adding the current release into the mix
+    # 3. Sorting the releases
+    # 4. If it is a pre-release, identying if an older pre-release version exists for that minor version
+    #    --> Flag this older pre-release for removal (some output accessible in subsequent steps)
+    # 5. If it is a stable minor release, identifying if a pre-release exists for that minor version
+    #    --> Flag this pre-release for removal (some output accessible in subsequent steps)
+    # 6. Output the sorted list of the versions for use in subsequent steps
+
+    # ------------------------------------------------------------------------
+
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
@@ -288,6 +339,7 @@ runs:
           display the structure of the directory to verify that it has the right
           layout.
 
+      # This is needed when a version is yanked and released again?
     - name: "Clean version content"
       shell: bash
       id: clean-version-content
@@ -349,71 +401,81 @@ runs:
       run: |
         sudo apt-get install -y moreutils jq
 
-    - name: "Create a clean 'versions.json' file"
-      shell: bash
-      run: |
-        rm -rf versions.json && touch versions.json && echo '[]' > versions.json
+    # - name: "Create a clean 'versions.json' file"
+    #   shell: bash
+    #   run: |
+    #     rm -rf versions.json && touch versions.json && echo '[]' > versions.json
 
-    - name: "Add the development version to the 'versions.json' file"
-      shell: bash
+    # - name: "Add the development version to the 'versions.json' file"
+    #   shell: bash
+    #   env:
+    #     CNAME: ${{ inputs.cname }}
+    #   run: |
+    #     url_dev="https://${CNAME}/version/dev/"
+    #     jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
+    #     cat versions.json
+
+    # - name: "Populate the 'versions.json' file with the desired amount of versions"
+    #   shell: bash
+    #   env:
+    #     RENDER_LAST: ${{ inputs.render-last }}
+    #     CNAME: ${{ inputs.cname }}
+    #   run: |
+    #     for version in $( ls version | \
+    #                       grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
+    #                       sort -r --version-sort | \
+    #                       head -$RENDER_LAST); do
+    #       url="https://${CNAME}/version/$version/"
+    #       jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json | sponge versions.json
+    #     done
+
+    #     cat versions.json
+
+    # - name: "Add an 'Older versions' item if required"
+    #   shell: bash
+    #   env:
+    #     RENDER_LAST: ${{ inputs.render-last }}
+    #     CNAME: ${{ inputs.cname }}
+    #   run: |
+    #     num_versions=$(jq length versions.json)
+
+    #     if [ $num_versions -gt $RENDER_LAST ]; then
+    #       cname="$CNAME"
+    #       new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/\" }"
+    #       jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
+    #     fi
+
+    # - name: "Convert the first stable version into the 'stable' one"
+    #   shell: bash
+    #   env:
+    #     CNAME: ${{ inputs.cname }}
+    #   run: |
+    #     jq '.[1].name += " (stable)"' versions.json | sponge versions.json
+    #     url_stable="https://${CNAME}/version/stable/"
+    #     jq --arg url $url_stable '.[1].url = $url' versions.json | sponge versions.json
+    #     cat versions.json
+
+    - name: "Write the versions.json file"
+      id: versions-json-file
+      shell: python
       env:
         CNAME: ${{ inputs.cname }}
-      run: |
-        url_dev="https://${CNAME}/version/dev/"
-        jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
-        cat versions.json
-
-    - name: "Populate the 'versions.json' file with the desired amount of versions"
-      shell: bash
-      env:
         RENDER_LAST: ${{ inputs.render-last }}
-        CNAME: ${{ inputs.cname }}
       run: |
-        for version in $( ls version | \
-                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
-                          sort -r --version-sort | \
-                          head -$RENDER_LAST); do
-          url="https://${CNAME}/version/$version/"
-          jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json | sponge versions.json
-        done
+        from python-utils.versions import write_versions_file
+        write_versions_file()
 
-        cat versions.json
-
-    - name: "Add an 'Older versions' item if required"
-      shell: bash
-      env:
-        RENDER_LAST: ${{ inputs.render-last }}
-        CNAME: ${{ inputs.cname }}
-      run: |
-        num_versions=$(jq length versions.json)
-
-        if [ $num_versions -gt $RENDER_LAST ]; then
-          cname="$CNAME"
-          new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/\" }"
-          jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
-        fi
-
-    - name: "Convert the first stable version into the 'stable' one"
-      shell: bash
-      env:
-        CNAME: ${{ inputs.cname }}
-      run: |
-        jq '.[1].name += " (stable)"' versions.json | sponge versions.json
-        url_stable="https://${CNAME}/version/stable/"
-        jq --arg url $url_stable '.[1].url = $url' versions.json | sponge versions.json
-        cat versions.json
-
-    - name: "Find the latest stable version"
-      id: latest-stable-version
-      shell: bash
-      run: |
-        stable_version=$(jq '.[1].version' versions.json | grep -o '".*"' | sed 's/"//g')
-        echo "LATEST_STABLE_VERSION=$stable_version" >> $GITHUB_OUTPUT
+    # - name: "Find the latest stable version"
+    #   id: latest-stable-version
+    #   shell: bash
+    #   run: |
+    #     stable_version=$(jq '.[1].version' versions.json | grep -o '".*"' | sed 's/"//g')
+    #     echo "LATEST_STABLE_VERSION=$stable_version" >> $GITHUB_OUTPUT
 
     - name: "Update the content for the 'version/stable' folder"
       shell: bash
       env:
-        LATEST_STABLE_VERSION: ${{ steps.latest-stable-version.outputs.LATEST_STABLE_VERSION }}
+        LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
       run: |
         rm -rf version/stable && cp -r version/${LATEST_STABLE_VERSION} version/stable
 
@@ -438,7 +500,7 @@ runs:
 
     - name: "Render the 'announcement.html' template with the desired stable version"
       env:
-        LATEST_STABLE_VERSION: ${{ steps.latest-stable-version.outputs.LATEST_STABLE_VERSION }}
+        LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
         CNAME: ${{ inputs.cname }}
       shell: bash
       run: |
