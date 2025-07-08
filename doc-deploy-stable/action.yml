@@ -250,6 +250,9 @@ runs:
         INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
         REF_TYPE: ${{ github.ref_type }}
       run: |
+        import sys
+        
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
         from python-utils.versions import set_version_variable
         set_version_variable()
 
@@ -462,6 +465,9 @@ runs:
         CNAME: ${{ inputs.cname }}
         RENDER_LAST: ${{ inputs.render-last }}
       run: |
+        import sys
+
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
         from python-utils.versions import write_versions_file
         write_versions_file()
 

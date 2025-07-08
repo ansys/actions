@@ -83,6 +83,7 @@ def remove_files(path: Path) -> None:
             (root / name).unlink()
         for name in dirs:
             (root / name).rmdir()
+    path.rmdir()
 
 
 def determine_stable_release() -> None:
@@ -133,7 +134,7 @@ def write_versions_file() -> None:
             url_older_version = f"https://{cname}/version/"
             file.write(TEMPLATE.format(name="Older version", version="N/A", url=url_older_version))
             file.write("\n]")
-
+    save_to_ghoutput("LATEST_STABLE_VERSION", stable_release)
 
 def set_version_variable() -> None:
     independent_patch_release = (
