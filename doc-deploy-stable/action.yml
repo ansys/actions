@@ -151,11 +151,27 @@ inputs:
     default: true
     type: string
 
+  python-version:
+    description: |
+      Python version used for various steps of the action
+    required: false
+    default: '3.13'
+    type: string
+
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
   use-uv:
     description: |
       Whether to use uv as the default package manager instead of pip. Default value is ``true``.
-    default: true
     required: false
+    default: true
     type: boolean
 
 runs:
@@ -184,7 +200,7 @@ runs:
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip packaging
+        ${INSTALL_COMMAND} --upgrade pip install packaging
 
       # A regex testing against minor pre-releases
       # An output for the kind of release matched i.e. final / pre-release
