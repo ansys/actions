@@ -200,7 +200,7 @@ runs:
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip install packaging
+        ${INSTALL_COMMAND} --upgrade pip packaging
 
       # A regex testing against minor pre-releases
       # An output for the kind of release matched i.e. final / pre-release
