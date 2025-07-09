@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 from pathlib import Path
 
 from packaging.version import Version
@@ -14,12 +15,12 @@ def get_version_and_ref_type() -> tuple[str, str]:
         A tuple containing the version and reference type.
     """
     ref_type = os.getenv("REF_TYPE")
-    tag = os.getenv("REF_NAME")
+    ref_name = os.getenv("REF_NAME")
     match ref_type:
         case "tag":
-            version = tag.split("v")[1]
+            version = ref_name.split("v")[1]
         case "branch":
-            version = tag.split("/")[1]
+            version = ref_name.split("/")[1]
     return version, ref_type
 
 
@@ -36,26 +37,23 @@ def get_versions_list(exclude_prereleases: bool = False) -> list[Version]:
     list[Version]
         A list of Version objects representing the versions in the 'version' directory.
     """
-    target_path = Path("version")
-    if exclude_prereleases:
-        return [
-            Version(directory.name)
-            for directory in (
-                directory
-                for directory in target_path.glob("*/")
-                if directory.name not in ("dev", "stable")
-            )
-            if not Version(directory.name).is_prerelease
-        ]
-    else:
-        return [
-            Version(f"{directory.name}")
-            for directory in target_path.glob("*/")
-            if directory.name not in ("dev", "stable")
-        ]
+    version_dir = Path("version")
+    if not version_dir.exists() or not version_dir.is_dir():
+        raise FileNotFoundError("Could not find the versions/ directory")
+    version_list = []
+    excluded_versions = ["dev", "stable"]
+    for version_folder in version_dir.glob("*/"):
+        version_name = version_folder.name
+        version = Version(version_name)
+        if version_name in excluded_versions:
+            continue
+        if version.is_prerelease and exclude_prereleases:
+            continue
+        version_list.append(version)
+    return version_list
 
 
-def save_to_ghoutput(var_name: str, var_value: str) -> None:
+def export_to_github_output(var_name: str, var_value: str) -> None:
     """Save environment variable to the GITHUB_OUTPUT file.
 
     Parameters
@@ -78,16 +76,16 @@ def save_to_ghoutput(var_name: str, var_value: str) -> None:
             file.write(f"{var_name}={var_value}")
 
 
-def remove_files(path: Path) -> None:
-    for root, dirs, files in path.walk(top_down=False):
-        for name in files:
-            (root / name).unlink()
-        for name in dirs:
-            (root / name).rmdir()
-    path.rmdir()
+# def remove_files(path: Path) -> None:
+#     for root, dirs, files in path.walk(top_down=False):
+#         for name in files:
+#             (root / name).unlink()
+#         for name in dirs:
+#             (root / name).rmdir()
+#     path.rmdir()
 
 
-def determine_stable_release() -> None:
+def find_stable_release() -> str:
     versions_list = get_versions_list(exclude_prereleases=True)
     sorted_versions_list = sorted(versions_list)
     stable_release = sorted_versions_list.pop()
@@ -101,7 +99,7 @@ def write_versions_file() -> None:
     "version": "{version}",
     "url": "{url}"
   }}"""
-    stable_release = determine_stable_release()
+    stable_release = find_stable_release()
     version_list = get_versions_list()
     cname = os.getenv("CNAME")
     render_last = int(os.getenv("RENDER_LAST"))
@@ -144,7 +142,7 @@ def write_versions_file() -> None:
                 )
             )
             file.write("\n]")
-    save_to_ghoutput("LATEST_STABLE_VERSION", stable_release)
+    export_to_github_output("LATEST_STABLE_VERSION", stable_release)
 
 
 def set_version_variable() -> None:
@@ -192,9 +190,9 @@ def set_version_variable() -> None:
                 pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[3:]
                 for prerel in pre_releases_to_remove:
                     prerel_path = Path(f"version/{prerel}")
-                    remove_files(prerel_path)
-                save_to_ghoutput("VERSION", str(current_version))
-                save_to_ghoutput("PRE_RELEASE", "true")
+                    shutil.rmtree(prerel_path)
+                export_to_github_output("VERSION", str(current_version))
+                export_to_github_output("PRE_RELEASE", "true")
             else:
                 print("ERROR: An higher or equal pre-release version already exist")
                 exit(1)
@@ -202,16 +200,16 @@ def set_version_variable() -> None:
             # All existing pre-releases must be removed before the normal release
             for prerel in existing_prereleases:
                 prerel_path = Path(f"version/{prerel}")
-                remove_files(prerel_path)
+                shutil.rmtree(prerel_path)
             if independent_patch_release:
-                save_to_ghoutput("VERSION", str(current_version))
-                save_to_ghoutput("PRE_RELEASE", "false")
+                export_to_github_output("VERSION", str(current_version))
+                export_to_github_output("PRE_RELEASE", "false")
             else:
                 current_version = str(current_version).rsplit(".", 1)[
                     0
                 ]  # Remove the patch number
-                save_to_ghoutput("VERSION", str(current_version))
-                save_to_ghoutput("PRE_RELEASE", "false")
+                export_to_github_output("VERSION", str(current_version))
+                export_to_github_output("PRE_RELEASE", "false")
     else:
         if ref_type == "tag":
             print(
@@ -260,9 +258,9 @@ def set_version_variable() -> None:
 #     # All existing prereleases must be removed before the normal release
 #     for prerel in existing_prereleases:
 #         prerel_path = Path(f'version/{prerel}')
-#         remove_files(prerel_path)
+#         shutil.rmtree(prerel_path)
 
 # versions_list.append(current_version)
 # print(sorted(versions_list, reverse=True))
-# stable_release = determine_stable_release()
+# stable_release = find_stable_release()
 # write_versions_file(versions_list, stable_release)
