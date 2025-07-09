@@ -73,7 +73,7 @@ def export_to_github_output(var_name: str, var_value: str) -> None:
             file.write(var_value)
             file.write("\nEOF\n")
         else:
-            file.write(f"{var_name}={var_value}")
+            file.write(f"{var_name}={var_value}\n")
 
 
 # def remove_files(path: Path) -> None:
