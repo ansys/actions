@@ -76,22 +76,25 @@ def export_to_github_output(var_name: str, var_value: str) -> None:
             file.write(f"{var_name}={var_value}\n")
 
 
-# def remove_files(path: Path) -> None:
-#     for root, dirs, files in path.walk(top_down=False):
-#         for name in files:
-#             (root / name).unlink()
-#         for name in dirs:
-#             (root / name).rmdir()
-#     path.rmdir()
-
-
 def find_stable_release() -> str:
+    """Find the latest stable release version.
+
+    Returns
+    -------
+    str
+        The latest stable release version as a string.
+    """
     versions_list = get_versions_list(exclude_prereleases=True)
     stable_release = max(versions_list)
     return str(stable_release)
 
 
 def write_versions_file() -> None:
+    """
+    Write the versions.json file with the latest stable and other versions.
+
+    Also exports the latest stable version to the GITHUB_OUTPUT file.
+    """
     TEMPLATE = """
   {{
     "name": "{name}",
@@ -120,9 +123,7 @@ def write_versions_file() -> None:
         file.write(",")
         # Other versions
         full_list = sorted(version_list, reverse=True)
-        excluding_stable = [
-            version for version in full_list if version != Version(stable_release)
-        ]
+        excluding_stable = [version for version in full_list if version != Version(stable_release)]
         counter = 1
         for version in excluding_stable:
             url_version = f"https://{cname}/version/{version}/"
@@ -135,16 +136,24 @@ def write_versions_file() -> None:
         else:
             # Add 'Older versions' item
             url_older_version = f"https://{cname}/version/"
-            file.write(
-                TEMPLATE.format(
-                    name="Older version", version="N/A", url=url_older_version
-                )
-            )
+            file.write(TEMPLATE.format(name="Older version", version="N/A", url=url_older_version))
             file.write("\n]")
     export_to_github_output("LATEST_STABLE_VERSION", stable_release)
 
 
 def set_version_variable() -> None:
+    """Set the VERSION and PRE_RELEASE environment variables based on the current tag or branch.
+
+    This function checks the current tag or branch name, validates it against a pattern,
+    and sets the VERSION and PRE_RELEASE variables accordingly (i.e. exports them to GITHUB_OUTPUT
+    for use in subsequent action steps). It also ensures that only the latest pre-release versions are kept.
+
+    If the tag or branch name does not match the expected pattern, an error message is printed
+    and the script exits with a non-zero status.
+
+    If it is a normal release, it removes all existing pre-releases for that major and minor version.
+    """
+
     independent_patch_release = (
         True if os.getenv("INDEPENDENT_PATCH_RELEASE_DOCS") == "true" else False
     )
@@ -185,9 +194,7 @@ def set_version_variable() -> None:
         ]
         if current_version.is_prerelease:
             # Ensure highest hierarchy of current pre-release
-            valid_prerelease = all(
-                current_version > prerel for prerel in existing_prereleases
-            )
+            valid_prerelease = all(current_version > prerel for prerel in existing_prereleases)
             if valid_prerelease:
                 # Keep a maximum of 3 pre-releases
                 pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[2:]
@@ -208,9 +215,7 @@ def set_version_variable() -> None:
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
             else:
-                current_version = str(current_version).rsplit(".", 1)[
-                    0
-                ]  # Remove the patch number
+                current_version = str(current_version).rsplit(".", 1)[0]  # Remove the patch number
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
     else:
@@ -227,43 +232,3 @@ def set_version_variable() -> None:
                 " where 'N' is an integer."
             )
         exit(1)
-
-
-# pattern = re.compile(
-#     r"""
-#     (?P<release>^[0-9]+\.[0-9]+\.[0-9]+$) | # <MAJOR>.<MINOR>.<PATCH>
-#     (?P<pre>^[0-9]+\.[0-9]+(?P<pre_type>a|b|rc)(?P<pre_n>[0-9]+)$) # MINOR pre-release
-#     """,
-#     re.VERBOSE,
-# )
-
-# current_version = Version(version)
-
-# existing_prereleases = [
-#     prerel-
-#     for prerel in versions_list
-#     if prerel.is_prerelease and prerel.release == current_version.release # MAJOR.MINOR should match
-# ]
-
-# if current_version.is_prerelease:
-#     pretype = current_version.pre[0]
-#     match pretype:
-#         case "a":
-#             assert len(existing_prereleases) == 0  # There shouldn't be any prerelease
-#             pass
-#         case "b":
-#             assert len(existing_prereleases) == 1 # Only an alpha prerelease should exist
-#             pass
-#         case "c":
-#             assert len(existing_prereleases) == 2 # Both alpha and bete prereleases should exist
-#             pass
-# else: # This is a normal release
-#     # All existing prereleases must be removed before the normal release
-#     for prerel in existing_prereleases:
-#         prerel_path = Path(f'version/{prerel}')
-#         shutil.rmtree(prerel_path)
-
-# versions_list.append(current_version)
-# print(sorted(versions_list, reverse=True))
-# stable_release = find_stable_release()
-# write_versions_file(versions_list, stable_release)
