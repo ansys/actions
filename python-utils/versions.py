@@ -87,8 +87,7 @@ def export_to_github_output(var_name: str, var_value: str) -> None:
 
 def find_stable_release() -> str:
     versions_list = get_versions_list(exclude_prereleases=True)
-    sorted_versions_list = sorted(versions_list)
-    stable_release = sorted_versions_list.pop()
+    stable_release = max(versions_list)
     return str(stable_release)
 
 
