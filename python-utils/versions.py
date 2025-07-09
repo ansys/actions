@@ -44,9 +44,9 @@ def get_versions_list(exclude_prereleases: bool = False) -> list[Version]:
     excluded_versions = ["dev", "stable"]
     for version_folder in version_dir.glob("*/"):
         version_name = version_folder.name
-        version = Version(version_name)
         if version_name in excluded_versions:
             continue
+        version = Version(version_name)
         if version.is_prerelease and exclude_prereleases:
             continue
         version_list.append(version)
