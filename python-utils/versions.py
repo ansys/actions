@@ -186,7 +186,7 @@ def set_version_variable() -> None:
             )
             if valid_prerelease:
                 # Keep a maximum of 3 pre-releases
-                pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[3:]
+                pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[2:]
                 for prerel in pre_releases_to_remove:
                     prerel_path = Path(f"version/{prerel}")
                     shutil.rmtree(prerel_path)
