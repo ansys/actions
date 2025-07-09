@@ -123,7 +123,9 @@ def write_versions_file() -> None:
         file.write(",")
         # Other versions
         full_list = sorted(version_list, reverse=True)
-        excluding_stable = [version for version in full_list if version != Version(stable_release)]
+        excluding_stable = [
+            version for version in full_list if version != Version(stable_release)
+        ]
         counter = 1
         for version in excluding_stable:
             url_version = f"https://{cname}/version/{version}/"
@@ -136,7 +138,11 @@ def write_versions_file() -> None:
         else:
             # Add 'Older versions' item
             url_older_version = f"https://{cname}/version/"
-            file.write(TEMPLATE.format(name="Older version", version="N/A", url=url_older_version))
+            file.write(
+                TEMPLATE.format(
+                    name="Older version", version="N/A", url=url_older_version
+                )
+            )
             file.write("\n]")
     export_to_github_output("LATEST_STABLE_VERSION", stable_release)
 
@@ -194,7 +200,9 @@ def set_version_variable() -> None:
         ]
         if current_version.is_prerelease:
             # Ensure highest hierarchy of current pre-release
-            valid_prerelease = all(current_version > prerel for prerel in existing_prereleases)
+            valid_prerelease = all(
+                current_version > prerel for prerel in existing_prereleases
+            )
             if valid_prerelease:
                 # Keep a maximum of 3 pre-releases
                 pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[2:]
@@ -215,7 +223,9 @@ def set_version_variable() -> None:
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
             else:
-                current_version = str(current_version).rsplit(".", 1)[0]  # Remove the patch number
+                current_version = str(current_version).rsplit(".", 1)[
+                    0
+                ]  # Remove the patch number
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
     else:
