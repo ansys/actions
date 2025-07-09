@@ -181,6 +181,7 @@ runs:
 
     - name: "Install packaging"
       shell: bash
+      env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
         ${INSTALL_COMMAND} --upgrade pip packaging
@@ -251,7 +252,7 @@ runs:
         REF_TYPE: ${{ github.ref_type }}
       run: |
         import sys
-        
+
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
         from python-utils.versions import set_version_variable
         set_version_variable()

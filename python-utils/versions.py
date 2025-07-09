@@ -1,7 +1,7 @@
 import os
 import re
-
 from pathlib import Path
+
 from packaging.version import Version
 
 
@@ -77,6 +77,7 @@ def save_to_ghoutput(var_name: str, var_value: str) -> None:
         else:
             file.write(f"{var_name}={var_value}")
 
+
 def remove_files(path: Path) -> None:
     for root, dirs, files in path.walk(top_down=False):
         for name in files:
@@ -91,6 +92,7 @@ def determine_stable_release() -> None:
     sorted_versions_list = sorted(versions_list)
     stable_release = sorted_versions_list.pop()
     return str(stable_release)
+
 
 def write_versions_file() -> None:
     TEMPLATE = """
@@ -113,13 +115,17 @@ def write_versions_file() -> None:
         url_stable = f"https://{cname}/version/stable/"
         file.write(
             TEMPLATE.format(
-                name=f"{stable_release} (stable)", version=stable_release, url=url_stable
+                name=f"{stable_release} (stable)",
+                version=stable_release,
+                url=url_stable,
             )
         )
         file.write(",")
         # Other versions
         full_list = sorted(version_list, reverse=True)
-        excluding_stable = [version for version in full_list if version != Version(stable_release)]
+        excluding_stable = [
+            version for version in full_list if version != Version(stable_release)
+        ]
         counter = 1
         for version in excluding_stable:
             url_version = f"https://{cname}/version/{version}/"
@@ -132,9 +138,14 @@ def write_versions_file() -> None:
         else:
             # Add 'Older versions' item
             url_older_version = f"https://{cname}/version/"
-            file.write(TEMPLATE.format(name="Older version", version="N/A", url=url_older_version))
+            file.write(
+                TEMPLATE.format(
+                    name="Older version", version="N/A", url=url_older_version
+                )
+            )
             file.write("\n]")
     save_to_ghoutput("LATEST_STABLE_VERSION", stable_release)
+
 
 def set_version_variable() -> None:
     independent_patch_release = (
@@ -173,12 +184,14 @@ def set_version_variable() -> None:
         ]
         if current_version.is_prerelease:
             # Ensure highest hierarchy of current pre-release
-            valid_prerelease = all(current_version > prerel for prerel in existing_prereleases)
+            valid_prerelease = all(
+                current_version > prerel for prerel in existing_prereleases
+            )
             if valid_prerelease:
                 # Keep a maximum of 3 pre-releases
                 pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[3:]
                 for prerel in pre_releases_to_remove:
-                    prerel_path = Path(f'version/{prerel}')
+                    prerel_path = Path(f"version/{prerel}")
                     remove_files(prerel_path)
                 save_to_ghoutput("VERSION", str(current_version))
                 save_to_ghoutput("PRE_RELEASE", "true")
@@ -188,13 +201,15 @@ def set_version_variable() -> None:
         else:
             # All existing pre-releases must be removed before the normal release
             for prerel in existing_prereleases:
-                prerel_path = Path(f'version/{prerel}')
+                prerel_path = Path(f"version/{prerel}")
                 remove_files(prerel_path)
             if independent_patch_release:
                 save_to_ghoutput("VERSION", str(current_version))
                 save_to_ghoutput("PRE_RELEASE", "false")
             else:
-                current_version = str(current_version).rsplit('.', 1)[0] # Remove the patch number
+                current_version = str(current_version).rsplit(".", 1)[
+                    0
+                ]  # Remove the patch number
                 save_to_ghoutput("VERSION", str(current_version))
                 save_to_ghoutput("PRE_RELEASE", "false")
     else:
