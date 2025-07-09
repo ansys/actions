@@ -259,20 +259,6 @@ runs:
     #         echo "VERSION=$major.$minor" >> $GITHUB_OUTPUT
     #       fi
 
-    - name: "Determine the version number"
-      shell: python
-      id: version-number
-      env:
-        REF_NAME: ${{ github.ref_name }}
-        INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
-        REF_TYPE: ${{ github.ref_type }}
-      run: |
-        import sys
-
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
-        from versions import set_version_variable
-        set_version_variable()
-
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -347,6 +333,20 @@ runs:
     # 5. If it is a stable minor release, identifying if a pre-release exists for that minor version
     #    --> Flag this pre-release for removal (some output accessible in subsequent steps)
     # 6. Output the sorted list of the versions for use in subsequent steps
+
+    - name: "Determine the version number"
+      shell: python
+      id: version-number
+      env:
+        REF_NAME: ${{ github.ref_name }}
+        INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
+        REF_TYPE: ${{ github.ref_type }}
+      run: |
+        import sys
+
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+        from versions import set_version_variable
+        set_version_variable()
 
     # ------------------------------------------------------------------------
 
