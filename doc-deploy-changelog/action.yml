@@ -276,7 +276,7 @@ runs:
           release_branch="release/${tag_version%.*}"
 
           # Check release_branch exists on remote
-          release_branch_exists=$(git ls-remote --heads origin refs/heads/$release_branch 2>&1)
+          release_branch_exists=$(git ls-remote --branches origin refs/heads/$release_branch 2>&1)
 
           # If the release branch doesn't exist, then use the temporary branch
           if [ -z "$release_branch_exists" ]; then
@@ -399,7 +399,7 @@ runs:
         pr_branch=docs/v${TAG_VERSION}-changelog
 
         # Check if pr_branch exists on remote
-        remote_branch_exists=$(git ls-remote --heads origin refs/heads/$pr_branch 2>&1)
+        remote_branch_exists=$(git ls-remote --branches origin refs/heads/$pr_branch 2>&1)
 
         # Delete the remote branch if it exists
         if [ -n "$remote_branch_exists" ]; then
