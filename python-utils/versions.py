@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import shutil
@@ -43,6 +44,8 @@ def get_versions_list(exclude_prereleases: bool = False) -> list[Version]:
     version_list = []
     excluded_versions = ["dev", "stable"]
     for version_folder in version_dir.glob("*/"):
+        if version_folder.is_file():
+            continue
         version_name = version_folder.name
         if version_name in excluded_versions:
             continue
@@ -95,55 +98,56 @@ def write_versions_file() -> None:
 
     Also exports the latest stable version to the GITHUB_OUTPUT file.
     """
-    TEMPLATE = """
-  {{
-    "name": "{name}",
-    "version": "{version}",
-    "url": "{url}"
-  }}"""
+
+    KEYS = ("name", "version", "url")
     stable_release = find_stable_release()
     version_list = get_versions_list()
     cname = os.getenv("CNAME")
     render_last = int(os.getenv("RENDER_LAST"))
-    with open("versions.json", "w", encoding="utf-8") as file:
-        file.write("[")
-        # version dev
-        url_dev = f"https://{cname}/version/dev/"
-        file.write(TEMPLATE.format(name="dev", version="dev", url=url_dev))
-        file.write(",")
-        # version stable
-        url_stable = f"https://{cname}/version/stable/"
-        file.write(
-            TEMPLATE.format(
-                name=f"{stable_release} (stable)",
-                version=stable_release,
-                url=url_stable,
+    content = []
+
+    # version dev
+    url_dev = f"https://{cname}/version/dev/"
+    content.append({key: value for key, value in zip(KEYS, ("dev", "dev", url_dev))})
+
+    # version stable
+    url_stable = f"https://{cname}/version/stable/"
+    content.append(
+        {
+            key: value
+            for key, value in zip(
+                KEYS, (f"{stable_release} (stable)", stable_release, url_stable)
             )
+        }
+    )
+
+    # Other versions
+    full_list = sorted(version_list, reverse=True)
+    excluding_stable = [
+        version for version in full_list if version != Version(stable_release)
+    ]
+    counter = 1
+    for version in excluding_stable:
+        url_version = f"https://{cname}/version/{version}/"
+        content.append(
+            {
+                key: value
+                for key, value in zip(KEYS, (str(version), str(version), url_version))
+            }
         )
-        file.write(",")
-        # Other versions
-        full_list = sorted(version_list, reverse=True)
-        excluding_stable = [
-            version for version in full_list if version != Version(stable_release)
-        ]
-        counter = 1
-        for version in excluding_stable:
-            url_version = f"https://{cname}/version/{version}/"
-            file.write(TEMPLATE.format(name=version, version=version, url=url_version))
-            counter += 1
-            if counter == render_last:
-                file.write("\n]")
-                break
-            file.write(",")
-        else:
-            # Add 'Older versions' item
-            url_older_version = f"https://{cname}/version/"
-            file.write(
-                TEMPLATE.format(
-                    name="Older version", version="N/A", url=url_older_version
-                )
-            )
-            file.write("\n]")
+        if counter == render_last:
+            break
+    else:
+        # Add 'Older versions' item
+        url_older_version = f"https://{cname}/version/"
+        content.append(
+            {
+                key: value
+                for key, value in zip(KEYS, ("Older version", "N/A", url_older_version))
+            }
+        )
+    with open("versions.json", "w", encoding="utf-8") as file:
+        json.dump(content, file, indent=2)
     export_to_github_output("LATEST_STABLE_VERSION", stable_release)
 
 
@@ -157,7 +161,7 @@ def set_version_variable() -> None:
     If the tag or branch name does not match the expected pattern, an error message is printed
     and the script exits with a non-zero status.
 
-    If it is a normal release, it removes all existing pre-releases for that major and minor version.
+    If it is a normal release, it removes all existing pre-releases for that major.minor.patch version.
     """
 
     independent_patch_release = (
@@ -166,7 +170,7 @@ def set_version_variable() -> None:
     tag_pattern = re.compile(
         r"""
     ^[0-9]+\.[0-9]+\.[0-9]+$ | # <MAJOR>.<MINOR>.<PATCH>
-    ^[0-9]+\.[0-9]+(?:a|b|rc)[0-9]+$ # MINOR pre-release
+    ^[0-9]+\.[0-9]+\.[0-9]+(?:a|b|rc)[0-9]+$ # PATCH pre-release
     """,
         re.VERBOSE,
     )
@@ -174,7 +178,7 @@ def set_version_variable() -> None:
         r"""
     ^[0-9]+\.[0-9]+$ | # <MAJOR>.<MINOR>
     ^[0-9]+\.[0-9]+\.[0-9]+ | # <MAJOR>.<MINOR>.<PATCH>
-    ^[0-9]+\.[0-9]+(?:a|b|rc)[0-9]+$ # MINOR pre-release
+    ^[0-9]+\.[0-9]+\.[0-9]+(?:a|b|rc)[0-9]+$ # PATCH pre-release
     """,
         re.VERBOSE,
     )
@@ -192,11 +196,8 @@ def set_version_variable() -> None:
             version
             for version in versions_list
             if version.is_prerelease
-            and (version.major, version.minor)
-            == (
-                current_version.major,
-                current_version.minor,
-            )  # MAJOR.MINOR should match
+            and version.release
+            == current_version.release  # MAJOR.MINOR.PATCH should match
         ]
         if current_version.is_prerelease:
             # Ensure highest hierarchy of current pre-release
@@ -231,14 +232,14 @@ def set_version_variable() -> None:
     else:
         if ref_type == "tag":
             print(
-                "ERROR: Tag names must follow 'vN.N.N' convention and only minor "
-                "pre-releases (i.e. vN.N[{a|b|rc}N]) are supported, where 'N'"
+                "ERROR: Tag names must follow 'vN.N.N' convention and only patch "
+                "pre-releases (i.e. vN.N.N[{a|b|rc}N]) are supported, where 'N'"
                 " is an integer."
             )
         elif ref_type == "branch":
             print(
                 "ERROR: Branch names must follow 'release/N.N' or 'release/N.N.N' convention "
-                "and only minor pre-release branches (i.e. release/N.N[{a|b|rc}N]) are supported,"
+                "and only patch pre-release branches (i.e. release/N.N.N[{a|b|rc}N]) are supported,"
                 " where 'N' is an integer."
             )
         exit(1)
