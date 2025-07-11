@@ -100,34 +100,31 @@ def write_versions_file() -> None:
     """
 
     KEYS = ("name", "version", "url")
-    stable_release = find_stable_release()
     version_list = get_versions_list()
     cname = os.getenv("CNAME")
     render_last = int(os.getenv("RENDER_LAST"))
+    stable_release = find_stable_release()
+    url_stable = f"https://{cname}/version/stable/"
     content = []
 
     # version dev
     url_dev = f"https://{cname}/version/dev/"
     content.append({key: value for key, value in zip(KEYS, ("dev", "dev", url_dev))})
 
-    # version stable
-    url_stable = f"https://{cname}/version/stable/"
-    content.append(
-        {
-            key: value
-            for key, value in zip(
-                KEYS, (f"{stable_release} (stable)", stable_release, url_stable)
-            )
-        }
-    )
-
-    # Other versions
+    # Other versions (including stable)
     full_list = sorted(version_list, reverse=True)
-    excluding_stable = [
-        version for version in full_list if version != Version(stable_release)
-    ]
     counter = 1
-    for version in excluding_stable:
+    for version in full_list:
+        if version == Version(stable_release):
+            content.append(
+                {
+                    key: value
+                    for key, value in zip(
+                        KEYS, (f"{stable_release} (stable)", stable_release, url_stable)
+                    )
+                }
+            )
+            continue
         url_version = f"https://{cname}/version/{version}/"
         content.append(
             {
