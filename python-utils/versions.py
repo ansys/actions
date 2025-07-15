@@ -116,21 +116,20 @@ def write_versions_file() -> None:
 
     # Other versions (including stable)
     full_list = sorted(get_versions_list(), reverse=True)
-    counter = 1
-    for version in full_list:
+    for version in full_list[:render_last - 1]: # accounting for dev
         if version == Version(stable_release):
             content.append(make_entry((f"{stable_release} (stable)", stable_release, url_stable)))
             continue
         url_version = f"https://{cname}/version/{version}/"
         content.append(make_entry((str(version), str(version), url_version)))
-        if counter == render_last:
-            break
-    else:
-        # Add 'Older versions' item
+
+    if len(full_list) < (render_last - 1):
         url_older_version = f"https://{cname}/version/"
         content.append(make_entry(("Older version", "N/A", url_older_version)))
+
     with open("versions.json", "w", encoding="utf-8") as file:
         json.dump(content, file, indent=2)
+
     export_to_github_output("LATEST_STABLE_VERSION", stable_release)
 
 
