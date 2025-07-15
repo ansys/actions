@@ -13,6 +13,7 @@ def make_entry(values: tuple[str, str, str]) -> dict:
     """Helper to create a version entry dictionary with fixed keys."""
     return dict(zip(KEYS, values))
 
+
 def get_version_and_ref_type() -> tuple[str, str]:
     """Get the version and reference type from environment variables.
 
@@ -116,9 +117,11 @@ def write_versions_file() -> None:
 
     # Other versions (including stable)
     full_list = sorted(get_versions_list(), reverse=True)
-    for version in full_list[:render_last - 1]: # accounting for dev
+    for version in full_list[: render_last - 1]:  # accounting for dev
         if version == Version(stable_release):
-            content.append(make_entry((f"{stable_release} (stable)", stable_release, url_stable)))
+            content.append(
+                make_entry((f"{stable_release} (stable)", stable_release, url_stable))
+            )
             continue
         url_version = f"https://{cname}/version/{version}/"
         content.append(make_entry((str(version), str(version), url_version)))
