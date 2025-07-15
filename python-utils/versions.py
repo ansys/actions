@@ -6,6 +6,12 @@ from pathlib import Path
 
 from packaging.version import Version
 
+KEYS = ("name", "version", "url")
+
+
+def make_entry(values: tuple[str, str, str]) -> dict:
+    """Helper to create a version entry dictionary with fixed keys."""
+    return dict(zip(KEYS, values))
 
 def get_version_and_ref_type() -> tuple[str, str]:
     """Get the version and reference type from environment variables.
@@ -98,9 +104,6 @@ def write_versions_file() -> None:
 
     Also exports the latest stable version to the GITHUB_OUTPUT file.
     """
-
-    KEYS = ("name", "version", "url")
-    version_list = get_versions_list()
     cname = os.getenv("CNAME")
     render_last = int(os.getenv("RENDER_LAST"))
     stable_release = find_stable_release()
@@ -109,40 +112,23 @@ def write_versions_file() -> None:
 
     # version dev
     url_dev = f"https://{cname}/version/dev/"
-    content.append({key: value for key, value in zip(KEYS, ("dev", "dev", url_dev))})
+    content.append(make_entry(("dev", "dev", url_dev)))
 
     # Other versions (including stable)
-    full_list = sorted(version_list, reverse=True)
+    full_list = sorted(get_versions_list(), reverse=True)
     counter = 1
     for version in full_list:
         if version == Version(stable_release):
-            content.append(
-                {
-                    key: value
-                    for key, value in zip(
-                        KEYS, (f"{stable_release} (stable)", stable_release, url_stable)
-                    )
-                }
-            )
+            content.append(make_entry((f"{stable_release} (stable)", stable_release, url_stable)))
             continue
         url_version = f"https://{cname}/version/{version}/"
-        content.append(
-            {
-                key: value
-                for key, value in zip(KEYS, (str(version), str(version), url_version))
-            }
-        )
+        content.append(make_entry((str(version), str(version), url_version)))
         if counter == render_last:
             break
     else:
         # Add 'Older versions' item
         url_older_version = f"https://{cname}/version/"
-        content.append(
-            {
-                key: value
-                for key, value in zip(KEYS, ("Older version", "N/A", url_older_version))
-            }
-        )
+        content.append(make_entry(("Older version", "N/A", url_older_version)))
     with open("versions.json", "w", encoding="utf-8") as file:
         json.dump(content, file, indent=2)
     export_to_github_output("LATEST_STABLE_VERSION", stable_release)
