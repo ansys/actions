@@ -177,6 +177,7 @@ def set_version_variable() -> None:
         assert version == match.group()  # Verify that version is the same as the match
         versions_list = get_versions_list()
         current_version = Version(version)
+        latest_version = max(versions_list)
         existing_prereleases = [
             version
             for version in versions_list
@@ -185,6 +186,10 @@ def set_version_variable() -> None:
             == current_version.release  # MAJOR.MINOR.PATCH should match
         ]
         if current_version.is_prerelease:
+            # Verify higher version normal release doesn't exist
+            if not latest_version.is_prerelease and (latest_version > current_version):
+                print("ERROR: An higher normal release version already exist")
+                exit(1)
             # Ensure highest hierarchy of current pre-release
             valid_prerelease = all(
                 current_version > prerel for prerel in existing_prereleases
