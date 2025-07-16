@@ -1,16 +1,14 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [project]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
-name = "ansys-actions-flit-core"
-version = "10.1.dev0"
-description = "A demo library for testing Ansys actions (uses flit as the build backend)"
+name = "ansys-actions-poetry-core"
+description = "A demo library for testing Ansys actions (uses poetry as the build backend)"
 readme = "README.rst"
 requires-python = ">=3.7"
 license = "MIT"
-license-files = ["LICENSE"]
 authors = [{ name = "ANSYS, Inc.", email = "pyansys.core@ansys.com" }]
 maintainers = [
     { name = "PyAnsys developers", email = "pyansys.core@ansys.com" },
@@ -22,10 +20,13 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = ["importlib-metadata >=4.0"]
 
-[tool.flit.module]
-name = "ansys.actions.core"
+[tool.poetry]
+packages = [{include = "ansys", from = "src"}]
+version = "10.1.dev0"
+
+[tool.poetry.dependencies]
+importlib-metadata = ">=4.0"
 
 [project.urls]
 Source = "https://github.com/ansys/actions"
