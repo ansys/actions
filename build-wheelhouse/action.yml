@@ -178,13 +178,12 @@ runs:
       shell: bash
       env:
         TARGET: ${{ inputs.target }}
-        WORKING_DIRECTORY: ${{ inputs.working-directory }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '' || echo "--with ${TARGET}")" >> ${GITHUB_OUTPUT}
         else
-          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "${WORKING_DIRECTORY}" || echo "${WORKING_DIRECTORY}[${TARGET}]")" >> ${GITHUB_OUTPUT}
+          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "." || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
         fi
         echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
@@ -261,9 +260,11 @@ runs:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       shell: bash
       run: |
         ${ACTIVATE_VENV}
+        cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install ${INSTALL_TARGET}
         else
@@ -372,13 +373,16 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
       run: |
         ${ACTIVATE_VENV}
+        cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
-          pip wheel -w wheelhouse -r wheel_reqs.txt
+          pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
         else
-          python -m pip wheel "${INSTALL_TARGET}" -w wheelhouse
+          python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
         fi
 
     - name: "Compress the wheelhouse"

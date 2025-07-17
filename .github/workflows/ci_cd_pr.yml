@@ -5,8 +5,8 @@ on:
 
 env:
   MAIN_PYTHON_VERSION: '3.12'
-  LIBRARY_NAME: 'ansys-actions'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
+  PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
 
 permissions:
   contents: read
@@ -126,6 +126,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: doc-style
     if: github.event.action != 'closed'
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
     steps:
       - uses: ansys/actions/doc-build@main
         with:
@@ -161,66 +164,92 @@ jobs:
     runs-on: ubuntu-latest
     needs: code-style
     if: github.event.action != 'closed'
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        library-name: [ansys-actions-flit, ansys-actions-poetry]
     permissions:
       id-token: write
       contents: write
     steps:
 
-    - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      with:
-        persist-credentials: false
+      - name: "Build wheelhouse and perform smoke test for ${{ matrix.library-name }}"
+        uses: ansys/actions/build-wheelhouse@feat/extend-testing
+        with:
+          library-name: ${{ matrix.library-name}}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
-    - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
-      with:
-        python-version: ${{ env.MAIN_PYTHON_VERSION }}
-        use-cache: false
-        provision-uv: false
-        prune-uv-cache: false
-
-    - name: "Install build and twine"
-      shell: bash
-      run: |
-        python -m pip install build twine
-
-    - name: "Build distribution artifacts and check their health"
-      shell: bash
-      run: |
-        python -m build .ci/${{ env.LIBRARY_NAME }}
-        ls -R .ci/${{ env.LIBRARY_NAME }}/dist
-        python -m twine check .ci/${{ env.LIBRARY_NAME }}/dist/**
-
-    - name: "Upload distribution artifacts"
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      with:
-        name: ${{ env.LIBRARY_NAME }}-artifacts
-        path: .ci/${{ env.LIBRARY_NAME }}/dist
-        retention-days: 7
-
-  test-release:
-    name: "Test release"
+  build:
+    name: "Build library"
     runs-on: ubuntu-latest
-    needs: tests
-    if: github.event.action != 'closed'
-    permissions:
-      id-token: write
-      contents: write
+    strategy:
+      matrix:
+        library-name: [ansys-actions-flit, ansys-actions-poetry]
     steps:
+      - name: "Build library for ${{ matrix.library-name }}"
+        uses: ansys/actions/build-library@feat/extend-testing
+        with:
+          library-name: ${{ matrix.library-name }}
+          attest-provenance: true
+          working-directory: .ci/${{ matrix.library-name }}
+        
 
-    - name: "Download distribution artifacts"
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-      with:
-        name: ${{ env.LIBRARY_NAME }}-artifacts
-        path: dist
+    # - name: "Install Git and clone project"
+    #   uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    #   with:
+    #     persist-credentials: false
 
-    - name: "Upload artifacts to test PyPI using trusted publisher"
-      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
-      with:
-        repository-url: "https://test.pypi.org/legacy/"
-        print-hash: true
-        skip-existing: true
-        verbose: true
+    # - name: "Set up Python"
+    #   uses: ansys/actions/_setup-python@main
+    #   with:
+    #     python-version: ${{ env.MAIN_PYTHON_VERSION }}
+    #     use-cache: false
+    #     provision-uv: false
+    #     prune-uv-cache: false
+
+    # - name: "Install build and twine"
+    #   shell: bash
+    #   run: |
+    #     python -m pip install build twine
+
+    # - name: "Build distribution artifacts and check their health"
+    #   shell: bash
+    #   run: |
+    #     python -m build .ci/${{ env.LIBRARY_NAME }}
+    #     ls -R .ci/${{ env.LIBRARY_NAME }}/dist
+    #     python -m twine check .ci/${{ env.LIBRARY_NAME }}/dist/**
+
+    # - name: "Upload distribution artifacts"
+    #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+    #   with:
+    #     name: ${{ env.LIBRARY_NAME }}-artifacts
+    #     path: .ci/${{ env.LIBRARY_NAME }}/dist
+    #     retention-days: 7
+
+  # test-release:
+  #   name: "Test release"
+  #   runs-on: ubuntu-latest
+  #   needs: tests
+  #   if: github.event.action != 'closed'
+  #   permissions:
+  #     id-token: write
+  #     contents: write
+  #   steps:
+
+  #   - name: "Download distribution artifacts"
+  #     uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+  #     with:
+  #       name: ${{ env.LIBRARY_NAME }}-artifacts
+  #       path: dist
+
+  #   - name: "Upload artifacts to test PyPI using trusted publisher"
+  #     uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+  #     with:
+  #       repository-url: "https://test.pypi.org/legacy/"
+  #       print-hash: true
+  #       skip-existing: true
+  #       verbose: true
 
   actions-security:
     name: "Check actions security"
