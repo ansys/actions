@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
+requires = ["flit_core >=3.2,<3.11"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -9,8 +9,7 @@ version = "10.1.dev0"
 description = "A demo library for testing Ansys actions (uses flit as the build backend)"
 readme = "README.rst"
 requires-python = ">=3.7"
-license = "MIT"
-license-files = ["LICENSE"]
+license = { file = "LICENSE" }
 authors = [{ name = "ANSYS, Inc.", email = "pyansys.core@ansys.com" }]
 maintainers = [
     { name = "PyAnsys developers", email = "pyansys.core@ansys.com" },
