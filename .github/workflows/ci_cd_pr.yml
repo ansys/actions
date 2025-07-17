@@ -179,6 +179,7 @@ jobs:
           library-name: ${{ matrix.library-name}}
           operating-system: ${{ matrix.os }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          working-directory: .ci/${{ matrix.library-name }}
 
   build:
     name: "Build library"
