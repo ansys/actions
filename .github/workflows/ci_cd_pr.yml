@@ -171,8 +171,8 @@ jobs:
     permissions:
       id-token: write
       contents: write
+      attestations: write
     steps:
-
       - name: "Build wheelhouse and perform smoke test for ${{ matrix.library-name }}"
         uses: ansys/actions/build-wheelhouse@feat/extend-testing
         with:
@@ -187,6 +187,10 @@ jobs:
     strategy:
       matrix:
         library-name: [ansys-actions-flit, ansys-actions-poetry]
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
     steps:
       - name: "Build library for ${{ matrix.library-name }}"
         uses: ansys/actions/build-library@feat/extend-testing
