@@ -20,7 +20,7 @@ concurrency:
 jobs:
 
   check-environment-approval-poetry:
-    name: Check environment approval
+    name: Check environment approval poetry
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.block.outputs.environment }}
@@ -36,7 +36,7 @@ jobs:
   # running the CI.
   check-dependabot-pr-poetry:
     needs: [check-environment-approval-poetry]
-    name: Manual approval (on dependabot PRs)
+    name: Manual approval (on dependabot PRs) poetry
     runs-on: ubuntu-latest
     environment: ${{ needs.check-environment-approval-poetry.outputs.environment }}
     steps:
@@ -50,7 +50,7 @@ jobs:
           echo "::notice::Workflow approval skipped."
 
   tests-poetry:
-    name: "Tests"
+    name: "Tests poetry"
     runs-on: ${{ matrix.os }}
     needs: check-dependabot-pr-poetry
     strategy:
@@ -71,7 +71,7 @@ jobs:
           attest-provenance: true
 
   build-poetry:
-    name: "Build library"
+    name: "Build library poetry"
     runs-on: ubuntu-latest
     needs: tests-poetry
     permissions:
