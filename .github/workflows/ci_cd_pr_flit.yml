@@ -52,7 +52,7 @@ jobs:
           echo "::notice::Workflow approval skipped."
 
   tests:
-    name: "Tests for ${{ env.LIBRARY_NAME }}"
+    name: "Tests"
     runs-on: ${{ matrix.os }}
     needs: check-dependabot-pr
     if: github.event.action != 'closed'
@@ -74,7 +74,7 @@ jobs:
           attest-provenance: true
 
   build:
-    name: "Build ${{ env.LIBRARY_NAME }} library"
+    name: "Build library"
     runs-on: ubuntu-latest
     needs: tests
     permissions:
