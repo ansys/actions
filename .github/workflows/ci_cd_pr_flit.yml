@@ -1,7 +1,7 @@
 name: pull-request
 on:
   pull_request:
-    types: [opened, reopened, synchronize, edited, labeled, closed]
+    types: [opened, reopened, synchronize, edited, labeled]
 
 env:
   MAIN_PYTHON_VERSION: '3.12'
@@ -19,10 +19,9 @@ concurrency:
 
 jobs:
 
-  check-environment-approval:
+  check-environment-approval-flit:
     name: Check environment approval
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
     outputs:
       environment: ${{ steps.block.outputs.environment }}
     steps:
@@ -35,27 +34,25 @@ jobs:
   # could execute arbitrary code in our build environment.
   # Dependabot PRs must be reviewed carefully and approved manually before
   # running the CI.
-  check-dependabot-pr:
-    needs: [check-environment-approval]
+  check-dependabot-pr-flit:
+    needs: [check-environment-approval-flit]
     name: Manual approval (on dependabot PRs)
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
-    environment: ${{ needs.check-environment-approval.outputs.environment }}
+    environment: ${{ needs.check-environment-approval-flit.outputs.environment }}
     steps:
       - name: Proceed after approval
-        if: ${{ needs.check-environment-approval.outputs.environment == 'dependabot'}}
+        if: ${{ needs.check-environment-approval-flit.outputs.environment == 'dependabot'}}
         run: |
           echo "::notice::Workflow approved."
       - name: Approval skipped
-        if: ${{ needs.check-environment-approval.outputs.environment == ''}}
+        if: ${{ needs.check-environment-approval-flit.outputs.environment == ''}}
         run: |
           echo "::notice::Workflow approval skipped."
 
-  tests:
+  tests-flit:
     name: "Tests"
     runs-on: ${{ matrix.os }}
-    needs: check-dependabot-pr
-    if: github.event.action != 'closed'
+    needs: check-dependabot-pr-flit
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
@@ -73,10 +70,10 @@ jobs:
           working-directory: .ci/${{ env.LIBRARY_NAME }}
           attest-provenance: true
 
-  build:
+  build-flit:
     name: "Build library"
     runs-on: ubuntu-latest
-    needs: tests
+    needs: tests-flit
     permissions:
       id-token: write
       contents: write
