@@ -4,7 +4,7 @@ on:
     types: [opened, reopened, synchronize, edited, labeled]
 
 env:
-  MAIN_PYTHON_VERSION: '3.12'
+  MAIN_PYTHON_VERSION: '3.10'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
   LIBRARY_NAME: ansys-actions-flit
@@ -84,6 +84,7 @@ jobs:
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           attest-provenance: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
           working-directory: .ci/${{ env.LIBRARY_NAME }}
 
   test-release-flit:
@@ -178,4 +179,5 @@ jobs:
         with:
           checkout: false
           library-name: ${{ matrix.repository.library }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
