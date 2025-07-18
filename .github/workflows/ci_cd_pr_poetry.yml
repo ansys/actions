@@ -117,8 +117,6 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         repository:
-          - name: pyfluent-visualization
-            library: ansys-fluent-visualization
           - name: pytwin
             library: pytwin
           - name: pyacp
