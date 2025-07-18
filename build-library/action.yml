@@ -64,6 +64,15 @@ inputs:
     default: true
     type: boolean
 
+  checkout:
+    description: |
+      Whether to do a checkout step or not. If ``true``, the checkout step is performed.
+      If ``false``, the checkout is skipped allowing the workspace from a prior step to
+      be used unaltered. By default it is set to ``true``.
+    required: false
+    default: true
+    type: boolean
+
   validate-build:
     description: |
       Whether to validate the build process. If ``true``, the build process is
@@ -106,6 +115,7 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
+      if: ${{ inputs.checkout == 'true' }}
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: "Set up Python"

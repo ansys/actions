@@ -139,6 +139,7 @@ jobs:
       - name: "Build wheelhouse and perform smoke test for ${{ matrix.repository.name }}"
         uses: ansys/actions/build-wheelhouse@feat/extend-testing
         with:
+          checkout: false
           library-name: ${{ matrix.repository.library }}
           operating-system: ${{ matrix.os }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -173,5 +174,6 @@ jobs:
       - name: "Build library for ${{ matrix.repository.name }}"
         uses: ansys/actions/build-library@feat/extend-testing
         with:
+          checkout: false
           library-name: ${{ matrix.repository.library }}
           attest-provenance: true
