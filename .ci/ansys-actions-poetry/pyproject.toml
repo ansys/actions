@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
-name = "ansys-actions-poetry-core"
+name = "ansys-actions-poetry"
 version = "10.1.dev0"
 description = "A demo library for testing Ansys actions (uses poetry as the build backend)"
 readme = "README.rst"

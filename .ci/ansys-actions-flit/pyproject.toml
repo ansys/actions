@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
-name = "ansys-actions-flit-core"
+name = "ansys-actions-flit"
 version = "10.1.dev0"
 description = "A demo library for testing Ansys actions (uses flit as the build backend)"
 readme = "README.rst"
@@ -24,7 +24,7 @@ classifiers = [
 dependencies = ["importlib-metadata >=4.0"]
 
 [tool.flit.module]
-name = "ansys.actions.flit.core"
+name = "ansys.actions.flit"
 
 [project.urls]
 Source = "https://github.com/ansys/actions"
