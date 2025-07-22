@@ -295,6 +295,7 @@ runs:
         with open(towncrier_config, 'rb') as f:
             config = tomli.load(f)
             template = config["tool"]["towncrier"]["template"]
+            directory = config["tool"]["towncrier"]["directory"]
             filename = config["tool"]["towncrier"]["filename"]
 
         # Get the GITHUB_ENV variable
@@ -302,6 +303,7 @@ runs:
 
         with open(github_env, "a") as f:
             f.write(f"TEMPLATE={template}\n")
+            f.write(f"DIRECTORY={directory}\n")
             f.write(f"FILENAME={filename}\n")
 
     - name: "Append towncrier categories to pyproject.toml"
@@ -368,7 +370,8 @@ runs:
 
         # Check if there is a newline at the end of the file
         # If not, add a newline
-        if [ -n "$(tail -c 1 $fragment)" ]; then
+        fragment_full_path="${{ env.DIRECTORY }}/$fragment"
+        if [ -n "$(tail -c 1 $fragment_full_path)" ]; then
           echo "Adding a newline to the end of the $fragment file"
           echo "" >> $fragment
         fi
