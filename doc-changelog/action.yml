@@ -373,7 +373,7 @@ runs:
         fragment_full_path="${{ env.DIRECTORY }}/$fragment"
         if [ -n "$(tail -c 1 $fragment_full_path)" ]; then
           echo "Adding a newline to the end of the $fragment file"
-          echo "" >> $fragment
+          echo "" >> $fragment_full_path
         fi
 
         # Configure git username & email
