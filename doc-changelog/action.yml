@@ -372,7 +372,7 @@ runs:
         # If not, add a newline
         fragment_full_path="${{ env.DIRECTORY }}/$fragment"
         if [ -n "$(tail -c 1 $fragment_full_path)" ]; then
-          echo "Adding a newline to the end of the $fragment file"
+          echo "Adding a newline to the end of the $fragment_full_path file"
           echo "" >> $fragment_full_path
         fi
 
