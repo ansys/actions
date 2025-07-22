@@ -366,6 +366,13 @@ runs:
         # Fragment file contains the title of the PR
         towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
 
+        # Check if there is a newline at the end of the file
+        # If not, add a newline
+        if [ -n "$(tail -c 1 $fragment)" ]; then
+          echo "Adding a newline to the end of the $fragment file"
+          echo "" >> $fragment
+        fi
+
         # Configure git username & email
         git config user.name "${BOT_USER}"
         git config user.email "${BOT_EMAIL}"
