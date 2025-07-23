@@ -8,9 +8,9 @@ env:
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
 
-# permissions:
-#   contents: read
-#   pull-requests: read
+permissions:
+  contents: read
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -142,6 +142,10 @@ jobs:
     runs-on: ${{ matrix.os.name }}
     needs: doc-style
     if: github.event.action != 'closed'
+    permissions:
+      contents: read
+      pull-requests: read
+      packages: read
     strategy:
       matrix:
         os:
@@ -185,6 +189,7 @@ jobs:
           needs-quarto: true
           dependencies: 'pandoc'
           sphinxopts: '-j 1 -W --color'
+          checkout: false
 
       - name: Stop the Geometry service
         if: always()
