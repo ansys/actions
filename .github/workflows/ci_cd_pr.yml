@@ -137,6 +137,62 @@ jobs:
           use-python-cache: false
           needs-quarto: true
 
+  doc-build-pyansys-geometry:
+    name: "Doc build for PyAnsys Geometry"
+    runs-on: ${{ matrix.os.name }}
+    needs: doc-style
+    if: github.event.action != 'closed'
+    strategy:
+      matrix:
+        os: 
+          # - name: windows-latest
+          #   container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
+          - name: ubuntu-latest
+            container-image-tag: ghcr.io/ansys/geometry:core-linux-latest
+    env:
+      ANSRV_GEO_IMAGE_DOCS_TAG: ${{ matrix.os.container-image-tag }}
+      ANSRV_GEO_PORT: 700
+      ANSRV_GEO_LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
+      GEO_CONT_NAME: ans_geo  
+    steps:
+      - name: "Install Git and clone pyansys-geometry repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: ansys/pyansys-geometry
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and launch geometry service
+        run: |
+          docker pull ${{ env.ANSRV_GEO_IMAGE_DOCS_TAG }}
+          docker run --detach --name ${{ env.GEO_CONT_NAME }} -e LICENSE_SERVER=${{ env.ANSRV_GEO_LICENSE_SERVER }} -p ${{ env.ANSRV_GEO_PORT }}:50051 ${{ env.ANSRV_GEO_IMAGE_DOCS_TAG }}
+
+      - name: Run Ansys documentation building action
+        uses: ansys/actions/doc-build@8d3e4946f36c2a7d447b92e34b1022a5c9dc77a7 # v10.0.12
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          add-pdf-html-docs-as-assets: true
+          needs-quarto: true
+          dependencies: 'pandoc'
+          sphinxopts: '-j 1 -W --color'
+
+      - name: Stop the Geometry service
+        if: always()
+        run: |
+          docker stop ${{ env.GEO_CONT_NAME }}
+          docker logs ${{ env.GEO_CONT_NAME }}
+          docker rm ${{ env.GEO_CONT_NAME }}      
+
   doc-deploy-pr:
     name: "Deploy PR documentation"
     runs-on: ubuntu-latest
@@ -158,103 +214,6 @@ jobs:
           bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
           bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
           maximum-pr-doc-deployments: 10
-
-  # tests:
-  #   name: "Tests"
-  #   runs-on: ubuntu-latest
-  #   needs: code-style
-  #   if: github.event.action != 'closed'
-  #   strategy:
-  #     matrix:
-  #       os: [windows-latest, ubuntu-latest]
-  #       library-name: [ansys-actions-flit, ansys-actions-poetry]
-  #   permissions:
-  #     id-token: write
-  #     contents: write
-  #     attestations: write
-  #   steps:
-  #     - name: "Build wheelhouse and perform smoke test for ${{ matrix.library-name }}"
-  #       uses: ansys/actions/build-wheelhouse@feat/extend-testing
-  #       with:
-  #         library-name: ${{ matrix.library-name}}
-  #         operating-system: ${{ matrix.os }}
-  #         python-version: ${{ env.MAIN_PYTHON_VERSION }}
-  #         working-directory: .ci/${{ matrix.library-name }}
-
-  # build:
-  #   name: "Build library"
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       library-name: [ansys-actions-flit, ansys-actions-poetry]
-  #   permissions:
-  #     id-token: write
-  #     contents: write
-  #     attestations: write
-  #   steps:
-  #     - name: "Build library for ${{ matrix.library-name }}"
-  #       uses: ansys/actions/build-library@feat/extend-testing
-  #       with:
-  #         library-name: ${{ matrix.library-name }}
-  #         attest-provenance: true
-  #         working-directory: .ci/${{ matrix.library-name }}
-
-
-    # - name: "Install Git and clone project"
-    #   uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-    #   with:
-    #     persist-credentials: false
-
-    # - name: "Set up Python"
-    #   uses: ansys/actions/_setup-python@main
-    #   with:
-    #     python-version: ${{ env.MAIN_PYTHON_VERSION }}
-    #     use-cache: false
-    #     provision-uv: false
-    #     prune-uv-cache: false
-
-    # - name: "Install build and twine"
-    #   shell: bash
-    #   run: |
-    #     python -m pip install build twine
-
-    # - name: "Build distribution artifacts and check their health"
-    #   shell: bash
-    #   run: |
-    #     python -m build .ci/${{ env.LIBRARY_NAME }}
-    #     ls -R .ci/${{ env.LIBRARY_NAME }}/dist
-    #     python -m twine check .ci/${{ env.LIBRARY_NAME }}/dist/**
-
-    # - name: "Upload distribution artifacts"
-    #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-    #   with:
-    #     name: ${{ env.LIBRARY_NAME }}-artifacts
-    #     path: .ci/${{ env.LIBRARY_NAME }}/dist
-    #     retention-days: 7
-
-  # test-release:
-  #   name: "Test release"
-  #   runs-on: ubuntu-latest
-  #   needs: tests
-  #   if: github.event.action != 'closed'
-  #   permissions:
-  #     id-token: write
-  #     contents: write
-  #   steps:
-
-  #   - name: "Download distribution artifacts"
-  #     uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-  #     with:
-  #       name: ${{ env.LIBRARY_NAME }}-artifacts
-  #       path: dist
-
-  #   - name: "Upload artifacts to test PyPI using trusted publisher"
-  #     uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
-  #     with:
-  #       repository-url: "https://test.pypi.org/legacy/"
-  #       print-hash: true
-  #       skip-existing: true
-  #       verbose: true
 
   actions-security:
     name: "Check actions security"
