@@ -43,10 +43,10 @@ description: |
     `Github context <https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context>`_
     to determine which environment to use. The manual approval can be added by
     referencing the
-    `Github environment <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment#about-environments>`_
+    `Github environment <https://docs.github.com/en/actions/tutorials/deploying-with-github-actions#using-environments>`_
     in a workflow job and configuring the environment with deployment protection
     rules requiring a manual approval. For more information, see how to add
-    `required reviewers <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment#required-reviewers>`_.
+    `required reviewers <https://docs.github.com/en/actions/reference/deployments-and-environments#required-reviewers>`_.
 
 inputs:
 
