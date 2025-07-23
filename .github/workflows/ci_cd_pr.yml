@@ -139,7 +139,7 @@ jobs:
           uploaded-artifact-name-prefix: documentation-${{ matrix.os }}
 
   doc-build-pyansys-geometry:
-    name: "Doc build for PyAnsys Geometry on ${{ matrix.os }}"
+    name: "Doc build for PyAnsys Geometry on ${{ matrix.os.name }}"
     runs-on: ${{ matrix.os.name }}
     needs: doc-style
     if: github.event.action != 'closed'
