@@ -147,6 +147,14 @@ inputs:
     required: true
     type: string
 
+  uploaded-artifact-name-prefix:
+    description: |
+      A prefix prepended to the name of the uploaded html and pdf artifacts.
+      The full name is ``<prefix>-html`` and ``<prefix>-pdf`` for the html and
+      pdf artifacts respectively. Default value is `documentation`.
+    required: true
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -545,13 +553,13 @@ runs:
     - name: "Upload HTML documentation artifact"
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: documentation-html
+        name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: "Upload PDF documentation artifact"
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: documentation-pdf
+        name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf
         retention-days: 7

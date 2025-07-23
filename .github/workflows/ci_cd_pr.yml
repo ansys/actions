@@ -130,12 +130,13 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
     steps:
-      - uses: ansys/actions/doc-build@main
+      - uses: ansys/actions/doc-build@feat/extend-testing
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
           needs-quarto: true
+          uploaded-artifacts-name-prefix: documentation-${{ matrix.os }}
 
   doc-build-pyansys-geometry:
     name: "Doc build for PyAnsys Geometry"
@@ -182,7 +183,7 @@ jobs:
           docker run --detach --name ${GEO_CONT_NAME} -e LICENSE_SERVER=${ANSRV_GEO_LICENSE_SERVER} -p ${ANSRV_GEO_PORT}:50051 ${ANSRV_GEO_IMAGE_DOCS_TAG}
 
       - name: Run Ansys documentation building action
-        uses: ansys/actions/doc-build@8d3e4946f36c2a7d447b92e34b1022a5c9dc77a7 # v10.0.12
+        uses: ansys/actions/doc-build@feat/extend-testing #8d3e4946f36c2a7d447b92e34b1022a5c9dc77a7 # v10.0.12
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           add-pdf-html-docs-as-assets: true
