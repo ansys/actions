@@ -99,7 +99,7 @@ runs:
 
     - name: "Build wheels for CPython ${{ inputs.python-version }}"
       if: ${{ inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@5f22145df44122af0f5a201f93cf0207171beca7 # v3.0.0
+      uses: pypa/cibuildwheel@95d2f3a92fbf80abe066b09418bbf128a8923df2 # v3.0.1
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
@@ -108,7 +108,7 @@ runs:
 
     - name: "Build wheels for PyPy"
       if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
-      uses: pypa/cibuildwheel@5f22145df44122af0f5a201f93cf0207171beca7 # v3.0.0
+      uses: pypa/cibuildwheel@95d2f3a92fbf80abe066b09418bbf128a8923df2 # v3.0.1
       env:
         CIBW_BUILD: "pp39-*"
         CIBW_SKIP: ${{ inputs.cibw-skip }}
