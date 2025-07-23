@@ -165,7 +165,7 @@ runs:
         fi
 
     - name: "Cache apt packages needed"
-      uses: awalsh128/cache-apt-pkgs-action@5902b33ae29014e6ca012c5d8025d4346556bd40 # v1.4.3
+      uses: awalsh128/cache-apt-pkgs-action@4c82c3ccdc1344ee11e9775dbdbdf43aa8a5614e # v1.5.1
       if: inputs.skip-dependencies-cache == 'false' && steps.needed-dependencies.outputs.NEEDED_DEPS != ''
       with:
         packages: ${{ steps.needed-dependencies.outputs.NEEDED_DEPS }}
