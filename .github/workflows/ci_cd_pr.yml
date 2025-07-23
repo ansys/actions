@@ -8,9 +8,9 @@ env:
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
 
-permissions:
-  contents: read
-  pull-requests: read
+# permissions:
+#   contents: read
+#   pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
