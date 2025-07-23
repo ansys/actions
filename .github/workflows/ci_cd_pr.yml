@@ -139,7 +139,7 @@ jobs:
           uploaded-artifact-name-prefix: documentation-${{ matrix.os }}
 
   doc-build-pyansys-geometry:
-    name: "Doc build for PyAnsys Geometry"
+    name: "Doc build for PyAnsys Geometry on ${{ matrix.os }}"
     runs-on: ${{ matrix.os.name }}
     needs: doc-style
     if: github.event.action != 'closed'
@@ -150,8 +150,8 @@ jobs:
     strategy:
       matrix:
         os:
-          # - name: windows-latest
-          #   container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
+          - name: windows-latest
+            container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
           - name: ubuntu-latest
             container-image-tag: ghcr.io/ansys/geometry:core-linux-latest
     env:
@@ -191,6 +191,7 @@ jobs:
           dependencies: 'pandoc'
           sphinxopts: '-j 1 -W --color'
           checkout: false
+          uploaded-artifact-name-prefix: pyansys-geometry-documentation-${{ matrix.os }}
 
       - name: Stop the Geometry service
         if: always()
