@@ -136,7 +136,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
           needs-quarto: true
-          uploaded-artifacts-name-prefix: documentation-${{ matrix.os }}
+          uploaded-artifact-name-prefix: documentation-${{ matrix.os }}
 
   doc-build-pyansys-geometry:
     name: "Doc build for PyAnsys Geometry"
