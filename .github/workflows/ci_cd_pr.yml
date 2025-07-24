@@ -277,10 +277,8 @@ jobs:
     if: github.event.action != 'closed'
     steps:
 
-      - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          path: actions
           persist-credentials: false
 
       - uses: ./actions/check-actions-security
@@ -289,3 +287,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           auditing-level: 'high'
           trust-ansys-actions: true
+          checkout: false
