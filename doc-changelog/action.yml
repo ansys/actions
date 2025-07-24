@@ -64,7 +64,7 @@ inputs:
   towncrier-version:
     description: |
       Towncrier version used for creating fragment files.
-    default: '23.11.0'
+    default: '24.8.0'
     required: false
     type: string
 
