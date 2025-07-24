@@ -168,7 +168,7 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/python-utils/')
+        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
         from parse_pr_title import get_first_letter_case
 
