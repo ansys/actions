@@ -107,7 +107,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/doc-changelog
+      - name: "Inspect directory structure"
+        run: |
+          ls -lA
+          tree -L 4
+
+      - uses: ./actions/doc-changelog
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-conventional-commits: true
