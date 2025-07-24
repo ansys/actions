@@ -281,7 +281,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./actions/check-actions-security
+      - uses: ./check-actions-security
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
