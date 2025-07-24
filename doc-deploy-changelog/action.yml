@@ -113,7 +113,7 @@ inputs:
   towncrier-version:
     description: |
       Towncrier version used for updating the CHANGELOG file.
-    default: '23.11.0'
+    default: '24.8.0'
     required: false
     type: string
 
