@@ -107,7 +107,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: ./actions/doc-changelog
+      - uses: actions/doc-changelog
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-conventional-commits: true
