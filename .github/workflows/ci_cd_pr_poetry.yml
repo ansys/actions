@@ -27,6 +27,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Decide which environment should be used
         id: block
@@ -66,6 +68,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: "Build wheelhouse and perform smoke test for ${{ env.LIBRARY_NAME }}"
         uses: ./build-wheelhouse
@@ -88,6 +92,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: "Build library for ${{ env.LIBRARY_NAME }}"
         uses: ./build-library
@@ -150,6 +156,7 @@ jobs:
       - name: "Clone ansys/actions into a different path"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          persist-credentials: false
           path: actions
 
       - name: "Build wheelhouse and perform smoke test for ${{ matrix.repository.name }}"
@@ -189,6 +196,7 @@ jobs:
       - name: "Clone ansys/actions into a different path"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          persist-credentials: false
           path: actions
 
       - name: "Build library for ${{ matrix.repository.name }}"
