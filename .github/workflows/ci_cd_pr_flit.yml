@@ -79,6 +79,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           working-directory: .ci/${{ env.LIBRARY_NAME }}
           attest-provenance: true
+          checkout: false
 
   build-flit:
     name: "Build library poetry"
@@ -89,13 +90,19 @@ jobs:
       contents: write
       attestations: write
     steps:
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
       - name: "Build library for ${{ env.LIBRARY_NAME }}"
-        uses: ansys/actions/build-library@feat/extend-testing
+        uses: ./build-library
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           attest-provenance: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           working-directory: .ci/${{ env.LIBRARY_NAME }}
+          checkout: false
 
   test-release-flit:
     name: "Test release flit"
@@ -148,8 +155,14 @@ jobs:
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: actions
+
       - name: "Build wheelhouse and perform smoke test for ${{ matrix.repository.name }}"
-        uses: ansys/actions/build-wheelhouse@feat/extend-testing
+        uses: ./actions/build-wheelhouse
         with:
           checkout: false
           library-name: ${{ matrix.repository.library }}
@@ -184,8 +197,14 @@ jobs:
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: actions
+
       - name: "Build library for ${{ matrix.repository.name }}"
-        uses: ansys/actions/build-library@feat/extend-testing
+        uses: ./actions/build-library
         with:
           checkout: false
           library-name: ${{ matrix.repository.library }}

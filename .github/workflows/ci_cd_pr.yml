@@ -115,17 +115,16 @@ jobs:
     if: github.event.action != 'closed'
     steps:
 
-      - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          path: actions
           persist-credentials: false
 
       - name: "Run code style checks"
-        uses: ./actions/code-style
+        uses: ./code-style
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
+          checkout: false
 
   doc-style:
     name: "Doc style"
