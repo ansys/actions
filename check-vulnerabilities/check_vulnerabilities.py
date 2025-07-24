@@ -92,7 +92,12 @@ def check_vulnerabilities():
 
     # Get the available security advisories
     existing_advisories = {}
-    pl_advisories = repo.get_repository_advisories()
+    try:
+        pl_advisories = repo.get_repository_advisories()
+    except github.GithubException.UnknownObjectException:
+        # In case there is trouble accessing the repo
+        pl_advisories = []
+
     for advisory in pl_advisories:
         existing_advisories[advisory.summary] = advisory
 
