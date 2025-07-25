@@ -119,7 +119,7 @@ runs:
   steps:
 
     - name: "Release to PyAnsys private index"
-      uses: ansys/actions/_release-pypi@v10.0.12
+      uses: ansys/actions/_release-pypi@v10.0.13
       with:
         library-name: ${{ inputs.library-name }}
         index-name: ${{ inputs.index-name }}
