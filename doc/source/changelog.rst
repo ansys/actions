@@ -9,6 +9,32 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.0.13 <https://github.com/ansys/actions/releases/tag/v10.0.13>`_ - July 25, 2025
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Replace broken links with correct ones
+          - `#930 <https://github.com/ansys/actions/pull/930>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Capitalization of changelog fragments
+          - `#934 <https://github.com/ansys/actions/pull/934>`_
+
+
 `10.0.12 <https://github.com/ansys/actions/releases/tag/v10.0.12>`_ - June 26, 2025
 ===================================================================================
 
