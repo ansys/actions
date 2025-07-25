@@ -200,6 +200,15 @@ inputs:
     required: false
     type: string
 
+  uploaded-artifact-name-prefix:
+    description: |
+      A prefix prepended to the name of the uploaded html and pdf artifacts.
+      The full name is ``<prefix>-html`` and ``<prefix>-pdf`` for the html and
+      pdf artifacts respectively. Default value is `documentation`.
+    default: 'documentation'
+    required: false
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -222,7 +231,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@main
+      uses: ansys/actions/_doc-build-linux@feat/extend-testing
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -236,6 +245,7 @@ runs:
         use-uv: ${{ inputs.use-uv }}
         optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
         group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
 
     # ------------------------------------------------------------------------
 
@@ -249,7 +259,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@main
+      uses: ansys/actions/_doc-build-windows@feat/extend-testing
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -262,3 +272,4 @@ runs:
         use-uv: ${{ inputs.use-uv }}
         optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
         group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}

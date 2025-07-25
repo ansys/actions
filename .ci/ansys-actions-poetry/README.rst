@@ -27,4 +27,4 @@ Pyactions core
    :alt: Black
 
 
-A demo library for testing Ansys actions.
+A demo library for testing Ansys actions (uses poetry as the build backend).
