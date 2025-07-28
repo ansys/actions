@@ -285,6 +285,7 @@ jobs:
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
           dependencies: 'pandoc'
+          optional-dependencies-name: doc,graphics
           sphinxopts: '-j 1 -W --color'
           checkout: false
           uploaded-artifact-name-prefix: pytwin-documentation-${{ matrix.os }}
