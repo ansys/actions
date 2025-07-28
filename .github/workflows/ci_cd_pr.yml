@@ -269,6 +269,7 @@ jobs:
 
       - name: "Set DPF server as a dependency"
         run: |
+          rm poetry.lock
           sed -i '/^\[tool\.poetry\.dependencies\]/a ansys-dpf-server_2024_1_pre0 = {path = "dpf-standalone/v241", develop = true}' pyproject.toml
       #     mkdir requirements
       #     echo "-e dpf-standalone/v241" > requirements/requirements_doc.txt
