@@ -235,6 +235,59 @@ jobs:
           docker logs ${{ env.GEO_CONT_NAME }}
           docker rm ${{ env.GEO_CONT_NAME }}
 
+  doc-build-pytwin:
+    name: "Doc build for PyTwin on ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    needs: doc-style
+    if: github.event.action != 'closed'
+    permissions:
+      contents: read
+      pull-requests: read
+      packages: read
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+
+      - name: "Install Git and clone pytwin repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: ansys/pytwin
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Set up headless display"
+        uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
+
+      - name: "Install DPF"
+        id: set-server-path
+        uses: ansys/pydpf-actions/install-dpf-server@4eef26bdbfabce673ab4bb2f4a6eddd808d63c3c # v2.3
+        with:
+          dpf-standalone-TOKEN: ${{secrets.PYANSYS_CI_BOT_TOKEN}}
+          standalone_suffix: ""
+          ANSYS_VERSION : "241"
+
+      - name: "Set DPF server as a dependency"
+        run: |
+          echo "-e dpf-standalone/v241" > requirements.txt
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: actions
+          persist-credentials: false
+
+      - name: Run Ansys documentation building action
+        uses: ./actions/doc-build
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          add-pdf-html-docs-as-assets: true
+          needs-quarto: true
+          dependencies: 'pandoc'
+          sphinxopts: '-j 1 -W --color'
+          checkout: false
+          uploaded-artifact-name-prefix: pytwin-documentation-${{ matrix.os }}
+
   doc-deploy-pr:
     name: "Deploy PR documentation"
     runs-on: ubuntu-latest
