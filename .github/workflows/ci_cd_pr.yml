@@ -269,8 +269,9 @@ jobs:
 
       - name: "Set DPF server as a dependency"
         run: |
-          mkdir requirements
-          echo "-e dpf-standalone/v241" > requirements/requirements_doc.txt
+          sed -i '/^\[tool\.poetry\.dependencies\]/a ansys-dpf-server_2024_1_pre0 = {path = "dpf-standalone/v241", develop = true}' pyproject.toml
+      #     mkdir requirements
+      #     echo "-e dpf-standalone/v241" > requirements/requirements_doc.txt
 
       - name: "Clone ansys/actions into a different path"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
