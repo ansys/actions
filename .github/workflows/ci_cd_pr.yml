@@ -100,7 +100,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - uses: ansys/actions/doc-changelog@main
       - uses: ./doc-changelog
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
