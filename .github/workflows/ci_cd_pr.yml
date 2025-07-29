@@ -247,6 +247,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+    env:
+      ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
     steps:
 
       - name: "Install Git and clone pytwin repository"
