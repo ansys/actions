@@ -311,6 +311,7 @@ jobs:
           optional-dependencies-name: ''
           checkout: false
           uploaded-artifact-name-prefix: pydpf-composites-documentation-${{ matrix.os.name }}
+          use-uv: false
 
 #   doc-build-pytwin:
 # #    name: "Doc build for PyTwin on ${{ matrix.os }}"
