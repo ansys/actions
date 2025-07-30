@@ -290,6 +290,7 @@ jobs:
       # step that installs groups. Otherwise the action would fail.
       - name: "Avoid installing poetry extras"
         run: |
+          rm poetry.lock
           mkdir requirements
           touch requirements/requirements_doc.txt
 
