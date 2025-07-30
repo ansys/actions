@@ -295,6 +295,8 @@ jobs:
           sed -n '/^\[tool\.poetry\.extras\]/,/^\[/{/docs[[:space:]]*=[[:space:]]*\[/,/]/p}' pyproject.toml | \
           sed -e '1s/.*docs[[:space:]]*=[[:space:]]*\[//' -e '$s/\]//g' -e 's/"//g' | \
           tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' > requirements/requirements_doc.txt
+          echo jupyter >> requirements/requirements_doc.txt
+          echo trame >> requirements/requirements_doc.txt
 
       - name: Run Ansys documentation building action
         uses: ./actions/doc-build
