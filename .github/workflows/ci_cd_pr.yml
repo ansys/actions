@@ -303,6 +303,7 @@ jobs:
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
           dependencies: 'pandoc'
+          requires-xvfb: true
 #          sphinxopts: '-j 1 -W --color'
           sphinxopts: '--color -n -vW --keep-going'
           optional-dependencies-name: ''
