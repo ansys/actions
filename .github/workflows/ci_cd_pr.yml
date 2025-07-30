@@ -235,9 +235,9 @@ jobs:
           docker logs ${{ env.GEO_CONT_NAME }}
           docker rm ${{ env.GEO_CONT_NAME }}
 
-  doc-build-pytwin:
-    name: "Doc build for PyTwin on ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
+  doc-build-pydpf-composites:
+    name: "Doc build for PyDPF-Composites on ${{ matrix.os.name }}"
+    runs-on: ${{ matrix.os.name }}
     needs: doc-style
     if: github.event.action != 'closed'
     permissions:
@@ -246,36 +246,31 @@ jobs:
       packages: read
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os:
+#          - name: windows-latest
+#            container-image-tag: ghcr.io/ansys/geometry:core-windows-25.2
+          - name: ubuntu-latest
+#            container-image-tag: ghcr.io/ansys/geometry:core-linux-25.2
     env:
-      ANSYSLMD_LICENSE_FILE: "1055@${{ secrets.LICENSE_SERVER }}"
-      ANSYS_DPF_ACCEPT_LA: "Y"
+      PACKAGE_NAME: 'ansys-dpf-composites'
+      CONTAINER_TAG: 'latest'
+      PYDPF_COMPOSITES_DOCKER_CONTAINER_PORT: "50052"
     steps:
 
-      - name: "Install Git and clone pytwin repository"
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: "Login in Github Container registry"
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
-          persist-credentials: false
-          repository: ansys/pytwin
-          token: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Set up headless display"
+      - name: Set up headless display
         uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
 
-      - name: "Install DPF"
-        id: set-server-path
-        uses: ansys/pydpf-actions/install-dpf-server@4eef26bdbfabce673ab4bb2f4a6eddd808d63c3c # v2.3
-        with:
-          dpf-standalone-TOKEN: ${{secrets.PYANSYS_CI_BOT_TOKEN}}
-          standalone_suffix: ""
-          ANSYS_VERSION : "241"
-
-      - name: "Set DPF server as a dependency"
+      - name: "Pull and start dpf container"
         run: |
-          rm poetry.lock
-          sed -i '/^\[tool\.poetry\.dependencies\]/a ansys-dpf-server_2024_1_pre1 = {path = "dpf-standalone/v241", develop = true}' pyproject.toml
-      #     mkdir requirements
-      #     echo "-e dpf-standalone/v241" > requirements/requirements_doc.txt
+          docker pull ghcr.io/ansys/pydpf-composites:${{ env.CONTAINER_TAG }}
+          docker run -d --restart always -p 50052:50052 -e ANSYSLMD_LICENSE_FILE=1055@${{ secrets.LICENSE_SERVER }} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${{ env.CONTAINER_TAG }}
 
       - name: "Clone ansys/actions into a different path"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -290,10 +285,71 @@ jobs:
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
           dependencies: 'pandoc'
-          optional-dependencies-name: doc,graphics
-          sphinxopts: '-j 1 -W --color'
+#          sphinxopts: '-j 1 -W --color'
+          sphinxopts: '--color -n -vW --keep-going'
           checkout: false
-          uploaded-artifact-name-prefix: pytwin-documentation-${{ matrix.os }}
+          uploaded-artifact-name-prefix: pydpf-composites-documentation-${{ matrix.os.name }}
+
+#   doc-build-pytwin:
+# #    name: "Doc build for PyTwin on ${{ matrix.os }}"
+#     name: "Doc build for PyTwin on ${{ matrix.os }}"
+# #    runs-on: ${{ matrix.os }}
+#     runs-on: pytwin-win10
+#     needs: doc-style
+#     if: github.event.action != 'closed'
+#     permissions:
+#       contents: read
+#       pull-requests: read
+#       packages: read
+# #    strategy:
+# #      matrix:
+# #        os: [windows-latest, ubuntu-latest]
+#     env:
+#       ANSYSLMD_LICENSE_FILE: "1055@${{ secrets.LICENSE_SERVER }}"
+#       ANSYS_DPF_ACCEPT_LA: "Y"
+#     steps:
+
+#       - name: "Install Git and clone pytwin repository"
+#         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+#         with:
+#           persist-credentials: false
+#           repository: ansys/pytwin
+#           token: ${{ secrets.GITHUB_TOKEN }}
+
+#       - name: "Set up headless display"
+#         uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
+
+#       - name: "Install DPF"
+#         id: set-server-path
+#         uses: ansys/pydpf-actions/install-dpf-server@4eef26bdbfabce673ab4bb2f4a6eddd808d63c3c # v2.3
+#         with:
+#           dpf-standalone-TOKEN: ${{secrets.PYANSYS_CI_BOT_TOKEN}}
+#           standalone_suffix: ""
+#           ANSYS_VERSION : "241"
+
+#       - name: "Set DPF server as a dependency"
+#         run: |
+#           rm poetry.lock
+#           sed -i '/^\[tool\.poetry\.dependencies\]/a ansys-dpf-server_2024_1_pre1 = {path = "dpf-standalone/v241", develop = true}' pyproject.toml
+
+#       - name: "Clone ansys/actions into a different path"
+#         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+#         with:
+#           path: actions
+#           persist-credentials: false
+
+#       - name: Run Ansys documentation building action
+#         uses: ./actions/doc-build
+#         with:
+#           python-version: ${{ env.MAIN_PYTHON_VERSION }}
+#           add-pdf-html-docs-as-assets: true
+#           needs-quarto: true
+#           dependencies: 'pandoc'
+#           optional-dependencies-name: doc,graphics
+#           sphinxopts: '-j 1 -W --color'
+#           checkout: false
+#           uploaded-artifact-name-prefix: pytwin-documentation
+# #          uploaded-artifact-name-prefix: pytwin-documentation-${{ matrix.os }}
 
   doc-deploy-pr:
     name: "Deploy PR documentation"
