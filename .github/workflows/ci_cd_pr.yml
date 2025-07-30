@@ -285,6 +285,14 @@ jobs:
           path: actions
           persist-credentials: false
 
+      # Hack: PyDPF-Composites defines extras (-E) but not groups(--with) (which is what doc-build action expects).
+      # Since the doc extras are already part of the main dependencies, we can use this trick to bypass the action
+      # step that installs groups. Otherwise the action would fail.
+      - name: "Avoid installing poetry extras"
+        run: |
+          mkdir requirements
+          touch requirements/requirements_doc.txt
+
       - name: Run Ansys documentation building action
         uses: ./actions/doc-build
         with:
