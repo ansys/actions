@@ -294,6 +294,7 @@ jobs:
           dependencies: 'pandoc'
 #          sphinxopts: '-j 1 -W --color'
           sphinxopts: '--color -n -vW --keep-going'
+          optional-dependencies-name: docs
           checkout: false
           uploaded-artifact-name-prefix: pydpf-composites-documentation-${{ matrix.os.name }}
 
