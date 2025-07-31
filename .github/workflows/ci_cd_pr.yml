@@ -247,7 +247,7 @@ jobs:
     strategy:
       matrix:
         os:
-#          - name: windows-latest
+          - name: windows-latest
 #            container-image-tag: ghcr.io/ansys/geometry:core-windows-25.2
           - name: ubuntu-latest
 #            container-image-tag: ghcr.io/ansys/geometry:core-linux-25.2
