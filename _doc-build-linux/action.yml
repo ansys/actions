@@ -132,9 +132,10 @@ inputs:
 
   optional-dependencies-name:
     description: |
-      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      Any valid install targets/extras defined in the ``pyproject.toml`` file, or the suffix
       of a requirement file. Multiple targets can be specified as a comma-separated
-      list. The associated dependencies are installed before building the documentation.
+      list (space-separated for poetry-based projects). The associated dependencies are installed
+      before building the documentation.
     required: true
     type: string
 
@@ -357,7 +358,11 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install --with "${OPTIONAL_DEPENDENCIES_NAME}"
+          if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]]; then
+            poetry install --with "${GROUP_DEPENDENCIES_NAME}" --extras "${OPTIONAL_DEPENDENCIES_NAME}"
+          else
+            poetry install --extras "${OPTIONAL_DEPENDENCIES_NAME}"
+          fi
         else
           # Optional dependencies
           optional_dependencies_flag=""

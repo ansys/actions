@@ -288,15 +288,15 @@ jobs:
       # Hack: PyDPF-Composites defines extras (-E) but not groups(--with) (which is what doc-build action expects).
       # The step that installs groups will be skipped if a requirements file is found, hence this workaround. So
       # the dependencies in the doc extras are written to a requirements file
-      - name: "Avoid installing poetry extras"
-        run: |
-          mkdir requirements
-          touch requirements/requirements_doc.txt
-          sed -n '/^\[tool\.poetry\.extras\]/,/^\[/{/docs[[:space:]]*=[[:space:]]*\[/,/]/p}' pyproject.toml | \
-          sed -e '1s/.*docs[[:space:]]*=[[:space:]]*\[//' -e '$s/\]//g' -e 's/"//g' | \
-          tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' > requirements/requirements_doc.txt
-          echo jupyter >> requirements/requirements_doc.txt
-          echo trame >> requirements/requirements_doc.txt
+      # - name: "Avoid installing poetry extras"
+      #   run: |
+      #     mkdir requirements
+      #     touch requirements/requirements_doc.txt
+      #     sed -n '/^\[tool\.poetry\.extras\]/,/^\[/{/docs[[:space:]]*=[[:space:]]*\[/,/]/p}' pyproject.toml | \
+      #     sed -e '1s/.*docs[[:space:]]*=[[:space:]]*\[//' -e '$s/\]//g' -e 's/"//g' | \
+      #     tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' > requirements/requirements_doc.txt
+      #     echo jupyter >> requirements/requirements_doc.txt
+      #     echo trame >> requirements/requirements_doc.txt
 
       - name: Run Ansys documentation building action
         uses: ./actions/doc-build
@@ -308,7 +308,8 @@ jobs:
 #          requires-xvfb: true
 #          sphinxopts: '-j 1 -W --color'
           sphinxopts: '--color -n -vW --keep-going'
-          optional-dependencies-name: ''
+          optional-dependencies-name: 'docs'
+          group-dependencies-name: ''
           checkout: false
           uploaded-artifact-name-prefix: pydpf-composites-documentation-${{ matrix.os.name }}
           use-uv: false
