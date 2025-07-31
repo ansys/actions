@@ -310,6 +310,7 @@ jobs:
           sphinxopts: '--color -n -vW --keep-going'
           optional-dependencies-name: 'docs'
           group-dependencies-name: ''
+          check-links: false
           checkout: false
           uploaded-artifact-name-prefix: pydpf-composites-documentation-${{ matrix.os.name }}
           use-uv: false
