@@ -527,7 +527,7 @@ runs:
       with:
         level: "WARNING"
         message: >
-          Expected build directory ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
+          Expected download directory ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
 
     - name: Create expected download directory
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}

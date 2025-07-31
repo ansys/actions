@@ -165,8 +165,8 @@ jobs:
           uploaded-artifact-name-prefix: documentation-${{ matrix.os }}
           checkout: false
 
-  doc-build-pyansys-geometry:
-    name: "Doc build for PyAnsys Geometry on ${{ matrix.os.name }}"
+  test-doc-build-pyansys-geometry:
+    name: "Test doc-build action for PyAnsys Geometry on ${{ matrix.os.name }}"
     runs-on: ${{ matrix.os.name }}
     needs: doc-style
     if: github.event.action != 'closed'
@@ -235,8 +235,8 @@ jobs:
           docker logs ${{ env.GEO_CONT_NAME }}
           docker rm ${{ env.GEO_CONT_NAME }}
 
-  doc-build-pydpf-composites:
-    name: "Doc build for PyDPF-Composites on ${{ matrix.os.name }}"
+  test-doc-build-pydpf-composites:
+    name: "Test doc-build action for PyDPF-Composites on ${{ matrix.os.name }}"
     runs-on: ${{ matrix.os.name }}
     needs: doc-style
     if: github.event.action != 'closed'
@@ -247,13 +247,13 @@ jobs:
     strategy:
       matrix:
         os:
-          - name: windows-latest
-#            container-image-tag: ghcr.io/ansys/geometry:core-windows-25.2
+#          Windows container images are not available on ghcr for pydpf-composites
+#          - name: windows-latest
+#            container-image-tag:
           - name: ubuntu-latest
-#            container-image-tag: ghcr.io/ansys/geometry:core-linux-25.2
+            container-image-tag: latest
     env:
       PACKAGE_NAME: 'ansys-dpf-composites'
-      CONTAINER_TAG: 'latest'
       PYDPF_COMPOSITES_DOCKER_CONTAINER_PORT: "50052"
     steps:
 
@@ -276,27 +276,14 @@ jobs:
 
       - name: "Pull and start dpf container"
         run: |
-          docker pull ghcr.io/ansys/pydpf-composites:${{ env.CONTAINER_TAG }}
-          docker run -d --restart always -p 50052:50052 -e ANSYSLMD_LICENSE_FILE=1055@${{ secrets.LICENSE_SERVER }} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${{ env.CONTAINER_TAG }}
+          docker pull ghcr.io/ansys/pydpf-composites:${{ matrix.os.container-image-tag }}
+          docker run -d --restart always -p 50052:50052 -e ANSYSLMD_LICENSE_FILE=1055@${{ secrets.LICENSE_SERVER }} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${{ matrix.os.container-image-tag }}
 
       - name: "Clone ansys/actions into a different path"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: actions
           persist-credentials: false
-
-      # Hack: PyDPF-Composites defines extras (-E) but not groups(--with) (which is what doc-build action expects).
-      # The step that installs groups will be skipped if a requirements file is found, hence this workaround. So
-      # the dependencies in the doc extras are written to a requirements file
-      # - name: "Avoid installing poetry extras"
-      #   run: |
-      #     mkdir requirements
-      #     touch requirements/requirements_doc.txt
-      #     sed -n '/^\[tool\.poetry\.extras\]/,/^\[/{/docs[[:space:]]*=[[:space:]]*\[/,/]/p}' pyproject.toml | \
-      #     sed -e '1s/.*docs[[:space:]]*=[[:space:]]*\[//' -e '$s/\]//g' -e 's/"//g' | \
-      #     tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' > requirements/requirements_doc.txt
-      #     echo jupyter >> requirements/requirements_doc.txt
-      #     echo trame >> requirements/requirements_doc.txt
 
       - name: Run Ansys documentation building action
         uses: ./actions/doc-build
@@ -305,8 +292,6 @@ jobs:
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
           dependencies: 'pandoc'
-#          requires-xvfb: true
-#          sphinxopts: '-j 1 -W --color'
           sphinxopts: '--color -n -vW --keep-going'
           optional-dependencies-name: 'docs'
           group-dependencies-name: ''
@@ -314,67 +299,6 @@ jobs:
           checkout: false
           uploaded-artifact-name-prefix: pydpf-composites-documentation-${{ matrix.os.name }}
           use-uv: false
-
-#   doc-build-pytwin:
-# #    name: "Doc build for PyTwin on ${{ matrix.os }}"
-#     name: "Doc build for PyTwin on ${{ matrix.os }}"
-# #    runs-on: ${{ matrix.os }}
-#     runs-on: pytwin-win10
-#     needs: doc-style
-#     if: github.event.action != 'closed'
-#     permissions:
-#       contents: read
-#       pull-requests: read
-#       packages: read
-# #    strategy:
-# #      matrix:
-# #        os: [windows-latest, ubuntu-latest]
-#     env:
-#       ANSYSLMD_LICENSE_FILE: "1055@${{ secrets.LICENSE_SERVER }}"
-#       ANSYS_DPF_ACCEPT_LA: "Y"
-#     steps:
-
-#       - name: "Install Git and clone pytwin repository"
-#         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-#         with:
-#           persist-credentials: false
-#           repository: ansys/pytwin
-#           token: ${{ secrets.GITHUB_TOKEN }}
-
-#       - name: "Set up headless display"
-#         uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
-
-#       - name: "Install DPF"
-#         id: set-server-path
-#         uses: ansys/pydpf-actions/install-dpf-server@4eef26bdbfabce673ab4bb2f4a6eddd808d63c3c # v2.3
-#         with:
-#           dpf-standalone-TOKEN: ${{secrets.PYANSYS_CI_BOT_TOKEN}}
-#           standalone_suffix: ""
-#           ANSYS_VERSION : "241"
-
-#       - name: "Set DPF server as a dependency"
-#         run: |
-#           rm poetry.lock
-#           sed -i '/^\[tool\.poetry\.dependencies\]/a ansys-dpf-server_2024_1_pre1 = {path = "dpf-standalone/v241", develop = true}' pyproject.toml
-
-#       - name: "Clone ansys/actions into a different path"
-#         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-#         with:
-#           path: actions
-#           persist-credentials: false
-
-#       - name: Run Ansys documentation building action
-#         uses: ./actions/doc-build
-#         with:
-#           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-#           add-pdf-html-docs-as-assets: true
-#           needs-quarto: true
-#           dependencies: 'pandoc'
-#           optional-dependencies-name: doc,graphics
-#           sphinxopts: '-j 1 -W --color'
-#           checkout: false
-#           uploaded-artifact-name-prefix: pytwin-documentation
-# #          uploaded-artifact-name-prefix: pytwin-documentation-${{ matrix.os }}
 
   doc-deploy-pr:
     name: "Deploy PR documentation"
