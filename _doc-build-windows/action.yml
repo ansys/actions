@@ -488,6 +488,7 @@ runs:
       shell: powershell
       run: |
         echo "EXPECTED_BUILD_DIR=$(echo 'doc\_build')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Get-ChildItem "${env:EXPECTED_BUILD_DIR}"
 
     - name: Check expected build directory
       id: set-exists-expected-build-directory
@@ -545,6 +546,7 @@ runs:
       env:
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
       run: |
+        Get-ChildItem "${env:EXPECTED_BUILD_DIR}\html\"
         # Check if the HTML files have been generated
         if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\html\index.html") {
           Write-Host "Documentation has been generated successfully"
