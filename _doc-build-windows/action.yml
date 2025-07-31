@@ -446,7 +446,7 @@ runs:
         }
         Get-ChildItem doc\_build\html
         Get-ChildItem doc\_build\latex
-        
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
