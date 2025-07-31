@@ -128,7 +128,7 @@ jobs:
         verbose: true
 
   build-wheelhouse-poetry-projects:
-    name: "Test build-wheelhouse action for ${{ matrix.repository.name }} project"
+    name: "Test build-wheelhouse action for ${{ matrix.repository.name }} project on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
