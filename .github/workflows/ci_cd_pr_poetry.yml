@@ -219,8 +219,6 @@ jobs:
         repository:
           - name: pytwin
             library: pytwin
-          - name: pyacp
-            library: ansys-acp-core
           - name: pymechanical
             library: ansys-mechanical-core
     steps:
