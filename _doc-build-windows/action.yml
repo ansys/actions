@@ -124,9 +124,10 @@ inputs:
 
   optional-dependencies-name:
     description: |
-      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      Any valid install targets/extras defined in the ``pyproject.toml`` file, or the suffix
       of a requirement file. Multiple targets can be specified as a comma-separated
-      list. The associated dependencies are installed before building the documentation.
+      list (space-separated for poetry-based projects). The associated dependencies are installed
+      before building the documentation.
     required: true
     type: string
 
@@ -136,6 +137,14 @@ inputs:
       targets can be specified as a comma-separated list. The associated dependencies
       are installed before running the documentation build. If set to ``''``, the action
       will not use dependency groups.
+    required: true
+    type: string
+
+  uploaded-artifact-name-prefix:
+    description: |
+      A prefix prepended to the name of the uploaded html and pdf artifacts.
+      The full name is ``<prefix>-html`` and ``<prefix>-pdf`` for the html and
+      pdf artifacts respectively. Default value is `documentation`.
     required: true
     type: string
 
@@ -366,7 +375,11 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
-          poetry install --with doc
+          if ($env:GROUP_DEPENDENCIES_NAME) {
+            poetry install --with "$env:GROUP_DEPENDENCIES_NAME" --extras "$env:OPTIONAL_DEPENDENCIES_NAME"
+          } else {
+            poetry install --extras "$env:OPTIONAL_DEPENDENCIES_NAME"
+          }
         }
         else {
           # Optional dependencies
@@ -514,7 +527,7 @@ runs:
       with:
         level: "WARNING"
         message: >
-          Expected build directory ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
+          Expected download directory ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
 
     - name: Create expected download directory
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
@@ -582,13 +595,13 @@ runs:
     - name: Upload HTML documentation artifact
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: documentation-html
+        name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: Upload PDF documentation artifact
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: documentation-pdf
+        name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf
         retention-days: 7

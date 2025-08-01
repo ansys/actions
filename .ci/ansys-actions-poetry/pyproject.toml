@@ -1,0 +1,33 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+# Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
+name = "ansys-actions-poetry"
+version = "10.1.dev0"
+description = "A demo library for testing Ansys actions (uses poetry as the build backend)"
+readme = "README.rst"
+license = "MIT"
+authors = ["ANSYS, Inc. <pyansys.core@ansys.com>"]
+maintainers = ["PyAnsys developers <pyansys.core@ansys.com>"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+packages = [{include = "ansys", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+importlib-metadata = ">=4.0"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[tool.poetry.urls]
+Source = "https://github.com/ansys/actions"
+Documentation = "https://actions.docs.ansys.com"

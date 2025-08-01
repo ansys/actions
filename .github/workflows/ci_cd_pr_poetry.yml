@@ -1,0 +1,279 @@
+name: Test actions with poetry-based projects
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, labeled]
+
+env:
+  MAIN_PYTHON_VERSION: '3.12'
+  DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
+  PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
+  LIBRARY_NAME: ansys-actions-poetry
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  check-environment-approval-poetry:
+    name: Check environment approval poetry
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.block.outputs.environment }}
+    steps:
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Decide which environment should be used
+        id: block
+        uses: ./check-environment-approval
+
+  # NOTE: We do not allow dependabot to trigger the CI/CD pipeline automatically.
+  # This is to mitigate supply chain attacks, where a malicious dependency update
+  # could execute arbitrary code in our build environment.
+  # Dependabot PRs must be reviewed carefully and approved manually before
+  # running the CI.
+  check-dependabot-pr-poetry:
+    needs: [check-environment-approval-poetry]
+    name: Manual approval (on dependabot PRs) poetry
+    runs-on: ubuntu-latest
+    environment: ${{ needs.check-environment-approval-poetry.outputs.environment }}
+    steps:
+      - name: Proceed after approval
+        if: ${{ needs.check-environment-approval-poetry.outputs.environment == 'dependabot'}}
+        run: |
+          echo "::notice::Workflow approved."
+      - name: Approval skipped
+        if: ${{ needs.check-environment-approval-poetry.outputs.environment == ''}}
+        run: |
+          echo "::notice::Workflow approval skipped."
+
+  test-build-wheelhouse-poetry:
+    name: "Test build-wheelhouse action using ansys-actions-poetry package"
+    runs-on: ${{ matrix.os }}
+    needs: check-dependabot-pr-poetry
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+    steps:
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: "Build wheelhouse and perform smoke test for ${{ env.LIBRARY_NAME }} package"
+        uses: ./build-wheelhouse
+        with:
+          library-name: ${{ env.LIBRARY_NAME }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          working-directory: .ci/${{ env.LIBRARY_NAME }}
+          attest-provenance: true
+          checkout: false
+
+  test-build-library-poetry:
+    name: "Test build-library action using ansys-actions-poetry package"
+    runs-on: ubuntu-latest
+    needs: test-build-wheelhouse-poetry
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+    steps:
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: "Build library for ${{ env.LIBRARY_NAME }} package"
+        uses: ./build-library
+        with:
+          library-name: ${{ env.LIBRARY_NAME }}
+          attest-provenance: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          working-directory: .ci/${{ env.LIBRARY_NAME }}
+          checkout: false
+
+  test-release-poetry:
+    name: "Test releasing ansys-actions-poetry package using trusted publishing"
+    runs-on: ubuntu-latest
+    needs: test-build-library-poetry
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+
+    - name: "Download distribution artifacts"
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      with:
+        name: ${{ env.LIBRARY_NAME }}-artifacts
+        path: dist
+
+    - name: "Upload artifacts to test PyPI using trusted publisher"
+      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+      with:
+        repository-url: "https://test.pypi.org/legacy/"
+        print-hash: true
+        skip-existing: true
+        verbose: true
+
+  test-build-wheelhouse-poetry-projects:
+    name: "Test build-wheelhouse action for ${{ matrix.repository.name }} project on ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        repository:
+          - name: pytwin
+            library: pytwin
+          - name: pyacp
+            library: ansys-acp-core
+          - name: pygranta
+            library: pygranta
+          - name: pydpf-composites
+            library: ansys-dpf-composites
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Build wheelhouse and perform smoke test for ${{ matrix.repository.name }}"
+        uses: ./actions/build-wheelhouse
+        with:
+          checkout: false
+          library-name: ${{ matrix.repository.library }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          attest-provenance: true
+
+  test-build-library-poetry-projects:
+    name: "Test build-library action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repository:
+          - name: pytwin
+            library: pytwin
+          - name: pyacp
+            library: ansys-acp-core
+          - name: pymechanical
+            library: ansys-mechanical-core
+          - name: pydpf-composites
+            library: ansys-dpf-composites
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Build library for ${{ matrix.repository.name }}"
+        uses: ./actions/build-library
+        with:
+          checkout: false
+          library-name: ${{ matrix.repository.library }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          attest-provenance: true
+
+  test-code-style-poetry-projects:
+    name: "Test code-style action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repository:
+          - name: pytwin
+            library: pytwin
+          - name: pymechanical
+            library: ansys-mechanical-core
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Run code style checks for ${{ matrix.repository.name }}"
+        uses: ./actions/code-style
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+          checkout: false
+
+  test-doc-style-poetry-projects:
+    name: "Test doc-style action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repository:
+          - name: pytwin
+            library: pytwin
+          - name: pyacp
+            library: ansys-acp-core
+          - name: pymechanical
+            library: ansys-mechanical-core
+          - name: pydpf-composites
+            library: ansys-dpf-composites
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Run doc style checks for ${{ matrix.repository.name }}"
+        uses: ./actions/doc-style
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkout: false
