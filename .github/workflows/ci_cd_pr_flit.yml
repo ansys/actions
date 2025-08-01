@@ -1,4 +1,4 @@
-name: pull-request-flit
+name: Test actions with flit-based projects
 on:
   pull_request:
     types: [opened, reopened, synchronize, edited, labeled]

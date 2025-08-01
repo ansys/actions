@@ -1,4 +1,4 @@
-name: pull-request-poetry
+name: Test actions with poetry-based projects
 on:
   pull_request:
     types: [opened, reopened, synchronize, edited, labeled]
