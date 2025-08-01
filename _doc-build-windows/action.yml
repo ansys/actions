@@ -199,19 +199,27 @@ runs:
           echo "found=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8
         }
 
-    - name: Install MiKTeX portable manually if not found
+    - name: Install MiKTeX portable (non-admin) if not found and update PATH
       if: steps.check-miktex.outputs.found == 'false'
       shell: powershell
-      run: |
-        Invoke-WebRequest -Uri "https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/miktex-portable.zip" -OutFile "miktex-portable.zip"
-        Expand-Archive miktex-portable.zip -DestinationPath "C:\miktex-portable"
-        echo "C:\miktex-portable\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+      run: | # zizmor: ignore[github-env]
+        # Download miktexsetup
+        Invoke-WebRequest -Uri "https://mirror.ctan.org/systems/win32/miktex/setup/miktexsetup-5.5.0+1763023-x64.zip" -OutFile "miktexsetup.zip"
+        Expand-Archive miktexsetup.zip -DestinationPath "$env:RUNNER_TEMP\miktexsetup"
 
-    # - name: Install Miktex and update PATH with Miktex binaries
-    #   shell: powershell
-    #   run: | # zizmor: ignore[github-env]
-    #     choco install miktex -y
-    #     echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        # Download basic packages into local repo
+        & "$env:RUNNER_TEMP\miktexsetup\miktexsetup.exe" download `
+          --package-set=basic `
+          --remote-package-repository=https://mirror.ctan.org/systems/win32/miktex/tm/packages `
+          --local-package-repository="$env:RUNNER_TEMP\miktex-packages"
+
+        # Install MiKTeX portable to a local folder (non-admin)
+        & "$env:RUNNER_TEMP\miktexsetup\miktexsetup.exe" install `
+          --portable="$env:RUNNER_TEMP\miktex-portable" `
+          --local-package-repository="$env:RUNNER_TEMP\miktex-packages"
+
+        # Add MiKTeX bin to PATH
+        echo "$env:RUNNER_TEMP\miktex-portable\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
