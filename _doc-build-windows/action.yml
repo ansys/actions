@@ -163,8 +163,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Install system dependencies. Even if no dependencies are provided,
-          Miktex is installed to build the documentation.
+          Install system dependencies.
 
     - name: Collect system dependencies
       id: collect-system-dependencies
@@ -190,11 +189,29 @@ runs:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
       run: choco install $env:NEEDED_DEPS -y
 
-    - name: Install Miktex and update PATH with Miktex binaries
+    - name: Check if MiKTeX is already installed
+      id: check-miktex
       shell: powershell
-      run: | # zizmor: ignore[github-env]
-        choco install miktex -y
-        echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+      run: |
+        if (Get-Command pdflatex -ErrorAction SilentlyContinue) {
+          echo "found=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        } else {
+          echo "found=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        }
+
+    - name: Install MiKTeX portable manually if not found
+      if: steps.check-miktex.outputs.found == 'false'
+      shell: powershell
+      run: |
+        Invoke-WebRequest -Uri "https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/miktex-portable.zip" -OutFile "miktex-portable.zip"
+        Expand-Archive miktex-portable.zip -DestinationPath "C:\miktex-portable"
+        echo "C:\miktex-portable\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+    # - name: Install Miktex and update PATH with Miktex binaries
+    #   shell: powershell
+    #   run: | # zizmor: ignore[github-env]
+    #     choco install miktex -y
+    #     echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
