@@ -219,8 +219,6 @@ jobs:
         repository:
           - name: pyansys-geometry
             library: ansys-geometry-core
-          - name: pymapdl
-            library: ansys-mapdl-core
           - name: pyfluent
             library: ansys-fluent-core
           - name: pymechanical

@@ -223,8 +223,6 @@ jobs:
             library: ansys-acp-core
           - name: pymechanical
             library: ansys-mechanical-core
-          - name: pydpf-composites
-            library: ansys-dpf-composites
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
