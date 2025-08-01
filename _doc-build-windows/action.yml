@@ -545,7 +545,6 @@ runs:
       env:
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
       run: |
-        Get-ChildItem "${env:EXPECTED_BUILD_DIR}\html\"
         # Check if the HTML files have been generated
         if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\html\index.html") {
           Write-Host "Documentation has been generated successfully"

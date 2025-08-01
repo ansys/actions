@@ -20,7 +20,7 @@ concurrency:
 jobs:
 
   check-environment-approval-flit:
-    name: Check environment approval poetry
+    name: Check environment approval flit
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.block.outputs.environment }}
@@ -41,7 +41,7 @@ jobs:
   # running the CI.
   check-dependabot-pr-flit:
     needs: [check-environment-approval-flit]
-    name: Manual approval (on dependabot PRs) poetry
+    name: Manual approval (on dependabot PRs) flit
     runs-on: ubuntu-latest
     environment: ${{ needs.check-environment-approval-flit.outputs.environment }}
     steps:
@@ -210,3 +210,74 @@ jobs:
           library-name: ${{ matrix.repository.library }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
+
+  test-code-style-flit-projects:
+    name: "Test code-style action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repository:
+          - name: pyansys-geometry
+            library: ansys-geometry-core
+          - name: pymapdl
+            library: ansys-mapdl-core
+          - name: pyfluent
+            library: ansys-fluent-core
+          - name: pymechanical
+            library: ansys-mechanical-core
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Run code style checks for ${{ matrix.repository.name }}"
+        uses: ./actions/code-style
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+          checkout: false
+
+  test-doc-style-flit-projects:
+    name: "Test doc-style action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repository:
+          - name: pyansys-geometry
+            library: ansys-geometry-core
+          - name: pymapdl
+            library: ansys-mapdl-core
+          - name: pyfluent
+            library: ansys-fluent-core
+          - name: pymechanical
+            library: ansys-mechanical-core
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Run doc style checks for ${{ matrix.repository.name }}"
+        uses: ./actions/doc-style
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkout: false
