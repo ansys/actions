@@ -227,6 +227,7 @@ jobs:
           sphinxopts: '-j 1 -W --color'
           checkout: false
           uploaded-artifact-name-prefix: pyansys-geometry-documentation-${{ matrix.os.name }}
+          skip-dependencies-cache: true
 
       - name: Stop the Geometry service
         if: always()
