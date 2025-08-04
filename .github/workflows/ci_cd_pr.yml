@@ -95,12 +95,13 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+          path: actions-checkout
 
-      - uses: ./check-pr-title
+      - uses: ./actions-checkout/check-pr-title
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: ./doc-changelog
+      - uses: ./actions-checkout/doc-changelog
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-conventional-commits: true
@@ -318,10 +319,10 @@ jobs:
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          path: actions
+          path: actions-checkout
           persist-credentials: false
 
-      - uses: ./actions/doc-deploy-pr
+      - uses: ./actions-checkout/doc-deploy-pr
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
