@@ -321,6 +321,10 @@ jobs:
           path: actions-checkout
           persist-credentials: false
 
+      - name: "Check directory structure"
+        run: |
+          tree -L 3
+
       - uses: ./actions-checkout/doc-deploy-pr
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
