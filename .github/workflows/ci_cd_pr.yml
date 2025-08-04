@@ -318,9 +318,10 @@ jobs:
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          path: actions
           persist-credentials: false
 
-      - uses: ./doc-deploy-pr
+      - uses: ./actions/doc-deploy-pr
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
