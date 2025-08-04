@@ -352,5 +352,6 @@ runs:
           Please allow some time for the documentation to be deployed.
 
     - name: "Check directory structure"
+      shell: bash
       run: |
         tree -L 3
