@@ -334,6 +334,11 @@ jobs:
           maximum-pr-doc-deployments: 10
           doc-artifact-name: documentation-ubuntu-latest-html
 
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: actions-checkout
+          persist-credentials: false
+
   actions-security:
     name: "Check actions security"
     runs-on: ubuntu-latest
