@@ -334,6 +334,9 @@ jobs:
           maximum-pr-doc-deployments: 10
           doc-artifact-name: documentation-ubuntu-latest-html
 
+      # Hack, the peaceiris/actions-gh-pages action in _pr-doc-deployment overwrites any previous checkout,
+      # causing the post step of the action to fail. Adding this checkout step ensures that the post step
+      # can run successfully
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: actions-checkout
