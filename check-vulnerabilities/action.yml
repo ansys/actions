@@ -372,7 +372,7 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry export --without-hashes --format=requirements.txt > requirements-for-safety.txt
+          poetry export --without-hashes --format=requirements.txt > "${ACTION_PATH}/requirements-for-safety.txt"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           uv pip freeze > "${ACTION_PATH}/requirements-for-safety.txt"
         else
