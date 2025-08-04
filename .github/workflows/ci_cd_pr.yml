@@ -299,7 +299,6 @@ jobs:
           check-links: false
           checkout: false
           uploaded-artifact-name-prefix: pydpf-composites-documentation-${{ matrix.os.name }}
-          use-uv: false
 
   doc-deploy-pr:
     name: "Deploy PR documentation"
