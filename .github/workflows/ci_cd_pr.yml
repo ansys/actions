@@ -95,13 +95,12 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-          path: actions-checkout
 
-      - uses: ./actions-checkout/check-pr-title
+      - uses: ./check-pr-title
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: ./actions-checkout/doc-changelog
+      - uses: ./doc-changelog
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-conventional-commits: true
