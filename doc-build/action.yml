@@ -231,7 +231,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: jenseng/dynamic-uses@v1
+      uses: jenseng/dynamic-uses@5175289a9a87978dcfcb9cf512b821d23b2a53eb # v1
       env:
         action_ref: ${{ github.action_ref }}
       with:
@@ -250,7 +250,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: jenseng/dynamic-uses@v1
+      uses: jenseng/dynamic-uses@5175289a9a87978dcfcb9cf512b821d23b2a53eb # v1
       env:
         action_ref: ${{ github.action_ref }}
       with:
