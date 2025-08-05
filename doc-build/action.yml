@@ -263,7 +263,7 @@ runs:
       if: ${{ runner.os == 'Windows' }}
       uses: jenseng/dynamic-uses@v1
       with:
-        uses: ansys/actions/_doc-build-windows@main
+        uses: ${{ github.action_path }}/../_doc-build-windows
         with:
           sphinxopts: ${{ inputs.sphinxopts }}
           dependencies: ${{ inputs.dependencies }}
