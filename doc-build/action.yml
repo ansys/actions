@@ -234,20 +234,7 @@ runs:
       uses: jenseng/dynamic-uses@v1
       with:
         uses: ${{ github.action_path }}/../_doc-build-linux
-        with:
-          sphinxopts: ${{ inputs.sphinxopts }}
-          dependencies: ${{ inputs.dependencies }}
-          skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
-          requires-xvfb: ${{ inputs.requires-xvfb }}
-          skip-install: ${{ inputs.skip-install }}
-          requirements-file: ${{ inputs.requirements-file }}
-          check-links: ${{ inputs.check-links }}
-          add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-          needs-quarto: ${{ inputs.needs-quarto }}
-          use-uv: ${{ inputs.use-uv }}
-          optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
-          group-dependencies-name: ${{ inputs.group-dependencies-name }}
-          uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
+        with: '{"sphinxopts": "${{ inputs.sphinxopts }}", "dependencies": "${{ inputs.dependencies }}", "skip-dependencies-cache": "${{ inputs.skip-dependencies-cache }}", "requires-xvfb": "${{ inputs.requires-xvfb }}", "skip-install": "${{ inputs.skip-install }}", "requirements-file": "${{ inputs.requirements-file }}", "check-links": "${{ inputs.check-links }}", "add-pdf-html-docs-as-assets": "${{ inputs.add-pdf-html-docs-as-assets }}", "needs-quarto": "${{ inputs.needs-quarto }}", "use-uv": "${{ inputs.use-uv }}", "optional-dependencies-name": "${{ inputs.optional-dependencies-name }}", "group-dependencies-name": "${{ inputs.group-dependencies-name }}", "uploaded-artifact-name-prefix": "${{ inputs.uploaded-artifact-name-prefix }}"}'
 
     # ------------------------------------------------------------------------
 
@@ -262,18 +249,4 @@ runs:
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
       uses: jenseng/dynamic-uses@v1
-      with:
-        uses: ${{ github.action_path }}/../_doc-build-windows
-        with:
-          sphinxopts: ${{ inputs.sphinxopts }}
-          dependencies: ${{ inputs.dependencies }}
-          skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
-          skip-install: ${{ inputs.skip-install }}
-          requirements-file: ${{ inputs.requirements-file }}
-          check-links: ${{ inputs.check-links }}
-          add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-          needs-quarto: ${{ inputs.needs-quarto }}
-          use-uv: ${{ inputs.use-uv }}
-          optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
-          group-dependencies-name: ${{ inputs.group-dependencies-name }}
-          uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
+      with: '{"sphinxopts": "${{ inputs.sphinxopts }}", "dependencies": "${{ inputs.dependencies }}", "skip-dependencies-cache": "${{ inputs.skip-dependencies-cache }}", "skip-install": "${{ inputs.skip-install }}", "requirements-file": "${{ inputs.requirements-file }}", "check-links": "${{ inputs.check-links }}", "add-pdf-html-docs-as-assets": "${{ inputs.add-pdf-html-docs-as-assets }}", "needs-quarto": "${{ inputs.needs-quarto }}", "use-uv": "${{ inputs.use-uv }}", "optional-dependencies-name": "${{ inputs.optional-dependencies-name }}", "group-dependencies-name": "${{ inputs.group-dependencies-name }}", "uploaded-artifact-name-prefix": "${{ inputs.uploaded-artifact-name-prefix }}"}'
