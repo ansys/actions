@@ -284,6 +284,7 @@ runs:
       run: |
         python -m pip install pipx
         python -m pipx install poetry
+        python -m pipx inject poetry poetry-plugin-export
       env:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
@@ -371,7 +372,7 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry export --without-hashes --format=requirements.txt > requirements-for-safety.txt
+          poetry export --without-hashes --format=requirements.txt > "${ACTION_PATH}/requirements-for-safety.txt"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           uv pip freeze > "${ACTION_PATH}/requirements-for-safety.txt"
         else
@@ -412,6 +413,19 @@ runs:
         else
           python -m pip install -r "${ACTION_PATH}/requirements.txt"
         fi
+
+    - name:  "Install wget on Windows"
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        # Check if wget is installed - if not, install it
+        if (-not (Get-Command wget -ErrorAction SilentlyContinue)) {
+            Write-Host "wget is not installed. Installing using Chocolatey..."
+            # Install wget using Chocolatey
+            choco install wget -y
+        } else {
+            Write-Host "wget is already installed."
+        }
 
     - name: "Download the list of ignored safety vulnerabilities"
       shell: bash
