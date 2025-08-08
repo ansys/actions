@@ -9,6 +9,31 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.0.14 <https://github.com/ansys/actions/releases/tag/v10.0.14>`_ - August 06, 2025
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Run safety on exported dependencies
+          - `#920 <https://github.com/ansys/actions/pull/920>`_
+
+        * - Add end of file newline to changelog fragment file on generation
+          - `#931 <https://github.com/ansys/actions/pull/931>`_
+
+        * - Keep running when advisories are not reachable
+          - `#932 <https://github.com/ansys/actions/pull/932>`_
+
+        * - ``check-vulnerabilities`` action on Windows and projects using ``poetry``
+          - `#945 <https://github.com/ansys/actions/pull/945>`_
+
+
 `10.0.13 <https://github.com/ansys/actions/releases/tag/v10.0.13>`_ - July 25, 2025
 ===================================================================================
 
