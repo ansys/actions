@@ -119,7 +119,9 @@ def write_versions_file() -> None:
     full_list = sorted(get_versions_list(), reverse=True)
     for version in full_list[: render_last - 1]:  # accounting for dev
         if version == Version(stable_release):
-            content.append(make_entry((f"{stable_release} (stable)", stable_release, url_stable)))
+            content.append(
+                make_entry((f"{stable_release} (stable)", stable_release, url_stable))
+            )
             continue
         url_version = f"https://{cname}/version/{version}/"
         content.append(make_entry((str(version), str(version), url_version)))
@@ -179,11 +181,14 @@ def set_version_variable() -> None:
             version
             for version in versions_list
             if version.is_prerelease
-            and version.release == current_version.release  # MAJOR.MINOR.PATCH should match
+            and version.release
+            == current_version.release  # MAJOR.MINOR.PATCH should match
         ]
         if current_version.is_prerelease:
             # Ensure highest hierarchy of current pre-release
-            valid_prerelease = all(current_version > prerel for prerel in existing_prereleases)
+            valid_prerelease = all(
+                current_version > prerel for prerel in existing_prereleases
+            )
             if valid_prerelease:
                 # Keep a maximum of 3 pre-releases
                 pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[2:]
@@ -204,7 +209,9 @@ def set_version_variable() -> None:
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
             else:
-                current_version = str(current_version).rsplit(".", 1)[0]  # Remove the patch number
+                current_version = str(current_version).rsplit(".", 1)[
+                    0
+                ]  # Remove the patch number
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
     else:
