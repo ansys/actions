@@ -4,8 +4,13 @@ from pathlib import Path
 
 import pytest
 from packaging.version import Version
-from versions import (find_stable_release, get_version_and_ref_type, get_versions_list,
-                      set_version_variable, write_versions_file)
+from versions import (
+    find_stable_release,
+    get_version_and_ref_type,
+    get_versions_list,
+    set_version_variable,
+    write_versions_file,
+)
 
 
 # Workaround to be able to use monkeypatch at module level scope
