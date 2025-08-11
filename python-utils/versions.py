@@ -117,7 +117,7 @@ def write_versions_file() -> None:
 
     # Other versions (including stable)
     full_list = sorted(get_versions_list(), reverse=True)
-    for version in full_list[: render_last - 1]:  # accounting for dev
+    for version in full_list[: render_last]:
         if version == Version(stable_release):
             content.append(
                 make_entry((f"{stable_release} (stable)", stable_release, url_stable))
@@ -126,7 +126,7 @@ def write_versions_file() -> None:
         url_version = f"https://{cname}/version/{version}/"
         content.append(make_entry((str(version), str(version), url_version)))
 
-    if len(full_list) < (render_last - 1):
+    if len(full_list) > render_last:
         url_older_version = f"https://{cname}/version/"
         content.append(make_entry(("Older version", "N/A", url_older_version)))
 
