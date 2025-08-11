@@ -1,11 +1,16 @@
-import json
 import os
 from pathlib import Path
 
+import json
 import pytest
 from packaging.version import Version
-from versions import (find_stable_release, get_version_and_ref_type, get_versions_list,
-                      set_version_variable, write_versions_file)
+from versions import (
+    find_stable_release,
+    get_version_and_ref_type,
+    get_versions_list,
+    set_version_variable,
+    write_versions_file,
+)
 
 
 # Workaround to be able to use monkeypatch at module level scope
@@ -15,9 +20,7 @@ def monkeymodule():
         yield mp
 
 
-@pytest.fixture(
-    scope="module", params=[("tag", "v0.3.4a1", "false", ["0.1", "0.2", "0.3"])]
-)
+@pytest.fixture(scope="module", params=[("tag", "v0.3.4a1", "false", ["0.1", "0.2", "0.3"])])
 def set_testing_environment(monkeymodule, tmp_path_factory, request):
     # Create folders to mimic the contents of the version directory
     # on a typical gh-pages branch
@@ -37,9 +40,7 @@ def set_testing_environment(monkeymodule, tmp_path_factory, request):
 
     # Create a file to mimick the github output file
     gh_output_path = tmp_path_factory.getbasetemp() / "gh-output.txt"
-    if (
-        gh_output_path.exists()
-    ):  # Clear between successive parameterized runs on this fixture
+    if gh_output_path.exists():  # Clear between successive parameterized runs on this fixture
         gh_output_path.unlink
     gh_output_path.touch(exist_ok=False)
     monkeymodule.setenv("GITHUB_OUTPUT", str(gh_output_path.resolve()))
