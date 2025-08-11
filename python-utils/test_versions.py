@@ -1,10 +1,11 @@
+import json
 import os
 from pathlib import Path
 
-import json
 import pytest
 from packaging.version import Version
-from versions import get_version_and_ref_type, get_versions_list, set_version_variable, find_stable_release, write_versions_file
+from versions import (find_stable_release, get_version_and_ref_type, get_versions_list,
+                      set_version_variable, write_versions_file)
 
 
 # Workaround to be able to use monkeypatch at module level scope
@@ -48,17 +49,32 @@ def set_testing_environment(monkeymodule, tmp_path_factory, request):
 
     # Create a versions.json file
     def create_versions_json(versions):
-        def ver_key(v): return [int(x) for x in str(v).split(".")]
+        def ver_key(v):
+            return [int(x) for x in str(v).split(".")]
+
         versions = sorted(versions, key=ver_key, reverse=True)
-        data = [{"name": "dev", "version": "dev", "url": "https://docs.pyansys.com/version/dev/"}]
+        data = [
+            {
+                "name": "dev",
+                "version": "dev",
+                "url": "https://docs.pyansys.com/version/dev/",
+            }
+        ]
         for i, v in enumerate(versions):
             v_str = str(v)
             name = f"{v_str} (stable)" if i == 0 else v_str
             url = f"https://docs.pyansys.com/version/{'stable' if i == 0 else v_str}/"
             data.append({"name": name, "version": v_str, "url": url})
-        data.append({"name": "Older versions", "version": "N/A", "url": "https://docs.pyansys.com/version/"})
+        data.append(
+            {
+                "name": "Older versions",
+                "version": "N/A",
+                "url": "https://docs.pyansys.com/version/",
+            }
+        )
         with open("versions.json", "w") as f:
             json.dump(data, f, indent=2)
+
     create_versions_json(request.param[3])
 
     # Trick to be able to create prerelease folder at function scope
@@ -69,6 +85,7 @@ def set_testing_environment(monkeymodule, tmp_path_factory, request):
         return prerelease_version_path
 
     return _create_prerelease_folder
+
 
 # Creates prerelease folder at function level scope
 @pytest.fixture(scope="function")
@@ -94,17 +111,17 @@ def test_get_versions_list(set_testing_environment):
 
 
 def test_set_version_variable(set_testing_environment):
-
     set_version_variable()
     gh_output_path = os.getenv("GITHUB_OUTPUT")
     gh_output_content = Path(gh_output_path).read_text()
     assert gh_output_content == "VERSION=0.3.4a1\nPRE_RELEASE=true\n"
 
-def test_find_stable_release(create_prerelease_folder):
 
+def test_find_stable_release(create_prerelease_folder):
     stable_release = find_stable_release()
 
     assert stable_release == "0.3"
+
 
 def test_write_versions_file(create_prerelease_folder):
     write_versions_file()

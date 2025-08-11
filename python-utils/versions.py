@@ -117,7 +117,7 @@ def write_versions_file() -> None:
 
     # Other versions (including stable)
     full_list = sorted(get_versions_list(), reverse=True)
-    for version in full_list[: render_last]:
+    for version in full_list[:render_last]:
         if version == Version(stable_release):
             content.append(
                 make_entry((f"{stable_release} (stable)", stable_release, url_stable))
