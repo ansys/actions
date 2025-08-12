@@ -6,7 +6,7 @@ on:
 
 env:
   MAIN_PYTHON_VERSION: '3.12'
-  LIBRARY_NAME: 'ansys-actions'
+  LIBRARY_NAME: 'ansys-actions-flit'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
 
 permissions: {}
@@ -42,51 +42,50 @@ jobs:
           bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
           bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
-  tests:
-    name: "Tests"
-    runs-on: ubuntu-latest
+  test-build-wheelhouse-flit:
+    name: "Test build-wheelhouse action using ansys-actions-flit package"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
     permissions:
       id-token: write
       contents: write
+      attestations: write
     steps:
 
-    - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      with:
-        persist-credentials: false
+      - name: "Build wheelhouse and perform smoke test for ${{ env.LIBRARY_NAME }} package"
+        uses: ansys/actions/build-wheelhouse@main
+        with:
+          library-name: ${{ env.LIBRARY_NAME }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          working-directory: .ci/${{ env.LIBRARY_NAME }}
+          attest-provenance: true
 
-    - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
-      with:
-        python-version: ${{ env.MAIN_PYTHON_VERSION }}
-        use-cache: false
-        provision-uv: false
-        prune-uv-cache: false
-
-    - name: "Install build and twine"
-      shell: bash
-      run: |
-        python -m pip install build twine
-
-    - name: "Build distribution artifacts and check their health"
-      shell: bash
-      run: |
-        python -m build .ci/${{ env.LIBRARY_NAME }}
-        ls -R .ci/${{ env.LIBRARY_NAME }}/dist
-        python -m twine check .ci/${{ env.LIBRARY_NAME }}/dist/**
-
-    - name: "Upload distribution artifacts"
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      with:
-        name: ${{ env.LIBRARY_NAME }}-artifacts
-        path: .ci/${{ env.LIBRARY_NAME }}/dist
-        retention-days: 7
-
-  test-release:
-    name: "Test release"
+  test-build-library-flit:
+    name: "Test build-library action using ansys-actions-flit package"
     runs-on: ubuntu-latest
-    needs: tests
-    if: success() || needs.tests.result == 'success'
+    needs: test-build-wheelhouse-flit
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+    steps:
+
+      - name: "Build library for ${{ env.LIBRARY_NAME }} package"
+        uses: ansys/actions/build-library@main
+        with:
+          library-name: ${{ env.LIBRARY_NAME }}
+          attest-provenance: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          working-directory: .ci/${{ env.LIBRARY_NAME }}
+
+  test-release-flit:
+    name: "Test releasing ansys-actions-flit package using trusted publishing"
+    runs-on: ubuntu-latest
+    needs: test-build-library-flit
+    if: success() || needs.test-build-library-flit.result == 'success'
     permissions:
       id-token: write
       contents: write
