@@ -47,7 +47,7 @@ def dict_hash(dictionary: Dict[str, Any]) -> str:
     return dhash.hexdigest()
 
 
-def check_vulnerabilities():
+def check_vulnerabilities(run_local: bool) -> bool:
     """Check library and third-party vulnerabilities."""
     new_advisory_detected = False
     # Check that the needed environment variables are provided
@@ -92,11 +92,13 @@ def check_vulnerabilities():
 
     # Get the available security advisories
     existing_advisories = {}
-    try:
-        pl_advisories = repo.get_repository_advisories()
-    except github.GithubException.UnknownObjectException:
-        # In case there is trouble accessing the repo
+    if run_local:
+        # If running locally, we do not have access to the repository advisories
+        # so we will not check for existing advisories.
+        print("Running locally... not checking existing advisories.")
         pl_advisories = []
+    else:
+        pl_advisories = repo.get_repository_advisories()
 
     for advisory in pl_advisories:
         existing_advisories[advisory.summary] = advisory
@@ -356,7 +358,7 @@ def main(run_local: bool):
         global DRY_RUN
         DRY_RUN = True
 
-    new_advisory_detected = check_vulnerabilities()
+    new_advisory_detected = check_vulnerabilities(run_local)
 
     if new_advisory_detected and ERROR_IF_NEW_ADVISORY:
         print(f"New advisory detected?: {new_advisory_detected}")
