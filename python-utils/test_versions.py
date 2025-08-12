@@ -13,7 +13,8 @@ from versions import (
 )
 
 
-# Workaround to be able to use monkeypatch at module level scope
+# Monkeypatch has function level scope. This is a workaround
+# to allow using monkeypatch at module level
 @pytest.fixture(scope="module")
 def monkeymodule():
     with pytest.MonkeyPatch.context() as mp:

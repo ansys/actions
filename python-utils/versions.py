@@ -162,7 +162,7 @@ def set_version_variable() -> None:
     branch_pattern = re.compile(
         r"""
     ^[0-9]+\.[0-9]+$ | # <MAJOR>.<MINOR>
-    ^[0-9]+\.[0-9]+\.[0-9]+ | # <MAJOR>.<MINOR>.<PATCH>
+    ^[0-9]+\.[0-9]+\.[0-9]+$ | # <MAJOR>.<MINOR>.<PATCH>
     ^[0-9]+\.[0-9]+\.[0-9]+(?:a|b|rc)[0-9]+$ # PATCH pre-release
     """,
         re.VERBOSE,
@@ -198,7 +198,9 @@ def set_version_variable() -> None:
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "true")
             else:
-                print("ERROR: An higher or equal pre-release version already exist")
+                print(
+                    f"ERROR: An higher or equal pre-release version already exist: {existing_prereleases}"
+                )
                 exit(1)
         else:
             # All existing pre-releases must be removed before the normal release
