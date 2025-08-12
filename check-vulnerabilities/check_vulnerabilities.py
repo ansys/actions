@@ -359,6 +359,8 @@ def main(run_local: bool):
     new_advisory_detected = check_vulnerabilities()
 
     if new_advisory_detected and ERROR_IF_NEW_ADVISORY:
+        print(f"New advisory detected?: {new_advisory_detected}")
+        print(f"ERROR_IF_NEW_ADVISORY?: {ERROR_IF_NEW_ADVISORY}")
         # New advisories detected - exit with error
         sys.exit(1)
     else:
