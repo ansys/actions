@@ -104,7 +104,7 @@ def create_prerelease_folder(set_testing_environment):
     pre_release_version_path.rmdir()
 
 
-def test_get_version_and_ref_type(set_testing_environment):
+def test_get_version_and_ref_type(set_testing_environment, request):
     version, ref_type = get_version_and_ref_type()
     assert version, ref_type == ("0.3.4a1", "tag")
 

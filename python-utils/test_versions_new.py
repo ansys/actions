@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 from pathlib import Path
+from copy import deepcopy
 
 import pytest
 from packaging.version import Version
@@ -190,7 +191,7 @@ def test_get_version_and_ref_type(test_environment_setup):
 
 
 # Modify base data, this test requires versions directory to be present
-BASE_DATA_ONE = list(BASE_DATA)
+BASE_DATA_ONE = deepcopy(BASE_DATA)
 for data in BASE_DATA_ONE:
     data["create_versions_directories"] = True
 
@@ -211,7 +212,7 @@ def test_get_versions_list_default(test_environment_setup):
 # Modify base data, this test requires versions directory presence, existence of a prerelease
 # directory (can be from test data or by creating a directory for the current prerelease), and
 # GITHUB_OUTPUT file
-BASE_DATA_TWO = list(BASE_DATA)
+BASE_DATA_TWO = deepcopy(BASE_DATA)
 for data in BASE_DATA_TWO:
     data["create_versions_directories"] = True
     data["create_prerelease_folder"] = True
@@ -233,9 +234,8 @@ def test_get_versions_list_exclude_prereleases(test_environment_setup):
 
     assert versions_list == expected_result
 
-
 # Modify base data, this test requires versions directory presence and GITHUB_OUTPUT file
-BASE_DATA_THREE = list(BASE_DATA)
+BASE_DATA_THREE = deepcopy(BASE_DATA)
 for data in BASE_DATA_THREE:
     data["create_versions_directories"] = True
     data["create_github_output_file"] = True

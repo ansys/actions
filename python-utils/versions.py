@@ -126,7 +126,7 @@ def write_versions_file() -> None:
         url_version = f"https://{cname}/version/{version}/"
         content.append(make_entry((str(version), str(version), url_version)))
 
-    if len(full_list) > render_last:
+    if len(full_list) > render_last: # change this to the conditional in the action
         url_older_version = f"https://{cname}/version/"
         content.append(make_entry(("Older version", "N/A", url_older_version)))
 
