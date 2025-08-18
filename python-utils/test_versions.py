@@ -1,16 +1,16 @@
 import json
 import os
 import shutil
-from pathlib import Path
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from packaging.version import Version
 from versions import (
+    find_stable_release,
     get_version_and_ref_type,
     get_versions_list,
     set_version_variable,
-    find_stable_release,
 )
 
 
@@ -87,7 +87,9 @@ def test_environment_setup(request, tmp_path_factory, monkeypatch):
 
     def _create_prerelease_folder(prerelease_number: str):
         # Setup
-        prerelease_version_path = tmp_path_factory.getbasetemp() / "version" / prerelease_number
+        prerelease_version_path = (
+            tmp_path_factory.getbasetemp() / "version" / prerelease_number
+        )
         prerelease_version_path.mkdir()
 
         return prerelease_version_path
@@ -108,10 +110,18 @@ def test_environment_setup(request, tmp_path_factory, monkeypatch):
     monkeypatch.setenv("INDEPENDENT_PATCH_RELEASE_DOCS", independent_patch_release)
 
     # Setups that need to be requested by the running test
-    create_versions_directories = True if test_data.get("create_versions_directories") else False
-    create_github_output_file = True if test_data.get("create_github_output_file") else False
-    create_versions_json_file = True if test_data.get("create_versions_json_file") else False
-    create_prerelease_folder = True if test_data.get("create_prerelease_folder") else False
+    create_versions_directories = (
+        True if test_data.get("create_versions_directories") else False
+    )
+    create_github_output_file = (
+        True if test_data.get("create_github_output_file") else False
+    )
+    create_versions_json_file = (
+        True if test_data.get("create_versions_json_file") else False
+    )
+    create_prerelease_folder = (
+        True if test_data.get("create_prerelease_folder") else False
+    )
 
     if create_versions_directories:
         version_path = _create_versions_directories(versions_list)
@@ -123,7 +133,9 @@ def test_environment_setup(request, tmp_path_factory, monkeypatch):
         versions_json_path = _create_versions_json_file(versions_list)
 
     if create_prerelease_folder:
-        version_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+        version_number = (
+            ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+        )
         prerelease_version_path = _create_prerelease_folder(version_number)
 
     yield request.param
@@ -241,7 +253,9 @@ def test_set_versions_variable(test_environment_setup):
 
     test_data = test_environment_setup
     ref_name = test_data["ref_name"]
-    version_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    version_number = (
+        ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    )
     version = Version(version_number)
     prerelease = "true" if version.is_prerelease else "false"
     expected_result = f"VERSION={version_number}\nPRE_RELEASE={prerelease}\n"
@@ -283,9 +297,10 @@ SPECIAL_TEST_DATA_ONE = [
         "independent_patch_release": "false",
         "versions": ["0.1", "0.2", "0.3"],
         "create_versions_directories": True,
-        "create_github_output_file": True
+        "create_github_output_file": True,
     }
 ]
+
 
 @pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_ONE, indirect=True)
 def test_set_versions_variable_on_normal_release(test_environment_setup):
@@ -295,11 +310,15 @@ def test_set_versions_variable_on_normal_release(test_environment_setup):
 
     test_data = test_environment_setup
     ref_name = test_data["ref_name"]
-    version_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    version_number = (
+        ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    )
     version = Version(version_number)
     version_without_patch_string = f"{version.major}.{version.minor}"
     prerelease = "true" if version.is_prerelease else "false"
-    expected_result = f"VERSION={version_without_patch_string}\nPRE_RELEASE={prerelease}\n"
+    expected_result = (
+        f"VERSION={version_without_patch_string}\nPRE_RELEASE={prerelease}\n"
+    )
 
     print(gh_output_content)
     print(expected_result)
@@ -314,9 +333,10 @@ SPECIAL_TEST_DATA_TWO = [
         "independent_patch_release": "true",
         "versions": ["0.1", "0.2", "0.3"],
         "create_versions_directories": True,
-        "create_github_output_file": True
+        "create_github_output_file": True,
     }
 ]
+
 
 @pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_TWO, indirect=True)
 def test_set_versions_variable_on_independent_patch_release(test_environment_setup):
@@ -326,7 +346,9 @@ def test_set_versions_variable_on_independent_patch_release(test_environment_set
 
     test_data = test_environment_setup
     ref_name = test_data["ref_name"]
-    version_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    version_number = (
+        ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    )
     version = Version(version_number)
     prerelease = "true" if version.is_prerelease else "false"
     expected_result = f"VERSION={version}\nPRE_RELEASE={prerelease}\n"
@@ -344,18 +366,23 @@ SPECIAL_TEST_DATA_THREE = [
         "independent_patch_release": "true",
         "versions": ["0.1", "0.2", "0.3", "0.4.0b1", "0.4.0b2", "0.4.0rc0"],
         "create_versions_directories": True,
-        "create_github_output_file": True
+        "create_github_output_file": True,
     }
 ]
 
-@pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_THREE, indirect=True)
+
+@pytest.mark.parametrize(
+    "test_environment_setup", SPECIAL_TEST_DATA_THREE, indirect=True
+)
 def test_prerelease_versions_clear_during_normal_release(test_environment_setup):
     set_version_variable()
     remaining_versions = get_versions_list()
 
     test_data = test_environment_setup
     versions = test_data["versions"]
-    expected_result = [Version(version) for version in versions if not Version(version).is_prerelease]
+    expected_result = [
+        Version(version) for version in versions if not Version(version).is_prerelease
+    ]
 
     remaining_versions.sort()
     expected_result.sort()
