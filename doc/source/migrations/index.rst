@@ -7,6 +7,25 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v10.1``
+----------------
+**New Features:**
+
+- ``ansys/actions/doc-deploy-stable`` action now supports pre-releases. The identifiers must be one of ``a|b|rc`` for alpha, beta, and
+  release candidates respectively. Furthermore, only patch pre-release are supported, meaning the `PEP 440 <https://peps.python.org/pep-0440/>`
+  compliant version identifiers are limited to those that comply with the following scheme:
+
+  .. code-block:: yaml
+
+    N.N.N[{a|b|rc}N]
+
+- Added a ``checkout`` option (default: ``true``) to ``build-library``, ``check-actions-security``, and ``code-style`` actions. Setting ``checkout``
+  to ``false`` allows reuse of the workspace from a prior step without modification.
+
+- Introduced an ``upload-artifact-name-prefix`` option (default: ``documentation``) in the ``doc-build`` action, enabling customization of uploaded
+  documentation artifact names. This also allows distinct documentation artifacts to be uploaded for separate documentation build jobs within the
+  same workflow.
+
 Version ``v10``
 -----------------
 

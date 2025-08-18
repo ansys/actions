@@ -33,6 +33,11 @@ description: |
       If your project is using ``ansys/actions@v3`` or lower and you would
       like to update to this version of the actions, see the `Enable multi-version documentation <https://dev.docs.pyansys.com/how-to/documenting.html#enable-multi-version-documentation>`_ .
 
+  .. note::
+
+      Pre-releases are not supported prior to ``ansys/actions/v10.1``. `See the migration guide <https://actions.docs.ansys.com/version/stable/migrations/index.html#version-v10.1>
+      for information on supported pre-releases.
+
 inputs:
 
   # Required inputs
