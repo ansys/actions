@@ -185,6 +185,14 @@ def set_version_variable() -> None:
             == current_version.release  # MAJOR.MINOR.PATCH should match
         ]
         if current_version.is_prerelease:
+
+            latest_stable_version = Version(find_stable_release())
+            if latest_stable_version > current_version:  # This is not allowable
+                print(
+                    f"Stable release version higher than the pre-release version found: {latest_stable_version}"
+                )
+                exit(1)
+
             # Ensure highest hierarchy of current pre-release
             valid_prerelease = all(
                 current_version > prerel for prerel in existing_prereleases

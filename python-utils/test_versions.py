@@ -178,6 +178,12 @@ BASE_DATA = [
         "independent_patch_release": "false",
         "versions": ["0.1", "0.2", "0.3", "0.4"],
     },
+    {
+        "ref_type": "branch",
+        "ref_name": "release/0.7.0a0",
+        "independent_patch_release": "false",
+        "versions": ["0.1", "0.2", "0.3", "0.4", "0.5", "0.6"],
+    },
 ]
 
 
@@ -387,3 +393,29 @@ def test_prerelease_versions_clear_during_normal_release(test_environment_setup)
     remaining_versions.sort()
     expected_result.sort()
     assert remaining_versions == expected_result
+
+
+SPECIAL_TEST_DATA_FOUR = [
+    {
+        "ref_type": "tag",
+        "ref_name": "v0.4.0rc1",
+        "independent_patch_release": "true",
+        "versions": ["0.1", "0.2", "0.3", "0.4.0b1", "0.4.0b2", "0.4.0rc0"],
+        "create_versions_directories": True,
+        "create_github_output_file": True,
+    }
+]
+
+
+@pytest.mark.parametrize(
+    "test_environment_setup", SPECIAL_TEST_DATA_FOUR, indirect=True
+)
+def test_maximum_three_prerelease(test_environment_setup):
+    set_version_variable()
+
+    remaining_versions = get_versions_list()
+    prerelease_versions = [
+        version for version in remaining_versions if version.is_prerelease
+    ]
+
+    assert len(prerelease_versions) == 2
