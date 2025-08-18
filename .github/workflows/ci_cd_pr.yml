@@ -358,3 +358,19 @@ jobs:
           auditing-level: 'high'
           trust-ansys-actions: true
           checkout: false
+
+  python-utilites-test:
+    name: "Run all python utilities tests"
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    steps:
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - uses: ./test-pytest
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          pytest-extra-args: "-vv python-utils/test_versions.py" 
+          checkout: false
