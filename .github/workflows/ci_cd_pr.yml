@@ -374,3 +374,4 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           pytest-extra-args: "-vv python-utils/" 
           checkout: false
+          skip-install: true
