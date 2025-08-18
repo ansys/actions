@@ -369,7 +369,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./test-pytest
+      - uses: ./tests-pytest
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           pytest-extra-args: "-vv python-utils/" 
