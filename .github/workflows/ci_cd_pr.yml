@@ -369,9 +369,17 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./tests-pytest
+      - uses: ./_setup-python
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          pytest-extra-args: "-vv python-utils/" 
-          checkout: false
-          skip-install: true
+          use-cache: false
+          provision-uv: false
+          prune-uv-cache: false
+        
+      - name: "Install pytest"
+        run: |
+          python -m pip install pytest
+
+      - name: "Run all python utilities tests"
+        run: |
+          pytest -vv python-utils
