@@ -372,5 +372,5 @@ jobs:
       - uses: ./test-pytest
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          pytest-extra-args: "-vv python-utils/test_versions.py" 
+          pytest-extra-args: "-vv python-utils/" 
           checkout: false
