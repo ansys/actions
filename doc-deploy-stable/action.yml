@@ -35,7 +35,7 @@ description: |
 
   .. note::
 
-      Pre-releases are not supported prior to ``ansys/actions/v10.1``. `See the migration guide <https://actions.docs.ansys.com/version/stable/migrations/index.html#version-v10.1>
+      Pre-releases are not supported prior to ``ansys/actions/v10.1``. `See the migration guide <https://actions.docs.ansys.com/version/stable/migrations/index.html#version-v10.1>`_
       for information on supported pre-releases.
 
 inputs:
