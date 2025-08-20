@@ -8,7 +8,7 @@ from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
 Version ``v10.1``
-----------------
+-----------------
 **New Features:**
 
 - ``ansys/actions/doc-deploy-stable`` action now supports pre-releases. The identifiers must be one of ``a|b|rc`` for alpha, beta, and
