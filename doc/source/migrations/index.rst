@@ -19,6 +19,10 @@ Version ``v10.1``
 
     N.N.N[{a|b|rc}N]
 
+  .. note::
+
+    In the same pre-release cycle, documentation is retained for a maximum of three pre-release versions and removed following a normal release.
+
 - Added a ``checkout`` option (default: ``true``) to ``build-library``, ``check-actions-security``, and ``code-style`` actions. Setting ``checkout``
   to ``false`` allows reuse of the workspace from a prior step without modification.
 
