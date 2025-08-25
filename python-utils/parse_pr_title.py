@@ -114,7 +114,7 @@ def changelog_category_cc(cc_type: str):
     save_env_variable("CHANGELOG_SECTION", changelog_section)
 
 
-def changelog_cateogry_labels(labels: str):
+def changelog_categorize_based_on_labels(labels: str):
     """Get the changelog category based on the labels in the pull request.
 
     Parameters
