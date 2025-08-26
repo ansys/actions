@@ -93,7 +93,9 @@ inputs:
 
   use-conventional-commits:
     description: |
-      Use conventional commits to cateogrize towncrier fragments.
+      Use pull request title to determine the changelog category based on
+      conventional commits. If ``false``, the labels in the pull request are used
+      to determine the changelog category.
     required: false
     default: false
     type: boolean
@@ -240,10 +242,10 @@ runs:
         import sys
         sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import changelog_cateogry_labels
+        from parse_pr_title import changelog_categorize_based_on_labels
 
         labels = os.environ.get("LABELS")
-        changelog_cateogry_labels(labels)
+        changelog_categorize_based_on_labels(labels)
 
     - name: "Remove PR fragment file if it already exists"
       shell: bash
