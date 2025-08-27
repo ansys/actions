@@ -186,15 +186,19 @@ BASE_DATA = [
     },
 ]
 
+
 # helper function for some tests
 def expected_github_output(ref_name: str, without_patch_string: bool = False) -> str:
-    version_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    version_number = (
+        ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    )
     version = Version(version_number)
     prerelease = "true" if version.is_prerelease else "false"
     if without_patch_string:
         version_without_patch_string = f"{version.major}.{version.minor}"
         return f"VERSION={version_without_patch_string}\nPRE_RELEASE={prerelease}\n"
     return f"VERSION={version_number}\nPRE_RELEASE={prerelease}\n"
+
 
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA, indirect=True)
 def test_get_version_and_ref_type(test_environment_setup):
