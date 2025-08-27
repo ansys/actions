@@ -350,11 +350,17 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-
-      - uses: ./check-actions-security
+      
+      - name: "Check actions security using zizmor fork"
+        uses: moe-ad/zizmor-action@main
         with:
+          advanced-security: false
           generate-summary: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          auditing-level: 'high'
-          trust-ansys-actions: true
-          checkout: false
+
+      # - uses: ./check-actions-security
+      #   with:
+      #     generate-summary: true
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     auditing-level: 'high'
+      #     trust-ansys-actions: true
+      #     checkout: false
