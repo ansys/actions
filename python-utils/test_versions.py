@@ -186,6 +186,15 @@ BASE_DATA = [
     },
 ]
 
+# helper function for some tests
+def expected_github_output(ref_name: str, without_patch_string: bool = False) -> str:
+    version_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
+    version = Version(version_number)
+    prerelease = "true" if version.is_prerelease else "false"
+    if without_patch_string:
+        version_without_patch_string = f"{version.major}.{version.minor}"
+        return f"VERSION={version_without_patch_string}\nPRE_RELEASE={prerelease}\n"
+    return f"VERSION={version_number}\nPRE_RELEASE={prerelease}\n"
 
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA, indirect=True)
 def test_get_version_and_ref_type(test_environment_setup):
@@ -231,8 +240,7 @@ for data in BASE_DATA_TWO:
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA_TWO, indirect=True)
 def test_get_versions_list_exclude_prereleases(test_environment_setup):
     versions_list = get_versions_list(exclude_prereleases=True)
-    print(versions_list)
-    # assert False
+
     test_data = test_environment_setup
     versions = test_data["versions"]
     expected_result = [
@@ -259,12 +267,7 @@ def test_set_versions_variable(test_environment_setup):
 
     test_data = test_environment_setup
     ref_name = test_data["ref_name"]
-    version_number = (
-        ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
-    )
-    version = Version(version_number)
-    prerelease = "true" if version.is_prerelease else "false"
-    expected_result = f"VERSION={version_number}\nPRE_RELEASE={prerelease}\n"
+    expected_result = expected_github_output(ref_name)
 
     assert gh_output_content == expected_result
 
@@ -316,18 +319,7 @@ def test_set_versions_variable_on_normal_release(test_environment_setup):
 
     test_data = test_environment_setup
     ref_name = test_data["ref_name"]
-    version_number = (
-        ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
-    )
-    version = Version(version_number)
-    version_without_patch_string = f"{version.major}.{version.minor}"
-    prerelease = "true" if version.is_prerelease else "false"
-    expected_result = (
-        f"VERSION={version_without_patch_string}\nPRE_RELEASE={prerelease}\n"
-    )
-
-    print(gh_output_content)
-    print(expected_result)
+    expected_result = expected_github_output(ref_name, without_patch_string=True)
 
     assert gh_output_content == expected_result
 
@@ -352,15 +344,7 @@ def test_set_versions_variable_on_independent_patch_release(test_environment_set
 
     test_data = test_environment_setup
     ref_name = test_data["ref_name"]
-    version_number = (
-        ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
-    )
-    version = Version(version_number)
-    prerelease = "true" if version.is_prerelease else "false"
-    expected_result = f"VERSION={version}\nPRE_RELEASE={prerelease}\n"
-
-    print(gh_output_content)
-    print(expected_result)
+    expected_result = expected_github_output(ref_name)
 
     assert gh_output_content == expected_result
 
