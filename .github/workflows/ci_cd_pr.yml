@@ -352,7 +352,7 @@ jobs:
           persist-credentials: false
       
       - name: "Check actions security using zizmor fork"
-        uses: moe-ad/zizmor-action@main
+        uses: moe-ad/zizmor-action@test/deactivate-advanced-security-gh-upload 
         with:
           advanced-security: false
           generate-summary: true
