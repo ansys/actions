@@ -145,7 +145,7 @@ jobs:
 
   doc-build:
     name: "Doc build"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     needs: doc-style
     if: github.event.action != 'closed'
     strategy:
