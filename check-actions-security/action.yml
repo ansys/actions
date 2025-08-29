@@ -86,7 +86,7 @@ runs:
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.12.1
+        uv tool install zizmor==1.6.0
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -123,6 +123,14 @@ runs:
                 actions/*: hash-pin
         _EOF_
 
+    - name: "Detailed zizmor audit"
+      shell: bash
+      env:
+        HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
+        STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
+      run: |
+        zizmor ${HIGH_AUDIT_LEVEL} ${STRICT_AUDIT_LEVEL} .
+
     - name: "Output a summary of detected vulnerabilities"
       if: ${{ inputs.generate-summary == 'true' }}
       shell: bash
@@ -131,11 +139,3 @@ runs:
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
         python ${GITHUB_ACTION_PATH}/zizmor-summary.py
-
-    - name: "Detailed zizmor audit"
-      shell: bash
-      env:
-        HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
-        STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
-      run: |
-        zizmor ${HIGH_AUDIT_LEVEL} ${STRICT_AUDIT_LEVEL} .
