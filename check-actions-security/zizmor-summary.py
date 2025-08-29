@@ -3,16 +3,13 @@ import re
 import shlex
 import subprocess
 from collections import Counter
-from subprocess import PIPE, DEVNULL
+from subprocess import DEVNULL, PIPE
 
 FORMAT = "{:<50}{:<20}"
 PATH_RE = re.compile(r"[^ /]+/(?:[^ /]+/)?[^ ]*\.yml")
 
-def main():
-    print(FORMAT.format("=========", "================"))
-    print(FORMAT.format("File name", "Number of issues"))
-    print(FORMAT.format("=========", "================"))
 
+def main():
     high = os.getenv("HIGH_AUDIT_LEVEL", "")
     strict = os.getenv("STRICT_AUDIT_LEVEL", "")
     cmd = ["zizmor", *shlex.split(high), *shlex.split(strict), "."]
@@ -21,13 +18,17 @@ def main():
         proc = subprocess.run(
             cmd,
             text=True,
-            stdout=PIPE,       # capture stdout
-            stderr=DEVNULL,    # ignore stderr
+            stdout=PIPE,  # capture stdout
+            stderr=DEVNULL,  # ignore stderr
             check=False,
         )
     except FileNotFoundError:
         print("zizmor not found in PATH")
         return
+
+    print(FORMAT.format("=========", "================"))
+    print(FORMAT.format("File name", "Number of issues"))
+    print(FORMAT.format("=========", "================"))
 
     files = []
     for line in proc.stdout.splitlines():
@@ -43,6 +44,7 @@ def main():
     print(FORMAT.format("Total", total))
     print(FORMAT.format("=========", "================"))
     print("\nNote: the summary excludes warning surpressed by zizmor.")
+
 
 if __name__ == "__main__":
     main()
