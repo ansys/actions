@@ -7,7 +7,7 @@ on:
 env:
   MAIN_PYTHON_VERSION: '3.12'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
-  LIBRARY_NAME: 'ansys-actions'
+  LIBRARY_NAME: 'ansys-actions-flit'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -43,7 +43,7 @@ jobs:
     - name: "Decompose tag into components"
       id: tag-components
       run: |
-        if [[ "$REF_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?$ ]]; then
+        if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?$ ]]; then
           # Split the tag into its components
           IFS='.' read -ra PARTS <<< "$REF_NAME"
           echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_OUTPUT
