@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.0.15 <https://github.com/ansys/actions/releases/tag/v10.0.15>`_ - September 01, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Temporary pin `typer` dependency (transitive)
+          - `#971 <https://github.com/ansys/actions/pull/971>`_
+
+
 `10.0.14 <https://github.com/ansys/actions/releases/tag/v10.0.14>`_ - August 06, 2025
 =====================================================================================
 
