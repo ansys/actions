@@ -148,6 +148,8 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
@@ -171,6 +173,7 @@ runs:
         repository: ansys/pip-licenses
         path: "external/pip-licenses"
         ref: "main"
+        persist-credentials: false
 
     - name: Install ansys/pip-licenses main branch
       shell: bash

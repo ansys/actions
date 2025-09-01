@@ -111,7 +111,7 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "$INPUT_REPOSITORY" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> $GITHUB_OUTPUT
         else
           echo "REPOSITORY=${INPUT_REPOSITORY}" >> $GITHUB_OUTPUT
         fi
@@ -120,7 +120,7 @@ runs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
     - name: "Ensure that the desired branch exists"
       shell: bash
