@@ -60,8 +60,9 @@ jobs:
     needs: check-dependabot-pr
     if: github.event.action != 'closed'
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
+      issues: write
     runs-on: ubuntu-latest
     steps:
 
@@ -144,7 +145,7 @@ jobs:
 
   doc-build:
     name: "Doc build"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     needs: doc-style
     if: github.event.action != 'closed'
     strategy:
@@ -358,3 +359,28 @@ jobs:
           auditing-level: 'high'
           trust-ansys-actions: true
           checkout: false
+
+  python-utilites-test:
+    name: "Run all python utilities tests"
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    steps:
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - uses: ./_setup-python
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-cache: false
+          provision-uv: false
+          prune-uv-cache: false
+
+      - name: "Install pytest"
+        run: |
+          python -m pip install pytest
+
+      - name: "Run all python utilities tests"
+        run: |
+          pytest -vv python-utils
