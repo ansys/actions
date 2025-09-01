@@ -232,10 +232,11 @@ jobs:
 
       - name: Stop the Geometry service
         if: always()
+        shell: bash
         run: |
-          docker stop ${{ env.GEO_CONT_NAME }}
-          docker logs ${{ env.GEO_CONT_NAME }}
-          docker rm ${{ env.GEO_CONT_NAME }}
+          docker stop ${GEO_CONT_NAME}
+          docker logs ${GEO_CONT_NAME}
+          docker rm ${GEO_CONT_NAME}
 
   test-doc-build-pydpf-composites:
     name: "Test doc-build action for PyDPF-Composites on ${{ matrix.os.name }}"
@@ -277,9 +278,13 @@ jobs:
         uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
 
       - name: "Pull and start dpf container"
+        env:
+          CONTAINER_IMAGE_TAG: ${{ matrix.os.container-image-tag }}
+          LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
+        shell: bash
         run: |
-          docker pull ghcr.io/ansys/pydpf-composites:${{ matrix.os.container-image-tag }}
-          docker run -d --restart always -p 50052:50052 -e ANSYSLMD_LICENSE_FILE=1055@${{ secrets.LICENSE_SERVER }} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${{ matrix.os.container-image-tag }}
+          docker pull ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
+          docker run -d --restart always -p 50052:50052 -e ANSYSLMD_LICENSE_FILE=1055@${LICENSE_SERVER} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
 
       - name: "Clone ansys/actions into a different path"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

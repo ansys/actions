@@ -211,6 +211,7 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
       with:
         repository: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
+        persist-credentials: false
 
     # ------------------------------------------------------------------------
 
@@ -263,7 +264,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> ${GITHUB_PATH} # zizmor: ignore[github-env] no workaround for this
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> ${GITHUB_PATH} # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -303,7 +304,7 @@ runs:
       id: virtual-environment-activation-command
       shell: bash
       run: |
-        if [[ ${{ runner.os }} == 'Windows' ]]; then
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
           echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
           echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/scripts/activate')" >> ${GITHUB_OUTPUT}
         else
