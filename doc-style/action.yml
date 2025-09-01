@@ -117,6 +117,8 @@ runs:
 
     - name: "Install Git and clone project"
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        persist-credentials: false
       if: inputs.checkout == 'true'
 
     - uses: ansys/actions/_logging@main
@@ -207,8 +209,8 @@ runs:
         IGNORE_CHANGELOGD: ${{ inputs.ignore-changelogd }}
       run: |
         # If changelog.d is ignored and the TOWNCRIER_DIR exists in pyproject.toml, add the ignore glob
-        if [[ "${IGNORE_CHANGELOGD}" == 'true' ]] && [[ -n "${{ env.TOWNCRIER_DIR }}" ]]; then
-          echo VALE_FLAGS="--config=${VALE_CONFIG} --glob=!${{ env.TOWNCRIER_DIR }}/*.md" >> ${GITHUB_OUTPUT}
+        if [[ "${IGNORE_CHANGELOGD}" == 'true' ]] && [[ -n "${TOWNCRIER_DIR}" ]]; then
+          echo VALE_FLAGS="--config=${VALE_CONFIG} --glob=!${TOWNCRIER_DIR}/*.md" >> ${GITHUB_OUTPUT}
         else
           echo VALE_FLAGS="--config=${VALE_CONFIG}" >> ${GITHUB_OUTPUT}
         fi
@@ -228,7 +230,7 @@ runs:
     # dependabot, we need to update the reviewdog20 branch with the new release changes.
     # Once performed, we can manually update the commit hash below.
     - name: "Run Vale"
-      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # Read warning above
+      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # zizmor: ignore[stale-action-refs] , Read warning above
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
