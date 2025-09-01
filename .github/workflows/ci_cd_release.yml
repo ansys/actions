@@ -43,14 +43,19 @@ jobs:
     - name: "Decompose tag into components"
       id: tag-components
       run: |
-        if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        if [[ "$REF_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?$ ]]; then
           # Split the tag into its components
           IFS='.' read -ra PARTS <<< "$REF_NAME"
           echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_OUTPUT
           echo "MINOR=${PARTS[1]}" >> $GITHUB_OUTPUT
           echo "PATCH=${PARTS[2]}" >> $GITHUB_OUTPUT
+            if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
+            else
+              echo "PRE_RELEASE=true" >> ${GITHUB_OUTPUT}
+            fi
         else
-          echo "Invalid tag format. Expected vX.Y.Z but got $REF_NAME"
+          echo "Invalid tag format. Expected vX.Y.Z[{a|b|rc}N] but got $REF_NAME"
           exit 1
         fi
 
@@ -69,6 +74,7 @@ jobs:
         fi
 
     - name: "Remove v${{ steps.current-branch-tag-validity.outputs.MAJOR }} tag"
+      if: steps.tag-components.outputs.PRE_RELEASE == 'false'
       env:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
       run: |
@@ -77,6 +83,7 @@ jobs:
           echo "Tag v${MAJOR} not found"
 
     - name: "Remove v${{ steps.current-branch-tag-validity.outputs.MAJOR }}.${{ steps.tag-components.outputs.MINOR }} tag"
+      if: steps.tag-components.outputs.PRE_RELEASE == 'false'
       env:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
         MINOR: ${{ steps.tag-components.outputs.MINOR }}
@@ -86,6 +93,7 @@ jobs:
           echo "Tag v${MAJOR}.${MINOR} not found"
 
     - name: "Create new tags"
+      if: steps.tag-components.outputs.PRE_RELEASE == 'false'
       env:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
         MINOR: ${{ steps.tag-components.outputs.MINOR }}
