@@ -280,9 +280,12 @@ runs:
         INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
         REF_TYPE: ${{ github.ref_type }}
       run: |
+        import os
         import sys
 
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
         from versions import set_version_variable
         set_version_variable()
 
@@ -365,9 +368,12 @@ runs:
         CNAME: ${{ inputs.cname }}
         RENDER_LAST: ${{ inputs.render-last }}
       run: |
+        import os
         import sys
 
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
         from versions import write_versions_file
         write_versions_file()
 

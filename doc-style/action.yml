@@ -230,7 +230,7 @@ runs:
     # dependabot, we need to update the reviewdog20 branch with the new release changes.
     # Once performed, we can manually update the commit hash below.
     - name: "Run Vale"
-      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # Read warning above
+      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # zizmor: ignore[stale-action-refs] , Read warning above
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
