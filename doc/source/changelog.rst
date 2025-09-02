@@ -9,11 +9,11 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+
 `10.1.0a0 <https://github.com/ansys/actions/releases/tag/v10.1.0a0>`_ - September 01, 2025
 ==========================================================================================
 
 .. tab-set::
-
 
   .. tab-item:: Added
 
@@ -252,7 +252,6 @@ This document contains the release notes for the Ansys Actions project.
         * - Issues causing release failure
           - `#977 <https://github.com/ansys/actions/pull/977>`_
 
-
   .. tab-item:: Maintenance
 
     .. list-table::
@@ -370,6 +369,17 @@ This document contains the release notes for the Ansys Actions project.
 
         * - Update rolling release
           - `#974 <https://github.com/ansys/actions/pull/974>`_
+
+
+`10.0.16 <https://github.com/ansys/actions/releases/tag/v10.0.16>`_ - September 02, 2025
+========================================================================================
+
+.. tab-set::
+
+    .. tab-item:: Dependencies
+
+        * - Remove transient dependency pin
+          - `#979 <https://github.com/ansys/actions/pull/979>`_
 
 
 `10.0.15 <https://github.com/ansys/actions/releases/tag/v10.0.15>`_ - September 01, 2025
