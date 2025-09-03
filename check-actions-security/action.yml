@@ -140,4 +140,4 @@ runs:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
-        python ${GITHUB_ACTION_PATH}/zizmor-summary.py
+        python ${GITHUB_ACTION_PATH}/../python-utils/zizmor-summary.py
