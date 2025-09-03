@@ -12,6 +12,13 @@ PATH_RE = re.compile(r"[^ /]+/(?:[^ /]+/)?[^ ]*\.yml")
 def main():
     high = os.getenv("HIGH_AUDIT_LEVEL", "")
     strict = os.getenv("STRICT_AUDIT_LEVEL", "")
+    if high not in ["--persona=pedantic", ""]:
+        raise ValueError(f'The value of HIGH_AUDIT_LEVEL environment variable should be "--persona=pedantic", not "{high}".')
+    if strict not in ["--persona=auditor", ""]:
+        raise ValueError(f'The value of STRICT_AUDIT_LEVEL environment variable should be "--persona=auditor", not "{strict}".')
+    if high and strict: # high and strict have both been set
+        raise ValueError("One of HIGH_AUDIT_LEVEL, STRICT_AUDIT_LEVEL environment variables should be set, not both.")
+
     cmd = ["zizmor", *shlex.split(high), *shlex.split(strict), "."]
 
     try:
