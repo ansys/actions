@@ -147,7 +147,9 @@ runs:
           This package requires Python 3.10 or higher.
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
@@ -166,11 +168,12 @@ runs:
         $INSTALL_COMMAND -U pip
 
     - name: Clone ansys/pip-licenses on main branch
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         repository: ansys/pip-licenses
         path: "external/pip-licenses"
         ref: "main"
+        persist-credentials: false
 
     - name: Install ansys/pip-licenses main branch
       shell: bash

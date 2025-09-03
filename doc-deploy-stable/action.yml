@@ -223,7 +223,7 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "$INPUT_REPOSITORY" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> $GITHUB_OUTPUT
         else
           echo "REPOSITORY=${INPUT_REPOSITORY}" >> $GITHUB_OUTPUT
         fi
@@ -232,7 +232,7 @@ runs:
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credential must be persisted in this case
 
     - name: "Ensure that the desired branch exists"
       shell: bash
@@ -280,9 +280,12 @@ runs:
         INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
         REF_TYPE: ${{ github.ref_type }}
       run: |
+        import os
         import sys
 
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
         from versions import set_version_variable
         set_version_variable()
 
@@ -365,9 +368,12 @@ runs:
         CNAME: ${{ inputs.cname }}
         RENDER_LAST: ${{ inputs.render-last }}
       run: |
+        import os
         import sys
 
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
         from versions import write_versions_file
         write_versions_file()
 
