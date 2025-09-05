@@ -140,7 +140,7 @@ runs:
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip twine
+        ${INSTALL_COMMAND} --upgrade pip twine<6.2.0
 
     - name: "Download the library artifacts from build-library step"
       uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
