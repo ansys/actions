@@ -238,7 +238,7 @@ BASE_NORMAL_RELEASE_DATA = [
         "ref_name": "v0.10.10",
         "independent_patch_release": "false",
         "versions": ["0.7", "0.8", "0.9", "0.10", "0.11.0a0", "0.11.0b0"],
-    }
+    },
 ]
 
 BASE_DATA = deepcopy(BASE_PRERELEASE_DATA) + deepcopy(BASE_NORMAL_RELEASE_DATA)
@@ -430,7 +430,10 @@ SPECIAL_TEST_DATA_THREE = [
     }
 ]
 
-@pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_THREE, indirect=True)
+
+@pytest.mark.parametrize(
+    "test_environment_setup", SPECIAL_TEST_DATA_THREE, indirect=True
+)
 def test_prerelease_versions_persist_during_older_release_patch(test_environment_setup):
     set_version_variable()
     remaining_versions = get_versions_list()
@@ -442,6 +445,7 @@ def test_prerelease_versions_persist_during_older_release_patch(test_environment
     remaining_versions.sort()
     expected_result.sort()
     assert remaining_versions == expected_result
+
 
 SPECIAL_TEST_DATA_FOUR = [
     {
@@ -467,4 +471,3 @@ def test_maximum_three_prerelease(test_environment_setup):
     ]
 
     assert len(prerelease_versions) == 2
-
