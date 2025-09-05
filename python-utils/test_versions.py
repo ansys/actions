@@ -232,6 +232,13 @@ BASE_NORMAL_RELEASE_DATA = [
         "independent_patch_release": "false",
         "versions": ["0.1", "0.2", "0.5", "1.0", "1.5"],
     },
+    # Data involving patching an older release
+    {
+        "ref_type": "tag",
+        "ref_name": "v0.10.10",
+        "independent_patch_release": "false",
+        "versions": ["0.7", "0.8", "0.9", "0.10", "0.11.0a0", "0.11.0b0"],
+    }
 ]
 
 BASE_DATA = deepcopy(BASE_PRERELEASE_DATA) + deepcopy(BASE_NORMAL_RELEASE_DATA)
@@ -415,6 +422,30 @@ def test_prerelease_versions_clear_during_normal_release(test_environment_setup)
 SPECIAL_TEST_DATA_THREE = [
     {
         "ref_type": "tag",
+        "ref_name": "v0.10.10",
+        "independent_patch_release": "false",
+        "versions": ["0.7", "0.8", "0.9", "0.10", "0.11.0a0", "0.11.0b0"],
+        "create_versions_directories": True,
+        "create_github_output_file": True,
+    }
+]
+
+@pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_THREE, indirect=True)
+def test_prerelease_versions_persist_during_older_release_patch(test_environment_setup):
+    set_version_variable()
+    remaining_versions = get_versions_list()
+
+    test_data = test_environment_setup
+    versions = test_data["versions"]
+    expected_result = [Version(version) for version in versions]
+
+    remaining_versions.sort()
+    expected_result.sort()
+    assert remaining_versions == expected_result
+
+SPECIAL_TEST_DATA_FOUR = [
+    {
+        "ref_type": "tag",
         "ref_name": "v0.4.0rc1",
         "independent_patch_release": "true",
         "versions": ["0.1", "0.2", "0.3", "0.4.0b1", "0.4.0b2", "0.4.0rc0"],
@@ -425,7 +456,7 @@ SPECIAL_TEST_DATA_THREE = [
 
 
 @pytest.mark.parametrize(
-    "test_environment_setup", SPECIAL_TEST_DATA_THREE, indirect=True
+    "test_environment_setup", SPECIAL_TEST_DATA_FOUR, indirect=True
 )
 def test_maximum_three_prerelease(test_environment_setup):
     set_version_variable()
@@ -436,3 +467,4 @@ def test_maximum_three_prerelease(test_environment_setup):
     ]
 
     assert len(prerelease_versions) == 2
+
