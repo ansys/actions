@@ -31,6 +31,7 @@ description: |
 
 inputs:
 
+  # Optional inputs
   token:
     description: |
       Use the ``GH_TOKEN`` to allow online audits by zizmor.
@@ -63,19 +64,31 @@ inputs:
     default: true
     type: boolean
 
+  checkout:
+    description: |
+      Whether to do a checkout step or not. If ``true``, the checkout step is performed.
+      If ``false``, the checkout is skipped allowing the workspace from a prior step to
+      be used unaltered. By default it is set to ``true``.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      if: ${{ inputs.checkout == 'true' }}
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
 
     - name: "Install uv"
-      uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v6.1.0
+      uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc # v6.4.3
 
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.6.0
+        uv tool install zizmor==1.12.1
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -112,37 +125,6 @@ runs:
                 actions/*: hash-pin
         _EOF_
 
-    - name: "Output a summary of detected vulnerabilities"
-      if: ${{ inputs.generate-summary == 'true' }}
-      shell: bash
-      env:
-        HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
-        STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
-      run: |
-        cat << _EOF_ > zizmor-summary
-        #!/bin/bash
-        # Process zizmor report and generate summary of identified issues
-
-        format="%-50s%-20s\n"
-        printf "\$format" "=========" "================"
-        printf "\$format" "File name" "Number of issues"
-        printf "\$format" "=========" "================"
-
-        count=0
-        while read no_of_occurence workflow_file; do
-            printf "\$format" "\$workflow_file" "\$no_of_occurence"
-            count=\$((count + no_of_occurence))
-        done < <(zizmor $HIGH_AUDIT_LEVEL $STRICT_AUDIT_LEVEL . 2> /dev/null | grep -Eo "[^ /]+/([^ /]+/)?.*\.yml" | sort | uniq -c)
-
-        printf "\$format" "=========" "================"
-        printf "\$format" "Total" "\$count"
-        printf "\$format" "=========" "================"
-        printf "\nNote: the summary excludes warning surpressed by zizmor."
-        _EOF_
-
-        chmod u+x zizmor-summary
-        ./zizmor-summary
-
     - name: "Detailed zizmor audit"
       shell: bash
       env:
@@ -150,3 +132,12 @@ runs:
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
         zizmor ${HIGH_AUDIT_LEVEL} ${STRICT_AUDIT_LEVEL} .
+
+    - name: "Output a summary of detected vulnerabilities"
+      if: ${{ inputs.generate-summary == 'true' }}
+      shell: bash
+      env:
+        HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
+        STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
+      run: |
+        python ${GITHUB_ACTION_PATH}/../python-utils/zizmor-summary.py
