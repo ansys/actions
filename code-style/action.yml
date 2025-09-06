@@ -262,11 +262,18 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         ${ACTIVATE_VENV}
-        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
+        if [[ "${PRE_COMMIT_VERSION}" == "3.8.0" ]]; then
+          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            uv pip install -r requirements.txt
+          else
+            pip install -r requirements.txt
+          fi
         else
-          python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
-        fi
+          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
+          else
+            python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
+          fi
         pre-commit install
 
     - name: "Run pre-commit"
