@@ -1,0 +1,2 @@
+docutils==0.22
+tomli==2.2.1
