@@ -164,8 +164,9 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        ${INSTALL_COMMAND} -r requirements/requirements_build.txt
+        ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements/requirements_build.txt
 
     - name: "Build distribution artifacts"
       shell: bash

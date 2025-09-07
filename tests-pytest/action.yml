@@ -352,11 +352,13 @@ runs:
     - name: "Randomize the order of the tests"
       shell: bash
       if: inputs.randomize == 'true'
+      env:
+        ACTION_PATH: ${{ github.action_path }}
       run: |
         if [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install -r requirements/requirements_pytest.txt
+          uv pip install -r ${ACTION_PATH}/requirements/requirements_pytest.txt
         else
-          python -m pip install -r requirements/requirements_pytest.txt
+          python -m pip install -r ${ACTION_PATH}/requirements/requirements_pytest.txt
         fi
 
     - name: "Executing test suite"

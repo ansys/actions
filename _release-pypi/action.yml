@@ -139,9 +139,10 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
         ${INSTALL_COMMAND} --upgrade pip
-        ${INSTALL_COMMAND} -r requirements/requirements_release_pypi.txt
+        ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements/requirements_release_pypi.txt
 
     - name: "Download the library artifacts from build-library step"
       uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0

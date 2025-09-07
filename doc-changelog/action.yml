@@ -156,13 +156,14 @@ runs:
     - name: "Install towncrier and tomli"
       shell: bash
       env:
+        ACTION_PATH: ${{ github.action_path }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOMLI_VERSION: ${{ inputs.tomli-version }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
         if [[ "${TOWNCRIER_VERSION}" == "24.8.0" && "${TOMLI_VERSION}" == "2.2.1"]]; then
           ${INSTALL_COMMAND} --upgrade pip
-          ${INSTALL_COMMAND} -r requirements/requirements_changelog.txt
+          ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements/requirements_changelog.txt
         else
           ${INSTALL_COMMAND} --upgrade pip
           ${INSTALL_COMMAND} towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
