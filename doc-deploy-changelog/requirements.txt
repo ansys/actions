@@ -1,6 +1,0 @@
-click==8.2.1
-colorama==0.4.6
-Jinja2==3.1.6
-MarkupSafe==3.0.2
-tomli==2.2.1
-towncrier==24.8.0

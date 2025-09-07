@@ -167,20 +167,12 @@ runs:
       run: |
         $INSTALL_COMMAND -U pip
 
-    - name: Clone ansys/pip-licenses on main branch
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      with:
-        repository: ansys/pip-licenses
-        path: "external/pip-licenses"
-        ref: "main"
-        persist-credentials: false
-
     - name: Install ansys/pip-licenses main branch
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system --no-cache' || 'python -m pip install --no-cache-dir' }}
       run: |
-        $INSTALL_COMMAND external/pip-licenses
+        $INSTALL_COMMAND -r external/pip-licenses/requirements.txt
 
     - name: "Check if specific target is requested"
       id: specific-target-requested

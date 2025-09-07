@@ -163,17 +163,16 @@ runs:
           fi
         fi
 
-    - name: "Install tomli"
+    - name: "Install tomli and docutils"
       shell: bash
       env:
        TOMLI_VERSION: ${{ inputs.tomli-version }}
       run: |
-        python -m pip install --upgrade pip tomli==${TOMLI_VERSION}
-
-    - name: "Install docutils"
-      shell: bash
-      run: |
-        python -m pip install --upgrade docutils
+        python -m pip install --upgrade pip
+        if [[ "${TOMLI_VERSION}" == "2.2.1"]]; then
+          python -m pip install -r requirements/requirements_doc_style.txt
+        else
+          python -m pip install tomli==${TOMLI_VERSION} docutils==0.22
 
     - name: "Get towncrier directory"
       shell: python

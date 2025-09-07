@@ -354,9 +354,9 @@ runs:
       if: inputs.randomize == 'true'
       run: |
         if [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install pytest-randomly
+          uv pip install -r requirements/requirements_pytest.txt
         else
-          python -m pip install pytest-randomly
+          python -m pip install -r requirements/requirements_pytest.txt
         fi
 
     - name: "Executing test suite"

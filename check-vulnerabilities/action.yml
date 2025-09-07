@@ -405,14 +405,13 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
-        ACTION_PATH: ${{ github.action_path }}
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install -r "${ACTION_PATH}/requirements.txt"
+          uv pip install -r requirements/requirements_check_vulnerabilities.txt
         else
-          python -m pip install -r "${ACTION_PATH}/requirements.txt"
+          python -m pip install -r requirements/requirements_check_vulnerabilities.txt
         fi
 
     - name:  "Install wget on Windows"

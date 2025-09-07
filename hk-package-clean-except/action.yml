@@ -77,7 +77,7 @@ runs:
       run: |
 
         ${INSTALL_COMMAND} --upgrade pip
-        ${INSTALL_COMMAND} ghapi
+        ${INSTALL_COMMAND} -r requirements/requirements_hk_package.txt
 
     - name: "Declare Python script"
       shell: bash
