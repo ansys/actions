@@ -218,6 +218,7 @@ runs:
           python -m pip install -r ${ACTION_PATH}/requirements/requirements_changelog.txt
         else
           python -m pip install towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
+        fi
 
     - name: "Get towncrier directory and project name"
       shell: python

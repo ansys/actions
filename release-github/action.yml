@@ -358,6 +358,7 @@ runs:
         else
           ${INSTALL_COMMAND} --upgrade pip tomli=="$TOMLI_VERSION"
           ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
+        fi
 
     - name: "Get the release notes body"
       if: inputs.changelog-release-notes == 'true'

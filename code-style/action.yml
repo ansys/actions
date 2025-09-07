@@ -275,6 +275,7 @@ runs:
           else
             python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
           fi
+        fi
         pre-commit install
 
     - name: "Run pre-commit"

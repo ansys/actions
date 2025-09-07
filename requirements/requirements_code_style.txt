@@ -4,7 +4,6 @@ filelock==3.19.1
 identify==2.6.13
 nodeenv==1.9.1
 platformdirs==4.4.0
- (default input)
 pre-commit==3.8.0
 PyYAML==6.0.2
 typing_extensions==4.15.0
