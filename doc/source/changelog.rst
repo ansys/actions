@@ -9,6 +9,54 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.0.20 <https://github.com/ansys/actions/releases/tag/v10.0.20>`_ - September 05, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pin twine correctly
+          - `#988 <https://github.com/ansys/actions/pull/988>`_
+
+
+`10.0.19 <https://github.com/ansys/actions/releases/tag/v10.0.19>`_ - September 05, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve check actions security
+          - `#968 <https://github.com/ansys/actions/pull/968>`_
+
+
+`10.0.17 <https://github.com/ansys/actions/releases/tag/v10.0.17>`_ - September 05, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pin twine to <6.2.0 and bump pypa action
+          - `#983 <https://github.com/ansys/actions/pull/983>`_
+
+
 `10.0.16 <https://github.com/ansys/actions/releases/tag/v10.0.16>`_ - September 02, 2025
 ========================================================================================
 
