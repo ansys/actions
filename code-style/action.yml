@@ -265,9 +265,9 @@ runs:
         ${ACTIVATE_VENV}
         if [[ "${PRE_COMMIT_VERSION}" == "3.8.0" ]]; then
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install -r ${ACTION_PATH}/requirements/requirements_code_style.txt
+            uv pip install -r ${ACTION_PATH}/requirements.txt
           else
-            pip install -r ${ACTION_PATH}/requirements/requirements_code_style.txt
+            pip install -r ${ACTION_PATH}/requirements.txt
           fi
         else
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then

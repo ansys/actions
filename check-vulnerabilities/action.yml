@@ -410,9 +410,9 @@ runs:
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install -r ${ACTION_PATH}/requirements/requirements_check_vulnerabilities.txt
+          uv pip install -r ${ACTION_PATH}/requirements.txt
         else
-          python -m pip install -r ${ACTION_PATH}/requirements/requirements_check_vulnerabilities.txt
+          python -m pip install -r ${ACTION_PATH}/requirements.txt
         fi
 
     - name:  "Install wget on Windows"

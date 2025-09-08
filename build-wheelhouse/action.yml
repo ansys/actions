@@ -368,7 +368,7 @@ runs:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
-        $INSTALL_COMMAND -r ${ACTION_PATH}/requirements/requirements_build.txt
+        $INSTALL_COMMAND -r ${ACTION_PATH}/requirements.txt
 
     - name: "Generate the wheelhouse"
       shell: bash

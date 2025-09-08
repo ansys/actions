@@ -170,9 +170,10 @@ runs:
     - name: Install ansys/pip-licenses main branch
       shell: bash
       env:
+        ACTION_PATH: ${{ github.action_path }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system --no-cache' || 'python -m pip install --no-cache-dir' }}
       run: |
-        $INSTALL_COMMAND -r external/pip-licenses/requirements.txt
+        $INSTALL_COMMAND -r ${ACTION_PATH}/requirements.txt
 
     - name: "Check if specific target is requested"
       id: specific-target-requested

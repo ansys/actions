@@ -349,16 +349,27 @@ runs:
           echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_OUTPUT
         fi
 
+    - uses: ansys/actions/_logging@main
+      if: inputs.randomize == 'true'
+      with:
+        level: "WARNING"
+        message: >
+          Installing pytest-randomly on top of the test dependencies as requested.
+          This might lead to dependency conflicts. Consider adding pytest-randomly
+          to your test dependencies instead.
+
     - name: "Randomize the order of the tests"
       shell: bash
       if: inputs.randomize == 'true'
       env:
         ACTION_PATH: ${{ github.action_path }}
       run: |
+        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+          poetry run pip install pytest-randomly==3.16.0
         if [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install -r ${ACTION_PATH}/requirements/requirements_pytest.txt
+          uv pip install pytest-randomly==3.16.0
         else
-          python -m pip install -r ${ACTION_PATH}/requirements/requirements_pytest.txt
+          python -m pip install pytest-randomly==3.16.0
         fi
 
     - name: "Executing test suite"

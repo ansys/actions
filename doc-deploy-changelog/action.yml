@@ -215,7 +215,7 @@ runs:
       run: |
         python -m pip install --upgrade pip
         if [[ "${TOWNCRIER_VERSION}" == "24.8.0" && "${TOMLI_VERSION}" == "2.2.1"]]; then
-          python -m pip install -r ${ACTION_PATH}/requirements/requirements_changelog.txt
+          python -m pip install -r ${ACTION_PATH}/requirements.txt
         else
           python -m pip install towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
         fi
