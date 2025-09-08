@@ -161,7 +161,7 @@ runs:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOMLI_VERSION: ${{ inputs.tomli-version }}
       run: |
-        if [[ "${TOWNCRIER_VERSION}" == "24.8.0" && "${TOMLI_VERSION}" == "2.2.1"]]; then
+        if [[ "${TOWNCRIER_VERSION}" == "24.8.0" && "${TOMLI_VERSION}" == "2.2.1" ]]; then
           ${INSTALL_COMMAND} --upgrade pip
           ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements.txt
         else

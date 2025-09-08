@@ -352,7 +352,7 @@ runs:
         TOMLI_VERSION: ${{ inputs.tomli-version }}
         PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
       run: |
-        if [[ "${PYPANDOC_BINARY_VERSION}" == "1.15" && "${TOMLI_VERSION}" == "2.2.1"]]; then
+        if [[ "${PYPANDOC_BINARY_VERSION}" == "1.15" && "${TOMLI_VERSION}" == "2.2.1" ]]; then
           ${INSTALL_COMMAND} --upgrade pip
           ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements.txt
         else

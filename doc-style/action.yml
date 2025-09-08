@@ -170,7 +170,7 @@ runs:
         TOMLI_VERSION: ${{ inputs.tomli-version }}
       run: |
         python -m pip install --upgrade pip
-        if [[ "${TOMLI_VERSION}" == "2.2.1"]]; then
+        if [[ "${TOMLI_VERSION}" == "2.2.1" ]]; then
           python -m pip install -r ${ACTION_PATH}/requirements.txt
         else
           python -m pip install tomli==${TOMLI_VERSION} docutils==0.22
