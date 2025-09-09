@@ -211,10 +211,11 @@ def set_version_variable() -> None:
                 )
                 exit(1)
         else:
-            # All existing pre-releases must be removed before the normal release
+            # All existing pre-releases must be removed before the normal release.
             for prerel in existing_prereleases:
                 prerel_path = Path(f"version/{prerel}")
                 shutil.rmtree(prerel_path)
+
             if independent_patch_release:
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
