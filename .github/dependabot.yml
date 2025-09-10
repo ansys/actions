@@ -1,5 +1,4 @@
 version: 2
-enable-beta-ecosystems: true
 updates:
   - package-ecosystem: "pip"
     directories:
@@ -59,6 +58,10 @@ updates:
     schedule:
       interval: "weekly"
       day: "wednesday"
+    cooldown:
+      default-days: 7
+      include:
+        - "*"  # Include all dependencies in cooldown
     commit-message:
       prefix: "build(actions)"
     labels:

@@ -146,16 +146,16 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "${INPUT_REPOSITORY}" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> ${GITHUB_OUTPUT}
         else
           echo "REPOSITORY=${INPUT_REPOSITORY}" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials need to be persisted in this case
 
     - name: "Ensure that the desired branch exists"
       shell: bash
@@ -165,7 +165,7 @@ runs:
         BRANCH:  ${{ inputs.branch }}
       run: | # zizmor: ignore[template-injection] I can't think of any other way to expand input.branch within comments
         # Check the ${{ inputs.branch }} branch exists on remote
-        branch_exists=$(git ls-remote --heads origin "refs/heads/${BRANCH}" 2>&1)
+        branch_exists=$(git ls-remote --branches origin "refs/heads/${BRANCH}" 2>&1)
 
         # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
@@ -210,7 +210,7 @@ runs:
         rm -rf version/dev && mkdir -p version/dev
 
     - name: "Download the development documentation artifact"
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/dev
@@ -296,7 +296,6 @@ runs:
           sed -i 's/href="\([^:"]*\)"/href="version\/stable\/\1"/g' index.html
           sed -i 's/src="\([^:"]*\)"/src="version\/stable\/\1"/g' index.html
           sed -i 's/action="search.html"/action="version\/stable\/search.html"/g' index.html
-          sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/stable/_static/js/meilisearch_theme_wrap.js"|g' index.html
           sed -i 's|const SEARCH_FILE = ".*_static/search.json";|const SEARCH_FILE = "version/stable/_static/search.json";|g' index.html
           sed -i '/const ADVANCE_SEARCH_PATH = "search.html";/s|search.html|version/stable/search.html|' index.html
           sed -i 's|<html lang="en" data-content_root="./" >|<html lang="en" data-content_root="./version/stable/" >|g' index.html
@@ -305,7 +304,6 @@ runs:
           sed -i 's/href="\([^:"]*\)"/href="version\/dev\/\1"/g' index.html
           sed -i 's/src="\([^:"]*\)"/src="version\/dev\/\1"/g' index.html
           sed -i 's/action="search.html"/action="version\/dev\/search.html"/g' index.html
-          sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/dev/_static/js/meilisearch_theme_wrap.js"|g' index.html
           sed -i 's|const SEARCH_FILE = ".*_static/search.json";|const SEARCH_FILE = "version/dev/_static/search.json";|g' index.html
           sed -i '/const ADVANCE_SEARCH_PATH = "search.html";/s|search.html|version/dev/search.html|' index.html
           sed -i 's|<html lang="en" data-content_root="./" >|<html lang="en" data-content_root="./version/dev/" >|g' index.html
@@ -357,9 +355,19 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - name: Check that version/stable directory exists
+      id: version-stable-exists
+      shell: bash
+      run: |
+        if [[ -d "version/stable" ]]; then
+          echo "VERSION_STABLE_EXISTS=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "VERSION_STABLE_EXISTS=false" >> ${GITHUB_OUTPUT}
+        fi
+
     - uses: ansys/actions/_logging@main
       # Apply this step only if 'version/stable/' dir exists
-      if: ${{ hashFiles('version/stable/' != '') }}
+      if: ${{ steps.version-stable-exists.outputs.VERSION_STABLE_EXISTS == 'true' }}
       with:
         level: "INFO"
         message: >
@@ -369,7 +377,7 @@ runs:
     - name: "Generate 'sitemap.xml' file"
       uses: ansys/actions/_doc-gen-sitemap@main
       # Apply this step only if 'version/stable/' dir exists
-      if: ${{ hashFiles('version/stable/' != '') }}
+      if: ${{ steps.version-stable-exists.outputs.VERSION_STABLE_EXISTS == 'true' }}
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable

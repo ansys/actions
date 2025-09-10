@@ -109,6 +109,10 @@ def get_tag_section(changelog_file: Path, body: str) -> str:
         else:
             print("Cannot generate release notes from changelog file.")
 
+    # Trimming first line to remove the tag and date since it is not needed for
+    # the github release notes
+    body = "\n".join(body.split("\n")[1:])
+
     return body
 
 

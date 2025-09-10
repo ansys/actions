@@ -64,7 +64,7 @@ inputs:
   towncrier-version:
     description: |
       Towncrier version used for creating fragment files.
-    default: '23.11.0'
+    default: '24.8.0'
     required: false
     type: string
 
@@ -93,7 +93,9 @@ inputs:
 
   use-conventional-commits:
     description: |
-      Use conventional commits to cateogrize towncrier fragments.
+      Use pull request title to determine the changelog category based on
+      conventional commits. If ``false``, the labels in the pull request are used
+      to determine the changelog category.
     required: false
     default: false
     type: boolean
@@ -137,11 +139,11 @@ runs:
     - name: "Install Git and clone project"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         # Required to checkout branch from origin rather than remote
         ref: ${{ env.PR_BRANCH }}
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials should be persisted
 
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
@@ -168,7 +170,9 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
         from parse_pr_title import get_first_letter_case
 
@@ -196,7 +200,9 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
         from parse_pr_title import get_conventional_commit_type
 
@@ -209,10 +215,11 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ github.event.repository.name }}
+        GH_EVENT_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
         # Get the labels in the pull request
-        pr_labels=$(gh api repos/${{ github.repository_owner }}/${REPO_NAME}/pulls/${{ github.event.number }} --jq '.labels.[].name')
+        pr_labels=$(gh api repos/${GITHUB_REPOSITORY_OWNER}/${REPO_NAME}/pulls/${GH_EVENT_NUMBER} --jq '.labels.[].name')
 
         # Save the labels to an environment variable
         # For example, LABELS="enhancement maintenance"
@@ -222,12 +229,15 @@ runs:
       if: ${{ inputs.use-conventional-commits == 'true' }}
       shell: python
       run: |
+        import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
         from parse_pr_title import changelog_category_cc
 
-        cc_type = ${{ env.CC_TYPE }}
+        cc_type = os.getenv("CC_TYPE")
         changelog_category_cc(cc_type)
 
     - name: "Set PR label environment variable"
@@ -238,19 +248,23 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import changelog_cateogry_labels
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr_title import changelog_categorize_based_on_labels
 
         labels = os.environ.get("LABELS")
-        changelog_cateogry_labels(labels)
+        changelog_categorize_based_on_labels(labels)
 
     - name: "Remove PR fragment file if it already exists"
       shell: bash
+      env:
+        GH_EVENT_NUMBER: ${{ github.event.number }}
       run: |
         # Find files containing the PR number
         # For example, 20.*.md
-        file=`find . -type f -name "${{ github.event.number }}.*.md"`
+        file=`find . -type f -name "${GH_EVENT_NUMBER}.*.md"`
 
         # If the fragment file exists, then delete the file
         if [ ! -z "$file" ]; then
@@ -266,7 +280,9 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
         from parse_pr_title import clean_pr_title
 
@@ -312,12 +328,14 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
         from parse_pr_title import add_towncrier_config
 
         repo_name = os.environ.get("REPO_NAME")
-        org_name = "${{ github.repository_owner }}"
+        org_name = os.getenv("GITHUB_REPOSITORY_OWNER")
 
         default_config = True if os.environ.get("USE_DEFAULT_TOWNCRIER_CONFIG") == "true" else False
 
@@ -329,7 +347,9 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
         from parse_pr_title import rewrite_template
 
@@ -357,14 +377,15 @@ runs:
       env:
         BOT_USER: ${{ inputs.bot-user }}
         BOT_EMAIL: ${{ inputs.bot-email }}
+        GH_EVENT_NUMBER: ${{ github.event.number }}
       run: |
         # Changelog fragment file in the following format
         # For example, 20.added.md
-        fragment="${{ github.event.number }}.${{ env.CHANGELOG_SECTION }}.md"
+        fragment="${GH_EVENT_NUMBER}.${CHANGELOG_SECTION}.md"
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
+        towncrier create -c "${CLEAN_TITLE}" $fragment
 
         # Configure git username & email
         git config user.name "${BOT_USER}"

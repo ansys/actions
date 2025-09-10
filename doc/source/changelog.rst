@@ -9,6 +9,169 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.0.20 <https://github.com/ansys/actions/releases/tag/v10.0.20>`_ - September 05, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pin twine correctly
+          - `#988 <https://github.com/ansys/actions/pull/988>`_
+
+
+`10.0.19 <https://github.com/ansys/actions/releases/tag/v10.0.19>`_ - September 05, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve check actions security
+          - `#968 <https://github.com/ansys/actions/pull/968>`_
+
+
+`10.0.17 <https://github.com/ansys/actions/releases/tag/v10.0.17>`_ - September 05, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pin twine to <6.2.0 and bump pypa action
+          - `#983 <https://github.com/ansys/actions/pull/983>`_
+
+
+`10.0.16 <https://github.com/ansys/actions/releases/tag/v10.0.16>`_ - September 02, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove transient dependency pin
+          - `#979 <https://github.com/ansys/actions/pull/979>`_
+
+
+`10.0.15 <https://github.com/ansys/actions/releases/tag/v10.0.15>`_ - September 01, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Temporary pin `typer` dependency (transitive)
+          - `#971 <https://github.com/ansys/actions/pull/971>`_
+
+
+`10.0.14 <https://github.com/ansys/actions/releases/tag/v10.0.14>`_ - August 06, 2025
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Run safety on exported dependencies
+          - `#920 <https://github.com/ansys/actions/pull/920>`_
+
+        * - Add end of file newline to changelog fragment file on generation
+          - `#931 <https://github.com/ansys/actions/pull/931>`_
+
+        * - Keep running when advisories are not reachable
+          - `#932 <https://github.com/ansys/actions/pull/932>`_
+
+        * - ``check-vulnerabilities`` action on Windows and projects using ``poetry``
+          - `#945 <https://github.com/ansys/actions/pull/945>`_
+
+
+`10.0.13 <https://github.com/ansys/actions/releases/tag/v10.0.13>`_ - July 25, 2025
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Replace broken links with correct ones
+          - `#930 <https://github.com/ansys/actions/pull/930>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Capitalization of changelog fragments
+          - `#934 <https://github.com/ansys/actions/pull/934>`_
+
+
+`10.0.12 <https://github.com/ansys/actions/releases/tag/v10.0.12>`_ - June 26, 2025
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Adding mention of pyansys dev guide for vulnerabilities
+          - `#916 <https://github.com/ansys/actions/pull/916>`_
+
+
+`10.0.11 <https://github.com/ansys/actions/releases/tag/v10.0.11>`_ - June 12, 2025
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improving error message for smoke tests
+          - `#908 <https://github.com/ansys/actions/pull/908>`_
+
+
 `10.0.10 <https://github.com/ansys/actions/releases/tag/v10.0.10>`_ - June 11, 2025
 ===================================================================================
 

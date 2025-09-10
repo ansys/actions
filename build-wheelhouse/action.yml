@@ -153,7 +153,9 @@ runs:
 
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
 
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
@@ -178,13 +180,12 @@ runs:
       shell: bash
       env:
         TARGET: ${{ inputs.target }}
-        WORKING_DIRECTORY: ${{ inputs.working-directory }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '' || echo "--with ${TARGET}")" >> ${GITHUB_OUTPUT}
         else
-          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "${WORKING_DIRECTORY}" || echo "${WORKING_DIRECTORY}[${TARGET}]")" >> ${GITHUB_OUTPUT}
+          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "." || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
         fi
         echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
@@ -195,7 +196,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -236,7 +237,7 @@ runs:
       id: virtual-environment-activation-command
       shell: bash
       run: |
-        if [[ ${{ runner.os }} == 'Windows' ]]; then
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
           echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
         else
           echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
@@ -261,9 +262,11 @@ runs:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       shell: bash
       run: |
         ${ACTIVATE_VENV}
+        cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install ${INSTALL_TARGET}
         else
@@ -352,7 +355,7 @@ runs:
 
     - name: Generate build provenance attestation
       if: ${{ inputs.attest-provenance == 'true' }}
-      uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
+      uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
       with:
         subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
 
@@ -372,13 +375,16 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
       run: |
         ${ACTIVATE_VENV}
+        cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
-          pip wheel -w wheelhouse -r wheel_reqs.txt
+          pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
         else
-          python -m pip wheel "${INSTALL_TARGET}" -w wheelhouse
+          python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
         fi
 
     - name: "Compress the wheelhouse"
@@ -396,7 +402,7 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
+      uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
       with:
         subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 

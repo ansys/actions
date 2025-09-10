@@ -132,9 +132,10 @@ inputs:
 
   optional-dependencies-name:
     description: |
-      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      Any valid install targets/extras defined in the ``pyproject.toml`` file, or the suffix
       of a requirement file. Multiple targets can be specified as a comma-separated
-      list. The associated dependencies are installed before building the documentation.
+      list (space-separated for poetry-based projects). The associated dependencies are installed
+      before building the documentation.
     required: true
     type: string
 
@@ -144,6 +145,14 @@ inputs:
       targets can be specified as a comma-separated list. The associated dependencies
       are installed before running the documentation build. If set to ``''``, the action
       will not use dependency groups.
+    required: true
+    type: string
+
+  uploaded-artifact-name-prefix:
+    description: |
+      A prefix prepended to the name of the uploaded html and pdf artifacts.
+      The full name is ``<prefix>-html`` and ``<prefix>-pdf`` for the html and
+      pdf artifacts respectively. Default value is `documentation`.
     required: true
     type: string
 
@@ -165,7 +174,7 @@ runs:
         fi
 
     - name: "Cache apt packages needed"
-      uses: awalsh128/cache-apt-pkgs-action@5902b33ae29014e6ca012c5d8025d4346556bd40 # v1.4.3
+      uses: awalsh128/cache-apt-pkgs-action@2c09a5e66da6c8016428a2172bd76e5e4f14bb17 # v1.5.3
       if: inputs.skip-dependencies-cache == 'false' && steps.needed-dependencies.outputs.NEEDED_DEPS != ''
       with:
         packages: ${{ steps.needed-dependencies.outputs.NEEDED_DEPS }}
@@ -254,7 +263,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH  # zizmor: ignore[github-env]
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH  # zizmor: ignore[github-env]
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -349,7 +358,11 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install --with "${OPTIONAL_DEPENDENCIES_NAME}"
+          if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]]; then
+            poetry install --with "${GROUP_DEPENDENCIES_NAME}" --extras "${OPTIONAL_DEPENDENCIES_NAME}"
+          else
+            poetry install --extras "${OPTIONAL_DEPENDENCIES_NAME}"
+          fi
         else
           # Optional dependencies
           optional_dependencies_flag=""
@@ -426,7 +439,7 @@ runs:
       shell: bash
       run: |
         source .venv/bin/activate
-        python ${{ github.action_path }}/../python-utils/parse_doc_conf.py
+        python ${GITHUB_ACTION_PATH}/../python-utils/parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
@@ -545,13 +558,13 @@ runs:
     - name: "Upload HTML documentation artifact"
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: documentation-html
+        name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: "Upload PDF documentation artifact"
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: documentation-pdf
+        name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf
         retention-days: 7

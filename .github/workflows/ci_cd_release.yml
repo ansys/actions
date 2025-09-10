@@ -7,7 +7,7 @@ on:
 env:
   MAIN_PYTHON_VERSION: '3.12'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
-  LIBRARY_NAME: 'ansys-actions'
+  LIBRARY_NAME: 'ansys-actions-flit'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -42,15 +42,21 @@ jobs:
 
     - name: "Decompose tag into components"
       id: tag-components
+      shell: bash
       run: |
-        if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?$ ]]; then
           # Split the tag into its components
           IFS='.' read -ra PARTS <<< "$REF_NAME"
           echo "V_AND_MAJOR=${PARTS[0]}" >> $GITHUB_OUTPUT
           echo "MINOR=${PARTS[1]}" >> $GITHUB_OUTPUT
           echo "PATCH=${PARTS[2]}" >> $GITHUB_OUTPUT
+            if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
+            else
+              echo "PRE_RELEASE=true" >> ${GITHUB_OUTPUT}
+            fi
         else
-          echo "Invalid tag format. Expected vX.Y.Z but got $REF_NAME"
+          echo "Invalid tag format. Expected vX.Y.Z[{a|b|rc}N] but got $REF_NAME"
           exit 1
         fi
 
@@ -69,6 +75,7 @@ jobs:
         fi
 
     - name: "Remove v${{ steps.current-branch-tag-validity.outputs.MAJOR }} tag"
+      if: steps.tag-components.outputs.PRE_RELEASE == 'false'
       env:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
       run: |
@@ -77,6 +84,7 @@ jobs:
           echo "Tag v${MAJOR} not found"
 
     - name: "Remove v${{ steps.current-branch-tag-validity.outputs.MAJOR }}.${{ steps.tag-components.outputs.MINOR }} tag"
+      if: steps.tag-components.outputs.PRE_RELEASE == 'false'
       env:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
         MINOR: ${{ steps.tag-components.outputs.MINOR }}
@@ -86,6 +94,7 @@ jobs:
           echo "Tag v${MAJOR}.${MINOR} not found"
 
     - name: "Create new tags"
+      if: steps.tag-components.outputs.PRE_RELEASE == 'false'
       env:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
         MINOR: ${{ steps.tag-components.outputs.MINOR }}
@@ -172,9 +181,9 @@ jobs:
     - name: "Build distribution artifacts and check their health"
       shell: bash
       run: |
-        python -m build .ci/${{ env.LIBRARY_NAME }}
-        ls -R .ci/${{ env.LIBRARY_NAME }}/dist
-        python -m twine check .ci/${{ env.LIBRARY_NAME }}/dist/**
+        python -m build .ci/${LIBRARY_NAME}
+        ls -R .ci/${LIBRARY_NAME}/dist
+        python -m twine check .ci/${LIBRARY_NAME}/dist/**
 
     - name: "Upload distribution artifacts"
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -229,7 +238,7 @@ jobs:
       run: ls -R
 
     - name: "Upload artifacts to test PyPI using trusted publisher"
-      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
       with:
         repository-url: "https://test.pypi.org/legacy/"
         print-hash: true

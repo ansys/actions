@@ -33,6 +33,11 @@ description: |
       If your project is using ``ansys/actions@v3`` or lower and you would
       like to update to this version of the actions, see the `Enable multi-version documentation <https://dev.docs.pyansys.com/how-to/documenting.html#enable-multi-version-documentation>`_ .
 
+  .. note::
+
+      Pre-releases are not supported prior to ``ansys/actions/v10.1``. `See the migration guide <https://actions.docs.ansys.com/version/stable/migrations/index.html>`_
+      for information on supported pre-releases.
+
 inputs:
 
   # Required inputs
@@ -151,6 +156,29 @@ inputs:
     default: true
     type: string
 
+  python-version:
+    description: |
+      Python version used for various steps of the action
+    required: false
+    default: '3.13'
+    type: string
+
+  use-python-cache:
+    description: |
+      Whether to use the Python cache to install previously downloaded libraries.
+      If ``true``, downloaded libraries are installed from cache. If ``false``,
+      they are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -161,58 +189,23 @@ runs:
         message: >
           Collect the version number from the tag or the branch name according
           to the reference type. Tags names are expected to follow
-          'v<MAJOR>.<MINOR>' or 'v<MAJOR>.<MINOR>.<PATCH>'. Braches must follow
+          'v<MAJOR>.<MINOR>' or 'v<MAJOR>.<MINOR>.<PATCH>'. Branches must follow
           'release/<MAJOR>.<MINOR>'.
 
-    - name: "Collect version number from the tag"
-      id: version-raw-tag
-      env:
-        REF_NAME: ${{ github.ref_name }}
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - name: "Install packaging"
       shell: bash
-      if: github.ref_type == 'tag'
-      run: |
-        tag="$REF_NAME"
-        version=$( echo $tag | cut -d 'v' -f 2)
-
-        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_OUTPUT
-        else
-          echo -e "\033[1;91m[ERROR]: Tag names must follow 'v<MAJOR>.<MINOR>.<PATCH> name convention.'\033[0m"
-          exit 1
-        fi
-
-    - name: "Collect version number from the release branch"
-      id: version-raw-branch
       env:
-        REF_NAME: ${{ github.ref_name }}
-      shell: bash
-      if: github.ref_type == 'branch'
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        tag="$REF_NAME"
-        version=$( echo $tag | cut -d '/' -f 2)
-
-        if [[ $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ ]]; then
-          echo "VERSION_RAW=$(echo $version)" >> $GITHUB_OUTPUT
-        else
-          echo -e "\033[1;91m[ERROR]: Branch names must follow 'release/<MAJOR>.<MINOR>' name convention.\033[0m"
-          echo -e "\033[1;91m[ERROR]: or 'release/<MAJOR>.<MINOR>.<PATCH>' name convention.\033[0m"
-          exit 1
-        fi
-
-    - name: "Assemble the version number using the collected major and minor numbers"
-      shell: bash
-      id: version-number
-      env:
-        INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
-        VERSION_RAW: ${{ github.ref_type == 'tag' && steps.version-raw-tag.outputs.VERSION_RAW || steps.version-raw-branch.outputs.VERSION_RAW }}
-      run: |
-          if [[ $INDEPENDENT_PATCH_RELEASE_DOCS == 'true' ]]; then
-            echo "VERSION=$VERSION_RAW" >> $GITHUB_OUTPUT
-          else
-            major=$(echo "$VERSION_RAW" | cut -d . -f 1)
-            minor=$(echo "$VERSION_RAW" | cut -d . -f 2)
-            echo "VERSION=$major.$minor" >> $GITHUB_OUTPUT
-          fi
+        ${INSTALL_COMMAND} --upgrade pip packaging
 
     # ------------------------------------------------------------------------
 
@@ -230,16 +223,16 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "$INPUT_REPOSITORY" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> $GITHUB_OUTPUT
         else
           echo "REPOSITORY=${INPUT_REPOSITORY}" >> $GITHUB_OUTPUT
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credential must be persisted in this case
 
     - name: "Ensure that the desired branch exists"
       shell: bash
@@ -249,7 +242,7 @@ runs:
         BRANCH: ${{ inputs.branch }}
       run: | # zizmor: ignore[template-injection] I can't think of any other way to expand input.branch within comments
         # Check the ${{ inputs.branch }} branch exists on remote
-        branch_exists=$(git ls-remote --heads origin "refs/heads/${BRANCH}" 2>&1)
+        branch_exists=$(git ls-remote --branches origin "refs/heads/${BRANCH}" 2>&1)
 
         # If the ${{ inputs.branch }} doesn't exist, then print error message and exit 1
         if [ -z "$branch_exists" ]; then
@@ -279,6 +272,25 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - name: "Determine the version number"
+      shell: python
+      id: version-number
+      env:
+        REF_NAME: ${{ github.ref_name }}
+        INDEPENDENT_PATCH_RELEASE_DOCS: ${{ inputs.independent-patch-release-docs }}
+        REF_TYPE: ${{ github.ref_type }}
+      run: |
+        import os
+        import sys
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from versions import set_version_variable
+        set_version_variable()
+
+    # ------------------------------------------------------------------------
+
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
@@ -302,7 +314,7 @@ runs:
         rm -rf version/${VERSION} && mkdir -p version/${VERSION}
 
     - name: "Download the stable documentation artifact"
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/${{ steps.version-number.outputs.VERSION }}
@@ -349,71 +361,26 @@ runs:
       run: |
         sudo apt-get install -y moreutils jq
 
-    - name: "Create a clean 'versions.json' file"
-      shell: bash
-      run: |
-        rm -rf versions.json && touch versions.json && echo '[]' > versions.json
-
-    - name: "Add the development version to the 'versions.json' file"
-      shell: bash
+    - name: "Write the versions.json file"
+      id: versions-json-file
+      shell: python
       env:
         CNAME: ${{ inputs.cname }}
-      run: |
-        url_dev="https://${CNAME}/version/dev/"
-        jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
-        cat versions.json
-
-    - name: "Populate the 'versions.json' file with the desired amount of versions"
-      shell: bash
-      env:
         RENDER_LAST: ${{ inputs.render-last }}
-        CNAME: ${{ inputs.cname }}
       run: |
-        for version in $( ls version | \
-                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
-                          sort -r --version-sort | \
-                          head -$RENDER_LAST); do
-          url="https://${CNAME}/version/$version/"
-          jq --arg version $version --arg url $url '. += [{"name": $version, "version": $version, "url": $url}]' < versions.json | sponge versions.json
-        done
+        import os
+        import sys
 
-        cat versions.json
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
-    - name: "Add an 'Older versions' item if required"
-      shell: bash
-      env:
-        RENDER_LAST: ${{ inputs.render-last }}
-        CNAME: ${{ inputs.cname }}
-      run: |
-        num_versions=$(jq length versions.json)
-
-        if [ $num_versions -gt $RENDER_LAST ]; then
-          cname="$CNAME"
-          new_item="{ \"name\": \"Older versions\", \"version\": \"N/A\", \"url\": \"https://$cname/version/\" }"
-          jq ". + [$new_item]" versions.json > tmp.json && mv tmp.json versions.json
-        fi
-
-    - name: "Convert the first stable version into the 'stable' one"
-      shell: bash
-      env:
-        CNAME: ${{ inputs.cname }}
-      run: |
-        jq '.[1].name += " (stable)"' versions.json | sponge versions.json
-        url_stable="https://${CNAME}/version/stable/"
-        jq --arg url $url_stable '.[1].url = $url' versions.json | sponge versions.json
-        cat versions.json
-
-    - name: "Find the latest stable version"
-      id: latest-stable-version
-      shell: bash
-      run: |
-        stable_version=$(jq '.[1].version' versions.json | grep -o '".*"' | sed 's/"//g')
-        echo "LATEST_STABLE_VERSION=$stable_version" >> $GITHUB_OUTPUT
+        from versions import write_versions_file
+        write_versions_file()
 
     - name: "Update the content for the 'version/stable' folder"
       shell: bash
       env:
-        LATEST_STABLE_VERSION: ${{ steps.latest-stable-version.outputs.LATEST_STABLE_VERSION }}
+        LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
       run: |
         rm -rf version/stable && cp -r version/${LATEST_STABLE_VERSION} version/stable
 
@@ -438,7 +405,7 @@ runs:
 
     - name: "Render the 'announcement.html' template with the desired stable version"
       env:
-        LATEST_STABLE_VERSION: ${{ steps.latest-stable-version.outputs.LATEST_STABLE_VERSION }}
+        LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
         CNAME: ${{ inputs.cname }}
       shell: bash
       run: |
@@ -449,6 +416,8 @@ runs:
 
     - name: "Place the 'announcement.html' file in every public folder of all the outdated versions"
       shell: bash
+      env:
+        LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
       run: |
         for version_dir in $( ls version | \
                           grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
@@ -495,7 +464,6 @@ runs:
           sed -i 's/href="\([^:"]*\)"/href="version\/stable\/\1"/g' index.html
           sed -i 's/src="\([^:"]*\)"/src="version\/stable\/\1"/g' index.html
           sed -i 's/action="search.html"/action="version\/stable\/search.html"/g' index.html
-          sed -i 's|script\.src = ".*_static/js/meilisearch_theme_wrap\.js"|script.src = "version/stable/_static/js/meilisearch_theme_wrap.js"|g' index.html
           sed -i 's|const SEARCH_FILE = ".*_static/search.json";|const SEARCH_FILE = "version/stable/_static/search.json";|g' index.html
           sed -i '/const ADVANCE_SEARCH_PATH = "search.html";/s|search.html|version/stable/search.html|' index.html
           sed -i 's|<html lang="en" data-content_root="./" >|<html lang="en" data-content_root="./version/stable/" >|g' index.html

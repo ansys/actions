@@ -86,7 +86,9 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
       if: inputs.checkout == 'true'
 
     # ------------------------------------------------------------------------
@@ -102,7 +104,7 @@ runs:
       id: check-docker-directory-exists
       shell: bash
       run: |
-        if [ -d "${{ github.workspace }}/docker" ]; then
+        if [ -d "${GITHUB_WORKSPACE}/docker" ]; then
           echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
         else
           echo "HAS_DOCKER_DIR=false" >> $GITHUB_OUTPUT
@@ -138,7 +140,7 @@ runs:
         NON_EXISTING_DIRS=""
         for directory in ${DIRECTORY}
         do
-          if [ -d "${{ github.workspace }}/$directory" ]; then
+          if [ -d "${GITHUB_WORKSPACE}/$directory" ]; then
             EXISTING_DIRS+="$directory "
           else
             NON_EXISTING_DIRS+="$directory "

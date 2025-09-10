@@ -110,12 +110,24 @@ inputs:
     required: false
     type: boolean
 
+  checkout:
+    description: |
+      Whether to do a checkout step or not. If ``true``, the checkout step is performed.
+      If ``false``, the checkout is skipped allowing the workspace from a prior step to
+      be used unaltered. By default it is set to ``true``.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
+      if: ${{ inputs.checkout == 'true' }}
 
     # ------------------------------------------------------------------------
 
@@ -168,7 +180,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env]
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env]
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -206,7 +218,7 @@ runs:
       id: virtual-environment-activation-command
       shell: bash
       run: |
-        if [[ ${{ runner.os }} == 'Windows' ]]; then
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
           echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
         else
           echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}

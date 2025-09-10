@@ -182,10 +182,10 @@ inputs:
 
   optional-dependencies-name:
     description: |
-      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      Any valid install targets/extras defined in the ``pyproject.toml`` file, or the suffix
       of a requirement file. Multiple targets can be specified as a comma-separated
-      list. The associated dependencies are installed before building the documentation.
-      Default value is ``doc``.
+      list (space-separated for poetry-based projects). The associated dependencies are installed
+      before building the documentation. Default value is ``doc``.
     default: 'doc'
     required: false
     type: string
@@ -200,6 +200,15 @@ inputs:
     required: false
     type: string
 
+  uploaded-artifact-name-prefix:
+    description: |
+      A prefix prepended to the name of the uploaded html and pdf artifacts.
+      The full name is ``<prefix>-html`` and ``<prefix>-pdf`` for the html and
+      pdf artifacts respectively. Default value is `documentation`.
+    default: 'documentation'
+    required: false
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -207,7 +216,9 @@ runs:
     # --------------- Common to linux and windows doc-build ----------------
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
@@ -236,6 +247,7 @@ runs:
         use-uv: ${{ inputs.use-uv }}
         optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
         group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
 
     # ------------------------------------------------------------------------
 
@@ -262,3 +274,4 @@ runs:
         use-uv: ${{ inputs.use-uv }}
         optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
         group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
