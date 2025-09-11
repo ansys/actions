@@ -369,7 +369,7 @@ runs:
 
         # Get the path to your pyproject.toml file
         github_workspace = os.getenv("GITHUB_WORKSPACE")
-        pyproject_path = Path(f"{github.workspace}") / "pyproject.toml"
+        pyproject_path = Path(github_workspace) / "pyproject.toml"
 
         get_release_notes(pyproject_path)
 
