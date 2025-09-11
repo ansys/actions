@@ -9,6 +9,87 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.1.0rc0 <https://github.com/ansys/actions/releases/tag/v10.1.0rc0>`_ - September 11, 2025
+============================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve check actions security
+          - `#968 <https://github.com/ansys/actions/pull/968>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump the github-actions group across 15 directories with 2 updates
+          - `#965 <https://github.com/ansys/actions/pull/965>`_
+
+        * - Bump the github-actions group across 2 directories with 1 update
+          - `#993 <https://github.com/ansys/actions/pull/993>`_
+
+        * - Bump amannn/action-semantic-pull-request from 5.5.3 to 6.1.1 in /check-pr-title in the style-related-actions group across 1 directory
+          - `#994 <https://github.com/ansys/actions/pull/994>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#995 <https://github.com/ansys/actions/pull/995>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update zizmor documentation
+          - `#992 <https://github.com/ansys/actions/pull/992>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pin twine to <6.2.0 and bump pypa action
+          - `#983 <https://github.com/ansys/actions/pull/983>`_
+
+        * - Pin twine correctly
+          - `#988 <https://github.com/ansys/actions/pull/988>`_
+
+        * - Wrong identifier in python block
+          - `#996 <https://github.com/ansys/actions/pull/996>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove transient dependency pin
+          - `#979 <https://github.com/ansys/actions/pull/979>`_
+
+
+  .. tab-item:: Test
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add more pre-release tests
+          - `#986 <https://github.com/ansys/actions/pull/986>`_
+
+
 `10.1.0a0 <https://github.com/ansys/actions/releases/tag/v10.1.0a0>`_ - September 01, 2025
 ==========================================================================================
 
