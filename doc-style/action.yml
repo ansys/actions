@@ -104,7 +104,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v10.1.0a0
+    - uses: ansys/actions/_logging@v10.1.0rc0
       if: inputs.toml-version != ''
       with:
         level: "ERROR"
@@ -121,7 +121,7 @@ runs:
         persist-credentials: false
       if: inputs.checkout == 'true'
 
-    - uses: ansys/actions/_logging@v10.1.0a0
+    - uses: ansys/actions/_logging@v10.1.0rc0
       with:
         level: "INFO"
         message: >
