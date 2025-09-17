@@ -33,7 +33,7 @@ Version ``v10.1``
 
 **Migration Steps:**
 
-- For Poetry-based projects, ensure that you provide the correct values for ``optional-dependencies-name`` (default: ``doc``) and ``group-dependencies-name``. 
+- For Poetry-based projects, ensure that you provide the correct values for ``optional-dependencies-name`` (default: ``doc``) and ``group-dependencies-name``.
 
   - ``optional-dependencies-name``: Refers to the extras defined in the ``pyproject.toml`` file.
   - ``group-dependencies-name``: Refers to the dependency groups defined in the same file.
