@@ -68,7 +68,7 @@ Version ``v10.1``
           runs-on: ubuntu-latest
           steps:
           - name: "Run Ansys documentation building action"
-            uses: ansys/actions/doc-build@ed773aba3478d311decff2d4313e0cd19a945dd8  # v10.1.0
+            uses: ansys/actions/doc-build@ed773aba3478d311decff2d4313e0cd19a945dd8  # v10.1.1
             with:
               check-links: false
               dependencies: "pandoc"
