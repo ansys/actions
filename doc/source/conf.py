@@ -66,10 +66,10 @@ html_theme_options = {
         "json_url": f"https://{cname}/versions.json",
         "version_match": switcher_version,
     },
-    "cheatsheet": {
-        "file": "cheat_sheet.qmd",
-        "title": "Actions cheat sheet",
-    },
+    # "cheatsheet": {
+    #     "file": "cheat_sheet.qmd",
+    #     "title": "Actions cheat sheet",
+    # },
 }
 
 # Specify Sphinx extensions to use
