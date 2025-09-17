@@ -9,6 +9,7 @@ have been updated.
 
 Version ``v10.1``
 -----------------
+
 **New Features:**
 
 - ``ansys/actions/doc-deploy-stable`` action now supports pre-releases. The identifiers must be one of ``a|b|rc`` for alpha, beta, and
@@ -29,6 +30,52 @@ Version ``v10.1``
 - Introduced an ``upload-artifact-name-prefix`` option (default: ``documentation``) in the ``doc-build`` action, enabling customization of uploaded
   documentation artifact names. This also allows distinct documentation artifacts to be uploaded for separate documentation build jobs within the
   same workflow.
+
+**Migration Steps:**
+
+- For Poetry-based projects, ensure that you provide the correct values for ``optional-dependencies-name`` (default: ``doc``) and ``group-dependencies-name``.
+
+  - ``optional-dependencies-name``: Refers to the extras defined in the ``pyproject.toml`` file.
+  - ``group-dependencies-name``: Refers to the dependency groups defined in the same file.
+
+  If your documentation dependencies are defined as extras, changes to your workflow are likely not needed since the default value for ``optional-dependencies-name``
+  will target the ``doc`` extra. However, using dependency groups (as is the case with most PyAnsys libraries) requires the following update to your workflow:
+
+  .. tab-set::
+
+    .. tab-item:: Before
+
+      .. code:: yaml
+
+        doc-build:
+          name: Documentation Build
+          runs-on: ubuntu-latest
+          steps:
+          - name: "Run Ansys documentation building action"
+            uses: ansys/actions/doc-build@33399106dc8b62d83c8aad1fb2c333c8055df180  # v10.0.20
+            with:
+              check-links: false
+              dependencies: "pandoc"
+              sphinxopts: "-n -W --keep-going"
+
+
+    .. tab-item:: After
+
+      .. code:: yaml
+
+        doc-build:
+          name: Documentation Build
+          runs-on: ubuntu-latest
+          steps:
+          - name: "Run Ansys documentation building action"
+            uses: ansys/actions/doc-build@ed773aba3478d311decff2d4313e0cd19a945dd8  # v10.1.0
+            with:
+              check-links: false
+              dependencies: "pandoc"
+              sphinxopts: "-n -W --keep-going"
+              optional-dependencies-name: ""
+              group-dependencies-name: "doc"
+
 
 Version ``v10``
 -----------------
