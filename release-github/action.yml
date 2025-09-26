@@ -396,7 +396,8 @@ runs:
 
           # Find the following artifacts: wheels, source distribution, wheelhouse and SBOM files
           for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
-            echo "\$ gh attestation verify --owner ${GITHUB_REPOSITORY_OWNER} ${artifact}"
+            filename=$(basename "$artifact")
+            echo "\$ gh attestation verify --owner ${GITHUB_REPOSITORY_OWNER} ${filename}"
           done
 
           echo "\`\`\`"
