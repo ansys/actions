@@ -21,7 +21,7 @@ jobs:
     name: "Doc build"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/doc-build@v10.1.2
+      - uses: ansys/actions/doc-build@v10.1.3
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -35,7 +35,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: ansys/actions/doc-deploy-dev@v10.1.2
+      - uses: ansys/actions/doc-deploy-dev@v10.1.3
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -55,7 +55,7 @@ jobs:
     steps:
 
       - name: "Build wheelhouse and perform smoke test for ${{ env.LIBRARY_NAME }} package"
-        uses: ansys/actions/build-wheelhouse@v10.1.2
+        uses: ansys/actions/build-wheelhouse@v10.1.3
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           operating-system: ${{ matrix.os }}
@@ -74,7 +74,7 @@ jobs:
     steps:
 
       - name: "Build library for ${{ env.LIBRARY_NAME }} package"
-        uses: ansys/actions/build-library@v10.1.2
+        uses: ansys/actions/build-library@v10.1.3
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           attest-provenance: true
