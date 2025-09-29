@@ -9,7 +9,39 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
-`10.1.0rc0 <https://github.com/ansys/actions/releases/tag/v10.1.0rc0>`_ - September 11, 2025
+`10.1.2 <https://github.com/ansys/actions/releases/tag/v10.1.2>`_ - September 23, 2025
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update check-actions-security action documentation
+          - `#1007 <https://github.com/ansys/actions/pull/1007>`_
+
+
+`10.1.1 <https://github.com/ansys/actions/releases/tag/v10.1.1>`_ - September 17, 2025
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve migration guide
+          - `#1003 <https://github.com/ansys/actions/pull/1003>`_
+
+
+`10.1.0 <https://github.com/ansys/actions/releases/tag/v10.1.0>`_ - September 11, 2025
 ============================================================================================
 
 .. tab-set::
