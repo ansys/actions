@@ -375,11 +375,16 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
+          $arguments = @("install")
+
           if ($env:GROUP_DEPENDENCIES_NAME) {
-            poetry install --with "$env:GROUP_DEPENDENCIES_NAME" --extras "$env:OPTIONAL_DEPENDENCIES_NAME"
-          } else {
-            poetry install --extras "$env:OPTIONAL_DEPENDENCIES_NAME"
+              $arguments += @("--with", "$env:GROUP_DEPENDENCIES_NAME")
           }
+          if ($env:OPTIONAL_DEPENDENCIES_NAME) {
+              $arguments += @("--extras", "$env:OPTIONAL_DEPENDENCIES_NAME")
+          }
+
+          poetry @arguments
         }
         else {
           # Optional dependencies
