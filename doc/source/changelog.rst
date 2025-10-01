@@ -9,6 +9,54 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.1.4 <https://github.com/ansys/actions/releases/tag/v10.1.4>`_ - October 01, 2025
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump actions/setup-python from 5.6.0 to 6.0.0 in /_setup-python in the github-actions group across 1 directory
+          - `#1000 <https://github.com/ansys/actions/pull/1000>`_
+
+        * - Bump jbergstroem/hadolint-gh-action from 1.12.2 to 1.13.0 in /docker-style in the style-related-actions group across 1 directory
+          - `#1001 <https://github.com/ansys/actions/pull/1001>`_
+
+        * - Bump softprops/action-gh-release from 2.3.2 to 2.3.3 in /release-github in the release-related-actions group across 1 directory
+          - `#1002 <https://github.com/ansys/actions/pull/1002>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve actions security documentation
+          - `#1018 <https://github.com/ansys/actions/pull/1018>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow script to run on Windows
+          - `#1014 <https://github.com/ansys/actions/pull/1014>`_
+
+        * - Add always() condition to the last step of check-actions-security
+          - `#1020 <https://github.com/ansys/actions/pull/1020>`_
+
+        * - Doc build on windows for poetry projects
+          - `#1021 <https://github.com/ansys/actions/pull/1021>`_
+
+
 `10.1.3 <https://github.com/ansys/actions/releases/tag/v10.1.3>`_ - September 29, 2025
 ======================================================================================
 
