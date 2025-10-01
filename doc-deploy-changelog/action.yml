@@ -208,11 +208,17 @@ runs:
 
     - name: "Install towncrier, toml, and the project"
       env:
+        ACTION_PATH: ${{ github.action_path }}
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOMLI_VERSION: ${{ inputs.tomli-version }}
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}"
+        python -m pip install --upgrade pip
+        if [[ "${TOWNCRIER_VERSION}" == "24.8.0" && "${TOMLI_VERSION}" == "2.2.1" ]]; then
+          python -m pip install -r ${ACTION_PATH}/requirements.txt
+        else
+          python -m pip install towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
+        fi
 
     - name: "Get towncrier directory and project name"
       shell: python
