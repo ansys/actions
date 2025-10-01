@@ -182,7 +182,7 @@ runs:
 
     - name: "Run Hadolint"
       if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}
-      uses: jbergstroem/hadolint-gh-action@39e57273ed8f513872326b228217828be6a42730 # v1.12.2
+      uses: jbergstroem/hadolint-gh-action@2b00b87f8a56783930b6a4749837d7c45c567ff2 # v1.13.0
       with:
         dockerfile: ${{ steps.format-hadolint-dockerfile-input.outputs.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
         error_level: ${{ inputs.error-level }}
