@@ -6,7 +6,7 @@ from collections import Counter
 from subprocess import DEVNULL, PIPE
 
 FORMAT = "{:<50}{:<20}"
-PATH_RE = re.compile(r"[^ /]+/(?:[^ /]+/)?[^ ]*\.yml")
+PATH_RE = re.compile(r"[^ /\\]+[\\/](?:[^ /\\]+[\\/])?[^ ]*\.yml" if os.name == "nt" else r"[^ /]+/(?:[^ /]+/)?[^ ]*\.yml")
 
 
 def main():
