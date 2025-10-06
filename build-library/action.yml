@@ -110,6 +110,20 @@ inputs:
     required: false
     type: boolean
 
+  checkout-fetch-depth:
+    description: |
+      Set fetch-depth option for actions/checkout. Default value is ``1``.
+    required: false
+    default: '1'
+    type: string
+
+  checkout-fetch-tags:
+    description: |
+      Set fetch-tags option for actions/checkout. Default value is ``false``.
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -119,6 +133,8 @@ runs:
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         persist-credentials: false
+        fetch-depth: ${{ inputs.checkout-fetch-depth }}
+        fetch-tags:  ${{ inputs.checkout-fetch-tags }}
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
