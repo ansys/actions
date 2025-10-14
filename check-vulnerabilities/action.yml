@@ -405,15 +405,15 @@ runs:
     - name: "Install action requirements"
       shell: bash
       env:
-        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         ACTION_PATH: ${{ github.action_path }}
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install -r "${ACTION_PATH}/requirements.txt"
+          uv pip install -r ${ACTION_PATH}/requirements.txt
         else
-          python -m pip install -r "${ACTION_PATH}/requirements.txt"
+          python -m pip install -r ${ACTION_PATH}/requirements.txt
         fi
 
     - name:  "Install wget on Windows"
