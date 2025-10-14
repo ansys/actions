@@ -231,6 +231,8 @@ jobs:
           checkout: false
           uploaded-artifact-name-prefix: pyansys-geometry-documentation-${{ matrix.os.name }}
           skip-dependencies-cache: true
+          optional-dependencies-name: ''
+          group-dependencies-name: 'doc'
 
       - name: Stop the Geometry service
         if: always()
@@ -256,7 +258,7 @@ jobs:
 #          - name: windows-latest
 #            container-image-tag:
           - name: ubuntu-latest
-            container-image-tag: latest
+            container-image-tag: 2025r2
     env:
       PACKAGE_NAME: 'ansys-dpf-composites'
       PYDPF_COMPOSITES_DOCKER_CONTAINER_PORT: "50052"
