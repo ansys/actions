@@ -231,6 +231,8 @@ jobs:
           checkout: false
           uploaded-artifact-name-prefix: pyansys-geometry-documentation-${{ matrix.os.name }}
           skip-dependencies-cache: true
+          optional-dependencies-name: ''
+          group-dependencies-name: 'doc'
 
       - name: Stop the Geometry service
         if: always()
