@@ -160,9 +160,9 @@ runs:
         USE_PULL_REQUEST_TITLE: ${{ inputs.use-pull-request-title }}
       run: |
         if [ ! -z "$USE_CONVENTIONAL_COMMITS" ]; then
-          echo "USE_PULL_REQUEST_TITLE=$USE_CONVENTIONAL_COMMITS" >> $GITHUB_ENV
+          echo "USE_PULL_REQUEST_TITLE=${USE_CONVENTIONAL_COMMITS}" >> $GITHUB_ENV
         else
-          echo "USE_PULL_REQUEST_TITLE=$USE_PULL_REQUEST_TITLE" >> $GITHUB_ENV
+          echo "USE_PULL_REQUEST_TITLE=${USE_PULL_REQUEST_TITLE}" >> $GITHUB_ENV
         fi
 
     - name: "Install Git and clone project"
