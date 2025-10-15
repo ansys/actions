@@ -239,7 +239,7 @@ runs:
     - name: "Detect if deployment rejection comment had been previously added to the same PR"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
       id: find-comment
-      uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+      uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body-includes: Pull request documentation preview limit
