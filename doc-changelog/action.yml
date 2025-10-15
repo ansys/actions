@@ -304,7 +304,7 @@ runs:
     - name: "Clean PR title"
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-        USE_CONVENTIONAL_COMMITS: ${{ env.USE_PULL_REQUEST_TITLE }}
+        USE_PULL_REQUEST_TITLE: ${{ env.USE_PULL_REQUEST_TITLE }}
       shell: python
       run: |
         import os
@@ -316,9 +316,9 @@ runs:
         from parse_pr_title import clean_pr_title
 
         pr_title = os.environ.get("PR_TITLE")
-        use_cc = True if os.environ.get("USE_CONVENTIONAL_COMMITS") == "true" else False
+        use_pr_title = True if os.environ.get("USE_PULL_REQUEST_TITLE") == "true" else False
 
-        clean_pr_title(pr_title, use_cc)
+        clean_pr_title(pr_title, use_pr_title)
 
     - name: "Get towncrier directory and template"
       shell: python
