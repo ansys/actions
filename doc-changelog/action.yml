@@ -148,9 +148,9 @@ runs:
     - uses: ansys/actions/_logging@main
       if: inputs.use-conventional-commits != ''
       with:
-        level: "ERROR"
+        level: "WARNING"
         message: >
-          The ``use-conventional-commits`` input is deprecated and will be removed in v11.
+          The ``use-conventional-commits`` input is deprecated and will be removed in v12.
           Please use the ``use-pull-request-title`` input instead.
 
     - name: "Install Git and clone project"
