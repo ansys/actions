@@ -192,7 +192,7 @@ runs:
         ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
 
     - name: "Get first letter of conventional commit type"
-      if: ${{ env.use-pull-request-title == 'true' }}
+      if: ${{ env.USE_PULL_REQUEST_TITLE == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
@@ -209,20 +209,20 @@ runs:
         get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
-      if: ${{ (env.use-pull-request-title == 'true') && (env.FIRST_LETTER == 'lowercase') }}
+      if: ${{ (env.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'lowercase') }}
       uses: ansys/actions/check-pr-title@main
       with:
         token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
-      if: ${{ (env.use-pull-request-title == 'true') && (env.FIRST_LETTER == 'uppercase') }}
+      if: ${{ (env.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'uppercase') }}
       uses: ansys/actions/check-pr-title@main
       with:
         token: ${{ inputs.token }}
         use-upper-case: true
 
     - name: "Get conventional commit type from title"
-      if: ${{ env.use-pull-request-title == 'true' }}
+      if: ${{ env.USE_PULL_REQUEST_TITLE == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
@@ -240,7 +240,7 @@ runs:
 
     - name: "Get labels in the pull request"
       id: get-labels
-      if: ${{ env.use-pull-request-title == 'false' }}
+      if: ${{ env.USE_PULL_REQUEST_TITLE == 'false' }}
       env:
         GH_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ github.event.repository.name }}
@@ -255,7 +255,7 @@ runs:
         echo LABELS='"'$pr_labels'"' >> ${GITHUB_OUTPUT}
 
     - name: "Set CHANGELOG category based on conventional commit type"
-      if: ${{ env.use-pull-request-title == 'true' }}
+      if: ${{ env.USE_PULL_REQUEST_TITLE == 'true' }}
       shell: python
       run: |
         import os
@@ -270,7 +270,7 @@ runs:
         changelog_category_cc(cc_type)
 
     - name: "Set PR label environment variable"
-      if: ${{ env.use-pull-request-title == 'false' }}
+      if: ${{ env.USE_PULL_REQUEST_TITLE == 'false' }}
       shell: python
       env:
         LABELS: ${{ steps.get-labels.outputs.LABELS }}
@@ -304,7 +304,7 @@ runs:
     - name: "Clean PR title"
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-        USE_CONVENTIONAL_COMMITS: ${{ env.use-pull-request-title }}
+        USE_CONVENTIONAL_COMMITS: ${{ env.USE_PULL_REQUEST_TITLE }}
       shell: python
       run: |
         import os
