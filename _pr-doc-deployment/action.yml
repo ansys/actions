@@ -246,7 +246,7 @@ runs:
 
     - name: "Make a PR comment stating reason for not deploying pr documentation"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -343,7 +343,7 @@ runs:
 
     - name: "Make a PR comment the first time a PR documentation is deployed"
       if: ${{ steps.create-pull-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body: >
