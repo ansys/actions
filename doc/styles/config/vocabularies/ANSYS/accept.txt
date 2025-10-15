@@ -7,8 +7,10 @@ dependabot
 dev
 dependabot
 GitHub
+pypa
 pytest
 PyPI
+pyyaml
 SBOM
 Syft
 toctree

@@ -185,7 +185,7 @@ runs:
 
     - name: Cache Chocolatey packages
       id: cache
-      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
@@ -285,7 +285,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.determine-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: powershell
-      run: echo "${{ runner.temp }}/pipx/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append # zizmor: ignore[github-env]
+      run: echo "${env:RUNNER_TEMP}/pipx/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append # zizmor: ignore[github-env]
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -375,11 +375,16 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
+          $arguments = @("install")
+
           if ($env:GROUP_DEPENDENCIES_NAME) {
-            poetry install --with "$env:GROUP_DEPENDENCIES_NAME" --extras "$env:OPTIONAL_DEPENDENCIES_NAME"
-          } else {
-            poetry install --extras "$env:OPTIONAL_DEPENDENCIES_NAME"
+              $arguments += @("--with", "$env:GROUP_DEPENDENCIES_NAME")
           }
+          if ($env:OPTIONAL_DEPENDENCIES_NAME) {
+              $arguments += @("--extras", "$env:OPTIONAL_DEPENDENCIES_NAME")
+          }
+
+          poetry @arguments
         }
         else {
           # Optional dependencies
@@ -459,7 +464,7 @@ runs:
       shell: powershell
       run: |
         .venv\Scripts\Activate.ps1
-        python ${{ github.action_path }}\..\python-utils\parse_doc_conf.py
+        python ${env:GITHUB_ACTION_PATH}\..\python-utils\parse_doc_conf.py
 
     - uses: ansys/actions/_logging@main
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
@@ -552,7 +557,7 @@ runs:
           Write-Error "Documentation has not been generated properly"
         }
         # Check if the PDF files have been generated
-        if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }}") {
+        if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}") {
           Write-Host "PDF file has been generated successfully"
         } else {
           Write-Error "PDF file has not been generated properly"
@@ -576,12 +581,12 @@ runs:
       run: |
         cd ${env:EXPECTED_BUILD_DIR}\html; zip -r documentation-html.zip *; cd ..\..\..
         mv ${env:EXPECTED_BUILD_DIR}\html\documentation-html.zip ${env:EXPECTED_DOWNLOAD_DIR}
-        if (Test-Path ${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }}) {
-          cp ${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }} ${env:EXPECTED_DOWNLOAD_DIR}
-          Write-Output "File ${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }} has been copied."
+        if (Test-Path ${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}) {
+          cp ${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME} ${env:EXPECTED_DOWNLOAD_DIR}
+          Write-Output "File ${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME} has been copied."
         } else {
           cp ${env:EXPECTED_BUILD_DIR}\latex\*.pdf ${env:EXPECTED_DOWNLOAD_DIR}
-          Write-Output "Couldn't find ${env:EXPECTED_BUILD_DIR}\latex\${{ env.PDF_FILENAME }}, every existing PDF file has been copied."
+          Write-Output "Couldn't find ${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}, every existing PDF file has been copied."
         }
 
     # ------------------------------------------------------------------------

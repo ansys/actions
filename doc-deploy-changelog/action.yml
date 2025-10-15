@@ -186,10 +186,10 @@ runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         token: ${{ inputs.token }}
-        fetch-depth: 0
+        fetch-depth: 0 # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
@@ -297,7 +297,9 @@ runs:
         import os
         import datetime
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
         from parse_pr_title import save_env_variable
 
@@ -320,7 +322,7 @@ runs:
         BOT_EMAIL: ${{ inputs.bot-email }}
         USE_UPPER_CASE: ${{ inputs.use-upper-case }}
       shell: bash
-      run: |
+      run: | # zizmor: ignore[template-injection]
         # Get number of .md files in ${{ env.TOWNCRIER_DIR }}
         count=$(find "${TOWNCRIER_DIR}" -type f -name "*.md" | wc -l)
 

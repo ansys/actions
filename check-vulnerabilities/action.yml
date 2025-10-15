@@ -148,7 +148,8 @@ inputs:
   upload-reports:
     description: |
       Whether to upload the artifacts containing the vulnerability report.
-      By default, the report artifacts will not be uploaded to hide any potential vulnerabilities?
+      By default, the report artifacts is not uploaded.
+      This option should not be enabled unless strictly necessary.
     default: false
     required: false
     type: boolean
@@ -207,10 +208,11 @@ runs:
         fi
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       if: ${{ inputs.checkout == 'true' }}
       with:
         repository: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
+        persist-credentials: false
 
     # ------------------------------------------------------------------------
 
@@ -263,7 +265,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> ${GITHUB_PATH} # zizmor: ignore[github-env] no workaround for this
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> ${GITHUB_PATH} # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -303,7 +305,7 @@ runs:
       id: virtual-environment-activation-command
       shell: bash
       run: |
-        if [[ ${{ runner.os }} == 'Windows' ]]; then
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
           echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
           echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/scripts/activate')" >> ${GITHUB_OUTPUT}
         else
@@ -484,3 +486,4 @@ runs:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
+

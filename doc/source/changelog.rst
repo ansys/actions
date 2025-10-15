@@ -9,6 +9,562 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.1.4 <https://github.com/ansys/actions/releases/tag/v10.1.4>`_ - October 01, 2025
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump actions/setup-python from 5.6.0 to 6.0.0 in /_setup-python in the github-actions group across 1 directory
+          - `#1000 <https://github.com/ansys/actions/pull/1000>`_
+
+        * - Bump jbergstroem/hadolint-gh-action from 1.12.2 to 1.13.0 in /docker-style in the style-related-actions group across 1 directory
+          - `#1001 <https://github.com/ansys/actions/pull/1001>`_
+
+        * - Bump softprops/action-gh-release from 2.3.2 to 2.3.3 in /release-github in the release-related-actions group across 1 directory
+          - `#1002 <https://github.com/ansys/actions/pull/1002>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve actions security documentation
+          - `#1018 <https://github.com/ansys/actions/pull/1018>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow script to run on Windows
+          - `#1014 <https://github.com/ansys/actions/pull/1014>`_
+
+        * - Add always() condition to the last step of check-actions-security
+          - `#1020 <https://github.com/ansys/actions/pull/1020>`_
+
+        * - Doc build on windows for poetry projects
+          - `#1021 <https://github.com/ansys/actions/pull/1021>`_
+
+
+`10.1.3 <https://github.com/ansys/actions/releases/tag/v10.1.3>`_ - September 29, 2025
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - GitHub command-line tool command in ansys/release-github
+          - `#1012 <https://github.com/ansys/actions/pull/1012>`_
+
+
+`10.1.2 <https://github.com/ansys/actions/releases/tag/v10.1.2>`_ - September 23, 2025
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update check-actions-security action documentation
+          - `#1007 <https://github.com/ansys/actions/pull/1007>`_
+
+
+`10.1.1 <https://github.com/ansys/actions/releases/tag/v10.1.1>`_ - September 17, 2025
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve migration guide
+          - `#1003 <https://github.com/ansys/actions/pull/1003>`_
+
+
+`10.1.0 <https://github.com/ansys/actions/releases/tag/v10.1.0>`_ - September 11, 2025
+============================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve check actions security
+          - `#968 <https://github.com/ansys/actions/pull/968>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump the github-actions group across 15 directories with 2 updates
+          - `#965 <https://github.com/ansys/actions/pull/965>`_
+
+        * - Bump the github-actions group across 2 directories with 1 update
+          - `#993 <https://github.com/ansys/actions/pull/993>`_
+
+        * - Bump amannn/action-semantic-pull-request from 5.5.3 to 6.1.1 in /check-pr-title in the style-related-actions group across 1 directory
+          - `#994 <https://github.com/ansys/actions/pull/994>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#995 <https://github.com/ansys/actions/pull/995>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update zizmor documentation
+          - `#992 <https://github.com/ansys/actions/pull/992>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pin twine to <6.2.0 and bump pypa action
+          - `#983 <https://github.com/ansys/actions/pull/983>`_
+
+        * - Pin twine correctly
+          - `#988 <https://github.com/ansys/actions/pull/988>`_
+
+        * - Wrong identifier in python block
+          - `#996 <https://github.com/ansys/actions/pull/996>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove transient dependency pin
+          - `#979 <https://github.com/ansys/actions/pull/979>`_
+
+
+  .. tab-item:: Test
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add more pre-release tests
+          - `#986 <https://github.com/ansys/actions/pull/986>`_
+
+
+`10.1.0a0 <https://github.com/ansys/actions/releases/tag/v10.1.0a0>`_ - September 01, 2025
+==========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - check actions security action
+          - `#725 <https://github.com/ansys/actions/pull/725>`_
+
+        * - uv as default package manager
+          - `#754 <https://github.com/ansys/actions/pull/754>`_
+
+        * - check environment approval
+          - `#776 <https://github.com/ansys/actions/pull/776>`_
+
+        * - add compatibility with dependency groups
+          - `#794 <https://github.com/ansys/actions/pull/794>`_
+
+        * - pr documentation deployment and cleanup
+          - `#799 <https://github.com/ansys/actions/pull/799>`_
+
+        * - allow to specify working-directory
+          - `#820 <https://github.com/ansys/actions/pull/820>`_
+
+        * - option for maximum number of pr doc deployment
+          - `#823 <https://github.com/ansys/actions/pull/823>`_
+
+        * - ensure matching and metadata version
+          - `#833 <https://github.com/ansys/actions/pull/833>`_
+
+        * - add SBOM to wheelhouse action
+          - `#834 <https://github.com/ansys/actions/pull/834>`_
+
+        * - change branch naming in changelog action
+          - `#837 <https://github.com/ansys/actions/pull/837>`_
+
+        * - Support specification of ``bandit`` configuration file in check-vulnerabilities action
+          - `#838 <https://github.com/ansys/actions/pull/838>`_
+
+        * - capitalize fragments
+          - `#852 <https://github.com/ansys/actions/pull/852>`_
+
+        * - Prepend link to migration guide in github release notes
+          - `#860 <https://github.com/ansys/actions/pull/860>`_
+
+        * - Implementing basic smoke test for import
+          - `#866 <https://github.com/ansys/actions/pull/866>`_
+
+        * - Update project version
+          - `#878 <https://github.com/ansys/actions/pull/878>`_
+
+        * - Update git ls-remote
+          - `#924 <https://github.com/ansys/actions/pull/924>`_
+
+        * - Support pre-releases
+          - `#925 <https://github.com/ansys/actions/pull/925>`_
+
+        * - Strengthen testing
+          - `#929 <https://github.com/ansys/actions/pull/929>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - bump actions/download-artifact from 4.1.9 to 4.2.1 in the github-actions group
+          - `#770 <https://github.com/ansys/actions/pull/770>`_
+
+        * - update action-gh-release
+          - `#777 <https://github.com/ansys/actions/pull/777>`_
+
+        * - bump softprops/action-gh-release from 2.2.1 to 2.2.2 in the release-related-actions group
+          - `#786 <https://github.com/ansys/actions/pull/786>`_
+
+        * - bump actions/download-artifact from 4.2.1 to 4.3.0 in the github-actions group
+          - `#795 <https://github.com/ansys/actions/pull/795>`_
+
+        * - update pygithub requirement from <2,>=1.59 to >=1.59,<3 in /check-vulnerabilities
+          - `#842 <https://github.com/ansys/actions/pull/842>`_
+
+        * - bump awalsh128/cache-apt-pkgs-action from 1.4.3 to 1.5.0 in /_doc-build-linux in the doc-related-actions group across 1 directory
+          - `#845 <https://github.com/ansys/actions/pull/845>`_
+
+        * - Bump the build-related-actions group across 1 directory with 2 updates
+          - `#846 <https://github.com/ansys/actions/pull/846>`_
+
+        * - bump softprops/action-gh-release from 2.2.1 to 2.2.2 in /release-github in the release-related-actions group across 1 directory
+          - `#847 <https://github.com/ansys/actions/pull/847>`_
+
+        * - bump dependabot/fetch-metadata from 2.3.0 to 2.4.0 in /hk-automerge-prs in the must-be-assigned-actions group across 1 directory
+          - `#848 <https://github.com/ansys/actions/pull/848>`_
+
+        * - bump the github-actions group across 11 directories with 4 updates
+          - `#849 <https://github.com/ansys/actions/pull/849>`_
+
+        * - Downgrade awalsh128/cache-apt-pkgs-action due to errors
+          - `#856 <https://github.com/ansys/actions/pull/856>`_
+
+        * - Bump the github-actions group across 1 directory with 2 updates
+          - `#863 <https://github.com/ansys/actions/pull/863>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#865 <https://github.com/ansys/actions/pull/865>`_, `#914 <https://github.com/ansys/actions/pull/914>`_
+
+        * - Bump the github-actions group across 2 directories with 1 update
+          - `#910 <https://github.com/ansys/actions/pull/910>`_
+
+        * - Bump pypa/cibuildwheel from 2.23.3 to 3.0.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#911 <https://github.com/ansys/actions/pull/911>`_
+
+        * - Bump awalsh128/cache-apt-pkgs-action from 1.4.3 to 1.5.1 in /_doc-build-linux in the doc-related-actions group across 1 directory
+          - `#927 <https://github.com/ansys/actions/pull/927>`_
+
+        * - Bump pypa/cibuildwheel from 3.0.0 to 3.0.1 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#928 <https://github.com/ansys/actions/pull/928>`_
+
+        * - Bump the github-actions group across 5 directories with 2 updates
+          - `#957 <https://github.com/ansys/actions/pull/957>`_
+
+        * - Bump awalsh128/cache-apt-pkgs-action from 1.5.1 to 1.5.3 in /_doc-build-linux in the doc-related-actions group across 1 directory
+          - `#958 <https://github.com/ansys/actions/pull/958>`_
+
+        * - Bump pypa/cibuildwheel from 3.0.1 to 3.1.4 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#966 <https://github.com/ansys/actions/pull/966>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update documentation for v10 release
+          - `#828 <https://github.com/ansys/actions/pull/828>`_
+
+        * - Add sbom files in github release note
+          - `#912 <https://github.com/ansys/actions/pull/912>`_
+
+        * - Use single quotes for literal in github action expression
+          - `#918 <https://github.com/ansys/actions/pull/918>`_
+
+        * - Update ``contributors.md`` with the latest contributors
+          - `#923 <https://github.com/ansys/actions/pull/923>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - environment variable is missing after ``zizmor`` refactor
+          - `#796 <https://github.com/ansys/actions/pull/796>`_
+
+        * - ci_cd_release action
+          - `#800 <https://github.com/ansys/actions/pull/800>`_
+
+        * - install from poetry.lock if present
+          - `#805 <https://github.com/ansys/actions/pull/805>`_
+
+        * - remove marshmallow dependency limit
+          - `#806 <https://github.com/ansys/actions/pull/806>`_
+
+        * - allow to specify working directory
+          - `#807 <https://github.com/ansys/actions/pull/807>`_
+
+        * - avoid using pip cache with uv
+          - `#811 <https://github.com/ansys/actions/pull/811>`_
+
+        * - properly use poetry wheelhouse
+          - `#817 <https://github.com/ansys/actions/pull/817>`_
+
+        * - remove JSON builds
+          - `#818 <https://github.com/ansys/actions/pull/818>`_
+
+        * - build wheelhouse with poetry
+          - `#826 <https://github.com/ansys/actions/pull/826>`_
+
+        * - documentation
+          - `#827 <https://github.com/ansys/actions/pull/827>`_
+
+        * - input parameter generate-release-notes in release-github
+          - `#832 <https://github.com/ansys/actions/pull/832>`_
+
+        * - update to latest version
+          - `#839 <https://github.com/ansys/actions/pull/839>`_
+
+        * - discovery of artifacts in release-github
+          - `#840 <https://github.com/ansys/actions/pull/840>`_
+
+        * - default value for prune-uv-cache
+          - `#850 <https://github.com/ansys/actions/pull/850>`_
+
+        * - Housekeeping package clean actions
+          - `#855 <https://github.com/ansys/actions/pull/855>`_
+
+        * - Release-github python setup and sbom pattern
+          - `#871 <https://github.com/ansys/actions/pull/871>`_
+
+        * - Create a virtual environment in the changelog deployment action
+          - `#872 <https://github.com/ansys/actions/pull/872>`_
+
+        * - Install packages at system level
+          - `#873 <https://github.com/ansys/actions/pull/873>`_
+
+        * - Remove the usage of uv for doc-deploy-changelog
+          - `#874 <https://github.com/ansys/actions/pull/874>`_
+
+        * - Smoke test for poetry projects in editable mode
+          - `#875 <https://github.com/ansys/actions/pull/875>`_
+
+        * - Remove depreciated `pymeilisearch` options
+          - `#913 <https://github.com/ansys/actions/pull/913>`_
+
+        * - Correct deleted branch references
+          - `#943 <https://github.com/ansys/actions/pull/943>`_
+
+        * - Remove unnecessary tag and date from release notes
+          - `#948 <https://github.com/ansys/actions/pull/948>`_
+
+        * - Dependabot security alert
+          - `#951 <https://github.com/ansys/actions/pull/951>`_
+
+        * - ``check_vulnerabilities`` script for private repositories
+          - `#955 <https://github.com/ansys/actions/pull/955>`_
+
+        * - Correct spelling and improve description for changelog category determination
+          - `#961 <https://github.com/ansys/actions/pull/961>`_
+
+        * - Correct ci_cd_pr.yml configuration
+          - `#969 <https://github.com/ansys/actions/pull/969>`_
+
+        * - Issues causing release failure
+          - `#977 <https://github.com/ansys/actions/pull/977>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - update CHANGELOG for v9.0.0
+          - `#768 <https://github.com/ansys/actions/pull/768>`_
+
+        * - update CHANGELOG for v9.0.1
+          - `#772 <https://github.com/ansys/actions/pull/772>`_
+
+        * - rewrite dependabot checks
+          - `#774 <https://github.com/ansys/actions/pull/774>`_
+
+        * - update CHANGELOG for v9.0.2
+          - `#775 <https://github.com/ansys/actions/pull/775>`_
+
+        * - update CHANGELOG for v9.0.3
+          - `#781 <https://github.com/ansys/actions/pull/781>`_
+
+        * - update CHANGELOG for v9.0.6
+          - `#785 <https://github.com/ansys/actions/pull/785>`_
+
+        * - update CHANGELOG for v9.0.7
+          - `#792 <https://github.com/ansys/actions/pull/792>`_
+
+        * - update CHANGELOG for v9.0.8
+          - `#801 <https://github.com/ansys/actions/pull/801>`_
+
+        * - use ansys/actions/doc-deploy-pr
+          - `#802 <https://github.com/ansys/actions/pull/802>`_
+
+        * - update uv settings
+          - `#825 <https://github.com/ansys/actions/pull/825>`_
+
+        * - remove deprecated line
+          - `#830 <https://github.com/ansys/actions/pull/830>`_
+
+        * - update dependabot inputs to match groups
+          - `#841 <https://github.com/ansys/actions/pull/841>`_
+
+        * - Update changelog for v9.0.12
+          - `#854 <https://github.com/ansys/actions/pull/854>`_
+
+        * - Improve smoke tests handling
+          - `#861 <https://github.com/ansys/actions/pull/861>`_
+
+        * - Add sbom artifacts to github release
+          - `#862 <https://github.com/ansys/actions/pull/862>`_
+
+        * - Update changelog for v9.0.13
+          - `#869 <https://github.com/ansys/actions/pull/869>`_
+
+        * - Update changelog for v10.0.4
+          - `#877 <https://github.com/ansys/actions/pull/877>`_
+
+        * - Update changelog for v10.0.5
+          - `#881 <https://github.com/ansys/actions/pull/881>`_
+
+        * - Update changelog for v10.0.6
+          - `#885 <https://github.com/ansys/actions/pull/885>`_
+
+        * - Update changelog for v10.0.7
+          - `#889 <https://github.com/ansys/actions/pull/889>`_
+
+        * - Update changelog for v10.0.8
+          - `#891 <https://github.com/ansys/actions/pull/891>`_
+
+        * - Update changelog for v10.0.9
+          - `#899 <https://github.com/ansys/actions/pull/899>`_
+
+        * - Update changelog for v10.0.10
+          - `#904 <https://github.com/ansys/actions/pull/904>`_
+
+        * - Update changelog for v10.0.11
+          - `#909 <https://github.com/ansys/actions/pull/909>`_
+
+        * - Use dependabot cooldown for pip and github actions
+          - `#915 <https://github.com/ansys/actions/pull/915>`_
+
+        * - Update changelog for v10.0.12
+          - `#917 <https://github.com/ansys/actions/pull/917>`_
+
+        * - Update CHANGELOG for v10.0.13
+          - `#936 <https://github.com/ansys/actions/pull/936>`_
+
+        * - Update ci_cd_night workflow
+          - `#947 <https://github.com/ansys/actions/pull/947>`_
+
+        * - Update CHANGELOG for v10.0.14
+          - `#950 <https://github.com/ansys/actions/pull/950>`_
+
+        * - Ensure manual approval on pr workflows
+          - `#960 <https://github.com/ansys/actions/pull/960>`_
+
+        * - Bump zizmor version
+          - `#967 <https://github.com/ansys/actions/pull/967>`_
+
+        * - Update CHANGELOG for v10.0.15
+          - `#973 <https://github.com/ansys/actions/pull/973>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow to mix dependency groups and optional targets
+          - `#836 <https://github.com/ansys/actions/pull/836>`_
+
+        * - Remove unnecessary echo
+          - `#905 <https://github.com/ansys/actions/pull/905>`_
+
+        * - Update rolling release
+          - `#974 <https://github.com/ansys/actions/pull/974>`_
+
+
+`10.0.15 <https://github.com/ansys/actions/releases/tag/v10.0.15>`_ - September 01, 2025
+========================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Temporary pin `typer` dependency (transitive)
+          - `#971 <https://github.com/ansys/actions/pull/971>`_
+
+
 `10.0.14 <https://github.com/ansys/actions/releases/tag/v10.0.14>`_ - August 06, 2025
 =====================================================================================
 
