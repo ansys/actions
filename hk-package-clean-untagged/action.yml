@@ -97,7 +97,7 @@ runs:
         if last_days:
             delete_before_date = datetime.now() - timedelta(days=last_days)
 
-        api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
+        api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN", "${{ inputs.token }}"))
 
         paged_packages = paged(
             api.packages.get_all_package_versions_for_package_owned_by_org,
