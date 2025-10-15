@@ -100,7 +100,7 @@ inputs:
     default: false
     type: boolean
 
-  use-conventional-commits: # TODO: Remove deprecated input in v11
+  use-conventional-commits: # TODO: Remove deprecated input in v12
     description: |
       [DEPRECATED] Use pull request title to determine the changelog category based on
       conventional commits. If ``false``, the labels in the pull request are used
