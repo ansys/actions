@@ -358,11 +358,14 @@ runs:
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]]; then
-            poetry install --with "${GROUP_DEPENDENCIES_NAME}" --extras "${OPTIONAL_DEPENDENCIES_NAME}"
-          else
-            poetry install --extras "${OPTIONAL_DEPENDENCIES_NAME}"
+          install_command="poetry install"
+          if [[ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]]; then
+            install_command+=" --extras ${OPTIONAL_DEPENDENCIES_NAME}"
           fi
+          if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]]; then
+            install_command+=" --with ${GROUP_DEPENDENCIES_NAME}"
+          fi
+          eval "${install_command}"
         else
           # Optional dependencies
           optional_dependencies_flag=""
