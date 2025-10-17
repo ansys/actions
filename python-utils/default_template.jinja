@@ -4,6 +4,8 @@
 
 {%+ for category, val in definitions.items() if category in sections[""] %}
 
+{% if sections[""][category] %}
+
   .. tab-item:: {{ definitions[category]['name'] }}
 
     .. list-table::
@@ -13,6 +15,8 @@
 {% for text, values in sections[""][category].items() %}
         * - {{ text }}
           - {{ values|join(', ') }}
+
+{% endif %}
 
 {% endfor %}
 {% endfor %}
