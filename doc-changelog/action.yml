@@ -146,7 +146,7 @@ runs:
           input accordingly. The ``toml-version`` input will be removed in v11.
 
     - uses: ansys/actions/_logging@main
-      if: inputs.use-conventional-commits != ''
+      if: !inputs.use-conventional-commits
       with:
         level: "WARNING"
         message: >
