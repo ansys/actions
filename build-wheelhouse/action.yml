@@ -147,6 +147,13 @@ outputs:
       the virtual environment, such as running smoke tests.
     value: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
 
+  python-path:
+    description: |
+      Path to the Python interpreter within the virtual environment set up by this action.
+      It can be reused in later steps of the same job to execute tasks within
+      the virtual environment, such as running smoke tests.
+    value: ${{ steps.setup-python.outputs.python-path }}
+
 runs:
   using: "composite"
   steps:
@@ -158,6 +165,7 @@ runs:
         persist-credentials: false
 
     - name: "Set up Python ${{ inputs.python-version }}"
+      id: setup-python
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
