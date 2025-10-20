@@ -19,6 +19,7 @@ updates:
 
   - package-ecosystem: "github-actions"
     directories:
+      - ".github/workflows"
       - "_doc-build-linux"
       - "_doc-build-windows"
       - "_doc-gen-canonical"
