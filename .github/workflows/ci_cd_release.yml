@@ -254,7 +254,7 @@ jobs:
         echo "LINK=${LINK}" >> $GITHUB_OUTPUT
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
+      uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
       with:
         body: >
           If you are migrating the actions of your project to a new major release, breaking changes can be expected.
