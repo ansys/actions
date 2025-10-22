@@ -203,9 +203,11 @@ runs:
     - name: "Install packaging"
       shell: bash
       env:
+        ACTION_PATH: ${{ github.action_path }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
         ${INSTALL_COMMAND} --upgrade pip packaging
+        ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements.txt
 
     # ------------------------------------------------------------------------
 

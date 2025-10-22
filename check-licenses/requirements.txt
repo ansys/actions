@@ -1,0 +1,4 @@
+pip-licenses @ git+https://github.com/ansys/pip-licenses@main
+prettytable==3.16.0
+tomli==2.2.1
+wcwidth==0.2.13
