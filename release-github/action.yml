@@ -132,7 +132,10 @@ inputs:
 
   add-artifact-attestation-notes:
     description: |
-      Whether or not to add artifact attestation notes to the release notes.
+      Whether or not to add artifact attestation notes to the release notes. The
+      artifact attestations need to be generated during the build process using the
+      ``attest-provenance: true`` input parameter in the ``build-wheelhouse`` and
+      ``build-library`` actions with the appropriate permissions.
     default: false
     required: false
     type: boolean
