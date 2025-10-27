@@ -11,7 +11,7 @@ env:
 
 permissions:
   contents: read
-  pull-requests: read
+  # pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -62,9 +62,9 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
     permissions:
-      id-token: write
-      contents: write
-      attestations: write
+      id-token: write # Needed for provenance attestation
+      contents: read
+      attestations: write # Needed for provenance attestation
     steps:
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -86,9 +86,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: test-build-wheelhouse-flit
     permissions:
-      id-token: write
-      contents: write
-      attestations: write
+      id-token: write # Needed for provenance attestation
+      contents: read
+      attestations: write  # Needed for provenance attestation
     steps:
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -109,8 +109,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: test-build-library-flit
     permissions:
-      id-token: write
-      contents: write
+      id-token: write # Needed for trusted publishing OIDC
+      contents: read
     steps:
 
     - name: "Download distribution artifacts"
@@ -144,9 +144,9 @@ jobs:
           - name: pymechanical
             library: ansys-mechanical-core
     permissions:
-      id-token: write
-      contents: write
-      attestations: write
+      id-token: write # Needed for provenance attestation
+      contents: read
+      attestations: write # Needed for provenance attestation
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
@@ -187,9 +187,9 @@ jobs:
           - name: pymechanical
             library: ansys-mechanical-core
     permissions:
-      id-token: write
-      contents: write
-      attestations: write
+      id-token: write # Needed for provenance attestation
+      contents: read
+      attestations: write # Needed for provenance attestation
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
