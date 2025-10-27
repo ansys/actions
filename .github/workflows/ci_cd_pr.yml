@@ -10,7 +10,6 @@ env:
 
 permissions:
   contents: read
-  # pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -173,7 +172,6 @@ jobs:
     if: github.event.action != 'closed'
     permissions:
       contents: read
-      # pull-requests: read
       packages: read # Needed to pull geometry container image
     strategy:
       matrix:
@@ -249,7 +247,6 @@ jobs:
     if: github.event.action != 'closed'
     permissions:
       contents: read
-      # pull-requests: read
       packages: read # Needed to pull pydpf-composites container image
     strategy:
       matrix:
