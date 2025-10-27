@@ -10,7 +10,7 @@ env:
 
 permissions:
   contents: read
-  pull-requests: read
+  # pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -60,9 +60,9 @@ jobs:
     needs: check-dependabot-pr
     if: github.event.action != 'closed'
     permissions:
-      contents: write
-      pull-requests: write
-      issues: write
+      contents: read
+      pull-requests: write # Needed to add existing labels to PRs
+      issues: write # Needed to create labels that do not already exist
     runs-on: ubuntu-latest
     steps:
 
@@ -90,7 +90,7 @@ jobs:
     if: github.event.action != 'closed'
     permissions:
       contents: read
-      pull-requests: write
+      pull-requests: write # Needed to create changelog fragment PR comments
     steps:
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -173,8 +173,8 @@ jobs:
     if: github.event.action != 'closed'
     permissions:
       contents: read
-      pull-requests: read
-      packages: read
+      # pull-requests: read
+      packages: read # Needed to pull geometry container image
     strategy:
       matrix:
         os:
@@ -249,8 +249,8 @@ jobs:
     if: github.event.action != 'closed'
     permissions:
       contents: read
-      pull-requests: read
-      packages: read
+      # pull-requests: read
+      packages: read # Needed to pull pydpf-composites container image
     strategy:
       matrix:
         os:
@@ -314,8 +314,8 @@ jobs:
     name: "Deploy PR documentation"
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # Needed to update files on the gh-pages branch
+      pull-requests: write # Needed to create deployment comments on PRs
     needs: doc-build
     # Run when the PR is closed i.e. when doc-build job is skipped
     # Also run only when appropriate label is added

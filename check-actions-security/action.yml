@@ -88,7 +88,7 @@ runs:
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.14.2
+        uv tool install zizmor==1.16.0
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
