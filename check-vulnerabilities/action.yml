@@ -148,7 +148,8 @@ inputs:
   upload-reports:
     description: |
       Whether to upload the artifacts containing the vulnerability report.
-      By default, the report artifacts will not be uploaded to hide any potential vulnerabilities?
+      By default, the report artifacts is not uploaded.
+      This option should not be enabled unless strictly necessary.
     default: false
     required: false
     type: boolean
@@ -485,3 +486,4 @@ runs:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
+

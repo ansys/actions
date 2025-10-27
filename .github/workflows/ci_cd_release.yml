@@ -26,11 +26,11 @@ jobs:
       REF_NAME: ${{ github.ref_name }}
       BASE_REF: ${{ github.event.base_ref }}
     permissions:
-      contents: write
+      contents: write # Needed to create and delete tags
     steps:
 
     - name: "Checkout repository" # zizmor: ignore[artipacked] git credentials need to be persisted on this job
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         fetch-tags: true
         ref: ${{ github.ref }}
@@ -108,8 +108,8 @@ jobs:
     name: "Changelog"
     needs: rolling-release
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # Needed to create PR for changelog
+      pull-requests: write # Needed to create PR for changelog
     runs-on: ubuntu-latest
     steps:
       - uses: ansys/actions/doc-deploy-changelog@main
@@ -133,7 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: rolling-release
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: ansys/actions/doc-style@main
         with:
@@ -156,12 +156,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: code-style
     permissions:
-      id-token: write
-      contents: write
+      contents: read
     steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         persist-credentials: false
 
@@ -199,18 +198,18 @@ jobs:
     env:
         MAJOR: ${{ needs.rolling-release.outputs.tag_major }}
     permissions:
-      id-token: write
-      contents: write
+      id-token: write # Needed for trusted publishing OIDC
+      contents: write # Needed for releasing to GitHub
     steps:
 
     - name: "Download distribution artifacts"
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
       with:
         name: ${{ env.LIBRARY_NAME }}-artifacts
         path: dist
 
     - name: "Download HTML documentation"
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
       with:
         name: documentation-html
         path: documentation-html
@@ -222,7 +221,7 @@ jobs:
         dest: documentation-html.zip
 
     - name: "Download PDF documentation"
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
       with:
         name: documentation-pdf
         path: documentation-pdf
@@ -254,7 +253,7 @@ jobs:
         echo "LINK=${LINK}" >> $GITHUB_OUTPUT
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
+      uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
       with:
         body: >
           If you are migrating the actions of your project to a new major release, breaking changes can be expected.
@@ -272,7 +271,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     permissions:
-      contents: write
+      contents: write # Needed to update files on the gh-pages branch
     steps:
       - uses: ansys/actions/doc-deploy-stable@main
         with:

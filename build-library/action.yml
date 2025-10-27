@@ -110,6 +110,20 @@ inputs:
     required: false
     type: boolean
 
+  checkout-fetch-depth:
+    description: |
+      Set fetch-depth option for actions/checkout. Default value is ``1``.
+    required: false
+    default: '1'
+    type: string
+
+  checkout-fetch-tags:
+    description: |
+      Set fetch-tags option for actions/checkout. Default value is ``false``.
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -119,6 +133,8 @@ runs:
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         persist-credentials: false
+        fetch-depth: ${{ inputs.checkout-fetch-depth }}
+        fetch-tags:  ${{ inputs.checkout-fetch-tags }}
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -190,6 +206,6 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
       with:
         subject-path: dist/
