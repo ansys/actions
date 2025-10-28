@@ -424,6 +424,9 @@ runs:
       if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        CNAME: ${{ inputs.cname }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+        BRANCH: ${{ inputs.branch }}
       shell: bash
       run: |
         ${ACTIVATE_VENV}
