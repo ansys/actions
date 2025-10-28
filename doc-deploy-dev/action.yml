@@ -382,7 +382,55 @@ runs:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
 
-     # ------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
+
+    - name: Check that pull/ directory exists
+      id: pull-directory-exists
+      shell: bash
+      run: |
+        if [[ -d "pull/" ]]; then
+          echo "PULL_DIRECTORY_EXISTS=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "PULL_DIRECTORY_EXISTS=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Set up Python"
+      if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: '3.13'
+        use-cache: false
+        provision-uv: false
+        prune-uv-cache: true
+
+    - name: "Create a virtual environment"
+      if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
+      shell: bash
+      run: |
+        python -m venv .venv
+
+    - name: "Set up virtual environment activation command"
+      if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
+      id: virtual-environment-activation-command
+      shell: bash
+      run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: Remove documentation of closed pull requests
+      if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+      shell: bash
+      run: |
+        ${ACTIVATE_VENV}
+        python -m pip install PyGithub
+        python ${GITHUB_ACTION_PATH}/../python-utils/remove_closed_pr_deployed_doc.py
+
+    # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
       with:
