@@ -18,7 +18,7 @@ PR_COMMENT = (
 
 class Config(NamedTuple):
     """Configuration data from environment variables."""
-    
+
     token: str
     repo_slug: str
     branch: str
@@ -39,26 +39,26 @@ def get_config() -> Config:
         If any required environment variable is missing.
     """
     missing_vars = []
-    
+
     token = os.environ.get("GITHUB_TOKEN", "")
     if not token:
         missing_vars.append("GITHUB_TOKEN")
-    
+
     repo_slug = os.environ.get("GITHUB_REPOSITORY", "")
     if not repo_slug:
         missing_vars.append("GITHUB_REPOSITORY")
-    
+
     branch = os.environ.get("BRANCH", "")
     if not branch:
         missing_vars.append("BRANCH")
-    
+
     cname = os.environ.get("CNAME", "")
     if not cname:
         missing_vars.append("CNAME")
-    
+
     if missing_vars:
         raise Exception(f"Missing environment variables: {', '.join(missing_vars)}")
-    
+
     return Config(token=token, repo_slug=repo_slug, branch=branch, cname=cname)
 
 
@@ -90,7 +90,9 @@ def get_prs_to_cleanup(repo: Repository, branch: str) -> list[str]:
         return []
 
     # Extract deployed PR numbers
-    deployed_pr_nums = [content.path.removeprefix("pull/") for content in deployed_pr_docs]
+    deployed_pr_nums = [
+        content.path.removeprefix("pull/") for content in deployed_pr_docs
+    ]
 
     # Get opened PR numbers
     opened_prs = repo.get_pulls(state="opened")
@@ -118,16 +120,16 @@ def cleanup_pr_documentation(repo: Repository, cname: str, pr_numbers: list[str]
     """
     if not pr_numbers:
         return
-    
+
     # Remove documentation directories
     pull_path = Path("pull")
     for pr_number in pr_numbers:
         shutil.rmtree(pull_path / pr_number)
-    
+
     # Remove pull directory if empty
     if len(os.listdir(pull_path)) == 0:
         pull_path.rmdir()
-    
+
     # Add notification comments to closed PRs
     for pr_number in pr_numbers:
         issue = repo.get_issue(number=int(pr_number))
@@ -137,14 +139,14 @@ def cleanup_pr_documentation(repo: Repository, cname: str, pr_numbers: list[str]
 if __name__ == "__main__":
     # Get configuration
     config = get_config()
-    
+
     # Initialize GitHub API
     auth = Auth.Token(config.token)
     gh = Github(auth=auth)
     repo = gh.get_repo(config.repo_slug)
-    
+
     # Find PRs that need cleanup
     prs_to_remove = get_prs_to_cleanup(repo, config.branch)
-    
+
     # Perform cleanup
     cleanup_pr_documentation(repo, config.cname, prs_to_remove)
