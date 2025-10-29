@@ -99,7 +99,7 @@ runs:
 
     - uses: ansys/actions/_logging@main
       with:
-        level: "INFO"
+        level: "WARNING"
         message: >
           Starting with version v10.2, the doc-deploy-pr action no longer requires you to add the "closed" GitHub event to "on.pull_request.types" for
           documentation cleanup when PRs are closed. Documentation for closed PRs is now cleaned up
