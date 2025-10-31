@@ -377,6 +377,7 @@ runs:
       shell: bash
       run: |
         ${ACTIVATE_VENV}
+        pip list
         echo "This step is to be removed"
         pip-licenses
         echo "----------------------------------------------"
