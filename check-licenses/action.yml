@@ -258,6 +258,7 @@ runs:
           else
             echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
           fi
+        fi
 
     - name: "Update pip"
       shell: bash
