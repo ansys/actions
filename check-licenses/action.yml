@@ -247,9 +247,11 @@ runs:
     - name: "Set up virtual environment activation command"
       id: virtual-environment-activation-command
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ inputs.activate-venv }}
       run: |
-        if [[ -n "${{ inputs.activate-venv }}" ]]; then
-          echo "ACTIVATE_VENV=${{ inputs.activate-venv }}" >> $GITHUB_OUTPUT
+        if [[ -n ${ACTIVATE_VENV} ]]; then
+          echo "ACTIVATE_VENV=${ACTIVATE_VENV}" >> $GITHUB_OUTPUT
         else
           if [[ ${RUNNER_OS} == 'Windows' ]]; then
             echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
