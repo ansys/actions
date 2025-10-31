@@ -414,3 +414,4 @@ runs:
         skip-install: true
         checkout: false
         whitelist-license-check: ${{ inputs.whitelist-license-check }}
+        activate-venv: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
