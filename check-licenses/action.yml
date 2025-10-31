@@ -126,7 +126,8 @@ inputs:
     description: |
       When this action is used in combination with other actions, it might need to
       activate the virtual environment created by those actions. If ``skip-install`` input
-      is set to ``true``, this input is required to activate the virtual environment.
+      is set to ``true``, this input is required to activate the virtual environment. If
+      ``skip-install`` is ``false``, this input is not needed and is ignored.
     required: false
     default: ''
     type: string
