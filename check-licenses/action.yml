@@ -396,6 +396,8 @@ runs:
 
     - name: To be romved
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         ${ACTIVATE_VENV}
         pip list
