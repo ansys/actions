@@ -154,6 +154,15 @@ runs:
           When skip-install is set to false, activate-venv input is not needed
           and will be ignored.
 
+    - name: Early pip list
+      if: inputs.activate-venv != ''
+      env:
+        ACTIVATE_VENV: ${{ inputs.activate-venv }}
+      shell: bash
+      run: |
+        ${ACTIVATE_VENV}
+        pip list
+
     - name: Check python version
       id: check-python-version
       shell: bash
