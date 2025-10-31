@@ -154,15 +154,6 @@ runs:
           When skip-install is set to false, activate-venv input is not needed
           and will be ignored.
 
-    - name: Early pip list
-      if: inputs.activate-venv != ''
-      env:
-        ACTIVATE_VENV: ${{ inputs.activate-venv }}
-      shell: bash
-      run: |
-        ${ACTIVATE_VENV}
-        pip list
-
     - name: Check python version
       id: check-python-version
       shell: bash
@@ -261,25 +252,14 @@ runs:
         ACTIVATE_VENV: ${{ inputs.activate-venv }}
       run: |
         if [[ -n ${ACTIVATE_VENV} ]]; then
-          echo "Using provided virtual environment activation command."
           echo "ACTIVATE_VENV=${ACTIVATE_VENV}" >> $GITHUB_OUTPUT
         else
           if [[ ${RUNNER_OS} == 'Windows' ]]; then
-            echo "Using default Windows virtual environment activation command."
             echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
           else
-            echo "Using default Unix virtual environment activation command."
             echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
           fi
         fi
-
-    - name: "Second check on pip list"
-      shell: bash
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-      run: |
-        ${ACTIVATE_VENV}
-        pip list
 
     - name: "Update pip"
       shell: bash
@@ -393,19 +373,6 @@ runs:
           ${{ steps.log-licenses-and-packages.outputs.LOG_ACCEPTED_LICENSES }}
 
           ${{ steps.log-licenses-and-packages.outputs.LOG_IGNORED_PACKAGES }}
-
-    - name: To be romved
-      shell: bash
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-      run: |
-        ${ACTIVATE_VENV}
-        pip list
-        echo "This step is to be removed"
-        pip-licenses
-        echo "----------------------------------------------"
-        pip-licenses | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/'
-        echo "----------------------------------------------"
 
     - name: "Check licences of packages"
       shell: bash
