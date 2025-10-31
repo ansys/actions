@@ -190,6 +190,7 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
+      if: inputs.skip-install == 'false'
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
@@ -260,20 +261,31 @@ runs:
         ACTIVATE_VENV: ${{ inputs.activate-venv }}
       run: |
         if [[ -n ${ACTIVATE_VENV} ]]; then
+          echo "Using provided virtual environment activation command."
           echo "ACTIVATE_VENV=${ACTIVATE_VENV}" >> $GITHUB_OUTPUT
         else
           if [[ ${RUNNER_OS} == 'Windows' ]]; then
+            echo "Using default Windows virtual environment activation command."
             echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
           else
+            echo "Using default Unix virtual environment activation command."
             echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
           fi
         fi
+
+    - name: "Second check on pip list"
+      shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+      run: |
+        ${ACTIVATE_VENV}
+        pip list
 
     - name: "Update pip"
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
         $INSTALL_COMMAND -U pip
@@ -290,7 +302,7 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system --no-cache' || 'python -m pip install --no-cache-dir' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --no-cache' || 'python -m pip install --no-cache-dir' }}
       run: |
         ${ACTIVATE_VENV}
         $INSTALL_COMMAND external/pip-licenses
@@ -309,7 +321,7 @@ runs:
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run:
         ${ACTIVATE_VENV}
         ${INSTALL_COMMAND} "$INSTALL_TARGET"
