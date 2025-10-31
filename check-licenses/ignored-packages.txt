@@ -5,6 +5,7 @@ defusedxml
 distlib
 filelock
 matplotlib
+matplotlib-inline
 pypiwin32
 pywin32
 reuse
@@ -13,3 +14,4 @@ typing-extensions
 typing_extensions
 usd-core
 WMI
+wrapt
