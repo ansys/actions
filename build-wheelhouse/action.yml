@@ -411,7 +411,10 @@ runs:
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}
+        use-python-cache: ${{ inputs.use-python-cache }}
+        target: ${{ inputs.target }}
+        whitelist-license-check: ${{ inputs.whitelist-license-check }}
         skip-install: true
         checkout: false
-        whitelist-license-check: ${{ inputs.whitelist-license-check }}
+        use-uv: ${{ inputs.use-uv }}
         activate-venv: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
