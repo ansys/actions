@@ -390,3 +390,88 @@ jobs:
       - name: "Run all python utilities tests"
         run: |
           pytest -vv python-utils
+
+  check-dependabot-coverage:
+    name: "Check dependabot coverage for third-party actions"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: "Check third-party actions are in dependabot.yml"
+        shell: bash
+        run: |
+          echo "Checking third-party actions coverage in dependabot.yml"
+          echo "========================================================"
+          echo ""
+
+          # Get all third-party actions from workflows and composite actions
+          ACTIONS=$(
+              (find . -maxdepth 2 -type f -name "action.yml" && \
+              find .github/workflows -type f \( -name "*.yml" -o -name "*.yaml" \)) | \
+              xargs grep -h "uses:" | \
+              sed 's/^[[:space:]]*//' | \
+              sed 's/^-[[:space:]]*//' | \
+              sed 's/^uses:[[:space:]]*//' | \
+              sed 's/@.*//' | \
+              grep '/' | \
+              grep -v '\$' | \
+              grep -v '^unpinned-uses' | \
+              grep -v '^ansys/actions' | \
+              sort -u | \
+              grep -v "^\./"
+          )
+
+          echo "Actions found in workflows/composite actions:"
+          echo "----------------------------------------------"
+          echo "$ACTIONS" | while read -r action; do
+              echo "- $action"
+          done
+
+          echo ""
+          echo "Missing from dependabot.yml patterns:"
+          echo "--------------------------------------"
+
+          # Check if "actions/*" pattern exists in dependabot.yml
+          ACTIONS_WILDCARD_EXISTS=$(grep -q "actions/\*" .github/dependabot.yml && echo "true" || echo "false")
+
+          # Check each action against dependabot.yml and collect missing ones
+          MISSING_ACTIONS=""
+          echo "$ACTIONS" | while read -r action; do
+              # If action starts with "actions/" and wildcard exists, skip it
+              if [[ "$action" == actions/* ]] && [[ "$ACTIONS_WILDCARD_EXISTS" == "true" ]]; then
+                  continue
+              fi
+
+              # Otherwise check if the exact action is in dependabot.yml
+              if ! grep -q "$action" .github/dependabot.yml; then
+                  echo "- $action"
+                  MISSING_ACTIONS="${MISSING_ACTIONS}${action}\n"
+              fi
+          done
+
+          echo ""
+          echo "========================================================"
+
+          # Count missing actions
+          MISSING_COUNT=$(echo "$ACTIONS" | while read -r action; do
+              if [[ "$action" == actions/* ]] && [[ "$ACTIONS_WILDCARD_EXISTS" == "true" ]]; then
+                  continue
+              fi
+              if ! grep -q "$action" .github/dependabot.yml; then
+                  echo "1"
+              fi
+          done | wc -l)
+
+          echo "Total missing actions: $MISSING_COUNT"
+
+          # Fail if there are missing actions
+          if [ "$MISSING_COUNT" -gt 0 ]; then
+              echo ""
+              echo "ERROR: Some third-party actions are not covered by dependabot.yml"
+              echo "Please add the missing actions to .github/dependabot.yml"
+              exit 1
+          else
+              echo ""
+              echo "SUCCESS: All third-party actions are covered by dependabot.yml"
+          fi
