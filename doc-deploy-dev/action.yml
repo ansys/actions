@@ -384,16 +384,6 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - name: Check that pull/ directory exists
-      id: pull-directory-exists
-      shell: bash
-      run: |
-        if [[ -d "pull/" ]]; then
-          echo "PULL_DIRECTORY_EXISTS=true" >> ${GITHUB_OUTPUT}
-        else
-          echo "PULL_DIRECTORY_EXISTS=false" >> ${GITHUB_OUTPUT}
-        fi
-
     - name: Clean up pull/ directory if it exists
       if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
       shell: bash
