@@ -394,44 +394,28 @@ runs:
           echo "PULL_DIRECTORY_EXISTS=false" >> ${GITHUB_OUTPUT}
         fi
 
-    - name: "Set up Python"
-      if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
-      uses: ansys/actions/_setup-python@main
-      with:
-        python-version: '3.13'
-        use-cache: false
-        provision-uv: false
-        prune-uv-cache: true
-
-    - name: "Create a virtual environment"
+    - name: Clean up pull/ directory if it exists
       if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
       shell: bash
       run: |
-        python -m venv .venv
+        for pr_number in $(ls pull/); do
 
-    - name: "Set up virtual environment activation command"
-      if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
-      id: virtual-environment-activation-command
-      shell: bash
-      run: |
-        if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
-        else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
-        fi
+            closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>/dev/null)
 
-    - name: Remove documentation of closed pull requests
-      if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        CNAME: ${{ inputs.cname }}
-        GITHUB_TOKEN: ${{ inputs.token }}
-        BRANCH: ${{ inputs.branch }}
-      shell: bash
-      run: |
-        ${ACTIVATE_VENV}
-        python -m pip install PyGithub
-        python ${GITHUB_ACTION_PATH}/../python-utils/remove_closed_pr_deployed_doc.py
+            # If PR does not exist, skip
+            if [ -z "${closed}" ]; then
+                echo "PR #${pr_number}: not found, skipping."
+                continue
+            fi
+
+            echo "PR #${pr_number}: ${closed}"
+
+            # Remove pr directory if it is closed
+            if [[ ${closed} == "false" ]]; then
+                echo "Removing directory $pr_number..."
+                rm -rf "pull/${pr_number}"
+            fi
+        done
 
     # ------------------------------------------------------------------------
 
