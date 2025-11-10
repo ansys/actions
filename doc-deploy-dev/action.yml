@@ -400,24 +400,27 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        for pr_number in $(ls pull/); do
+        if [[ -d "pull/" ]]; then
+            for pr_number in $(ls pull/); do
+              closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>/dev/null)
 
-            closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>/dev/null)
-
-            # If PR does not exist, skip
-            if [ -z "${closed}" ]; then
+              # If PR does not exist, skip)
+              if [[ -z "${closed}" ]]; then
                 echo "PR #${pr_number}: not found, skipping."
                 continue
-            fi
+              fi
 
-            echo "PR #${pr_number}: ${closed}"
+              echo "PR #${pr_number}: ${closed}"
 
-            # Remove pr directory if it is closed
-            if [[ ${closed} == "true" ]]; then
+              # Remove pr directory if it is closed
+              if [[ ${closed} == "true" ]]; then
                 echo "Removing directory $pr_number..."
                 rm -rf "pull/${pr_number}"
-            fi
-        done
+              fi
+            done
+        else
+            echo "No pull request directories to clean up."
+        fi
 
     # ------------------------------------------------------------------------
 
