@@ -397,6 +397,8 @@ runs:
     - name: Clean up pull/ directory if it exists
       if: steps.pull-directory-exists.outputs.PULL_DIRECTORY_EXISTS == 'true'
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         for pr_number in $(ls pull/); do
 
