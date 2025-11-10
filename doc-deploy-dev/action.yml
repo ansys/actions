@@ -413,7 +413,7 @@ runs:
             echo "PR #${pr_number}: ${closed}"
 
             # Remove pr directory if it is closed
-            if [[ ${closed} == "false" ]]; then
+            if [[ ${closed} == "true" ]]; then
                 echo "Removing directory $pr_number..."
                 rm -rf "pull/${pr_number}"
             fi
