@@ -387,7 +387,7 @@ runs:
     - name: Clean up pull/ directory if it exists
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ inputs.token }}
+        GITHUB_TOKEN: ${{ inputs.token }} # For gh CLI authentication
       run: |
         if [[ -d "pull/" ]]; then
             for pr_number in $(ls pull/); do
