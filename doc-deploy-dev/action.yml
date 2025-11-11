@@ -403,7 +403,7 @@ runs:
 
               # Remove pr directory if it is closed
               if [[ ${closed} == "true" ]]; then
-                echo "Removing directory $pr_number..."
+                echo "Removing directory ${pr_number}..."
                 rm -rf "pull/${pr_number}"
               fi
             done
