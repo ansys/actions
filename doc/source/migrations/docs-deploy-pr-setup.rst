@@ -49,7 +49,7 @@ Two setup options are provided based on the desired level of control:
           if: github.event.action != 'closed'
           runs-on: ubuntu-latest
           steps:
-            - uses: ansys/actions/doc-build@v10
+            - uses: ansys/actions/doc-build@v10.1
               with:
                 python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -59,7 +59,7 @@ Two setup options are provided based on the desired level of control:
           needs: doc-build
           if: always() && (needs.doc-build.result == 'success' || needs.doc-build.result == 'skipped')
           steps:
-            - uses: ansys/actions/doc-deploy-pr@v10
+            - uses: ansys/actions/doc-deploy-pr@v10.1
               with:
                 cname: ${{ env.DOCUMENTATION_CNAME }}
                 token: ${{ secrets.GITHUB_TOKEN }}
@@ -81,7 +81,7 @@ Two setup options are provided based on the desired level of control:
           name: "Doc build"
           runs-on: ubuntu-latest
           steps:
-            - uses: ansys/actions/doc-build@v10
+            - uses: ansys/actions/doc-build@v10.2
               with:
                 python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -90,7 +90,7 @@ Two setup options are provided based on the desired level of control:
           runs-on: ubuntu-latest
           needs: doc-build
           steps:
-            - uses: ansys/actions/doc-deploy-pr@v10
+            - uses: ansys/actions/doc-deploy-pr@v10.2
               with:
                 cname: ${{ env.DOCUMENTATION_CNAME }}
                 token: ${{ secrets.GITHUB_TOKEN }}
@@ -144,7 +144,7 @@ Two setup options are provided based on the desired level of control:
                   if: github.event.action != 'closed'
                   runs-on: ubuntu-latest
                   steps:
-                    - uses: ansys/actions/doc-build@v10
+                    - uses: ansys/actions/doc-build@v10.1
                       with:
                         python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -157,7 +157,7 @@ Two setup options are provided based on the desired level of control:
                     (needs.doc-build.result == 'success' || needs.doc-build.result == 'skipped') &&
                     contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
                   steps:
-                    - uses: ansys/actions/doc-deploy-pr@v10
+                    - uses: ansys/actions/doc-deploy-pr@v10.1
                       with:
                         cname: ${{ env.DOCUMENTATION_CNAME }}
                         token: ${{ secrets.GITHUB_TOKEN }}
@@ -179,7 +179,7 @@ Two setup options are provided based on the desired level of control:
                   name: "Doc build"
                   runs-on: ubuntu-latest
                   steps:
-                    - uses: ansys/actions/doc-build@v10
+                    - uses: ansys/actions/doc-build@v10.2
                       with:
                         python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -189,7 +189,7 @@ Two setup options are provided based on the desired level of control:
                   needs: doc-build
                   if: contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
                   steps:
-                    - uses: ansys/actions/doc-deploy-pr@v10
+                    - uses: ansys/actions/doc-deploy-pr@v10.2
                       with:
                         cname: ${{ env.DOCUMENTATION_CNAME }}
                         token: ${{ secrets.GITHUB_TOKEN }}
