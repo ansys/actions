@@ -3,6 +3,7 @@ on:
   pull_request:
   schedule:
     - cron: '00 3 1 * *'  # The first day of every month at 3:00 AM UTC
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -20,7 +21,8 @@ jobs:
       - name: "Checkout repository"
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          persist-credentials: false
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          fetch-depth: 0 # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
       - name: "Check third-party actions are in dependabot.yml"
         id: missing-actions-check
@@ -87,7 +89,7 @@ jobs:
           if [ "$MISSING_COUNT" -gt 0 ]; then
               echo ""
               echo "ERROR: Some third-party actions are not covered by dependabot.yml"
-              echo "Please add the missing actions to .github/dependabot.yml"
+              echo "A pull request will be opened to add the missing actions to .github/dependabot.yml"
               echo "MISSING_ACTIONS_FOUND=true" >> $GITHUB_OUTPUT
           else
               echo ""
@@ -95,10 +97,68 @@ jobs:
               echo "MISSING_ACTIONS_FOUND=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: "Update dependabot.yml with missing actions"
+        if: steps.missing-actions-check.outputs.MISSING_ACTIONS_FOUND == 'true'
+        shell: bash
+        run: |
+          # Update dependabot.yml
+          echo "Updating .github/dependabot.yml..."
+
+          TEMP_FILE=$(mktemp)
+          awk -v missing="$MISSING_ACTIONS" '
+          BEGIN {
+              split(missing, actions, "\n");
+              for (i in actions) {
+                  if (actions[i] != "") {
+                      # The indentation is 10 spaces, then "- "
+                      print "          - \"" actions[i] "\"";
+                  }
+              }
+          }
+          ' > "$TEMP_FILE"
+
+          # Insert the missing actions into dependabot.yml
+          awk -v additions_file="$TEMP_FILE" '
+          /must-be-assigned-actions:/ { in_section=1 }
+          in_section && /patterns:/ {
+              print;
+              while ((getline line < additions_file) > 0) {
+                  print line;
+              }
+              next;
+          }
+          { print }
+          ' .github/dependabot.yml > .github/dependabot.yml.tmp && mv .github/dependabot.yml.tmp .github/dependabot.yml
+
+          rm "$TEMP_FILE"
+          echo "SUCCESS: .github/dependabot.yml updated."
+
       - name: "Create PR into main with the CHANGELOG file changes"
         if: steps.missing-actions-check.outputs.MISSING_ACTIONS_FOUND == 'true'
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+          GITHUB_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
         run: |
-          exit 1
-# To be implemented
+          pr_title="ci: updating dependabot.yml with missing actions"
+
+          # Create and checkout PR branch
+          git checkout -b "ci/dependabot-configuration-update"
+
+          # Configure git username & email
+          git config user.name "${BOT_USER}"
+          git config user.email "${BOT_EMAIL}"
+
+          # Add and commit changes
+          git commit -am "${pr_title}"
+
+          # Push branch to remote
+          git push -u origin "ci/dependabot-configuration-update"
+
+          body_msg="Update dependabot.yml with missing actions.
+
+          > [!NOTE]
+          > Before merging this pull request, check if any of the added actions can be moved from `must-be-assigned-actions` group to a more specific group and make the necessary changes"
+
+          gh pr create --title "${pr_title}" --body "${body_msg}" --reviewer "ansys/pyansys-core"
