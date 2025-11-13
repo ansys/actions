@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # Needed to create PR for when dependabot.yml gets updated
+  pull-requests: write # Needed to create PR for when dependabot.yml gets updated
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
