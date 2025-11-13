@@ -116,7 +116,7 @@ jobs:
               for (i in actions) {
                   if (actions[i] != "") {
                       # The indentation is 10 spaces, then "- "
-                      print "          - \"" actions[i] "\"";
+                      print "          - " actions[i] "";
                   }
               }
           }
