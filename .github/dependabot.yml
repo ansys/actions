@@ -110,6 +110,6 @@ updates:
       # Missed non ansys actions that should by assigned to a group
       must-be-assigned-actions:
         patterns:
-          - "*"
+          - dependabot/fetch-metadata
         exclude-patterns:
           - "ansys/actions*"
