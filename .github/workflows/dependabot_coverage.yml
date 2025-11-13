@@ -139,32 +139,32 @@ jobs:
           echo "SUCCESS: .github/dependabot.yml updated."
           cat .github/dependabot.yml
 
-      # - name: "Create PR into main with the CHANGELOG file changes"
-      #   if: steps.missing-actions-check.outputs.MISSING_ACTIONS_FOUND == 'true'
-      #   shell: bash
-      #   env:
-      #     BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-      #     BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
-      #     GITHUB_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-      #   run: |
-      #     pr_title="ci: updating dependabot.yml with missing actions"
+      - name: "Create PR into main with the CHANGELOG file changes"
+        if: steps.missing-actions-check.outputs.MISSING_ACTIONS_FOUND == 'true'
+        shell: bash
+        env:
+          BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+          GITHUB_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        run: |
+          pr_title="ci: updating dependabot.yml with missing actions"
 
-      #     # Create and checkout PR branch
-      #     git checkout -b "ci/dependabot-configuration-update"
+          # Create and checkout PR branch
+          git checkout -b "ci/dependabot-configuration-update"
 
-      #     # Configure git username & email
-      #     git config user.name "${BOT_USER}"
-      #     git config user.email "${BOT_EMAIL}"
+          # Configure git username & email
+          git config user.name "${BOT_USER}"
+          git config user.email "${BOT_EMAIL}"
 
-      #     # Add and commit changes
-      #     git commit -am "${pr_title}"
+          # Add and commit changes
+          git commit -am "${pr_title}"
 
-      #     # Push branch to remote
-      #     git push -u origin "ci/dependabot-configuration-update"
+          # Push branch to remote
+          git push -u origin "ci/dependabot-configuration-update"
 
-      #     body_msg="Update dependabot.yml with missing actions.
+          body_msg="Update dependabot.yml with missing actions.
 
-      #     > [!NOTE]
-      #     > Before merging this pull request, check if any of the added actions can be moved from `must-be-assigned-actions` group to a more specific group and make the necessary changes"
+          > [!NOTE]
+          > Before merging this pull request, check if any of the added actions can be moved from `must-be-assigned-actions` group to a more specific group and make the necessary changes"
 
-      #     gh pr create --title "${pr_title}" --body "${body_msg}" --reviewer "ansys/pyansys-core"
+          gh pr create --title "${pr_title}" --body "${body_msg}" --reviewer "ansys/pyansys-core"
