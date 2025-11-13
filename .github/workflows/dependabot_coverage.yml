@@ -165,6 +165,6 @@ jobs:
           body_msg="Update dependabot.yml with missing actions.
 
           > [!NOTE]
-          > Before merging this pull request, check if any of the added actions can be moved from `must-be-assigned-actions` group to a more specific group and make the necessary changes"
+          > Before merging this pull request, check if any of the added actions can be moved from "must-be-assigned-actions" group to a more specific group and make the necessary changes"
 
           gh pr create --title "${pr_title}" --body "${body_msg}" --reviewer "ansys/pyansys-core"
