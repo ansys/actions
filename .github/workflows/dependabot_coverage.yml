@@ -1,6 +1,5 @@
 name: "Check dependabot coverage for third-party actions"
 on:
-  pull_request:
   schedule:
     - cron: '00 3 1 * *'  # The first day of every month at 3:00 AM UTC
   workflow_dispatch:
@@ -168,3 +167,6 @@ jobs:
           > Before merging this pull request, check if any of the added actions can be moved from "must-be-assigned-actions" group to a more specific group and make the necessary changes"
 
           gh pr create --title "${pr_title}" --body "${body_msg}" --reviewer "ansys/pyansys-core"
+
+          # Exit with error
+          exit 1
