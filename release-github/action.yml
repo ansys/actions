@@ -132,7 +132,10 @@ inputs:
 
   add-artifact-attestation-notes:
     description: |
-      Whether or not to add artifact attestation notes to the release notes.
+      Whether or not to add artifact attestation notes to the release notes. The
+      artifact attestations need to be generated during the build process using the
+      ``attest-provenance: true`` input parameter in the ``build-wheelhouse`` and
+      ``build-library`` actions with the appropriate permissions.
     default: false
     required: false
     type: boolean
@@ -210,7 +213,7 @@ runs:
           directory containing the final artifacts to be published in GitHub.
 
     - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
       with:
         path: /tmp/artifacts
 
