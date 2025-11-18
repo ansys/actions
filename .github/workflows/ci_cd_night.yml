@@ -104,3 +104,162 @@ jobs:
         print-hash: true
         skip-existing: true
         verbose: true
+
+  check-dependabot-coverage:
+    name: "Check dependabot coverage for third-party actions"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to create PR for when dependabot.yml gets updated
+      pull-requests: write # Needed to create PR for when dependabot.yml gets updated
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          fetch-depth: 0 # zizmor: ignore[artipacked] , credentials must be persisted in this case
+
+      - name: "Check third-party actions are in dependabot.yml"
+        id: missing-actions-check
+        shell: bash
+        run: |
+          echo "Checking third-party actions coverage in dependabot.yml"
+          echo "========================================================"
+          echo ""
+
+          # Get all third-party actions from workflows and composite actions
+          ACTIONS=$(
+              (find . -type f -name "action.yml" -not -path "./doc/*" && \
+              find .github/workflows -type f \( -name "*.yml" -o -name "*.yaml" \) ! -name "dependabot_coverage.yml") | \
+              xargs grep -h "uses:" | \
+              sed 's/^[[:space:]]*//' | \
+              sed 's/^-[[:space:]]*//' | \
+              sed 's/^uses:[[:space:]]*//' | \
+              sed 's/@.*//' | \
+              grep '/' | \
+              grep -v '\$' | \
+              grep -v '^unpinned-uses' | \
+              grep -v '^ansys/actions' | \
+              sort -u | \
+              grep -v "^\./"
+          )
+
+          echo "Actions found in workflows/composite actions:"
+          echo "----------------------------------------------"
+          echo "$ACTIONS" | while read -r action; do
+              echo "- $action"
+          done
+
+          echo ""
+          echo "Missing from dependabot.yml patterns:"
+          echo "--------------------------------------"
+
+          # Check if "actions/*" pattern exists in dependabot.yml
+          ACTIONS_WILDCARD_EXISTS=$(grep -q "actions/\*" .github/dependabot.yml && echo "true" || echo "false")
+
+          # Check each action against dependabot.yml and collect missing ones
+          MISSING_ACTIONS=""
+          while read -r action; do
+              # If action starts with "actions/" and wildcard exists, skip it
+              if [[ "$action" == actions/* ]] && [[ "$ACTIONS_WILDCARD_EXISTS" == "true" ]]; then
+                  continue
+              fi
+
+              # Otherwise check if the exact action is in dependabot.yml
+              if ! grep -q "$action" .github/dependabot.yml; then
+                  echo "- $action"
+                  MISSING_ACTIONS="${MISSING_ACTIONS}${action}\n"
+              fi
+          done < <(echo "$ACTIONS")
+
+          echo ""
+          echo "========================================================"
+
+          # Count missing actions
+          MISSING_COUNT=$(printf "$MISSING_ACTIONS" | wc -l)
+
+          echo "Total missing actions: $MISSING_COUNT"
+
+          # Fail if there are missing actions
+          if [ "$MISSING_COUNT" -gt 0 ]; then
+              echo ""
+              echo "ERROR: Some third-party actions are not covered by dependabot.yml"
+              echo "A pull request will be opened to add the missing actions to .github/dependabot.yml"
+              echo "MISSING_ACTIONS_FOUND=true" >> ${GITHUB_OUTPUT}
+              echo "MISSING_ACTIONS=${MISSING_ACTIONS}" >> ${GITHUB_OUTPUT}
+          else
+              echo ""
+              echo "SUCCESS: All third-party actions are covered by dependabot.yml"
+              echo "MISSING_ACTIONS_FOUND=false" >> ${GITHUB_OUTPUT}
+          fi
+
+      - name: "Update dependabot.yml with missing actions"
+        if: steps.missing-actions-check.outputs.MISSING_ACTIONS_FOUND == 'true'
+        shell: bash
+        env:
+          MISSING_ACTIONS: ${{ steps.missing-actions-check.outputs.MISSING_ACTIONS }}
+        run: |
+          # Update dependabot.yml
+          echo "Updating .github/dependabot.yml..."
+
+          TEMP_FILE=$(mktemp)
+          awk -v missing="$MISSING_ACTIONS" '
+          BEGIN {
+              split(missing, actions, "\n");
+              for (i in actions) {
+                  if (actions[i] != "") {
+                      # The indentation is 10 spaces, then "- "
+                      print "          - " actions[i] "";
+                  }
+              }
+          }
+          ' > "$TEMP_FILE"
+
+          # Insert the missing actions into dependabot.yml
+          awk -v additions_file="$TEMP_FILE" '
+          /must-be-assigned-actions:/ { in_section=1 }
+          in_section && /patterns:/ {
+              print;
+              while ((getline line < additions_file) > 0) {
+                  print line;
+              }
+              next;
+          }
+          { print }
+          ' .github/dependabot.yml > .github/dependabot.yml.tmp && mv .github/dependabot.yml.tmp .github/dependabot.yml
+
+          rm "$TEMP_FILE"
+          echo "SUCCESS: .github/dependabot.yml updated."
+          cat .github/dependabot.yml
+
+      - name: "Create PR into main with the CHANGELOG file changes"
+        if: steps.missing-actions-check.outputs.MISSING_ACTIONS_FOUND == 'true'
+        shell: bash
+        env:
+          BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+          GITHUB_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        run: |
+          pr_title="ci: updating dependabot.yml with missing actions"
+
+          # Create and checkout PR branch
+          git checkout -b "ci/dependabot-configuration-update"
+
+          # Configure git username & email
+          git config user.name "${BOT_USER}"
+          git config user.email "${BOT_EMAIL}"
+
+          # Add and commit changes
+          git commit -am "${pr_title}"
+
+          # Push branch to remote
+          git push -u origin "ci/dependabot-configuration-update"
+
+          body_msg="Update dependabot.yml with missing actions.
+
+          > [!NOTE]
+          > Before merging this pull request, check if any of the added actions can be moved from "must-be-assigned-actions" group to a more specific group and make the necessary changes"
+
+          gh pr create --title "${pr_title}" --body "${body_msg}" --reviewer "ansys/pyansys-core"
+
+          # Exit with error
+          exit 1
