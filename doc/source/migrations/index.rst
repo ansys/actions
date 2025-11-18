@@ -7,6 +7,23 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v10.2``
+-----------------
+
+**New Features:**
+
+- **Build-Library Changes:** The ``build-library`` action now includes two new inputs:
+
+  - ``checkout-fetch-depth`` (default: ``1``): Allows configuring the fetch depth when checking out the repository.
+    Setting this to ``0`` fetches the entire history, which may be necessary for certain build processes that
+    rely on full commit history.
+  - ``checkout-fetch-tags`` (default: ``false``): When set to ``true``, this input enables fetching all tags from the repository.
+    This is useful for build processes that depend on tag information.
+
+- **PR Documentation Deployment:** The ``doc-deploy-pr`` action is now easier to use. Starting with
+  version ``v10.2``, you no longer need to include the ``closed`` pull request event in your workflows because
+  deployed documentation is cleaned up asynchronously. For more details, see :ref:`docs-deploy-pr-setup`.
+
 Version ``v10.1``
 -----------------
 
