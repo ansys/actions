@@ -1,7 +1,7 @@
 name: pull-request
 on:
   pull_request:
-    types: [opened, reopened, synchronize, edited, labeled, closed]
+    types: [opened, reopened, synchronize, edited, labeled]
 
 env:
   MAIN_PYTHON_VERSION: '3.13'
@@ -20,7 +20,6 @@ jobs:
   check-environment-approval:
     name: Check environment approval
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
     outputs:
       environment: ${{ steps.block.outputs.environment }}
     steps:
@@ -42,7 +41,6 @@ jobs:
     needs: [check-environment-approval]
     name: Manual approval (on dependabot PRs)
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
     environment: ${{ needs.check-environment-approval.outputs.environment }}
     steps:
       - name: Proceed after approval
@@ -57,7 +55,6 @@ jobs:
   labeler:
     name: "Labels"
     needs: check-dependabot-pr
-    if: github.event.action != 'closed'
     permissions:
       contents: read
       pull-requests: write # Needed to add existing labels to PRs
@@ -86,7 +83,6 @@ jobs:
     name: "Create changelog fragment"
     runs-on: ubuntu-latest
     needs: labeler
-    if: github.event.action != 'closed'
     permissions:
       contents: read
       pull-requests: write # Needed to create changelog fragment PR comments
@@ -112,7 +108,6 @@ jobs:
     name: "Code style"
     runs-on: ubuntu-latest
     needs: changelog-fragment
-    if: github.event.action != 'closed'
     steps:
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -130,7 +125,6 @@ jobs:
     name: "Doc style"
     runs-on: ubuntu-latest
     needs: changelog-fragment
-    if: github.event.action != 'closed'
     steps:
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -146,7 +140,6 @@ jobs:
     name: "Doc build"
     runs-on: ${{ matrix.os }}
     needs: doc-style
-    if: github.event.action != 'closed'
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
@@ -169,7 +162,6 @@ jobs:
     name: "Test doc-build action for PyAnsys Geometry on ${{ matrix.os.name }}"
     runs-on: ${{ matrix.os.name }}
     needs: doc-style
-    if: github.event.action != 'closed'
     permissions:
       contents: read
       packages: read # Needed to pull geometry container image
@@ -244,7 +236,6 @@ jobs:
     name: "Test doc-build action for PyDPF-Composites on ${{ matrix.os.name }}"
     runs-on: ${{ matrix.os.name }}
     needs: doc-style
-    if: github.event.action != 'closed'
     permissions:
       contents: read
       packages: read # Needed to pull pydpf-composites container image
@@ -316,10 +307,7 @@ jobs:
     needs: doc-build
     # Run when the PR is closed i.e. when doc-build job is skipped
     # Also run only when appropriate label is added
-    if: |
-      always() &&
-      (needs.doc-build.result == 'success' || needs.doc-build.result == 'skipped') &&
-      contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
+    if: contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
     steps:
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -351,7 +339,6 @@ jobs:
   actions-security:
     name: "Check actions security"
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
     steps:
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -369,7 +356,6 @@ jobs:
   python-utilites-test:
     name: "Run all python utilities tests"
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
     steps:
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
