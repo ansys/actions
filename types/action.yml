@@ -1,0 +1,317 @@
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  Type checker action
+
+description: |
+  Run a type checker on your Python project.
+
+inputs:
+  type-checker:
+    description: |
+      Type checker to be used. Supported type checkers are ``basedpyright``, ``mypy``, ``pyrefly`` and ``ty``.
+    required: true
+    type: string
+
+  optional-dependencies-name:
+    description: |
+      Any valid install targets defined in the ``pyproject.toml`` file, or the suffix
+      of a requirement file. Multiple targets can be specified as a comma-separated
+      list. The associated dependencies are installed before running the type checker and should include your type checker.
+      There is no default value, we suggest using a ``'ci_types'`` if you have extra dependencies for type checking.
+      Therefore, in case of a requirement file, the default file is ``requirements/requirements_ci_types.txt``.
+    required: true
+    type: string
+
+  # Optional inputs
+  python-version:
+    description: |
+      Python version used for installing and running your chosen type checker.
+    default: '3.12'
+    required: false
+    type: string
+
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
+  type-checker-extra-args:
+    description: |
+      Set of additional arguments passed to the type checker in the form of a string.
+    default: ''
+    required: false
+
+  checkout:
+    description: |
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
+
+  skip-install:
+    description: |
+      Skip installation process. This should be set to `false` when using poetry
+      as the build-backend because it should be false with poetry as build-backend.
+      The default value is ``false``.
+    default: false
+    required: false
+    type: boolean
+
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Install Git and clone project"
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
+      if: ${{ inputs.checkout == 'true' }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Determine context.
+
+    - name: "Determine GitHub environment variables"
+      id: github-environment-variables
+      shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
+        elif [[ "$USE_UV" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
+        else
+          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
+        fi
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to type check.
+
+    - name: "Set up Python"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: |
+        python -m pip install pipx
+        python -m pipx install poetry
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME : ${{ runner.temp }}/pipx/home
+
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
+    - name: "Create a virtual environment"
+      shell: bash
+      run: |
+        python -m venv .venv
+
+    - name: "Set up virtual environment activation command"
+      id: virtual-environment-activation-command
+      shell: bash
+      run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - name: "Update pip"
+      shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        $ACTIVATE_VENV
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv pip install -U pip
+        else
+          python -m pip install -U pip
+        fi
+
+    - name: "Install project (if required)"
+      if: inputs.skip-install == 'false'
+      shell: bash
+      env:
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+      run: |
+        $ACTIVATE_VENV
+        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+          poetry install
+        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
+          uv pip install .
+        else
+          python -m pip install .
+        fi
+
+    - name: "Check if requirements.txt file exists"
+      id: check-exists-requirements-file
+      shell: bash
+      env:
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+      run: |
+        echo "EXISTS_CI_TYPES_REQUIREMENTS=$(if [ -f requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+
+    - name: "Print previous output"
+      shell: bash
+      env:
+        EXISTS_CI_TYPES_REQUIREMENTS: ${{ steps.check-exists-requirements-file.outputs.EXISTS_CI_TYPES_REQUIREMENTS }}
+      run:
+        echo "Output was found $EXISTS_CI_TYPES_REQUIREMENTS"
+
+    - name: "Install CI types dependencies from the requirements file"
+      shell: bash
+      if: steps.check-exists-requirements-file.outputs.EXISTS_CI_TYPES_REQUIREMENTS == 'true'
+      env:
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        $ACTIVATE_VENV
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
+        else
+          python -m pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
+        fi
+
+    - name: "Install types dependencies from pyproject.toml"
+      shell: bash
+      if: steps.check-exists-requirements-file.outputs.EXISTS_CI_TYPES_REQUIREMENTS == 'false'
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
+      run: |
+        $ACTIVATE_VENV
+        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
+          poetry install --with "$OPTIONAL_DEPENDENCIES_NAME"
+        else
+          # Optional dependencies
+          optional_dependencies_flag=""
+          if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
+            optional_dependencies_flag="[${OPTIONAL_DEPENDENCIES_NAME}]"
+          fi
+          # Install dependencies (potentially mix of optional and group)
+          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            uv pip install .$optional_dependencies_flag
+          else
+            python -m pip install .$optional_dependencies_flag
+          fi
+        fi
+
+    - name: "Executing basedpyright"
+      if: inputs.type-checker == 'basedpyright'
+      shell: bash
+      env:
+        TYPE_CHECKER_EXTRA_ARGS: ${{ inputs.type-checker-extra-args }}
+      run: |
+        basedpyright $TYPE_CHECKER_EXTRA_ARGS
+
+    - name: "Executing mypy"
+      if: inputs.type-checker == 'mypy'
+      shell: bash
+      env:
+        TYPE_CHECKER_EXTRA_ARGS: ${{ inputs.type-checker-extra-args }}
+      uses: amilcarlucas/mypy-github-action@1c66c3e030d835206f4fda2bbc8b0ed4c8a75769 # v2.0.1
+      with:
+        mypyFlags: ${{ env.TYPE_CHECKER_EXTRA_ARGS }}
+        checkName: "Type checker action"
+
+    - name: "Executing Pyrefly"
+      if: inputs.type-checker == 'pyrefly'
+      shell: bash
+      env:
+        TYPE_CHECKER_EXTRA_ARGS: ${{ inputs.type-checker-extra-args }}
+      run: |
+        pyrefly check . $TYPE_CHECKER_EXTRA_ARGS
+
+    - name: "Executing Ty"
+      if: inputs.type-checker == 'ty'
+      shell: bash
+      env:
+        TYPE_CHECKER_EXTRA_ARGS: ${{ inputs.type-checker-extra-args }}
+      run: |
+        ty check . $TYPE_CHECKER_EXTRA_ARGS
