@@ -292,12 +292,9 @@ runs:
 
     - name: "Executing mypy"
       if: inputs.type-checker == 'mypy'
-      shell: bash
-      env:
-        TYPE_CHECKER_EXTRA_ARGS: ${{ inputs.type-checker-extra-args }}
       uses: amilcarlucas/mypy-github-action@1c66c3e030d835206f4fda2bbc8b0ed4c8a75769 # v2.0.1
       with:
-        mypyFlags: ${{ env.TYPE_CHECKER_EXTRA_ARGS }}
+        mypyFlags: ${{ inputs.type-checker-extra-args }}
         checkName: "Type checker action"
 
     - name: "Executing Pyrefly"
