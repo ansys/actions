@@ -29,6 +29,19 @@ updates:
     labels:
       - "dependencies:requirements"
 
+  - package-ecosystem: "uv"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 7
+      include:
+        - "*"  # Include all dependencies in cooldown
+    commit-message:
+      prefix: "build(uv)"
+    labels:
+          - "dependencies:requirements"
+    directory: "/"
+
   - package-ecosystem: "github-actions"
     directories:
       - ".github/workflows"

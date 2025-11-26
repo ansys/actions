@@ -1,0 +1,41 @@
+[project]
+name = "ansys-actions-ci-dependencies"
+version = "10.1.dev0"
+requires-python = ">=3.10"
+
+[dependency-groups]
+build-library = [
+    "build>=1.3.0",
+    "twine>=6.0.1",
+]
+build-wheelhouse = [
+    "build>=1.3.0",
+    "wheel>=0.45.1",
+]
+check-licenses = [
+    "pip-licenses",
+]
+check-vulnerabilities = [
+    "bandit>=1.7,<2",
+    "click>=7.0,<9",
+    "pygithub>=1.59,<3",
+    "safety>=2.3,<4",
+]
+doc-deploy-stable = [
+    "packaging>=25.0",
+]
+hk-package-clean-except = [
+    "ghapi>=1.0.8",
+]
+hk-package-clean-untagged = [
+    "ghapi>=1.0.8",
+]
+release-pypi = [
+    "twine<6.2.0",
+]
+tests-pytest = [
+    "pytest-randomly>=4.0.1",
+]
+
+[tool.uv.sources]
+pip-licenses = { git = "https://github.com/ansys/pip-licenses.git" }
