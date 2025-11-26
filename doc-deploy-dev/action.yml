@@ -403,6 +403,8 @@ runs:
 
               # Remove pr directory if it is closed
               if [[ ${closed} == "true" ]]; then
+                message="This PR has been closed. Documentation for this pull request will shortly be removed from its [former deployment address](https://${{ inputs.cname }}/pull/${pr_number})."
+                gh pr comment "${pr_number}" --body "${message}"
                 echo "Removing directory ${pr_number}..."
                 rm -rf "pull/${pr_number}"
               fi
