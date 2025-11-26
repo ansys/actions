@@ -382,7 +382,7 @@ runs:
       run: echo "RELEASE_NOTES_BODY= " >> $GITHUB_ENV
 
     - name: "Extend RELEASE_NOTES_BODY with attestation notes"
-      if: inputs.add-artifact-attestation-notes == 'true'
+      if: ${{ inputs.add-artifact-attestation-notes == 'true' && (inputs.only-code == 'true' || inputs.additional-artifacts != '') }}
       shell: bash
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
