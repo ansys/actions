@@ -219,7 +219,7 @@ jobs:
           dependencies: 'pandoc'
           # sphinxopts: '-j 1 -W --color'
           # TODO: Re-enable warnings as errors after numpydoc issues are fixed
-          sphinxopts: 'j 1'
+          sphinxopts: '-j 1'
           checkout: false
           uploaded-artifact-name-prefix: pyansys-geometry-documentation-${{ matrix.os.name }}
           skip-dependencies-cache: true
