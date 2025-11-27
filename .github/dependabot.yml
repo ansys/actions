@@ -37,7 +37,7 @@ updates:
       include:
         - "*"  # Include all dependencies in cooldown
     commit-message:
-      prefix: "build(uv)"
+      prefix: "build(actions-dependencies)"
     labels:
           - "dependencies:requirements"
     directory: "/"

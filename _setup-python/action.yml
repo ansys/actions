@@ -102,3 +102,4 @@ runs:
       with:
         enable-cache: ${{ inputs.use-cache }}
         prune-cache: ${{ inputs.prune-uv-cache }}
+        version: "0.9.12"
