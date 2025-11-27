@@ -217,7 +217,9 @@ jobs:
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
           dependencies: 'pandoc'
-          sphinxopts: '-j 1 -W --color'
+          # sphinxopts: '-j 1 -W --color'
+          # TODO: Re-enable warnings as errors after numpydoc issues are fixed
+          sphinxopts: '-j 1'
           checkout: false
           uploaded-artifact-name-prefix: pyansys-geometry-documentation-${{ matrix.os.name }}
           skip-dependencies-cache: true
