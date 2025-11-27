@@ -21,14 +21,33 @@ check-vulnerabilities = [
     "pygithub>=1.59,<3",
     "safety>=2.3,<4",
 ]
+code-style = [
+    "pre-commit<=4.5.0",
+]
+doc-changelog = [
+    "tomli<=2.3.0",
+    "towncrier<=25.8.0",
+]
+doc-deploy-changelog = [
+    "tomli<=2.3.0",
+    "towncrier<=25.8.0",
+]
 doc-deploy-stable = [
     "packaging<=25.0",
+]
+doc-style = [
+    "docutils==0.22",
+    "tomli<=2.3.0",
 ]
 hk-package-clean-except = [
     "ghapi<=1.0.8",
 ]
 hk-package-clean-untagged = [
     "ghapi<=1.0.8",
+]
+release-github = [
+    "pypandoc-binary<=1.16.2",
+    "tomli<=2.3.0",
 ]
 release-pypi = [
     "twine<6.2.0",
