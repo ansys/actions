@@ -18,17 +18,23 @@ env:
 
 permissions: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+
   update-lockfile-and-requirement-files:
+    name: Update lock file and requirement.txt files
     permissions:
-      contents: write
+      contents: write # Needed to update files on the dependabot update branch
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout dependabot branch"
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref }} # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
       - name: "Set up Python"
         uses: ansys/actions/_setup-python@main
@@ -69,9 +75,11 @@ jobs:
 
           # Check if uv.lock was modified or created
           if git diff --quiet --exit-code uv.lock; then
-              echo "uv.lock is up-to-date."
+              echo "uv.lock is up-to-date, adding only requirements files' updates"
+              git commit -am "fix: update requirements files"
+              git push origin "HEAD:${REF_NAME}"
           else
-              echo "uv.lock changed, committing updates."
-              git commit -am "fix: uv lock file and requirements after dependency update"
+              echo "uv.lock changed, adding updates to lock file and requirements files."
+              git commit -am "fix: update lock file and requirements files"
               git push origin "HEAD:${REF_NAME}"
           fi
