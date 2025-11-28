@@ -231,7 +231,7 @@ jobs:
           echo "SUCCESS: .github/dependabot.yml updated."
           cat .github/dependabot.yml
 
-      - name: "Create PR into main with the CHANGELOG file changes"
+      - name: "Create PR into main with the dependabot.yml file changes"
         if: steps.missing-actions-check.outputs.MISSING_ACTIONS_FOUND == 'true'
         shell: bash
         env:
