@@ -213,7 +213,7 @@ runs:
           directory containing the final artifacts to be published in GitHub.
 
     - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
       with:
         path: /tmp/artifacts
 
@@ -388,7 +388,7 @@ runs:
       run: echo "RELEASE_NOTES_BODY= " >> $GITHUB_ENV
 
     - name: "Extend RELEASE_NOTES_BODY with attestation notes"
-      if: inputs.add-artifact-attestation-notes == 'true'
+      if: ${{ inputs.add-artifact-attestation-notes == 'true' && (inputs.only-code == 'false' || inputs.additional-artifacts != '') }}
       shell: bash
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}

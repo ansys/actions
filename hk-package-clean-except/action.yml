@@ -21,7 +21,13 @@
 # SOFTWARE.
 
 name: "Clean all package versions except certain tags."
-description: "Action cleaning up all package versions published at ghcr.io except for certain tags."
+description: |
+  "Action cleaning up all package versions published at ghcr.io except for certain tags."
+
+  .. note::
+
+    If an image matched by ``tags-kept`` has multiple tags (which are potentially not in the ``tags-kept`` list),
+    then the entire image (with all its tags) will be kept.
 
 inputs:
   package-name:

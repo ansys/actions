@@ -210,7 +210,7 @@ runs:
         rm -rf version/dev && mkdir -p version/dev
 
     - name: "Download the development documentation artifact"
-      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/dev
@@ -382,7 +382,39 @@ runs:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
 
-     # ------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
+
+    - name: Clean up pull/ directory if it exists
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }} # For gh CLI authentication
+        CNAME: ${{ inputs.cname }}
+      run: |
+        if [[ -d "pull/" ]]; then
+            for pr_number in $(ls pull/); do
+              closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>/dev/null)
+
+              # If PR does not exist, skip)
+              if [[ -z "${closed}" ]]; then
+                echo "PR #${pr_number}: not found, skipping."
+                continue
+              fi
+
+              echo "PR #${pr_number}: ${closed}"
+
+              # Remove pr directory if it is closed
+              if [[ ${closed} == "true" ]]; then
+                message="This PR has been closed. Documentation for this pull request will shortly be removed from its [former deployment address](https://${CNAME}/pull/${pr_number})."
+                gh pr comment "${pr_number}" --body "${message}"
+                echo "Removing directory ${pr_number}..."
+                rm -rf "pull/${pr_number}"
+              fi
+            done
+        else
+            echo "No pull request directories to clean up."
+        fi
+
+    # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
       with:

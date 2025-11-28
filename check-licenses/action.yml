@@ -122,9 +122,38 @@ inputs:
     required: false
     type: boolean
 
+  activate-venv:
+    description: |
+      When this action is used in combination with other actions, it might need to
+      activate the virtual environment created by those actions. If ``skip-install`` input
+      is set to ``true``, this input is required to activate the virtual environment. If
+      ``skip-install`` is ``false``, this input is not needed and is ignored.
+    required: false
+    default: ''
+    type: string
+
 runs:
   using: "composite"
   steps:
+
+    - name: Check virutal environment existence (if needed)
+      if: ${{ inputs.skip-install == 'true' && inputs.activate-venv == '' }}
+      uses: ansys/actions/_logging@main
+      with:
+        level: "ERROR"
+        message: >
+          When skip-install is set to true, activate-venv input must be provided
+          to activate the virtual environment created by previous actions. Otherwise,
+          the action cannot proceed.
+
+    - name: Warn about input combination
+      if: ${{ inputs.skip-install == 'false' && inputs.activate-venv != '' }}
+      uses: ansys/actions/_logging@main
+      with:
+        level: "WARNING"
+        message: >
+          When skip-install is set to false, activate-venv input is not needed
+          and will be ignored.
 
     - name: Check python version
       id: check-python-version
@@ -153,6 +182,7 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
+      if: inputs.skip-install == 'false'
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
@@ -160,20 +190,96 @@ runs:
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
+    - name: "Identify the build system"
+      if: inputs.skip-install == 'false'
+      id: build-system
+      shell: bash
+      run: |
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+        else
+          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
+        fi
+
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry' && inputs.skip-install == 'false'
+      shell: bash
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry' && inputs.skip-install == 'false'
+      shell: bash
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: steps.build-system.outputs.BUILD_BACKEND == 'poetry' && inputs.skip-install == 'false'
+      shell: bash
+      run: |
+        python -m pip install pipx
+        python -m pipx install poetry
+        python -m pipx inject poetry poetry-plugin-export
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME : ${{ runner.temp }}/pipx/home
+
+    - name: "Create a virtual environment"
+      if: inputs.skip-install == 'false'
+      shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv venv .venv
+        else
+          python -m venv .venv
+        fi
+
+    - name: "Set up virtual environment activation command"
+      id: virtual-environment-activation-command
+      shell: bash
+      env:
+        ACTIVATE_VENV: ${{ inputs.activate-venv }}
+      run: |
+        if [[ -n ${ACTIVATE_VENV} ]]; then
+          echo "ACTIVATE_VENV=${ACTIVATE_VENV}" >> $GITHUB_OUTPUT
+        else
+          if [[ ${RUNNER_OS} == 'Windows' ]]; then
+            echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+          else
+            echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+          fi
+        fi
+
     - name: "Update pip"
       shell: bash
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
+        ${ACTIVATE_VENV}
         $INSTALL_COMMAND -U pip
 
     - name: Install ansys/pip-licenses main branch
       shell: bash
       env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         ACTION_PATH: ${{ github.action_path }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system --no-cache' || 'python -m pip install --no-cache-dir' }}
       run: |
-        $INSTALL_COMMAND -r ${ACTION_PATH}/requirements.txt
+        ${ACTIVATE_VENV}
+        ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements.txt
 
     - name: "Check if specific target is requested"
       id: specific-target-requested
@@ -187,9 +293,12 @@ runs:
       if: inputs.skip-install == 'false'
       shell: bash
       env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
-      run: ${INSTALL_COMMAND} "$INSTALL_TARGET"
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
+      run:
+        ${ACTIVATE_VENV}
+        ${INSTALL_COMMAND} "$INSTALL_TARGET"
 
     - name:  "Install wget on Windows"
       if: runner.os == 'Windows'
@@ -261,7 +370,11 @@ runs:
 
     - name: "Check licences of packages"
       shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
+        ${ACTIVATE_VENV}
+
         # Load accepted licenses
         mapfile licenses_from_txt < accepted-licenses.txt
         accepted_licenses=''
