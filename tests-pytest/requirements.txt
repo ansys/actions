@@ -14,7 +14,7 @@ pygments==2.19.2
     # via pytest
 pytest==9.0.1
     # via pytest-randomly
-pytest-randomly==4.0.1
+pytest-randomly==3.16.0
 tomli==2.3.0 ; python_full_version < '3.11'
     # via pytest
 typing-extensions==4.15.0 ; python_full_version < '3.11'

@@ -53,7 +53,7 @@ release-pypi = [
     "twine<6.2.0",
 ]
 tests-pytest = [
-    "pytest-randomly<=4.0.1",
+    "pytest-randomly<=3.16.0",
 ]
 
 [tool.uv.sources]
