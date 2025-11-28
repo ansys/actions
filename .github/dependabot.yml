@@ -2,20 +2,7 @@ version: 2
 updates:
   - package-ecosystem: "pip"
     directories:
-      - "/build-library"
-      - "/build-wheelhouse"
-      - "/check-licenses"
-      - "/check-vulnerabilities"
-      - "/code-style"
-      - "/doc-changelog"
-      - "/doc-deploy-changelog"
-      - "/doc-deploy-stable"
-      - "/doc-style"
-      - "/hk-package-clean-except"
-      - "/hk-package-clean-untagged"
-      - "/release-github"
       - "/requirements"
-      - "/_release-pypi"
     schedule:
       interval: "daily"
     cooldown:
