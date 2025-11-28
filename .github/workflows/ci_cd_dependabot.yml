@@ -1,5 +1,9 @@
-# This workflow is necessary because dependabot support for uv is not perfect. Relevant discussion:
+# This workflow is necessary because dependabot's support for uv is not perfect. Relevant discussion:
 # https://github.com/dependabot/dependabot-core/issues/10478
+#
+# Also, to avoid unnecessary complications wrt requirements' installation when either uv or pip is being used in an
+# action, requirements.txt files are maintained along side uv.lock files and these requirements files
+# are also updated via this workflow.
 
 name: fix uv lock file and update requirement.txt files
 
