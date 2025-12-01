@@ -110,6 +110,9 @@ updates:
       # Missed non ansys actions that should by assigned to a group
       must-be-assigned-actions:
         patterns:
+          - peter-evans/find-comment
+          - pyvista/setup-headless-display-action
+          - vimtor/action-zip
           - dependabot/fetch-metadata
         exclude-patterns:
           - "ansys/actions*"
