@@ -131,7 +131,7 @@ jobs:
           ACTIONS=$(
               (find . -type f -name "action.yml" -not -path "./doc/*" && \
               find .github/workflows -type f \( -name "*.yml" -o -name "*.yaml" \) ! -name "dependabot_coverage.yml") | \
-              xargs grep -h "uses:" | \
+              xargs grep -h "^\s*uses:" | \
               sed 's/^[[:space:]]*//' | \
               sed 's/^-[[:space:]]*//' | \
               sed 's/^uses:[[:space:]]*//' | \
