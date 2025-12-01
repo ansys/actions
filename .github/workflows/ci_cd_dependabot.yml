@@ -11,7 +11,6 @@ on:
   push:
     branches:
       - "dependabot/uv/**"
-  workflow_dispatch:
 
 env:
   MAIN_PYTHON_VERSION: '3.13'
@@ -75,13 +74,18 @@ jobs:
           git config user.name "${BOT_USER}"
           git config user.email "${BOT_EMAIL}"
 
+          # Exit if there are no changes to commit
+          if git diff --quiet --exit-code; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
           # Check if uv.lock was modified or created
           if git diff --quiet --exit-code uv.lock; then
               echo "uv.lock is up-to-date, adding only requirements files' updates"
               git commit -am "fix: update requirements files [skip-ci]"
-              git push origin "HEAD:${REF_NAME}"
           else
               echo "uv.lock changed, adding updates to lock file and requirements files."
               git commit -am "fix: update lock file and requirements files [skip-ci]"
-              git push origin "HEAD:${REF_NAME}"
           fi
+          git push origin "HEAD:${REF_NAME}"
