@@ -1,11 +1,12 @@
-# Contributing
+# Contribute
 
-We absolutely welcome any code contributions and we hope that this guide will
-facilitate an understanding of the Ansys Actions code repository.
+Overall guidance on contributing to a PyAnsys library appears in the
+[Contributing] topic in the *PyAnsys developer's guide*. Ensure that you
+are thoroughly familiar with this guide before attempting to contribute to
+{project-name}.
 
-For contributing to this project, please refer to the [PyAnsys Developer's
-Guide]. Further information about this project can be found
-in the [official documentation].
+The following contribution information is specific to {project-name}.
 
-[PyAnsys Developer's Guide]: https://dev.docs.pyansys.com
-[official documentation]: https://actions.docs.ansys.com
+[Contributing]: https://dev.docs.pyansys.com/how-to/contributing.html
+
+<!-- Begin content specific to your library here. -->
