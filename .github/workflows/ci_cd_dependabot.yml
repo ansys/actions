@@ -68,6 +68,8 @@ jobs:
       - name: Commit and push uv.lock if changed
         env:
           REF_NAME: ${{ github.ref_name }}
+          BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
         run: |
           # Configure git username & email
           git config user.name "${BOT_USER}"
