@@ -78,10 +78,10 @@ jobs:
           # Check if uv.lock was modified or created
           if git diff --quiet --exit-code uv.lock; then
               echo "uv.lock is up-to-date, adding only requirements files' updates"
-              git commit -am "fix: update requirements files"
+              git commit -am "fix: update requirements files [skip-ci]"
               git push origin "HEAD:${REF_NAME}"
           else
               echo "uv.lock changed, adding updates to lock file and requirements files."
-              git commit -am "fix: update lock file and requirements files"
+              git commit -am "fix: update lock file and requirements files [skip-ci]"
               git push origin "HEAD:${REF_NAME}"
           fi
