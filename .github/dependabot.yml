@@ -23,6 +23,8 @@ updates:
       default-days: 7
       include:
         - "*"  # Include all dependencies in cooldown
+    exclude-paths:
+      - "**/requirements.txt"
     commit-message:
       prefix: "build(actions-dependencies)"
     labels:
