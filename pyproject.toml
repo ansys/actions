@@ -1,3 +1,6 @@
+# This project file exists solely for two reasons: managing the python package dependencies for each action; and
+# specifying the towncrier configuration
+
 [project]
 name = "ansys-actions-ci-dependencies"
 version = "10.1.dev0"
@@ -58,3 +61,48 @@ tests-pytest = [
 
 [tool.uv.sources]
 pip-licenses = { git = "https://github.com/ansys/pip-licenses.git" }
+
+[tool.towncrier]
+package = "ansys.actions.flit"
+package_dir  = ".ci/ansys-actions-flit/src"
+directory = "doc/source/changelog"
+filename = "doc/source/changelog.rst"
+template = "doc/source/changelog/template"
+start_string = ".. towncrier release notes start\n"
+title_format = "`{version} <https://github.com/ansys/actions/releases/tag/v{version}>`_ - {project_date}"
+issue_format = "`#{issue} <https://github.com/ansys/actions/pull/{issue}>`_"
+
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "dependencies"
+name = "Dependencies"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "documentation"
+name = "Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "maintenance"
+name = "Maintenance"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "miscellaneous"
+name = "Miscellaneous"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "test"
+name = "Test"
+showcontent = true

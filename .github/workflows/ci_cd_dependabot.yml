@@ -58,9 +58,9 @@ jobs:
               dir_cleaned="${dir#./}"
               # Get the directory name without leading underscore for the group name
               group_name="${dir_cleaned#_}"
-            
+
               echo "  Processing: $dir_cleaned"
-            
+
               # Run uv export command
               uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes
           done
