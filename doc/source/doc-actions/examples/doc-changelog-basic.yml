@@ -23,6 +23,6 @@ changelog-fragment:
         bot-user: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
         bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
         # uncomment this line to use conventional commits instead of labels
-        # use-conventional-commits: true
+        # use-pull-request-title: true
         # uncomment this if you don't have any towncrier configuration in your pyproject.toml file
         # use-default-towncrier-config: true
