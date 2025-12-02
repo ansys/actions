@@ -145,7 +145,7 @@ runs:
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly. The ``toml-version`` input will be removed in v11.
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main # Switch logging level to ERROR in v12
       if: inputs.use-conventional-commits != ''
       with:
         level: "WARNING"
