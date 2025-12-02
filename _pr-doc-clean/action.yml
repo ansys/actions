@@ -97,7 +97,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.0
       with:
         level: "WARNING"
         message: >
