@@ -20,6 +20,9 @@ Version ``v10.2``
   - ``checkout-fetch-tags`` (default: ``false``): When set to ``true``, this input enables fetching all tags from the repository.
     This is useful for build processes that depend on tag information.
 
+- **Changelog Action Changes:** The ``doc-changelog`` action input ``use-conventional-commits`` has been renamed to ``use-pull-request-title`` for clarity.
+  If you use the old input, a deprecation warning appears.
+
 - **PR Documentation Deployment:** The ``doc-deploy-pr`` action is now easier to use. Starting with
   version ``v10.2``, you no longer need to include the ``closed`` pull request event in your workflows because
   deployed documentation is cleaned up asynchronously. For more details, see :ref:`docs-deploy-pr-setup`.
