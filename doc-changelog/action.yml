@@ -271,7 +271,7 @@ runs:
         changelog_category_cc(cc_type)
 
     - name: "Set PR label environment variable"
-      if: ${{ env.USE_PULL_REQUEST_TITLE == 'false' }}
+      if: steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'false'
       shell: python
       env:
         LABELS: ${{ steps.get-labels.outputs.LABELS }}
