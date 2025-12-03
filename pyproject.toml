@@ -1,0 +1,108 @@
+# This project file exists solely for two reasons: managing the python package dependencies for each action; and
+# specifying the towncrier configuration
+
+[project]
+name = "ansys-actions-ci-dependencies"
+version = "10.1.dev0"
+requires-python = ">=3.10"
+
+[dependency-groups]
+build-library = [
+    "build<=1.3.0",
+    "twine<=6.0.1",
+]
+build-wheelhouse = [
+    "build<=1.3.0",
+    "wheel<=0.45.1",
+]
+check-licenses = [
+    "pip-licenses",
+]
+check-vulnerabilities = [
+    "bandit>=1.7,<2",
+    "click>=7.0,<9",
+    "pygithub>=1.59,<3",
+    "safety>=2.3,<4",
+]
+code-style = [
+    "pre-commit<=4.5.0",
+]
+doc-changelog = [
+    "tomli<=2.3.0",
+    "towncrier<=25.8.0",
+]
+doc-deploy-changelog = [
+    "tomli<=2.3.0",
+    "towncrier<=25.8.0",
+]
+doc-deploy-stable = [
+    "packaging<=25.0",
+]
+doc-style = [
+    "docutils==0.22",
+    "tomli<=2.3.0",
+]
+hk-package-clean-except = [
+    "ghapi<=1.0.8",
+]
+hk-package-clean-untagged = [
+    "ghapi<=1.0.8",
+]
+release-github = [
+    "pypandoc-binary<=1.16.2",
+    "tomli<=2.3.0",
+]
+release-pypi = [
+    "twine<6.2.0",
+]
+tests-pytest = [
+    "pytest-randomly<=3.16.0",
+]
+
+[tool.uv.sources]
+pip-licenses = { git = "https://github.com/ansys/pip-licenses.git" }
+
+[tool.towncrier]
+package = "ansys.actions.flit"
+package_dir  = ".ci/ansys-actions-flit/src"
+directory = "doc/source/changelog"
+filename = "doc/source/changelog.rst"
+template = "doc/source/changelog/template"
+start_string = ".. towncrier release notes start\n"
+title_format = "`{version} <https://github.com/ansys/actions/releases/tag/v{version}>`_ - {project_date}"
+issue_format = "`#{issue} <https://github.com/ansys/actions/pull/{issue}>`_"
+
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "dependencies"
+name = "Dependencies"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "documentation"
+name = "Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "maintenance"
+name = "Maintenance"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "miscellaneous"
+name = "Miscellaneous"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "test"
+name = "Test"
+showcontent = true

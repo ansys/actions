@@ -1,0 +1,91 @@
+# This workflow is necessary because dependabot's support for uv is not perfect. Relevant discussion:
+# https://github.com/dependabot/dependabot-core/issues/10478
+#
+# Also, to avoid unnecessary complications wrt requirements' installation when either uv or pip is being used in an
+# action, requirements.txt files are maintained along side uv.lock files and these requirements files
+# are also updated via this workflow.
+
+name: fix uv lock file and update requirement.txt files
+
+on:
+  push:
+    branches:
+      - "dependabot/uv/**"
+
+env:
+  MAIN_PYTHON_VERSION: '3.13'
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  update-lockfile-and-requirement-files:
+    name: Update lock file and requirement.txt files
+    permissions:
+      contents: write # Needed to update files on the dependabot update branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout dependabot branch"
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          ref: ${{ github.ref }} # zizmor: ignore[artipacked] , credentials must be persisted in this case
+
+      - name: "Set up Python"
+        uses: ansys/actions/_setup-python@main
+        with:
+            python-version: ${{ env.MAIN_PYTHON_VERSION }}
+            use-cache: false
+            provision-uv: true
+            prune-uv-cache: false
+
+      - name: "Fix lockfile"
+        run: |
+          uv lock
+
+      - name: "Update requirement.txt files"
+        run: |
+          echo "Directories containing requirements.txt:"
+          echo "========================================"
+
+          find . -maxdepth 2 -type f -name "requirements.txt" -exec dirname {} \; | sort -u | while read dir; do
+              # Remove leading ./
+              dir_cleaned="${dir#./}"
+              # Get the directory name without leading underscore for the group name
+              group_name="${dir_cleaned#_}"
+
+              echo "  Processing: $dir_cleaned"
+
+              # Run uv export command
+              uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes
+          done
+
+      - name: Commit and push uv.lock if changed
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+        run: |
+          # Configure git username & email
+          git config user.name "${BOT_USER}"
+          git config user.email "${BOT_EMAIL}"
+
+          # Exit if there are no changes to commit
+          if git diff --quiet --exit-code; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          # Check if uv.lock was modified or created
+          if git diff --quiet --exit-code uv.lock; then
+              echo "uv.lock is up-to-date, adding only requirements files' updates"
+              git commit -am "fix: update requirements files [skip-ci]"
+          else
+              echo "uv.lock changed, adding updates to lock file and requirements files."
+              git commit -am "fix: update lock file and requirements files [skip-ci]"
+          fi
+          git push origin "HEAD:${REF_NAME}"

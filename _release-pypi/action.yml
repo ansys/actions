@@ -139,8 +139,10 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip 'twine<6.2.0'
+        ${INSTALL_COMMAND} --upgrade pip
+        ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements.txt
 
     - name: "Download the library artifacts from build-library step"
       uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0

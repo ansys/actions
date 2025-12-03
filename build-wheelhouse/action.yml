@@ -363,11 +363,12 @@ runs:
       if: ${{ inputs.install-build-and-wheel == 'true' }}
       shell: bash
       env:
+        ACTION_PATH: ${{ github.action_path }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
-        $INSTALL_COMMAND build wheel
+        $INSTALL_COMMAND -r ${ACTION_PATH}/requirements.txt
 
     - name: "Generate the wheelhouse"
       shell: bash

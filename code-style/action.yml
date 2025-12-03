@@ -258,14 +258,23 @@ runs:
     - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
       shell: bash
       env:
-        PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
+        ACTION_PATH: ${{ github.action_path }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
       run: |
         ${ACTIVATE_VENV}
-        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
+        if [[ "${PRE_COMMIT_VERSION}" == "3.8.0" ]]; then
+          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            uv pip install -r ${ACTION_PATH}/requirements.txt
+          else
+            pip install -r ${ACTION_PATH}/requirements.txt
+          fi
         else
-          python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
+          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
+          else
+            python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
+          fi
         fi
         pre-commit install
 

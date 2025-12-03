@@ -349,15 +349,25 @@ runs:
           echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_OUTPUT
         fi
 
+    - uses: ansys/actions/_logging@main
+      if: inputs.randomize == 'true'
+      with:
+        level: "WARNING"
+        message: >
+          Installing pytest-randomly on top of the test dependencies as requested.
+          This might lead to dependency conflicts. Consider adding pytest-randomly
+          to your test dependencies instead.
+
     - name: "Randomize the order of the tests"
       shell: bash
       if: inputs.randomize == 'true'
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        if [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install pytest-randomly
-        else
-          python -m pip install pytest-randomly
-        fi
+        ${ACTIVATE_VENV}
+        ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements.txt
 
     - name: "Executing test suite"
       if: inputs.requires-xvfb == 'false'
