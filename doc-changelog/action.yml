@@ -193,7 +193,7 @@ runs:
         ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
 
     - name: "Get first letter of conventional commit type"
-      if: steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true'
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
@@ -223,7 +223,7 @@ runs:
         use-upper-case: true
 
     - name: "Get conventional commit type from title"
-      if: steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true'
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
@@ -241,7 +241,7 @@ runs:
 
     - name: "Get labels in the pull request"
       id: get-labels
-      if: ${{ env.USE_PULL_REQUEST_TITLE == 'false' }}
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'false' }}
       env:
         GH_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ github.event.repository.name }}
@@ -256,7 +256,7 @@ runs:
         echo LABELS='"'$pr_labels'"' >> ${GITHUB_OUTPUT}
 
     - name: "Set CHANGELOG category based on conventional commit type"
-      if: steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true'
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
       shell: python
       run: |
         import os
@@ -271,7 +271,7 @@ runs:
         changelog_category_cc(cc_type)
 
     - name: "Set PR label environment variable"
-      if: ${{ env.USE_PULL_REQUEST_TITLE == 'false' }}
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'false' }}
       shell: python
       env:
         LABELS: ${{ steps.get-labels.outputs.LABELS }}
@@ -305,7 +305,7 @@ runs:
     - name: "Clean PR title"
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-        USE_PULL_REQUEST_TITLE: ${{ env.USE_PULL_REQUEST_TITLE }}
+        USE_PULL_REQUEST_TITLE: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE }}
       shell: python
       run: |
         import os
