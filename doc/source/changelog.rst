@@ -9,6 +9,37 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.2.2 <https://github.com/ansys/actions/releases/tag/v10.2.2>`_ - December 03, 2025
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Changelog fragment content issue
+          - `#1085 <https://github.com/ansys/actions/pull/1085>`_
+
+
+`10.2.1 <https://github.com/ansys/actions/releases/tag/v10.2.1>`_ - December 03, 2025
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Ci: fix if statement logic in doc-changelog
+          - `#1080 <https://github.com/ansys/actions/pull/1080>`_
+
+
 `10.2.0 <https://github.com/ansys/actions/releases/tag/v10.2.0>`_ - December 02, 2025
 =====================================================================================
 
