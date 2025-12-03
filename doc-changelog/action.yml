@@ -241,7 +241,7 @@ runs:
 
     - name: "Get labels in the pull request"
       id: get-labels
-      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'false' }}
       env:
         GH_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ github.event.repository.name }}
@@ -305,7 +305,7 @@ runs:
     - name: "Clean PR title"
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-        USE_PULL_REQUEST_TITLE: ${{ env.USE_PULL_REQUEST_TITLE }}
+        USE_PULL_REQUEST_TITLE: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE }}
       shell: python
       run: |
         import os
