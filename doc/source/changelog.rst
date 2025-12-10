@@ -9,6 +9,28 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.2.3 <https://github.com/ansys/actions/releases/tag/v10.2.3>`_ - December 09, 2025
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump actions/setup-python from 6.0.0 to 6.1.0 in /_setup-python in the github-actions group across 1 directory
+          - `#1081 <https://github.com/ansys/actions/pull/1081>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#1082 <https://github.com/ansys/actions/pull/1082>`_
+
+        * - Bump quarto-dev/quarto-actions from 2.1.9 to 2.2.0 in /_doc-build-linux
+          - `#1083 <https://github.com/ansys/actions/pull/1083>`_
+
+
 `10.2.2 <https://github.com/ansys/actions/releases/tag/v10.2.2>`_ - December 03, 2025
 
 .. tab-set::
