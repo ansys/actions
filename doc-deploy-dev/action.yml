@@ -152,7 +152,7 @@ runs:
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials need to be persisted in this case
@@ -388,6 +388,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }} # For gh CLI authentication
+        CNAME: ${{ inputs.cname }}
       run: |
         if [[ -d "pull/" ]]; then
             for pr_number in $(ls pull/); do
@@ -403,6 +404,8 @@ runs:
 
               # Remove pr directory if it is closed
               if [[ ${closed} == "true" ]]; then
+                message="This PR has been closed. Documentation for this pull request will shortly be removed from its [former deployment address](https://${CNAME}/pull/${pr_number})."
+                gh pr comment "${pr_number}" --body "${message}"
                 echo "Removing directory ${pr_number}..."
                 rm -rf "pull/${pr_number}"
               fi
