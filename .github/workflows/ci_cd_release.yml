@@ -30,7 +30,7 @@ jobs:
     steps:
 
     - name: "Checkout repository" # zizmor: ignore[artipacked] git credentials need to be persisted on this job
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       with:
         fetch-tags: true
         ref: ${{ github.ref }}
@@ -160,7 +160,7 @@ jobs:
     steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       with:
         persist-credentials: false
 
@@ -253,7 +253,7 @@ jobs:
         echo "LINK=${LINK}" >> $GITHUB_OUTPUT
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
+      uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
       with:
         body: >
           If you are migrating the actions of your project to a new major release, breaking changes can be expected.
