@@ -252,9 +252,10 @@ jobs:
     env:
       PACKAGE_NAME: 'ansys-dpf-composites'
       PYDPF_COMPOSITES_DOCKER_CONTAINER_PORT: "50052"
+      DPF_DEFAULT_GRPC_MODE: 'insecure'
     steps:
 
-      - name: "Install Git and clone pyansys-geometry repository"
+      - name: "Install Git and clone pydpf-composites repository"
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
