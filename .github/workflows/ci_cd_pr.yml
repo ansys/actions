@@ -278,7 +278,7 @@ jobs:
         shell: bash
         run: |
           docker pull ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
-          docker run -d --restart always -p 50052:50052 -e ANSYSLMD_LICENSE_FILE=1055@${LICENSE_SERVER} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
+          docker run -d --restart always -p 50052:50052 -e DPF_DEFAULT_GRPC_MODE=insecure -e ANSYSLMD_LICENSE_FILE=1055@${LICENSE_SERVER} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
 
       - name: "Clone ansys/actions into a different path"
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
