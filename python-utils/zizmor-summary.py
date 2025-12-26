@@ -60,7 +60,7 @@ def main():
     print(FORMAT.format("=========", "================"))
     print(FORMAT.format("Total", total))
     print(FORMAT.format("=========", "================"))
-    print("\nNote: the summary excludes warning surpressed by zizmor.")
+    print("\nNote: the summary excludes warning supressed by zizmor.")
 
 
 if __name__ == "__main__":
