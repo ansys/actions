@@ -82,4 +82,5 @@ runs:
           REVERT
           STYLE
           TEST
+          TYPES
 
