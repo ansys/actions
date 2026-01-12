@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -73,14 +73,21 @@ inputs:
   extra-targets:
     description: |
       Extra targets to be evaluated by safety. By default, it is set to an
-      empty string. This gets substituted to the library install command as
-      follows (inside <INPUT>)::
+      empty string. In case the library is installed (default behavior with
+      ``skip-install`` set to ``false``), this gets substituted into the install
+      command as follows (inside <INPUT>)::
 
         # For pip install
         pip install .[<INPUT>]
         # For poetry install
         poetry install --extras '<INPUT>'
 
+      If project installation is skipped (``skip-install`` set to
+      ``true`` - for pure documentation projects), this input can be used to
+      specify the suffix of a requirements file found in the ``/requirements``
+      folder of the project. In that case, setting for instance
+      ``extra-targets: 'doc'`` will therefore let safety evaluate targets
+      listed in the ``requirements/requirements_doc.txt`` file.
     default: ''
     required: false
     type: string
@@ -167,6 +174,15 @@ inputs:
       Whether to clone the repository in the CI/CD machine. Default value is
       ``true``.
     default: true
+    required: false
+    type: boolean
+
+  skip-install:
+    description: |
+      Whether to skip the installation of the project.
+      Pure documentation projects require that this input be set to ``true``
+      because there is no Python library associated with the project.
+    default: false
     required: false
     type: boolean
 
@@ -336,6 +352,7 @@ runs:
 
     - name: "Install library"
       shell: bash
+      if: ${{ inputs.skip-install == 'false' }}
       env:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
@@ -363,6 +380,30 @@ runs:
           uv pip install ."${extra_targets}"
         else
           python -m pip install ."${extra_targets}"
+        fi
+
+    - name: "Check if requirements.txt file exists"
+      id: check-exists-requirements-file
+      shell: bash
+      if: ${{ inputs.skip-install == 'true' }}
+      env:
+        EXTRA_TARGETS: ${{ inputs.extra-targets }}
+      run: |
+        echo "EXISTS_REQUIREMENTS=$(if [ -f requirements/requirements_${EXTRA_TARGETS}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+
+    - name: "Install dependencies from the requirements file"
+      shell: bash
+      if: ${{ (inputs.skip-install == 'true' ) && (steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true') }}
+      env:
+        EXTRA_TARGETS: ${{ inputs.extra-targets }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        $ACTIVATE_VENV
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv pip install -r requirements/requirements_${EXTRA_TARGETS}.txt
+        else
+          python -m pip install -r requirements/requirements_${EXTRA_TARGETS}.txt
         fi
 
     - name: "Save installed packages"
@@ -480,7 +521,7 @@ runs:
         fi
 
     - name: "Uploading safety and bandit results"
-      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       if: ${{ inputs.upload-reports == 'true' }}
       with:
         name: vulnerability-results

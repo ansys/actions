@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -98,7 +98,7 @@ runs:
 
     - name: "Set up uv"
       if: ${{ inputs.provision-uv == 'true' }}
-      uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
+      uses: astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867 # v7.1.6
       with:
         enable-cache: ${{ inputs.use-cache }}
         prune-cache: ${{ inputs.prune-uv-cache }}

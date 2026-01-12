@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -103,7 +103,7 @@ runs:
     - name: Dependabot metadata (if dependabot PR only)
       if: ${{ steps.verify-allowed-prs.outputs.SKIP_ACTION == '0' && steps.verify-allowed-prs.outputs.DEPENDABOT_PR == '1' }}
       id: metadata
-      uses: dependabot/fetch-metadata@08eff52bf64351f401fb50d4972fa95b9f2c2d1b # v2.4.0
+      uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2.5.0
       with:
         github-token: ${{ inputs.approver-token }}
 
