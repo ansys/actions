@@ -377,7 +377,11 @@ runs:
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --extras "${extra_targets}"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install ."${extra_targets}"
+          if [ -f "uv.lock" ]; then
+            uv sync --extra "${extra_targets}"
+          else
+            uv pip install ."${extra_targets}"
+          fi
         else
           python -m pip install ."${extra_targets}"
         fi
