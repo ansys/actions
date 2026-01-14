@@ -348,6 +348,7 @@ runs:
 
     - name: "Sanitize library name"
       id: sanitize
+      shell: bash
       run: |
         # Replace all hyphens with underscores
         SANITIZED_NAME="${{ inputs.library-name }}"
