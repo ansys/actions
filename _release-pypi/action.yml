@@ -150,8 +150,9 @@ runs:
 
     - name: "Verify tag and artifacts version agree"
       shell: bash
+      env:
+        ARTIFACT_DIR: ${{ inputs.library-name }}-artifacts
       run: |
-        ARTIFACT_DIR="${{ inputs.library-name }}-artifacts"
 
         if [[ ! -d "${ARTIFACT_DIR}" ]]; then
           echo "Artifact directory not found: ${ARTIFACT_DIR}"
