@@ -76,14 +76,15 @@ runs:
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: true
 
-    - name: "Install ghapi"
+    - name: "Install required packages"
       shell: bash
       env:
+        ACTION_PATH: ${{ github.action_path }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
 
         ${INSTALL_COMMAND} --upgrade pip
-        ${INSTALL_COMMAND} ghapi
+        ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements.txt
 
     - name: "Declare Python script"
       shell: bash
