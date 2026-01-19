@@ -74,7 +74,7 @@ runs:
       run: |
         ${INSTALL_COMMAND} --upgrade pip
         # Install from requirements file next to this action.yml
-        ${INSTALL_COMMAND} -r ${ACTION_PATH}/requirements.txt
+        ${INSTALL_COMMAND} --no-deps -r ${ACTION_PATH}/requirements.txt
 
     - name: "Clone script"
       shell: bash
