@@ -301,7 +301,7 @@ runs:
         github_action_path = os.getenv("GITHUB_ACTION_PATH")
         sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
-        from parse_pr_title import save_env_variable
+        from parse_pr import save_env_variable
 
         # Whether or not to format the date in the CHANGELOG file - "true" or "false"
         format_date = os.environ.get("FORMAT_DATE")

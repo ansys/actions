@@ -83,6 +83,10 @@
   description: Docker maintenance related
   color: 000075
 
+- name: 'breaking'
+  description: Changes that break backward compatibility
+  color: ff0000
+
 # Hacktoberfest labels -------------------------------------------------------
 
 - name: 'hacktoberfest'
