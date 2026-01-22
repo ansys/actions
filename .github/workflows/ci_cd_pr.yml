@@ -104,15 +104,13 @@ jobs:
          PR_TITLE: ${{ github.event.pull_request.title }}
          PR_BODY: ${{ github.event.pull_request.body }}
          PR_NUMBER: ${{ github.event.pull_request.number }}
-         GITHUB_ACTION_PATH: ${{ github.action_path }}
        shell: python
        run: |
          import os
          import sys
 
          # Add python-utils to path
-         github_action_path = os.getenv("GITHUB_ACTION_PATH")
-         sys.path.insert(0, f'{github_action_path}/../python-utils/')
+         sys.path.insert(0, 'python-utils/')
 
          from parse_pr import has_title_breaking_changes, has_body_breaking_changes
 
