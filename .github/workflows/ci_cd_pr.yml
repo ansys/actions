@@ -84,10 +84,12 @@ jobs:
      - name: Check if breaking label already exists on PR
        if: github.event.pull_request.head.repo.full_name == github.repository
        id: check-breaking-label
+       env:
+         PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
        shell: bash
        run: |
          # Check if 'breaking' label is in the PR labels
-         if echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | grep -q '"breaking"'; then
+         if echo "$PR_LABELS" | grep -q '"breaking"'; then
            echo "Label 'breaking' is already on this PR"
            echo "has_breaking_label=true" >> $GITHUB_OUTPUT
          else
