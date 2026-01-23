@@ -92,6 +92,7 @@ runs:
 
         from datetime import datetime, timedelta
         import os
+        import re
 
         from ghapi.all import GhApi
         from ghapi.core import print_summary
