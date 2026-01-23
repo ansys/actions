@@ -79,16 +79,6 @@ jobs:
        with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-     # Add 'breaking' label if breaking changes are detected in the PR title or body
-     - name: Label breaking changes (if needed)
-       if: github.event.pull_request.head.repo.full_name == github.repository
-       uses: ./_label-breaking-changes
-       with:
-         pr-title: ${{ github.event.pull_request.title }}
-         pr-body: ${{ github.event.pull_request.body }}
-         pr-number: ${{ github.event.pull_request.number }}
-         token: ${{ secrets.GITHUB_TOKEN }}
-
 
   changelog-fragment:
     name: "Create changelog fragment"
