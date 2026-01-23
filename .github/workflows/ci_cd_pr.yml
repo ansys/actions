@@ -80,63 +80,15 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
      # Add 'breaking' label if breaking changes are detected in the PR title or body
-
-     - name: Check if breaking label already exists on PR
+     - name: Label breaking changes (if needed)
        if: github.event.pull_request.head.repo.full_name == github.repository
-       id: check-breaking-label
-       env:
-         PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
-       shell: bash
-       run: |
-         # Check if 'breaking' label is in the PR labels
-         if echo "$PR_LABELS" | grep -q '"breaking"'; then
-           echo "Label 'breaking' is already on this PR"
-           echo "has_breaking_label=true" >> $GITHUB_OUTPUT
-         else
-           echo "Label 'breaking' is not on this PR"
-           echo "has_breaking_label=false" >> $GITHUB_OUTPUT
-         fi
+       uses: ./_label-breaking-changes
+       with:
+         pr-title: ${{ github.event.pull_request.title }}
+         pr-body: ${{ github.event.pull_request.body }}
+         pr-number: ${{ github.event.pull_request.number }}
+         token: ${{ secrets.GITHUB_TOKEN }}
 
-     - name: Check for breaking changes in PR title and body
-       if: github.event.pull_request.head.repo.full_name == github.repository && steps.check-breaking-label.outputs.has_breaking_label == 'false'
-       id: check-breaking-change
-       env:
-         PR_TITLE: ${{ github.event.pull_request.title }}
-         PR_BODY: ${{ github.event.pull_request.body }}
-         PR_NUMBER: ${{ github.event.pull_request.number }}
-       shell: python
-       run: |
-         import os
-         import sys
-
-         # Add python-utils to path
-         sys.path.insert(0, 'python-utils/')
-
-         from parse_pr import has_title_breaking_changes, has_body_breaking_changes
-
-         pr_title = os.environ.get("PR_TITLE", "")
-         pr_body = os.environ.get("PR_BODY", "")
-         pr_number = os.environ.get("PR_NUMBER")
-
-         # Check if PR has breaking changes
-         if has_title_breaking_changes(pr_title) or has_body_breaking_changes(pr_body):
-             print(f"Breaking change detected in PR #{pr_number}")
-             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                 f.write("add_breaking_label=true\n")
-         else:
-             print("No breaking change detected")
-             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                 f.write("add_breaking_label=false\n")
-
-     - name: Add breaking label (if needed))
-       if: ${{ steps.check-breaking-change.outputs.add_breaking_label == 'true' }}
-       env:
-         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-         PR_NUMBER: ${{ github.event.pull_request.number }}
-       shell: bash
-       run: |
-         echo "Adding 'breaking' label to PR #$PR_NUMBER"
-         gh pr edit "$PR_NUMBER" --add-label "breaking"
 
   changelog-fragment:
     name: "Create changelog fragment"
