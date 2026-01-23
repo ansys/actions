@@ -71,7 +71,7 @@ runs:
     - uses: ansys/actions/_logging@main
       if: inputs.python-version != '' || inputs.use-uv != ''
       with:
-        level: "ERROR"
+        level: "WARNING"
         message: >
           'The "python-version" and "use-uv" inputs are deprecated and will be
           removed in future releases. This action uses a specific Python version set
