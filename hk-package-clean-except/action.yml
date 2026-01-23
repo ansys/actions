@@ -136,8 +136,11 @@ runs:
                 package_tags = package.metadata.container.tags
                 delete = True
                 for tag in package_tags:
-                    if tag in valid_tags:
-                        delete = False
+                    for pattern in valid_tags:
+                        if re.fullmatch(pattern, tag):
+                            delete = False
+                            break
+                    if not delete:
                         break
 
                 # In case it should, delete it
