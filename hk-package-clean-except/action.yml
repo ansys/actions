@@ -141,7 +141,7 @@ runs:
                     for pattern in valid_tags:
                         if re.fullmatch(pattern, tag):
                             delete = False
-                            match = f'(matched tag "{tag}" with pattern "{pattern}")'
+                            match = f"(matched tag '{tag}' with pattern '{pattern}')"
                             break
                     if not delete:
                         break
@@ -156,7 +156,7 @@ runs:
                         package_version_id=package["id"],
                     )
                 else:
-                    print(f"Keeping package: {package} {match}")
+                    print(f"Keeping package {package['name']} with tags {package_tags} - {match}")
 
         EOF
         cat clean-except.py
