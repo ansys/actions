@@ -128,12 +128,19 @@ def has_body_breaking_changes(pr_body: str) -> bool:
 
 
 def get_conventional_commit_type(pr_title: str, pr_body: str):
-    """Get the conventional commit type from the pull request title.
+    """Get the conventional commit type from the pull request.
+
+    If the pull request title or body indicates a breaking change,
+    the conventional commit type is set to "breaking". Otherwise,
+    the conventional commit type is extracted from the pull request
+    title.
 
     Parameters
     ----------
     pr_title: str
         The pull request title.
+    pr_body: str
+        The pull request body.
     """
     if has_title_breaking_changes(pr_title) or has_body_breaking_changes(pr_body):
         # Save the conventional commit type as an environment variable, CC_TYPE
