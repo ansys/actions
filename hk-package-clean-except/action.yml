@@ -52,38 +52,46 @@ inputs:
     required: false
     default: ''
     type: string
-  python-version:
-    description: 'Desired Python version.'
-    default: '3.11'
+  python-version:  # TODO: Remove deprecated input in v11
+    description: 'DEPRECATED ARGUMENT. Desired Python version.'
+    default: ''
     required: false
     type: string
-  use-uv:
+  use-uv:  # TODO: Remove deprecated input in v11
     description: |
-      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
-    default: true
+      DEPRECATED ARGUMENT. Whether to use uv as the default package manager instead of pip. Default value is ``''``.
+    default: ''
     required: false
-    type: boolean
+    type: string
 
 runs:
   using: "composite"
   steps:
 
-    - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@v10.2.4
+    - uses: ansys/actions/_logging@main
+      if: inputs.python-version != '' || inputs.use-uv != ''
       with:
-        python-version: ${{ inputs.python-version }}
+        level: "WARNING"
+        message: >
+          'The "python-version" and "use-uv" inputs are deprecated and will be
+          removed in future releases. This action uses a specific Python version set
+          up in a separate step.'
+
+    - name: "Set up Python 3.13"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: '3.13'
         use-cache: false
-        provision-uv: ${{ inputs.use-uv }}
+        provision-uv: true
         prune-uv-cache: true
 
-    - name: "Install ghapi"
+    - name: "Install required packages"
       shell: bash
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-
-        ${INSTALL_COMMAND} --upgrade pip
-        ${INSTALL_COMMAND} ghapi
+        uv pip install --no-managed-python --system --upgrade pip
+        uv pip install --no-managed-python --system --no-deps -r ${ACTION_PATH}/requirements.txt
 
     - name: "Declare Python script"
       shell: bash
