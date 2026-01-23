@@ -101,5 +101,6 @@ runs:
         PACKAGE_NAME: ${{ inputs.package-name }}
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
         VALID_TAGS_STR: ${{ inputs.tags-kept }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        python ${{ github.action_path }}/../python-utils/hk_package_clean_except.py
+        python ${ACTION_PATH}/../python-utils/hk_package_clean_except.py

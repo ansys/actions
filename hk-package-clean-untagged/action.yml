@@ -90,6 +90,7 @@ runs:
         PACKAGE_ORG: ${{ inputs.package-org }}
         PACKAGE_NAME: ${{ inputs.package-name }}
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        python ${{ github.action_path }}/../python-utils/hk_package_clean_untagged.py
+        python ${ACTION_PATH}/../python-utils/hk_package_clean_untagged.py
 
