@@ -293,18 +293,20 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
                 if name != ("DNE" and ""):
                     towncrier_config_sections["package"] = f'"{name}"'
 
+        if towncrier != "DNE":
+            # Get the existing [[tool.towncrier.type]] sections
+            types = towncrier.get("type", "DNE")
+            if types != "DNE":
+                remove_existing_types(types, changelog_sections)
+
+    # Reopen file in append mode to write the missing configuration
+    with towncrier_config.open("a") as file:
         if default_config:
             # If there is no towncrier configuration information or if [[tool.towncrier.type]]
             # is the only towncrier information in the pyproject.toml file
             if towncrier == "DNE" or len(towncrier) == 1:
                 # Write the [tool.towncrier] section
                 write_towncrier_config_section(file, towncrier_config_sections, True)
-
-        if towncrier != "DNE":
-            # Get the existing [[tool.towncrier.type]] sections
-            types = towncrier.get("type", "DNE")
-            if types != "DNE":
-                remove_existing_types(types, changelog_sections)
 
         # Add missing [[tool.towncrier.type]] sections
         write_missing_types(changelog_sections, file)
