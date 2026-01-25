@@ -249,67 +249,67 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
     with towncrier_config.open("rb") as file:
         config = tomli.load(file)
-        tool = config.get("tool", "DNE")
-        towncrier = tool.get("towncrier", "DNE")
 
-        # List containing changelog sections under each release
-        changelog_sections = [
-            "added",
-            "dependencies",
-            "documentation",
-            "fixed",
-            "maintenance",
-            "miscellaneous",
-            "test",
-        ]
+    tool = config.get("tool", "DNE")
+    towncrier = tool.get("towncrier", "DNE")
 
-        # Dictionary containing [tool.towncrier] keys and values
-        towncrier_config_sections = {
-            "directory": '"doc/changelog.d"',
-            "template": '"doc/changelog.d/changelog_template.jinja"',
-            "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
-            "start_string": {
-                "web": '".. towncrier release notes start\\n"',
-                "repo": '"<!-- towncrier release notes start -->\\n"',
-            },
-            "title_format": {
-                "web": f'"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"',
-                "repo": f'"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"',
-            },
-            "issue_format": {
-                "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
-                "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
-            },
-        }
+    # List containing changelog sections under each release
+    changelog_sections = [
+        "added",
+        "dependencies",
+        "documentation",
+        "fixed",
+        "maintenance",
+        "miscellaneous",
+        "test",
+    ]
 
-        # Get the package name from [tool.flit.module]
-        flit = tool.get("flit", "DNE")
-        module = name = ""
-        if flit != "DNE":
-            module = flit.get("module", "DNE")
-            if module != ("DNE" or ""):
-                name = module.get("name", "DNE")
-                # If [tool.flit.module] name exists, create the package string
-                if name != ("DNE" and ""):
-                    towncrier_config_sections["package"] = f'"{name}"'
+    # Dictionary containing [tool.towncrier] keys and values
+    towncrier_config_sections = {
+        "directory": '"doc/changelog.d"',
+        "template": '"doc/changelog.d/changelog_template.jinja"',
+        "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
+        "start_string": {
+            "web": '".. towncrier release notes start\\n"',
+            "repo": '"<!-- towncrier release notes start -->\\n"',
+        },
+        "title_format": {
+            "web": f'"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"',
+            "repo": f'"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"',
+        },
+        "issue_format": {
+            "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
+            "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
+        },
+    }
 
-        if towncrier != "DNE":
-            # Get the existing [[tool.towncrier.type]] sections
-            types = towncrier.get("type", "DNE")
-            if types != "DNE":
-                remove_existing_types(types, changelog_sections)
+    # Get the package name from [tool.flit.module]
+    flit = tool.get("flit", "DNE")
+    module = name = ""
+    if flit != "DNE":
+        module = flit.get("module", "DNE")
+        if module != ("DNE" or ""):
+            name = module.get("name", "DNE")
+            # If [tool.flit.module] name exists, create the package string
+            if name != ("DNE" and ""):
+                towncrier_config_sections["package"] = f'"{name}"'
 
-    # Reopen file in append mode to write the missing configuration
-    with towncrier_config.open("a") as file:
-        print("Appending missing towncrier configuration...")
-        if default_config:
-            # If there is no towncrier configuration information or if [[tool.towncrier.type]]
-            # is the only towncrier information in the pyproject.toml file
-            if towncrier == "DNE" or len(towncrier) == 1:
-                # Write the [tool.towncrier] section
+    if towncrier != "DNE":
+        # Get the existing [[tool.towncrier.type]] sections
+        types = towncrier.get("type", "DNE")
+        if types != "DNE":
+            remove_existing_types(types, changelog_sections)
+
+    if default_config:
+        # If there is no towncrier configuration information or if [[tool.towncrier.type]]
+        # is the only towncrier information in the pyproject.toml file
+        if towncrier == "DNE" or len(towncrier) == 1:
+            # Write the [tool.towncrier] section
+            with towncrier_config.open("a") as file:
                 write_towncrier_config_section(file, towncrier_config_sections, True)
 
-        # Add missing [[tool.towncrier.type]] sections
+    # Add missing [[tool.towncrier.type]] sections
+    with towncrier_config.open("a") as file:
         write_missing_types(changelog_sections, file)
 
 
@@ -379,7 +379,6 @@ def write_missing_types(changelog_sections: list, file):
     """
     # Write each missing section to the pyproject.toml file
     for section in changelog_sections:
-        print(f"Adding missing [[tool.towncrier.type]] section: {section}")
         file.write(
             f"""
 [[tool.towncrier.type]]
