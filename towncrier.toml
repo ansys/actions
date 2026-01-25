@@ -24,6 +24,11 @@ name = "Documentation"
 showcontent = true
 
 [[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
 directory = "maintenance"
 name = "Maintenance"
 showcontent = true
@@ -36,9 +41,4 @@ showcontent = true
 [[tool.towncrier.type]]
 directory = "test"
 name = "Test"
-showcontent = true
-
-[[tool.towncrier.type]]
-directory = "fixed"
-name = "Fixed"
 showcontent = true
