@@ -301,6 +301,7 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
 
     # Reopen file in append mode to write the missing configuration
     with towncrier_config.open("a") as file:
+        print("Appending missing towncrier configuration...")
         if default_config:
             # If there is no towncrier configuration information or if [[tool.towncrier.type]]
             # is the only towncrier information in the pyproject.toml file
@@ -378,6 +379,7 @@ def write_missing_types(changelog_sections: list, file):
     """
     # Write each missing section to the pyproject.toml file
     for section in changelog_sections:
+        print(f"Adding missing [[tool.towncrier.type]] section: {section}")
         file.write(
             f"""
 [[tool.towncrier.type]]
