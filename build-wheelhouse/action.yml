@@ -349,9 +349,11 @@ runs:
     - name: "Sanitize library name"
       id: sanitize
       shell: bash
+      env:
+        LIBRARY_NAME: "${{ inputs.library-name }}"
       run: |
         # Replace all hyphens with underscores
-        SANITIZED_NAME="${{ inputs.library-name }}"
+        SANITIZED_NAME="${LIBRARY_NAME}"
         SANITIZED_NAME="${SANITIZED_NAME//-/_}"
         echo "sanitized_library_name=${SANITIZED_NAME}" >> "${GITHUB_OUTPUT}"
 
