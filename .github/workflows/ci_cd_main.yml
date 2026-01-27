@@ -33,6 +33,7 @@ jobs:
     needs: [doc-build]
     permissions:
       contents: write # Needed to update files on the gh-pages branch
+      pull-requests: write # Needed to add comments to the PR when cleaning pull directory
     steps:
       - uses: ansys/actions/doc-deploy-dev@main
         with:
