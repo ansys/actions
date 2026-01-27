@@ -524,7 +524,7 @@ runs:
 
     - name: "Uploading safety and bandit results"
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-      if: ${{ inputs.upload-reports == 'true' }}
+      if: ${{ inputs.upload-reports == 'true' }} || failure() && ${{ inputs.upload-reports == 'true' }}
       with:
         name: vulnerability-results
         path: ./info_*.json
