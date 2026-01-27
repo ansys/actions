@@ -233,21 +233,12 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@main
+      uses: jenseng/dynamic-uses@5175289a9a87978dcfcb9cf512b821d23b2a53eb # v1
+      env:
+        action_ref: ${{ github.action_ref }}
       with:
-        sphinxopts: ${{ inputs.sphinxopts }}
-        dependencies: ${{ inputs.dependencies }}
-        skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
-        requires-xvfb: ${{ inputs.requires-xvfb }}
-        skip-install: ${{ inputs.skip-install }}
-        requirements-file: ${{ inputs.requirements-file }}
-        check-links: ${{ inputs.check-links }}
-        add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        needs-quarto: ${{ inputs.needs-quarto }}
-        use-uv: ${{ inputs.use-uv }}
-        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
-        group-dependencies-name: ${{ inputs.group-dependencies-name }}
-        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
+        uses: ansys/actions/_doc-build-linux@${{ github.repository == 'ansys/actions' && github.sha || env.action_ref }}
+        with: '{"sphinxopts": "${{ inputs.sphinxopts }}", "dependencies": "${{ inputs.dependencies }}", "skip-dependencies-cache": "${{ inputs.skip-dependencies-cache }}", "requires-xvfb": "${{ inputs.requires-xvfb }}", "skip-install": "${{ inputs.skip-install }}", "requirements-file": "${{ inputs.requirements-file }}", "check-links": "${{ inputs.check-links }}", "add-pdf-html-docs-as-assets": "${{ inputs.add-pdf-html-docs-as-assets }}", "needs-quarto": "${{ inputs.needs-quarto }}", "use-uv": "${{ inputs.use-uv }}", "optional-dependencies-name": "${{ inputs.optional-dependencies-name }}", "group-dependencies-name": "${{ inputs.group-dependencies-name }}", "uploaded-artifact-name-prefix": "${{ inputs.uploaded-artifact-name-prefix }}"}'
 
     # ------------------------------------------------------------------------
 
@@ -261,17 +252,9 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@main
+      uses: jenseng/dynamic-uses@5175289a9a87978dcfcb9cf512b821d23b2a53eb # v1
+      env:
+        action_ref: ${{ github.action_ref }}
       with:
-        sphinxopts: ${{ inputs.sphinxopts }}
-        dependencies: ${{ inputs.dependencies }}
-        skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
-        skip-install: ${{ inputs.skip-install }}
-        requirements-file: ${{ inputs.requirements-file }}
-        check-links: ${{ inputs.check-links }}
-        add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        needs-quarto: ${{ inputs.needs-quarto }}
-        use-uv: ${{ inputs.use-uv }}
-        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
-        group-dependencies-name: ${{ inputs.group-dependencies-name }}
-        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
+        uses: ansys/actions/_doc-build-windows@${{ github.repository == 'ansys/actions' && github.sha || env.action_ref }}
+        with: '{"sphinxopts": "${{ inputs.sphinxopts }}", "dependencies": "${{ inputs.dependencies }}", "skip-dependencies-cache": "${{ inputs.skip-dependencies-cache }}", "skip-install": "${{ inputs.skip-install }}", "requirements-file": "${{ inputs.requirements-file }}", "check-links": "${{ inputs.check-links }}", "add-pdf-html-docs-as-assets": "${{ inputs.add-pdf-html-docs-as-assets }}", "needs-quarto": "${{ inputs.needs-quarto }}", "use-uv": "${{ inputs.use-uv }}", "optional-dependencies-name": "${{ inputs.optional-dependencies-name }}", "group-dependencies-name": "${{ inputs.group-dependencies-name }}", "uploaded-artifact-name-prefix": "${{ inputs.uploaded-artifact-name-prefix }}"}'
