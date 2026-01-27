@@ -220,7 +220,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.2.3
+    - uses: ansys/actions/_logging@v10.2.4
       with:
         level: "INFO"
         message: >
@@ -240,7 +240,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@v10.2.3
+    - uses: ansys/actions/_logging@v10.2.4
       with:
         level: "INFO"
         message: >
@@ -248,14 +248,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.2.3
+    - uses: ansys/actions/_logging@v10.2.4
       with:
         level: "INFO"
         message: >
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@v10.2.3
+      uses: ansys/actions/_setup-python@v10.2.4
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
@@ -319,7 +319,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.2.3
+    - uses: ansys/actions/_logging@v10.2.4
       with:
         level: "INFO"
         message: >
@@ -387,7 +387,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.2.3
+    - uses: ansys/actions/_logging@v10.2.4
       with:
         level: "INFO"
         message: >

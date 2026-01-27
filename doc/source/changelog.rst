@@ -9,7 +9,7 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
-`10.2.3 <https://github.com/ansys/actions/releases/tag/v10.2.3>`_ - December 09, 2025
+`10.2.4 <https://github.com/ansys/actions/releases/tag/v10.2.4>`_ - December 09, 2025
 =====================================================================================
 
 .. tab-set::
