@@ -19,6 +19,11 @@ name = "Added"
 showcontent = true
 
 [[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
 directory = "dependencies"
 name = "Dependencies"
 showcontent = true
@@ -29,21 +34,16 @@ name = "Documentation"
 showcontent = true
 
 [[tool.towncrier.type]]
-directory = "fixed"
-name = "Fixed"
-showcontent = true
-
-[[tool.towncrier.type]]
 directory = "maintenance"
 name = "Maintenance"
 showcontent = true
 
 [[tool.towncrier.type]]
-directory = "miscellaneous"
-name = "Miscellaneous"
+directory = "test"
+name = "Test"
 showcontent = true
 
 [[tool.towncrier.type]]
-directory = "test"
-name = "Test"
+directory = "miscellaneous"
+name = "Miscellaneous"
 showcontent = true
