@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 import os
+import re
 from pathlib import Path
 
 import tomli
@@ -83,20 +84,74 @@ def get_first_letter_case(pr_title: str):
         save_env_variable("FIRST_LETTER", "uppercase")
 
 
-def get_conventional_commit_type(pr_title: str):
-    """Get the conventional commit type from the pull request title.
+def has_title_breaking_changes(pr_title: str) -> bool:
+    """Check if the pull request title indicates a breaking change.
 
     Parameters
     ----------
     pr_title: str
         The pull request title.
+
+    Returns
+    -------
+    bool
+        True if the pull request title indicates a breaking change, False otherwise.
     """
-    # Get the index where the first colon is found in the pull request title
+    colon_count = pr_title.count(":")
+    if colon_count != 1:
+        raise ValueError(f"Expected exactly one ':', found {colon_count}")
+
     colon_index = pr_title.index(":")
-    # Get the conventional commit type from the pull request title (everything before the colon)
-    cc_type = '"' + pr_title[:colon_index] + '"'
-    # Save the conventional commit type as an environment variable, CC_TYPE
-    save_env_variable("CC_TYPE", cc_type)
+    exclam_index = pr_title.find("!")
+
+    return 0 <= exclam_index < colon_index
+
+
+def has_body_breaking_changes(pr_body: str) -> bool:
+    """Check if the pull request body indicates a breaking change.
+
+    Parameters
+    ----------
+    pr_body: str
+        The pull request body.
+
+    Returns
+    -------
+    bool
+        True if the pull request body indicates a breaking change, False otherwise.
+    """
+    if not pr_body:
+        return False
+
+    pattern = r"(?i)^breaking[- ]changes?:"
+    return any(re.match(pattern, line.strip()) for line in pr_body.splitlines())
+
+
+def get_conventional_commit_type(pr_title: str, pr_body: str):
+    """Get the conventional commit type from the pull request.
+
+    If the pull request title or body indicates a breaking change,
+    the conventional commit type is set to "breaking". Otherwise,
+    the conventional commit type is extracted from the pull request
+    title.
+
+    Parameters
+    ----------
+    pr_title: str
+        The pull request title.
+    pr_body: str
+        The pull request body.
+    """
+    if has_title_breaking_changes(pr_title) or has_body_breaking_changes(pr_body):
+        # Save the conventional commit type as an environment variable, CC_TYPE
+        save_env_variable("CC_TYPE", '"breaking"')
+    else:
+        # Get the index where the first colon is found in the pull request title
+        colon_index = pr_title.index(":")
+        # Get the conventional commit type from the pull request title (everything before the colon)
+        cc_type = '"' + pr_title[:colon_index] + '"'
+        # Save the conventional commit type as an environment variable, CC_TYPE
+        save_env_variable("CC_TYPE", cc_type)
 
 
 def changelog_category_cc(cc_type: str):
@@ -113,6 +168,7 @@ def changelog_category_cc(cc_type: str):
     # Dictionary whose keys are the conventional commit type and values are
     # the changelog section
     cc_type_changelog_dict = {
+        "breaking": "breaking",
         "feat": "added",
         "fix": "fixed",
         "docs": "documentation",
@@ -151,6 +207,7 @@ def changelog_categorize_based_on_labels(labels: str):
     # Dictionary with the key as a label from .github/workflows/label.yml and
     # value as the corresponding section in the changelog
     pr_labels = {
+        "breaking": "breaking",
         "enhancement": "added",
         "bug": "fixed",
         "documentation": "documentation",
@@ -209,7 +266,7 @@ def clean_pr_title(pr_title: str, use_pr_title: str):
     # Retrieve title
     clean_title = pr_title
 
-    # If using pull request title, remove it from title
+    # If using pull request title, remove it
     if use_pr_title:
         colon_index = clean_title.index(":")
         clean_title = clean_title[colon_index + 1 :]
@@ -255,6 +312,7 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
 
     # List containing changelog sections under each release
     changelog_sections = [
+        "breaking",
         "added",
         "dependencies",
         "documentation",
