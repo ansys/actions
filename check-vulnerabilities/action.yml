@@ -208,7 +208,11 @@ runs:
         fi
 
     - name: "Install Git and clone project"
+<<<<<<< HEAD
       uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+=======
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+>>>>>>> 20fcd64 (fix: upload artifacts even if failure happens before (when requested) (#1134))
       if: ${{ inputs.checkout == 'true' }}
       with:
         repository: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
@@ -436,6 +440,7 @@ runs:
 
     - name: "Run safety and bandit"
       shell: bash
+      continue-on-error: true
       env:
         ACTION_PATH: ${{ github.action_path }}
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
@@ -463,6 +468,7 @@ runs:
 
     - name: "Run safety advisory checks"
       shell: bash
+      continue-on-error: true
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         ACTION_PATH: ${{ github.action_path }}
@@ -480,10 +486,11 @@ runs:
         fi
 
     - name: "Uploading safety and bandit results"
-      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
-      if: ${{ inputs.upload-reports == 'true' }}
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      if: inputs.upload-reports == 'true' || ( failure() && inputs.upload-reports == 'true' )
       with:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
+
 
