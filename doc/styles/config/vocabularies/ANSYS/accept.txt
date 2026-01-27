@@ -6,6 +6,7 @@ cooldown
 dependabot
 dev
 dependabot
+ghapi
 GitHub
 pypa
 pytest
