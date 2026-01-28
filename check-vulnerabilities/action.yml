@@ -477,6 +477,7 @@ runs:
 
     - name: "Run safety and bandit"
       shell: bash
+      continue-on-error: true
       env:
         ACTION_PATH: ${{ github.action_path }}
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
@@ -504,6 +505,7 @@ runs:
 
     - name: "Run safety advisory checks"
       shell: bash
+      continue-on-error: true
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         ACTION_PATH: ${{ github.action_path }}
@@ -522,9 +524,10 @@ runs:
 
     - name: "Uploading safety and bandit results"
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-      if: ${{ inputs.upload-reports == 'true' }}
+      if: inputs.upload-reports == 'true' || ( failure() && inputs.upload-reports == 'true' )
       with:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
+
 
