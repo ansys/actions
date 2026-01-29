@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -143,7 +143,7 @@ runs:
         ${INSTALL_COMMAND} --upgrade pip 'twine<6.2.0'
 
     - name: "Download the library artifacts from build-library step"
-      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
       with:
         name: ${{ inputs.library-name }}-artifacts
         path: ${{ inputs.library-name }}-artifacts

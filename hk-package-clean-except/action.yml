@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -52,106 +52,46 @@ inputs:
     required: false
     default: ''
     type: string
-  python-version:
-    description: 'Desired Python version.'
-    default: '3.11'
+  python-version:  # TODO: Remove deprecated input in v11
+    description: 'DEPRECATED ARGUMENT. Desired Python version.'
+    default: ''
     required: false
     type: string
-  use-uv:
+  use-uv:  # TODO: Remove deprecated input in v11
     description: |
-      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
-    default: true
+      DEPRECATED ARGUMENT. Whether to use uv as the default package manager instead of pip. Default value is ``''``.
+    default: ''
     required: false
-    type: boolean
+    type: string
 
 runs:
   using: "composite"
   steps:
 
-    - name: "Set up Python ${{ inputs.python-version }}"
+    - uses: ansys/actions/_logging@main
+      if: inputs.python-version != '' || inputs.use-uv != ''
+      with:
+        level: "WARNING"
+        message: >
+          'The "python-version" and "use-uv" inputs are deprecated and will be
+          removed in future releases. This action uses a specific Python version set
+          up in a separate step.'
+
+    - name: "Set up Python 3.13"
       uses: ansys/actions/_setup-python@main
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: '3.13'
         use-cache: false
-        provision-uv: ${{ inputs.use-uv }}
+        provision-uv: true
         prune-uv-cache: true
 
-    - name: "Install ghapi"
+    - name: "Install required packages"
       shell: bash
       env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-
-        ${INSTALL_COMMAND} --upgrade pip
-        ${INSTALL_COMMAND} ghapi
-
-    - name: "Declare Python script"
-      shell: bash
-      run: |
-        cat > clean-except.py << 'EOF'
-
-        from datetime import datetime, timedelta
-        import os
-
-        from ghapi.all import GhApi
-        from ghapi.core import print_summary
-        from ghapi.page import paged
-
-        PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-
-        org_str = os.environ.get("PACKAGE_ORG")
-        pck_str = os.environ.get("PACKAGE_NAME")
-        last_days_str = os.environ.get("ALLOW_LAST_DAYS")
-        valid_tags_str = os.environ.get("VALID_TAGS_STR")
-
-        last_days = int(last_days_str) if last_days_str != "" else None
-        valid_tags = [x.strip() for x in valid_tags_str.split(",")]
-
-        api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
-
-        if last_days:
-            delete_before_date = datetime.now() - timedelta(days=last_days)
-
-        paged_packages = paged(
-            api.packages.get_all_package_versions_for_package_owned_by_org,
-            org=org_str,
-            package_name=pck_str,
-            package_type="container",
-            state="active",
-            per_page=100,
-        )
-
-        # Loop over all pages
-        for page in paged_packages:
-            for package in page:
-                # If keeping last days is requested, then check
-                if (
-                    last_days
-                    and datetime.strptime(package.created_at, PACKAGE_TIME_FORMAT).timestamp()
-                    > delete_before_date.timestamp()
-                ):
-                    continue
-
-                # Check if the given package has valid tags
-                package_tags = package.metadata.container.tags
-                delete = True
-                for tag in package_tags:
-                    if tag in valid_tags:
-                        delete = False
-                        break
-
-                # In case it should, delete it
-                if delete:
-                    print(f"Deleting package: {package}")
-                    api.packages.delete_package_version_for_org(
-                        org=org_str,
-                        package_name=pck_str,
-                        package_type="container",
-                        package_version_id=package["id"],
-                    )
-
-        EOF
-        cat clean-except.py
+        uv pip install --no-managed-python --system --upgrade pip
+        uv pip install --no-managed-python --system --no-deps -r ${ACTION_PATH}/requirements.txt
 
     - name: "Run package cleanup"
       shell: bash
@@ -161,6 +101,6 @@ runs:
         PACKAGE_NAME: ${{ inputs.package-name }}
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
         VALID_TAGS_STR: ${{ inputs.tags-kept }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        python clean-except.py
-
+        python ${ACTION_PATH}/../python-utils/hk_package_clean_except.py

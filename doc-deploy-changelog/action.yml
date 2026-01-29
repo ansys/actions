@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -186,7 +186,7 @@ runs:
   using: "composite"
   steps:
     - name: "Install Git and clone project"
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         token: ${{ inputs.token }}
         fetch-depth: 0 # zizmor: ignore[artipacked] , credentials must be persisted in this case
@@ -301,7 +301,7 @@ runs:
         github_action_path = os.getenv("GITHUB_ACTION_PATH")
         sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
-        from parse_pr_title import save_env_variable
+        from parse_pr import save_env_variable
 
         # Whether or not to format the date in the CHANGELOG file - "true" or "false"
         format_date = os.environ.get("FORMAT_DATE")

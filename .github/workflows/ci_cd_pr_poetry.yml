@@ -25,7 +25,7 @@ jobs:
       environment: ${{ steps.block.outputs.environment }}
     steps:
 
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -66,7 +66,7 @@ jobs:
       attestations: write # Needed for provenance attestation
     steps:
 
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -90,7 +90,7 @@ jobs:
       attestations: write # Needed for provenance attestation
     steps:
 
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -113,7 +113,7 @@ jobs:
     steps:
 
     - name: "Download distribution artifacts"
-      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
       with:
         name: ${{ env.LIBRARY_NAME }}-artifacts
         path: dist
@@ -149,14 +149,14 @@ jobs:
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           path: actions
@@ -192,14 +192,14 @@ jobs:
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           path: actions
@@ -226,14 +226,14 @@ jobs:
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           path: actions
@@ -263,14 +263,14 @@ jobs:
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           path: actions

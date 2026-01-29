@@ -4,6 +4,8 @@ updates:
     directories:
       - "/requirements"
       - "/check-vulnerabilities"
+      - "/hk-package-clean-except"
+      - "/hk-package-clean-untagged"
     schedule:
       interval: "daily"
     cooldown:
