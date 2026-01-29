@@ -7,4 +7,5 @@ ISC
 MIT
 MPL
 PSF
+LGPL
 Unlicense
