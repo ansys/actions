@@ -58,7 +58,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.5
       if: inputs.python-version != '' || inputs.use-uv != ''
       with:
         level: "WARNING"
@@ -68,7 +68,7 @@ runs:
           up in a separate step.'
 
     - name: "Set up Python 3.13"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v10.2.5
       with:
         python-version: '3.13'
         use-cache: false
