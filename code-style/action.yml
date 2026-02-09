@@ -24,12 +24,12 @@ name: |
   Code style
 
 description: |
-  This action evaluates the code quality of your project by using `pre-commit
-  <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
-  ``pre-commit``. It is assumed that your project contains a
-  ``.pre-commit-config.yaml`` file in the root directory. The action can also
-  be extended to lint docker files that are contained in the docker directory
-  and the .devcontainer directory.
+  This action evaluates the code quality of your project by using `prek
+  <https://github.com/j178/prek/>`_ an alternative to pre-commit
+  <https://github.com/pre-commit/pre-commit/>`_ with better performances.
+  It is assumed that your project contains a ``.pre-commit-config.yaml`` file
+  in the root directory. The action can also be extended to lint docker files
+  that are contained in the docker directory and the .devcontainer directory.
 
   .. warning::
 
@@ -43,7 +43,7 @@ inputs:
 
   python-version:
     description: |
-      Python version used for installing and running ``pre-commit``.
+      Python version used for installing and running ``prek``.
     default: '3.11'
     required: false
     type: string
@@ -57,11 +57,11 @@ inputs:
     default: true
     type: boolean
 
-  pre-commit-version:
+  prek-version:
     description: |
-      The version of pre-commit to install.
+      The version of prek to install.
     required: false
-    default: '3.8.0'
+    default: '0.3.2'
     type: string
 
   docker-lint:
@@ -98,7 +98,7 @@ inputs:
 
   show-diff-on-failure:
     description: |
-      Whether to show the diff when a pre-commit hook fails.
+      Whether to show the diff when a prek hook fails.
     required: false
     default: true
     type: boolean
@@ -255,21 +255,20 @@ runs:
           python -m pip install .
         fi
 
-    - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
+    - name: "Install prek v${{ inputs.prek-version }}"
       shell: bash
       env:
-        PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
+        PREK_VERSION: ${{ inputs.prek-version }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
       run: |
         ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
+          uv pip install "prek==${PREK_VERSION}"
         else
-          python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
+          python -m pip install "prek==${PREK_VERSION}"
         fi
-        pre-commit install
 
-    - name: "Run pre-commit"
+    - name: "Run prek - pre-commit"
       shell: bash
       env:
         SHOW_DIFF_ON_FAILURE: ${{ inputs.show-diff-on-failure }}
@@ -277,9 +276,9 @@ runs:
       run: |
         $ACTIVATE_VENV
         if [[ "${SHOW_DIFF_ON_FAILURE}" == 'true' ]]; then
-          pre-commit run --all-files --show-diff-on-failure
+          prek run --all-files --show-diff-on-failure
         else
-          pre-commit run --all-files
+          prek run --all-files
         fi
 
     # ------------------------------------------------------------------------
