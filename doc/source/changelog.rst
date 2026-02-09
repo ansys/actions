@@ -9,6 +9,127 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.2.5 <https://github.com/ansys/actions/releases/tag/v10.2.5>`_ - February 09, 2026
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update the \`\`check-vulnerabilities\`\` action to use on \"pure documentation\" projects
+          - `#1107 <https://github.com/ansys/actions/pull/1107>`_
+
+        * - Allowing regex on tags passed (simplify expressions)
+          - `#1118 <https://github.com/ansys/actions/pull/1118>`_
+
+        * - Migrate hk-package-* scripts to python-utils folder
+          - `#1122 <https://github.com/ansys/actions/pull/1122>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump sphinx from 8.2.3 to 9.0.1 in /requirements
+          - `#1091 <https://github.com/ansys/actions/pull/1091>`_
+
+        * - Bump the github-actions group across 18 directories with 1 update
+          - `#1093 <https://github.com/ansys/actions/pull/1093>`_, `#1121 <https://github.com/ansys/actions/pull/1121>`_
+
+        * - Bump ansys-sphinx-theme from 1.6.3 to 1.6.4 in /requirements
+          - `#1094 <https://github.com/ansys/actions/pull/1094>`_
+
+        * - Bump the release-related-actions group across 2 directories with 1 update
+          - `#1095 <https://github.com/ansys/actions/pull/1095>`_
+
+        * - Bump the github-actions group across 12 directories with 3 updates
+          - `#1096 <https://github.com/ansys/actions/pull/1096>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#1097 <https://github.com/ansys/actions/pull/1097>`_
+
+        * - Bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 in /hk-automerge-prs in the must-be-assigned-actions group across 1 directory
+          - `#1101 <https://github.com/ansys/actions/pull/1101>`_
+
+        * - Bump the build-related-actions group across 3 directories with 2 updates
+          - `#1110 <https://github.com/ansys/actions/pull/1110>`_
+
+        * - Bump ghapi from 1.0.9 to 1.0.10 in /hk-package-clean-except
+          - `#1130 <https://github.com/ansys/actions/pull/1130>`_
+
+        * - Bump ghapi from 1.0.9 to 1.0.10 in /hk-package-clean-untagged
+          - `#1131 <https://github.com/ansys/actions/pull/1131>`_
+
+        * - Bump sphinx-design from 0.6.1 to 0.7.0 in /requirements
+          - `#1132 <https://github.com/ansys/actions/pull/1132>`_
+
+        * - Bump ansys-sphinx-theme from 1.6.4 to 1.7.0 in /requirements
+          - `#1140 <https://github.com/ansys/actions/pull/1140>`_
+
+        * - Bump packaging from 25.0 to 26.0 in /hk-package-clean-except
+          - `#1142 <https://github.com/ansys/actions/pull/1142>`_
+
+        * - Bump sphinx from 9.0.1 to 9.1.0 in /requirements
+          - `#1144 <https://github.com/ansys/actions/pull/1144>`_
+
+        * - Bump fastcore from 1.12.4 to 1.12.6 in /hk-package-clean-except
+          - `#1146 <https://github.com/ansys/actions/pull/1146>`_
+
+        * - Bump fastcore from 1.12.5 to 1.12.6 in /hk-package-clean-untagged
+          - `#1147 <https://github.com/ansys/actions/pull/1147>`_
+
+        * - Bump the github-actions group across 3 directories with 2 updates
+          - `#1148 <https://github.com/ansys/actions/pull/1148>`_
+
+        * - Bump jbergstroem/hadolint-gh-action from 1.13.0 to 1.15.0 in /docker-style in the style-related-actions group across 1 directory
+          - `#1149 <https://github.com/ansys/actions/pull/1149>`_
+
+        * - Bump docker/login-action from 3.6.0 to 3.7.0 in /.github/workflows in the test-related-actions group across 1 directory
+          - `#1150 <https://github.com/ansys/actions/pull/1150>`_
+
+        * - Bump fastcore from 1.12.6 to 1.12.10 in /hk-package-clean-except
+          - `#1151 <https://github.com/ansys/actions/pull/1151>`_
+
+        * - Bump fastcore from 1.12.6 to 1.12.10 in /hk-package-clean-untagged
+          - `#1152 <https://github.com/ansys/actions/pull/1152>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Fix typo in the note related to zizmor summary.
+          - `#1099 <https://github.com/ansys/actions/pull/1099>`_
+
+        * - Update \`doc-deploy-pr\` example file
+          - `#1108 <https://github.com/ansys/actions/pull/1108>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Hk-* actions migrated to using requirements file
+          - `#1116 <https://github.com/ansys/actions/pull/1116>`_
+
+        * - Wrong mode when opening file to handle missing towncrier type
+          - `#1125 <https://github.com/ansys/actions/pull/1125>`_
+
+        * - Ignoring Safety vulnerability 83150
+          - `#1135 <https://github.com/ansys/actions/pull/1135>`_
+
+
 `10.2.4 <https://github.com/ansys/actions/releases/tag/v10.2.4>`_ - January 27, 2026
 ====================================================================================
 
