@@ -271,6 +271,35 @@ runs:
           python -m pip install .
         fi
 
+    - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
+      if: inputs.use-prek == 'false'
+      shell: bash
+      env:
+        PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
+        else
+          python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
+        fi
+
+    - name: "Run pre-commit"
+      if: inputs.use-prek == 'false'
+      shell: bash
+      env:
+        SHOW_DIFF_ON_FAILURE: ${{ inputs.show-diff-on-failure }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+      run: |
+        $ACTIVATE_VENV
+        if [[ "${SHOW_DIFF_ON_FAILURE}" == 'true' ]]; then
+          pre-commit run --all-files --show-diff-on-failure
+        else
+          pre-commit run --all-files
+        fi
+
     - name: "Install prek v${{ inputs.prek-version }}"
       if: inputs.use-prek == 'true'
       shell: bash
@@ -286,22 +315,6 @@ runs:
           python -m pip install "prek==${PREK_VERSION}"
         fi
 
-    - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
-      if: inputs.use-prek == 'false'
-      shell: bash
-      env:
-        PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
-      run: |
-        ${ACTIVATE_VENV}
-        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
-        else
-          python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
-        fi
-        pre-commit install
-
     - name: "Run prek"
       if: inputs.use-prek == 'true'
       shell: bash
@@ -314,20 +327,6 @@ runs:
           prek run --all-files --show-diff-on-failure
         else
           prek run --all-files
-        fi
-
-    - name: "Run pre-commit"
-      if: inputs.use-prek == 'false'
-      shell: bash
-      env:
-        SHOW_DIFF_ON_FAILURE: ${{ inputs.show-diff-on-failure }}
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-      run: |
-        $ACTIVATE_VENV
-        if [[ "${SHOW_DIFF_ON_FAILURE}" == 'true' ]]; then
-          pre-commit run --all-files --show-diff-on-failure
-        else
-          pre-commit run --all-files
         fi
 
     # ------------------------------------------------------------------------
