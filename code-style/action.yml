@@ -68,7 +68,7 @@ inputs:
 
   pre-commit-version:
     description: |
-      The version of pre-commit to install. Only used when ``use-prek`` is ``false``.
+      The version of pre-commit to install. Only used when ``use-pre-commit`` is ``true``.
     required: false
     default: '3.8.0'
     type: string
