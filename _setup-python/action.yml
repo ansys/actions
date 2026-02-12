@@ -50,6 +50,11 @@ inputs:
     required: true
     type: boolean
 
+outputs:
+  python-path:
+    description: "The path to the Python executable"
+    value: ${{ steps.python-path.outputs.PYTHON_PATH }}
+
 runs:
   using: "composite"
   steps:
@@ -102,3 +107,13 @@ runs:
       with:
         enable-cache: ${{ inputs.use-cache }}
         prune-cache: ${{ inputs.prune-uv-cache }}
+
+    - name: "Get Python path"
+      id: python-path
+      shell: python
+      # Using python shell to ensure compatibility with Windows runners
+      run: |
+        import sys
+        import os
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f"PYTHON_PATH={sys.executable}\n")
