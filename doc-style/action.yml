@@ -235,7 +235,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
         files: ${{ inputs.files }}
-        reporter: github-pr-check
+        reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
         fail_level: ${{ inputs.fail-level }}
         filter_mode: nofilter
         vale_flags: "${{ steps.vale-flags.outputs.VALE_FLAGS }}"
