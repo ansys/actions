@@ -25,12 +25,13 @@ name: |
 
 description: |
   This action evaluates the code quality of your project by using `pre-commit
-  <https://github.com/pre-commit/pre-commit/>`_ or optionally `prek
+  <https://github.com/pre-commit/pre-commit/>`_ or `prek
   <https://github.com/j178/prek/>`_ (a faster alternative to pre-commit).
-  The action installs and runs the chosen tool. It is assumed that your project
-  contains a ``.pre-commit-config.yaml`` file in the root directory. The action
-  can also be extended to lint docker files that are contained in the docker
-  directory and the .devcontainer directory.
+  The action installs and runs the chosen tool depending on the input
+  configuration. It is assumed that your project contains a
+  ``.pre-commit-config.yaml`` file in the root directory. The action can also
+  be extended to lint docker files that are contained in the docker directory
+  and the .devcontainer directory.
 
   .. warning::
 
@@ -60,8 +61,8 @@ inputs:
 
   use-prek:
     description: |
-      Whether to use prek instead of pre-commit. If ``true``, prek will be used
-      (faster alternative). If ``false``, pre-commit will be used (default behavior).
+      Whether to use prek instead of pre-commit. If ``true`` (default), prek will be used
+      (faster alternative). If ``false``, pre-commit will be used.
     required: false
     default: true
     type: boolean
