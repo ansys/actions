@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
-#
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,9 @@ def validate_version(version: str) -> bool:
     return bool(re.match(pattern, version))
 
 
-def update_version_file(project_root: Path, new_version: str, dry_run: bool = False) -> bool:
+def update_version_file(
+    project_root: Path, new_version: str, dry_run: bool = False
+) -> bool:
     """Update the VERSION file with the new version."""
     version_file = project_root / "VERSION"
     if dry_run:
@@ -97,7 +99,9 @@ def update_pyproject_flit(
 
     current = data.get("project", {}).get("version", "")
     if current != old_version:
-        print(f"  Warning: Expected version {old_version} in {pyproject_path}, found {current}")
+        print(
+            f"  Warning: Expected version {old_version} in {pyproject_path}, found {current}"
+        )
 
     data["project"]["version"] = new_version
 
@@ -126,7 +130,9 @@ def update_pyproject_poetry(
 
     current = data.get("tool", {}).get("poetry", {}).get("version", "")
     if current != old_version:
-        print(f"  Warning: Expected version {old_version} in {pyproject_path}, found {current}")
+        print(
+            f"  Warning: Expected version {old_version} in {pyproject_path}, found {current}"
+        )
 
     data["tool"]["poetry"]["version"] = new_version
 
@@ -203,7 +209,9 @@ Examples:
 
     # Validate the new version format
     if not validate_version(args.new_version):
-        print(f"Error: Invalid version format '{args.new_version}'. Expected format: X.Y.Z")
+        print(
+            f"Error: Invalid version format '{args.new_version}'. Expected format: X.Y.Z"
+        )
         return 1
 
     project_root = get_project_root()
@@ -217,7 +225,9 @@ Examples:
 
     # Check if versions are the same
     if old_version == args.new_version:
-        print(f"Warning: New version ({args.new_version}) is the same as current version")
+        print(
+            f"Warning: New version ({args.new_version}) is the same as current version"
+        )
         return 0
 
     # Track success
@@ -231,12 +241,16 @@ Examples:
 
     # 2. Update flit pyproject.toml
     print("\n2. Updating .ci/ansys-actions-flit/pyproject.toml...")
-    if not update_pyproject_flit(project_root, old_version, args.new_version, args.dry_run):
+    if not update_pyproject_flit(
+        project_root, old_version, args.new_version, args.dry_run
+    ):
         all_success = False
 
     # 3. Update poetry pyproject.toml
     print("\n3. Updating .ci/ansys-actions-poetry/pyproject.toml...")
-    if not update_pyproject_poetry(project_root, old_version, args.new_version, args.dry_run):
+    if not update_pyproject_poetry(
+        project_root, old_version, args.new_version, args.dry_run
+    ):
         all_success = False
 
     # 4. Update all action.yml files
@@ -244,7 +258,9 @@ Examples:
     action_files = find_action_files(project_root)
     files_updated = 0
     for action_file in action_files:
-        count = update_action_file(action_file, old_version, args.new_version, args.dry_run)
+        count = update_action_file(
+            action_file, old_version, args.new_version, args.dry_run
+        )
         if count > 0:
             files_updated += 1
             total_action_refs += count
@@ -257,7 +273,9 @@ Examples:
     print("Summary:")
     print("  - VERSION file: updated")
     print("  - pyproject.toml files: 2 updated")
-    print(f"  - action.yml files: {files_updated} files, {total_action_refs} references")
+    print(
+        f"  - action.yml files: {files_updated} files, {total_action_refs} references"
+    )
     if args.dry_run:
         print("\n(DRY RUN - no actual changes were made)")
 
