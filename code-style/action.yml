@@ -63,12 +63,12 @@ inputs:
       Whether to use prek instead of pre-commit. If ``true``, prek will be used
       (faster alternative). If ``false``, pre-commit will be used (default behavior).
     required: false
-    default: false
+    default: true
     type: boolean
 
   pre-commit-version:
     description: |
-      The version of pre-commit to install. Only used when ``use-pre-commit`` is ``true``.
+      The version of pre-commit to install. Only used when ``use-prek`` is ``false``.
     required: false
     default: '3.8.0'
     type: string
