@@ -1,3 +1,3 @@
-fastcore==1.12.11
+fastcore==1.12.12
 ghapi==1.0.10
 packaging==26.0
