@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
@@ -27,6 +26,7 @@ This script updates version references in:
 - .ci/ansys-actions-flit/pyproject.toml ([project].version)
 - .ci/ansys-actions-poetry/pyproject.toml ([tool.poetry].version)
 - All action.yml files (ansys/actions/*@vX.Y.Z references)
+- CI/CD workflow files in .github/workflows/
 
 Usage:
     python update_version.py <new_version>
@@ -39,10 +39,11 @@ Examples:
 
 from __future__ import annotations
 
-import argparse
 import re
 import sys
 from pathlib import Path
+
+import click
 
 # tomllib is available in Python 3.11+, use tomli for older versions
 try:
@@ -61,7 +62,7 @@ def get_project_root() -> Path:
 def read_current_version(project_root: Path) -> str:
     """Read the current version from the VERSION file."""
     version_file = project_root / "VERSION"
-    return version_file.read_text().strip()
+    return version_file.read_text(encoding="utf-8").strip()
 
 
 def validate_version(version: str) -> bool:
@@ -76,97 +77,103 @@ def update_version_file(
     """Update the VERSION file with the new version."""
     version_file = project_root / "VERSION"
     if dry_run:
-        print(f"  [DRY RUN] Would update {version_file} to: {new_version}")
+        click.echo(f"  [DRY RUN] Would update {version_file} to: {new_version}")
         return True
 
-    version_file.write_text(f"{new_version}\n")
-    print(f"  Updated {version_file}")
+    version_file.write_text(f"{new_version}\n", encoding="utf-8")
+    click.echo(f"  Updated {version_file}")
     return True
 
 
-def update_pyproject_flit(
-    project_root: Path, old_version: str, new_version: str, dry_run: bool = False
+def update_pyproject(
+    pyproject_path: Path,
+    version_keys: list[str],
+    old_version: str,
+    new_version: str,
+    dry_run: bool = False,
 ) -> bool:
-    """Update version in .ci/ansys-actions-flit/pyproject.toml."""
-    pyproject_path = project_root / ".ci" / "ansys-actions-flit" / "pyproject.toml"
+    """Update version in a pyproject.toml file.
 
+    Parameters
+    ----------
+    pyproject_path : Path
+        Path to the pyproject.toml file.
+    version_keys : list[str]
+        List of keys to traverse to reach the version value.
+        E.g., ["project", "version"] for [project].version
+        or ["tool", "poetry", "version"] for [tool.poetry].version
+    old_version : str
+        Expected current version (for validation warning).
+    new_version : str
+        New version to set.
+    dry_run : bool
+        If True, only show what would be changed.
+
+    Returns
+    -------
+    bool
+        True if successful, False otherwise.
+    """
     if not pyproject_path.exists():
-        print(f"  Warning: {pyproject_path} not found, skipping")
+        click.echo(f"  Warning: {pyproject_path} not found, skipping")
         return False
 
-    with open(pyproject_path, "rb") as f:
-        data = tomllib.load(f)
+    content = pyproject_path.read_text(encoding="utf-8")
+    data = tomllib.loads(content)
 
-    current = data.get("project", {}).get("version", "")
+    # Navigate to the parent of the version key
+    current_dict = data
+    for key in version_keys[:-1]:
+        current_dict = current_dict[key]
+
+    version_key = version_keys[-1]
+    current = current_dict[version_key]
     if current != old_version:
-        print(
+        click.echo(
             f"  Warning: Expected version {old_version} in {pyproject_path}, found {current}"
         )
 
-    data["project"]["version"] = new_version
+    current_dict[version_key] = new_version
 
     if dry_run:
-        print(f"  [DRY RUN] Would update {pyproject_path}: version = {new_version}")
+        click.echo(f"  [DRY RUN] Would update {pyproject_path}: version = {new_version}")
         return True
 
-    with open(pyproject_path, "wb") as f:
-        tomli_w.dump(data, f)
-    print(f"  Updated {pyproject_path}")
+    output = tomli_w.dumps(data)
+    pyproject_path.write_text(output, encoding="utf-8")
+    click.echo(f"  Updated {pyproject_path}")
     return True
 
 
-def update_pyproject_poetry(
-    project_root: Path, old_version: str, new_version: str, dry_run: bool = False
-) -> bool:
-    """Update version in .ci/ansys-actions-poetry/pyproject.toml."""
-    pyproject_path = project_root / ".ci" / "ansys-actions-poetry" / "pyproject.toml"
+def find_action_and_workflow_files(project_root: Path) -> list[Path]:
+    """Find all action.yml files and CI/CD workflow files in the repository."""
+    files = []
 
-    if not pyproject_path.exists():
-        print(f"  Warning: {pyproject_path} not found, skipping")
-        return False
-
-    with open(pyproject_path, "rb") as f:
-        data = tomllib.load(f)
-
-    current = data.get("tool", {}).get("poetry", {}).get("version", "")
-    if current != old_version:
-        print(
-            f"  Warning: Expected version {old_version} in {pyproject_path}, found {current}"
-        )
-
-    data["tool"]["poetry"]["version"] = new_version
-
-    if dry_run:
-        print(f"  [DRY RUN] Would update {pyproject_path}: version = {new_version}")
-        return True
-
-    with open(pyproject_path, "wb") as f:
-        tomli_w.dump(data, f)
-    print(f"  Updated {pyproject_path}")
-    return True
-
-
-def find_action_files(project_root: Path) -> list[Path]:
-    """Find all action.yml files in the repository."""
-    action_files = []
+    # Find all action.yml files
     for action_yml in project_root.rglob("action.yml"):
         # Skip any action files in .tox, .git, or other build directories
         parts = action_yml.parts
-        if any(part.startswith(".") and part not in (".ci",) for part in parts):
-            if ".git" in parts or ".tox" in parts:
-                continue
-        action_files.append(action_yml)
-    return sorted(action_files)
+        if ".git" in parts or ".tox" in parts:
+            continue
+        files.append(action_yml)
+
+    # Find CI/CD workflow files in .github/workflows/
+    workflows_dir = project_root / ".github" / "workflows"
+    if workflows_dir.exists():
+        for workflow_file in workflows_dir.glob("ci_cd_*.yml"):
+            files.append(workflow_file)
+
+    return sorted(files)
 
 
-def update_action_file(
-    action_file: Path, old_version: str, new_version: str, dry_run: bool = False
+def update_yaml_file(
+    yaml_file: Path, old_version: str, new_version: str, dry_run: bool = False
 ) -> int:
-    """Update ansys/actions references in an action.yml file.
+    """Update ansys/actions references in a YAML file.
 
     Returns the number of replacements made.
     """
-    content = action_file.read_text()
+    content = yaml_file.read_text(encoding="utf-8")
 
     # Pattern to match: ansys/actions/<action-name>@v<version>
     old_pattern = f"ansys/actions/([^@]+)@v{re.escape(old_version)}"
@@ -176,111 +183,92 @@ def update_action_file(
 
     if count > 0:
         if dry_run:
-            print(f"  [DRY RUN] Would update {action_file}: {count} reference(s)")
+            click.echo(f"  [DRY RUN] Would update {yaml_file}: {count} reference(s)")
         else:
-            action_file.write_text(new_content)
-            print(f"  Updated {action_file}: {count} reference(s)")
+            yaml_file.write_text(new_content, encoding="utf-8")
+            click.echo(f"  Updated {yaml_file}: {count} reference(s)")
 
     return count
 
 
-def main() -> int:
-    """Main entry point for the version update script."""
-    parser = argparse.ArgumentParser(
-        description="Update version references across the ansys/actions repository.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-    python update_version.py 10.2.6
-    python update_version.py 10.2.6 --dry-run
-        """,
-    )
-    parser.add_argument(
-        "new_version",
-        help="The new version to set (e.g., 10.2.6)",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Show what would be changed without making actual changes",
-    )
+@click.command()
+@click.argument("new_version")
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be changed without making actual changes.",
+)
+def main(new_version: str, dry_run: bool) -> None:
+    """Update version references across the ansys/actions repository.
 
-    args = parser.parse_args()
+    NEW_VERSION is the new version to set (e.g., 10.2.6).
 
+    \b
+    Examples:
+        python update_version.py 10.2.6
+        python update_version.py 10.2.6 --dry-run
+    """
     # Validate the new version format
-    if not validate_version(args.new_version):
-        print(
-            f"Error: Invalid version format '{args.new_version}'. Expected format: X.Y.Z"
+    if not validate_version(new_version):
+        raise click.BadParameter(
+            f"Invalid version format '{new_version}'. Expected format: X.Y.Z",
+            param_hint="'NEW_VERSION'",
         )
-        return 1
 
     project_root = get_project_root()
     old_version = read_current_version(project_root)
 
-    print(f"Updating version from {old_version} to {args.new_version}")
-    if args.dry_run:
-        print("(DRY RUN - no changes will be made)\n")
+    click.echo(f"Updating version from {old_version} to {new_version}")
+    if dry_run:
+        click.echo("(DRY RUN - no changes will be made)\n")
     else:
-        print()
+        click.echo()
 
-    # Check if versions are the same
-    if old_version == args.new_version:
-        print(
-            f"Warning: New version ({args.new_version}) is the same as current version"
-        )
-        return 0
+    if old_version == new_version:
+        click.echo(f"Warning: New version ({new_version}) is the same as current version")
+        sys.exit(0)
 
-    # Track success
     all_success = True
-    total_action_refs = 0
+    total_refs = 0
 
-    # 1. Update VERSION file
-    print("1. Updating VERSION file...")
-    if not update_version_file(project_root, args.new_version, args.dry_run):
+    click.echo("1. Updating VERSION file...")
+    if not update_version_file(project_root, new_version, dry_run):
         all_success = False
 
-    # 2. Update flit pyproject.toml
-    print("\n2. Updating .ci/ansys-actions-flit/pyproject.toml...")
-    if not update_pyproject_flit(
-        project_root, old_version, args.new_version, args.dry_run
+    click.echo("\n2. Updating .ci/ansys-actions-flit/pyproject.toml...")
+    flit_path = project_root / ".ci" / "ansys-actions-flit" / "pyproject.toml"
+    if not update_pyproject(flit_path, ["project", "version"], old_version, new_version, dry_run):
+        all_success = False
+
+    click.echo("\n3. Updating .ci/ansys-actions-poetry/pyproject.toml...")
+    poetry_path = project_root / ".ci" / "ansys-actions-poetry" / "pyproject.toml"
+    if not update_pyproject(
+        poetry_path, ["tool", "poetry", "version"], old_version, new_version, dry_run
     ):
         all_success = False
 
-    # 3. Update poetry pyproject.toml
-    print("\n3. Updating .ci/ansys-actions-poetry/pyproject.toml...")
-    if not update_pyproject_poetry(
-        project_root, old_version, args.new_version, args.dry_run
-    ):
-        all_success = False
-
-    # 4. Update all action.yml files
-    print("\n4. Updating action.yml files...")
-    action_files = find_action_files(project_root)
+    click.echo("\n4. Updating action.yml and workflow files...")
+    yaml_files = find_action_and_workflow_files(project_root)
     files_updated = 0
-    for action_file in action_files:
-        count = update_action_file(
-            action_file, old_version, args.new_version, args.dry_run
-        )
+    for yaml_file in yaml_files:
+        count = update_yaml_file(yaml_file, old_version, new_version, dry_run)
         if count > 0:
             files_updated += 1
-            total_action_refs += count
+            total_refs += count
 
-    if total_action_refs == 0:
-        print("  No action references found to update")
+    if total_refs == 0:
+        click.echo("  No action references found to update")
 
-    # Summary
-    print("\n" + "=" * 60)
-    print("Summary:")
-    print("  - VERSION file: updated")
-    print("  - pyproject.toml files: 2 updated")
-    print(
-        f"  - action.yml files: {files_updated} files, {total_action_refs} references"
-    )
-    if args.dry_run:
-        print("\n(DRY RUN - no actual changes were made)")
+    click.echo("\n" + "=" * 60)
+    click.echo("Summary:")
+    click.echo("  - VERSION file: updated")
+    click.echo("  - pyproject.toml files: 2 updated")
+    click.echo(f"  - YAML files: {files_updated} files, {total_refs} references")
+    if dry_run:
+        click.echo("\n(DRY RUN - no actual changes were made)")
 
-    return 0 if all_success else 1
+    sys.exit(0 if all_success else 1)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
