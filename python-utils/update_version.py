@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 # Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
@@ -136,7 +137,9 @@ def update_pyproject(
     current_dict[version_key] = new_version
 
     if dry_run:
-        click.echo(f"  [DRY RUN] Would update {pyproject_path}: version = {new_version}")
+        click.echo(
+            f"  [DRY RUN] Would update {pyproject_path}: version = {new_version}"
+        )
         return True
 
     output = tomli_w.dumps(data)
@@ -225,7 +228,9 @@ def main(new_version: str, dry_run: bool) -> None:
         click.echo()
 
     if old_version == new_version:
-        click.echo(f"Warning: New version ({new_version}) is the same as current version")
+        click.echo(
+            f"Warning: New version ({new_version}) is the same as current version"
+        )
         sys.exit(0)
 
     all_success = True
@@ -237,7 +242,9 @@ def main(new_version: str, dry_run: bool) -> None:
 
     click.echo("\n2. Updating .ci/ansys-actions-flit/pyproject.toml...")
     flit_path = project_root / ".ci" / "ansys-actions-flit" / "pyproject.toml"
-    if not update_pyproject(flit_path, ["project", "version"], old_version, new_version, dry_run):
+    if not update_pyproject(
+        flit_path, ["project", "version"], old_version, new_version, dry_run
+    ):
         all_success = False
 
     click.echo("\n3. Updating .ci/ansys-actions-poetry/pyproject.toml...")
