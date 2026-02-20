@@ -148,6 +148,52 @@ runs:
         name: ${{ inputs.library-name }}-artifacts
         path: ${{ inputs.library-name }}-artifacts
 
+    - name: "Verify tag and artifacts version agree"
+      shell: bash
+      env:
+        ARTIFACT_DIR: ${{ inputs.library-name }}-artifacts
+      run: |
+
+        if [[ ! -d "${ARTIFACT_DIR}" ]]; then
+          echo "Artifact directory not found: ${ARTIFACT_DIR}"
+          exit 1
+        fi
+
+        # Extract version from git tag (strip refs/tags/ and optional leading 'v')
+        TAG_VERSION="${GITHUB_REF_NAME#v}"
+        echo "Git tag version: ${TAG_VERSION}"
+
+        # Find first wheel or sdist
+        ARTIFACT_FILE="$(ls "${ARTIFACT_DIR}"/*.whl "${ARTIFACT_DIR}"/*.tar.gz 2>/dev/null | head -n 1)"
+
+        if [[ -z "${ARTIFACT_FILE}" ]]; then
+          echo "No wheel or sdist found in ${ARTIFACT_DIR}"
+          exit 1
+        fi
+        echo "Found artifact: ${ARTIFACT_FILE}"
+
+        # Extract version from filename
+        # Examples:
+        #   ansys-project-1.2.3-py3-none-any.whl
+        #   ansys-project-1.2.3.tar.gz
+        ARTIFACT_VERSION="$(basename "${ARTIFACT_FILE}" \
+          | sed -E 's/^[^-]+-([0-9][0-9A-Za-z\.\-_]*).*/\1/')"
+
+        if [[ -z "${ARTIFACT_VERSION}" ]]; then
+          echo "Failed to extract version from artifact filename"
+          exit 1
+        fi
+        echo "Artifact version: ${ARTIFACT_VERSION}"
+
+        if [[ "${TAG_VERSION}" != "${ARTIFACT_VERSION}" ]]; then
+          echo "Version mismatch!"
+          echo "  Git tag version:     ${TAG_VERSION}"
+          echo "  Artifact version:    ${ARTIFACT_VERSION}"
+          exit 1
+        fi
+
+        echo "Version check passed: tag and artifact versions match."
+
     - name: "Display the structure of downloaded files"
       shell: bash
       run: ls -R
