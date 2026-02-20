@@ -267,7 +267,11 @@ runs:
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install .
+          if [ -f "uv.lock" ]; then
+            uv sync
+          else
+            uv pip install .
+          fi
         else
           python -m pip install .
         fi
