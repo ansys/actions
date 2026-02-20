@@ -25,8 +25,10 @@ name: |
 
 description: |
   This action evaluates the code quality of your project by using `pre-commit
-  <https://github.com/pre-commit/pre-commit/>`_. The action installs and runs
-  ``pre-commit``. It is assumed that your project contains a
+  <https://github.com/pre-commit/pre-commit/>`_ or `prek
+  <https://github.com/j178/prek/>`_ (a faster alternative to pre-commit).
+  The action installs and runs the chosen tool depending on the input
+  configuration. It is assumed that your project contains a
   ``.pre-commit-config.yaml`` file in the root directory. The action can also
   be extended to lint docker files that are contained in the docker directory
   and the .devcontainer directory.
@@ -47,7 +49,7 @@ inputs:
 
   python-version:
     description: |
-      Python version used for installing and running ``pre-commit``.
+      Python version used for installing and running ``pre-commit`` or ``prek``.
     default: '3.11'
     required: false
     type: string
@@ -61,11 +63,26 @@ inputs:
     default: true
     type: boolean
 
+  use-prek:
+    description: |
+      Whether to use prek instead of pre-commit. If ``true`` (default), prek will be used
+      (faster alternative). If ``false``, pre-commit will be used.
+    required: false
+    default: true
+    type: boolean
+
   pre-commit-version:
     description: |
-      The version of pre-commit to install.
+      The version of pre-commit to install. Only used when ``use-prek`` is ``false``.
     required: false
     default: '3.8.0'
+    type: string
+
+  prek-version:
+    description: |
+      The version of prek to install. Only used when ``use-prek`` is ``true``.
+    required: false
+    default: '0.3.2'
     type: string
 
   docker-lint:
@@ -102,7 +119,7 @@ inputs:
 
   show-diff-on-failure:
     description: |
-      Whether to show the diff when a pre-commit hook fails.
+      Whether to show the diff when a pre-commit/prek hook fails.
     required: false
     default: true
     type: boolean
@@ -260,10 +277,12 @@ runs:
         fi
 
     - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
+      if: inputs.use-prek == 'false'
       shell: bash
       env:
         PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
@@ -271,9 +290,9 @@ runs:
         else
           python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
         fi
-        pre-commit install
 
     - name: "Run pre-commit"
+      if: inputs.use-prek == 'false'
       shell: bash
       env:
         SHOW_DIFF_ON_FAILURE: ${{ inputs.show-diff-on-failure }}
@@ -284,6 +303,35 @@ runs:
           pre-commit run --all-files --show-diff-on-failure
         else
           pre-commit run --all-files
+        fi
+
+    - name: "Install prek v${{ inputs.prek-version }}"
+      if: inputs.use-prek == 'true'
+      shell: bash
+      env:
+        PREK_VERSION: ${{ inputs.prek-version }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install "prek==${PREK_VERSION}"
+        else
+          python -m pip install "prek==${PREK_VERSION}"
+        fi
+
+    - name: "Run prek"
+      if: inputs.use-prek == 'true'
+      shell: bash
+      env:
+        SHOW_DIFF_ON_FAILURE: ${{ inputs.show-diff-on-failure }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+      run: |
+        $ACTIVATE_VENV
+        if [[ "${SHOW_DIFF_ON_FAILURE}" == 'true' ]]; then
+          prek run --all-files --show-diff-on-failure
+        else
+          prek run --all-files
         fi
 
     # ------------------------------------------------------------------------

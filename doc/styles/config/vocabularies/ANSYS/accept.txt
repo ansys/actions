@@ -9,6 +9,7 @@ dependabot
 fastcore
 ghapi
 GitHub
+prek
 pypa
 pytest
 PyPI
