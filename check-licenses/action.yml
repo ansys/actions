@@ -155,25 +155,13 @@ runs:
           When skip-install is set to false, activate-venv input is not needed
           and will be ignored.
 
-    - name: Check python version
-      id: check-python-version
-      shell: bash
-      env:
-        PYTHON_VERSION: ${{ inputs.python-version }}
-      run: |
-        MIN_VERSION="3.10"
-        if [ "$(printf '%s\n' "$PYTHON_VERSION" "$MIN_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]; then
-          echo "PYTHON_TOO_OLD=true" >> "${GITHUB_OUTPUT}"
-        fi
-
-    - name: Break if Python version is too old
+    - name: Announce the switch to original pip-licenses package
       uses: ansys/actions/_logging@main
-      if: steps.check-python-version.outputs.PYTHON_TOO_OLD == 'true'
       with:
-        level: "ERROR"
+        level: "INFO"
         message: >
-          The check-licenses action leverages Ansys fork of pip-licenses.
-          This package requires Python 3.10 or higher.
+          Maintenance of the original pip-licenses package has resumed, and the Ansys fork is being discontinued.
+          Therefore, the check-licenses action has been updated to use the original pip-licenses package.
 
     - name: "Install Git and clone project"
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -271,22 +259,15 @@ runs:
         ${ACTIVATE_VENV}
         $INSTALL_COMMAND -U pip
 
-    - name: Clone ansys/pip-licenses on main branch
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      with:
-        repository: ansys/pip-licenses
-        path: "external/pip-licenses"
-        ref: "main"
-        persist-credentials: false
-
-    - name: Install ansys/pip-licenses main branch
+    - name: "Update pip and install pip-licenses library"
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --no-cache' || 'python -m pip install --no-cache-dir' }}
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
-        $INSTALL_COMMAND external/pip-licenses
+        $INSTALL_COMMAND -U pip
+        $INSTALL_COMMAND pip-licenses
 
     - name: "Check if specific target is requested"
       id: specific-target-requested
@@ -303,7 +284,7 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
-      run:
+      run: |
         ${ACTIVATE_VENV}
         ${INSTALL_COMMAND} "$INSTALL_TARGET"
 
