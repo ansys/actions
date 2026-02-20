@@ -55,6 +55,12 @@ description: |
           {% endif %}
           {% endfor %}
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code
+     - **security-events**: ``write`` - Required to create security advisories
+     - **issues**: ``write`` - Required to create issues (only when create-issues is set to ``true``)
+
 inputs:
   token:
     description: |

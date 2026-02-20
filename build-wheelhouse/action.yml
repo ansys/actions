@@ -34,6 +34,17 @@ description: |
       Since version 4.1, the input parameter ``library-namespace`` is no longer
       required.
 
+  .. important:: **Required GitHub Permissions**
+
+     **Base permissions:**
+
+     - **contents**: ``read`` - Required to checkout repository code
+
+     **Conditional permissions** (only when ``attest-provenance: true``):
+
+     - **id-token**: ``write`` - Required for generating OIDC tokens for provenance attestations
+     - **attestations**: ``write`` - Required for creating artifact attestations
+
 inputs:
 
   # Required inputs

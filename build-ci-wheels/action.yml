@@ -35,6 +35,10 @@ description: |
       This actions should only be used by libraries including source code that
       needs to be compiled.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code
+
 inputs:
 
   # Required inputs

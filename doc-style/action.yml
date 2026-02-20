@@ -28,6 +28,11 @@ description: |
     wrapper on top of the `errata-ai/vale-action
     <https://github.com/errata-ai/vale-action>`_.
 
+    .. important:: **Required GitHub Permissions**
+
+       - **contents**: ``read`` - Required to checkout repository code
+       - **pull-requests**: ``write`` - Required for Vale to add review comments and suggestions on pull requests
+
 inputs:
 
   # Required inputs

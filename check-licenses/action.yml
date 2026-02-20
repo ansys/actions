@@ -39,6 +39,10 @@ description: |
     Even though packages may define their license as of a certain type, the
     package could be not applying properly its licensing conditions.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code
+
   .. jinja:: check-licenses
 
       .. grid:: 1 1 1 2

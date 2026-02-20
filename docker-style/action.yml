@@ -45,6 +45,10 @@ description: |
       This action only looks for docker files named Dockerfile.
       A docker file like Dockerfile.linux will not be linted.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code
+
 inputs:
 
   # Optional inputs

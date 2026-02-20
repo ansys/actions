@@ -38,6 +38,10 @@ description: |
       Pre-releases are not supported prior to ``ansys/actions/v10.1``. `See the migration guide <https://actions.docs.ansys.com/version/stable/migrations/index.html>`_
       for information on supported pre-releases.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push documentation to the gh-pages branch
+
 inputs:
 
   # Required inputs

@@ -29,6 +29,10 @@ description: |
   `zizmor <https://docs.zizmor.sh/>`_. Consult `zizmor audit rules <https://docs.zizmor.sh/audits/>`_
   for more information about detected issues and how to remediate them.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code
+
 inputs:
 
   # Optional inputs
