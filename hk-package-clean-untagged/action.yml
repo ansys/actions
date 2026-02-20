@@ -21,7 +21,12 @@
 # SOFTWARE.
 
 name: "Clean untagged package versions."
-description: "Action cleaning up untagged package versions published at ghcr.io."
+description: |
+  Action cleaning up untagged package versions published at ghcr.io.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **packages**: ``delete`` - Required to delete package versions from GitHub Container Registry (GHCR)
 
 inputs:
   package-name:

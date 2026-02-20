@@ -34,6 +34,10 @@ description: |
     setup guide, https://actions.docs.ansys.com/version/dev/migrations/docs-changelog-setup.html,
     the changelog for your release is included in the release notes on GitHub.
 
+    .. important:: **Required GitHub Permissions**
+
+       - **contents**: ``write`` - Required to create GitHub releases and upload release assets
+
 
 inputs:
 

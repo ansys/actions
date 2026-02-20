@@ -36,6 +36,10 @@ description: |
     If docker lint is enabled and directories docker or .devcontainer exist,
     the action will fail if it doesn't find a Dockerfile.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code
+
 
 inputs:
 

@@ -26,6 +26,10 @@ name: |
 description: |
   Run a test suite using `pytest <https://docs.pytest.org/en/stable/>`_.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code
+
 inputs:
 
   # Optional inputs

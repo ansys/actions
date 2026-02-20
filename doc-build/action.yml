@@ -41,6 +41,10 @@ description: |
   ``make.bat json``) command can also be executed to generate JSON
   documentation.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code
+
 inputs:
 
   # Optional inputs

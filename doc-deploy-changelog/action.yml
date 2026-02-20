@@ -77,6 +77,11 @@ description: |
   c) Exit on error if the CHANGELOG is updated, so that the package is not released from
   this instance of the workflow.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push commits, delete and create tags
+     - **pull-requests**: ``write`` - Required to create pull requests
+
 
 inputs:
   # Required inputs

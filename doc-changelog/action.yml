@@ -29,6 +29,11 @@ description: |
 
   This action will only work on Linux/macOS runners.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to commit and push changelog fragments
+     - **pull-requests**: ``read`` - Required to read pull request labels via GitHub API
+
 inputs:
   # Required inputs
 
