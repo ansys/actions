@@ -1,0 +1,24 @@
+hk-migrate-fork-pr:
+  name: "Migrate fork PR to main repository"
+  runs-on: ubuntu-latest
+  # Only runs on issue comments
+  if: |
+    github.event_name == 'issue_comment' &&
+    github.event.issue.pull_request != null &&
+    (contains(github.event.comment.body, '@pyansys-ci-bot migrate') ||
+     contains(github.event.comment.body, '@pyansys-ci-bot sync'))
+  permissions:
+    contents: write
+    pull-requests: write
+  steps:
+    - name: "Migrate fork PR"
+      uses: ansys/actions/hk-migrate-fork-pr@{{ version }}
+      with:
+        pr-number: ${{ '{{ github.event.issue.number }}' }}
+        comment-id: ${{ '{{ github.event.comment.id }}' }}
+        user-triggering: ${{ '{{ github.event.comment.user.login }}' }}
+        github-token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
+        team-read-token: ${{ '{{ secrets.PYANSYS_CI_BOT_TEAMS_READ_TOKEN }}' }}
+        bot-username: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
+        bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
+        team-slug: 'pyansys-maintainers'
