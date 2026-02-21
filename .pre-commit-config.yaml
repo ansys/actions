@@ -1,5 +1,13 @@
 repos:
 
+- repo: local
+  hooks:
+  - id: shellcheck
+    name: shellcheck
+    entry: python bin/shellcheck
+    language: python
+    additional_dependencies: [shellcheck-py, pyyaml]
+
 - repo: https://github.com/psf/black
   rev: 25.1.0
   hooks:
