@@ -515,7 +515,6 @@ runs:
         DEPENDENCY_CHECK_CREATE_ISSUES: ${{ inputs.create-issues == 'true' && '1' || '' }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
-
         if [[ "${HIDE_LOG}" == 'true' ]]; then
           python "${ACTION_PATH}/check_vulnerabilities.py" > /dev/null 2>&1
         else
@@ -529,4 +528,3 @@ runs:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
-
