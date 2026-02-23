@@ -6,7 +6,10 @@ cooldown
 dependabot
 dev
 dependabot
+fastcore
+ghapi
 GitHub
+prek
 pypa
 pytest
 PyPI

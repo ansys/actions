@@ -1,4 +1,27 @@
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import os
+import re
 from pathlib import Path
 
 import tomli
@@ -61,20 +84,74 @@ def get_first_letter_case(pr_title: str):
         save_env_variable("FIRST_LETTER", "uppercase")
 
 
-def get_conventional_commit_type(pr_title: str):
-    """Get the conventional commit type from the pull request title.
+def has_title_breaking_changes(pr_title: str) -> bool:
+    """Check if the pull request title indicates a breaking change.
 
     Parameters
     ----------
     pr_title: str
         The pull request title.
+
+    Returns
+    -------
+    bool
+        True if the pull request title indicates a breaking change, False otherwise.
     """
-    # Get the index where the first colon is found in the pull request title
+    colon_count = pr_title.count(":")
+    if colon_count != 1:
+        raise ValueError(f"Expected exactly one ':', found {colon_count}")
+
     colon_index = pr_title.index(":")
-    # Get the conventional commit type from the pull request title (everything before the colon)
-    cc_type = '"' + pr_title[:colon_index] + '"'
-    # Save the conventional commit type as an environment variable, CC_TYPE
-    save_env_variable("CC_TYPE", cc_type)
+    exclam_index = pr_title.find("!")
+
+    return 0 <= exclam_index < colon_index
+
+
+def has_body_breaking_changes(pr_body: str) -> bool:
+    """Check if the pull request body indicates a breaking change.
+
+    Parameters
+    ----------
+    pr_body: str
+        The pull request body.
+
+    Returns
+    -------
+    bool
+        True if the pull request body indicates a breaking change, False otherwise.
+    """
+    if not pr_body:
+        return False
+
+    pattern = r"(?i)^breaking[- ]changes?:"
+    return any(re.match(pattern, line.strip()) for line in pr_body.splitlines())
+
+
+def get_conventional_commit_type(pr_title: str, pr_body: str):
+    """Get the conventional commit type from the pull request.
+
+    If the pull request title or body indicates a breaking change,
+    the conventional commit type is set to "breaking". Otherwise,
+    the conventional commit type is extracted from the pull request
+    title.
+
+    Parameters
+    ----------
+    pr_title: str
+        The pull request title.
+    pr_body: str
+        The pull request body.
+    """
+    if has_title_breaking_changes(pr_title) or has_body_breaking_changes(pr_body):
+        # Save the conventional commit type as an environment variable, CC_TYPE
+        save_env_variable("CC_TYPE", '"breaking"')
+    else:
+        # Get the index where the first colon is found in the pull request title
+        colon_index = pr_title.index(":")
+        # Get the conventional commit type from the pull request title (everything before the colon)
+        cc_type = '"' + pr_title[:colon_index] + '"'
+        # Save the conventional commit type as an environment variable, CC_TYPE
+        save_env_variable("CC_TYPE", cc_type)
 
 
 def changelog_category_cc(cc_type: str):
@@ -91,6 +168,7 @@ def changelog_category_cc(cc_type: str):
     # Dictionary whose keys are the conventional commit type and values are
     # the changelog section
     cc_type_changelog_dict = {
+        "breaking": "breaking",
         "feat": "added",
         "fix": "fixed",
         "docs": "documentation",
@@ -129,6 +207,7 @@ def changelog_categorize_based_on_labels(labels: str):
     # Dictionary with the key as a label from .github/workflows/label.yml and
     # value as the corresponding section in the changelog
     pr_labels = {
+        "breaking": "breaking",
         "enhancement": "added",
         "bug": "fixed",
         "documentation": "documentation",
@@ -187,7 +266,7 @@ def clean_pr_title(pr_title: str, use_pr_title: str):
     # Retrieve title
     clean_title = pr_title
 
-    # If using pull request title, remove it from title
+    # If using pull request title, remove it
     if use_pr_title:
         colon_index = clean_title.index(":")
         clean_title = clean_title[colon_index + 1 :]
@@ -227,64 +306,68 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
     with towncrier_config.open("rb") as file:
         config = tomli.load(file)
-        tool = config.get("tool", "DNE")
-        towncrier = tool.get("towncrier", "DNE")
 
-        # List containing changelog sections under each release
-        changelog_sections = [
-            "added",
-            "dependencies",
-            "documentation",
-            "fixed",
-            "maintenance",
-            "miscellaneous",
-            "test",
-        ]
+    tool = config.get("tool", "DNE")
+    towncrier = tool.get("towncrier", "DNE")
 
-        # Dictionary containing [tool.towncrier] keys and values
-        towncrier_config_sections = {
-            "directory": '"doc/changelog.d"',
-            "template": '"doc/changelog.d/changelog_template.jinja"',
-            "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
-            "start_string": {
-                "web": '".. towncrier release notes start\\n"',
-                "repo": '"<!-- towncrier release notes start -->\\n"',
-            },
-            "title_format": {
-                "web": f'"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"',
-                "repo": f'"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"',
-            },
-            "issue_format": {
-                "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
-                "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
-            },
-        }
+    # List containing changelog sections under each release
+    changelog_sections = [
+        "breaking",
+        "added",
+        "dependencies",
+        "documentation",
+        "fixed",
+        "maintenance",
+        "miscellaneous",
+        "test",
+    ]
 
-        # Get the package name from [tool.flit.module]
-        flit = tool.get("flit", "DNE")
-        module = name = ""
-        if flit != "DNE":
-            module = flit.get("module", "DNE")
-            if module != ("DNE" or ""):
-                name = module.get("name", "DNE")
-                # If [tool.flit.module] name exists, create the package string
-                if name != ("DNE" and ""):
-                    towncrier_config_sections["package"] = f'"{name}"'
+    # Dictionary containing [tool.towncrier] keys and values
+    towncrier_config_sections = {
+        "directory": '"doc/changelog.d"',
+        "template": '"doc/changelog.d/changelog_template.jinja"',
+        "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
+        "start_string": {
+            "web": '".. towncrier release notes start\\n"',
+            "repo": '"<!-- towncrier release notes start -->\\n"',
+        },
+        "title_format": {
+            "web": f'"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"',
+            "repo": f'"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"',
+        },
+        "issue_format": {
+            "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
+            "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
+        },
+    }
 
-        if default_config:
-            # If there is no towncrier configuration information or if [[tool.towncrier.type]]
-            # is the only towncrier information in the pyproject.toml file
-            if towncrier == "DNE" or len(towncrier) == 1:
-                # Write the [tool.towncrier] section
+    # Get the package name from [tool.flit.module]
+    flit = tool.get("flit", "DNE")
+    module = name = ""
+    if flit != "DNE":
+        module = flit.get("module", "DNE")
+        if module != ("DNE" or ""):
+            name = module.get("name", "DNE")
+            # If [tool.flit.module] name exists, create the package string
+            if name != ("DNE" and ""):
+                towncrier_config_sections["package"] = f'"{name}"'
+
+    if towncrier != "DNE":
+        # Get the existing [[tool.towncrier.type]] sections
+        types = towncrier.get("type", "DNE")
+        if types != "DNE":
+            remove_existing_types(types, changelog_sections)
+
+    if default_config:
+        # If there is no towncrier configuration information or if [[tool.towncrier.type]]
+        # is the only towncrier information in the pyproject.toml file
+        if towncrier == "DNE" or len(towncrier) == 1:
+            # Write the [tool.towncrier] section
+            with towncrier_config.open("a") as file:
                 write_towncrier_config_section(file, towncrier_config_sections, True)
 
-        if towncrier != "DNE":
-            # Get the existing [[tool.towncrier.type]] sections
-            types = towncrier.get("type", "DNE")
-            if types != "DNE":
-                remove_existing_types(types, changelog_sections)
-
-        # Add missing [[tool.towncrier.type]] sections
+    # Add missing [[tool.towncrier.type]] sections
+    with towncrier_config.open("a") as file:
         write_missing_types(changelog_sections, file)
 
 
