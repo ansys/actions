@@ -505,7 +505,6 @@ runs:
 
     - name: "Run safety advisory checks"
       shell: bash
-      continue-on-error: true
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         ACTION_PATH: ${{ github.action_path }}
@@ -516,6 +515,7 @@ runs:
         DEPENDENCY_CHECK_CREATE_ISSUES: ${{ inputs.create-issues == 'true' && '1' || '' }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
+
         if [[ "${HIDE_LOG}" == 'true' ]]; then
           python "${ACTION_PATH}/check_vulnerabilities.py" > /dev/null 2>&1
         else
@@ -529,5 +529,4 @@ runs:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
-
 
