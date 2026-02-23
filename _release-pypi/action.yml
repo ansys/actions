@@ -148,7 +148,7 @@ runs:
         name: ${{ inputs.library-name }}-artifacts
         path: ${{ inputs.library-name }}-artifacts
 
-    - name: "Verify tag and artifacts version agree"
+    - name: "Verify tag and artifacts version match"
       shell: bash
       env:
         ARTIFACT_DIR: ${{ inputs.library-name }}-artifacts
