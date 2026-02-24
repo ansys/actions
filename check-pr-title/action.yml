@@ -28,6 +28,10 @@ description: |
   `conventional commits standard
   <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **pull-requests**: ``read`` - Required to read pull request title
+
 inputs:
 
   # Required inputs
