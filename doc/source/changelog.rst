@@ -9,6 +9,35 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.2.6 <https://github.com/ansys/actions/releases/tag/v10.2.6>`_ - February 24, 2026
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Reporter is defined based on the event
+          - `#1158 <https://github.com/ansys/actions/pull/1158>`_
+
+        * - Make the token optional
+          - `#1172 <https://github.com/ansys/actions/pull/1172>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Check vulnerability to correctly fail on bandit / safety issue
+          - `#1169 <https://github.com/ansys/actions/pull/1169>`_
+
+
 `10.2.5 <https://github.com/ansys/actions/releases/tag/v10.2.5>`_ - February 09, 2026
 =====================================================================================
 
