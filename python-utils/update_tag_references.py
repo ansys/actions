@@ -174,7 +174,7 @@ def update_pyproject(
         click.echo(
             f"  Error: Expected version {old_version} in {pyproject_path}, found {current}"
         )
-        sys.exit(0)
+        sys.exit(1)
 
     current_dict[version_key] = new_version
 
@@ -296,7 +296,7 @@ def main(new_version: str, dry_run: bool) -> None:
 
     if old_version == new_version:
         click.echo(f"Error: New version ({new_version}) is the same as current version")
-        sys.exit(0)
+        sys.exit(1)
 
     all_success = True
     total_refs = 0
