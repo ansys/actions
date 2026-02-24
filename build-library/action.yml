@@ -38,7 +38,7 @@ description: |
 
      **Base permissions:**
 
-     - **contents**: ``read`` - Required to checkout repository code
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
 
      **Conditional permissions** (only when ``attest-provenance: true``):
 

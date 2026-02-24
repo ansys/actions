@@ -47,7 +47,7 @@ description: |
 
   .. important:: **Required GitHub Permissions**
 
-     - **contents**: ``read`` - Required to checkout repository code
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
 
 inputs:
 

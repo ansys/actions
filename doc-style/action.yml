@@ -30,7 +30,7 @@ description: |
 
     .. important:: **Required GitHub Permissions**
 
-       - **contents**: ``read`` - Required to checkout repository code
+       - **contents**: ``read`` - Required to checkout repository code when the repository is not public
        - **pull-requests**: ``write`` - Required for Vale to add review comments and suggestions on pull requests
 
 inputs:
