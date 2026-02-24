@@ -63,16 +63,16 @@ runs:
       uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
       with:
         types: |
-          ${{ inputs.use-upper-case == 'true' && 'BUILD' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'CHORE' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'CI' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'DOCS' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'FEAT' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'FIX' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'PERF' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'REFACTOR' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'REVERT' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'STYLE' || '' }}
-          ${{ inputs.use-upper-case == 'true' && 'TEST' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'BUILD' || 'build' }}
+          ${{ inputs.use-upper-case == 'true' && 'CHORE' || 'chore' }}
+          ${{ inputs.use-upper-case == 'true' && 'CI' || 'ci' }}
+          ${{ inputs.use-upper-case == 'true' && 'DOCS' || 'docs' }}
+          ${{ inputs.use-upper-case == 'true' && 'FEAT' || 'feat' }}
+          ${{ inputs.use-upper-case == 'true' && 'FIX' || 'fix' }}
+          ${{ inputs.use-upper-case == 'true' && 'PERF' || 'perf' }}
+          ${{ inputs.use-upper-case == 'true' && 'REFACTOR' || 'refactor' }}
+          ${{ inputs.use-upper-case == 'true' && 'REVERT' || 'revert' }}
+          ${{ inputs.use-upper-case == 'true' && 'STYLE' || 'style' }}
+          ${{ inputs.use-upper-case == 'true' && 'TEST' || 'test' }}
       env:
         GITHUB_TOKEN: ${{ inputs.token != '' && inputs.token || github.token }}
