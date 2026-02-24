@@ -129,8 +129,9 @@ def update_pyproject(
     current = current_dict[version_key]
     if current != old_version:
         click.echo(
-            f"  Warning: Expected version {old_version} in {pyproject_path}, found {current}"
+            f"  Error: Expected version {old_version} in {pyproject_path}, found {current}"
         )
+        sys.exit(0)
 
     current_dict[version_key] = new_version
 
@@ -227,7 +228,7 @@ def main(new_version: str, dry_run: bool) -> None:
 
     if old_version == new_version:
         click.echo(
-            f"Warning: New version ({new_version}) is the same as current version"
+            f"Error: New version ({new_version}) is the same as current version"
         )
         sys.exit(0)
 
