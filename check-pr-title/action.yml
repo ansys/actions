@@ -34,16 +34,14 @@ description: |
 
 inputs:
 
-  # Required inputs
+  # Optional inputs
 
   token:
     description: |
       The token value used to authorize Vale to add comments and suggestions in
       the file section.
-    required: true
+    required: false
     type: string
-
-  # Optional inputs
 
   use-upper-case:
     description: |
@@ -63,27 +61,20 @@ runs:
   steps:
 
     - name: "Check pull-request title follows conventional commits style"
-      if: ${{ ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) && inputs.use-upper-case == 'false' }}
+      if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' }}
       uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
-
-    - name: "Check pull-request title follows conventional commits style with upper case"
-      if: ${{ ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request')) && inputs.use-upper-case == 'true' }}
-      uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
       with:
         types: |
-          BUILD
-          CHORE
-          CI
-          DOCS
-          FEAT
-          FIX
-          PERF
-          REFACTOR
-          REVERT
-          STYLE
-          TEST
-
+          ${{ inputs.use-upper-case == 'true' && 'BUILD' || 'build' }}
+          ${{ inputs.use-upper-case == 'true' && 'CHORE' || 'chore' }}
+          ${{ inputs.use-upper-case == 'true' && 'CI' || 'ci' }}
+          ${{ inputs.use-upper-case == 'true' && 'DOCS' || 'docs' }}
+          ${{ inputs.use-upper-case == 'true' && 'FEAT' || 'feat' }}
+          ${{ inputs.use-upper-case == 'true' && 'FIX' || 'fix' }}
+          ${{ inputs.use-upper-case == 'true' && 'PERF' || 'perf' }}
+          ${{ inputs.use-upper-case == 'true' && 'REFACTOR' || 'refactor' }}
+          ${{ inputs.use-upper-case == 'true' && 'REVERT' || 'revert' }}
+          ${{ inputs.use-upper-case == 'true' && 'STYLE' || 'style' }}
+          ${{ inputs.use-upper-case == 'true' && 'TEST' || 'test' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.token != '' && inputs.token || github.token }}
