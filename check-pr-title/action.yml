@@ -62,7 +62,17 @@ runs:
       if: ${{ ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request'))}}
       uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
       with:
-        types: ${{ env.TYPES != '' && join(fromJSON(env.TYPES), '\n') }}
+        types: |
+          ${{ inputs.use-upper-case == 'true' && 'BUILD' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'CHORE' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'CI' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'DOCS' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'FEAT' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'FIX' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'PERF' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'REFACTOR' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'REVERT' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'STYLE' || '' }}
+          ${{ inputs.use-upper-case == 'true' && 'TEST' || '' }}
       env:
         GITHUB_TOKEN: ${{ inputs.token != '' && inputs.token || github.token }}
-        TYPES: ${{ inputs.use-upper-case == 'true' && '["BUILD","CHORE","CI","DOCS","FEAT","FIX","PERF","REFACTOR","REVERT","STYLE","TEST"]' || '' }}
