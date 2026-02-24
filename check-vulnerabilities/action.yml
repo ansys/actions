@@ -502,10 +502,8 @@ runs:
         fi
         bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
-
-    - name: "Run safety advisory checks"
+    - name: "Run advisory checks"
       shell: bash
-      continue-on-error: true
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         ACTION_PATH: ${{ github.action_path }}
@@ -529,5 +527,3 @@ runs:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
-
-
