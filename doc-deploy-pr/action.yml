@@ -30,6 +30,11 @@ description: |
   ``https://<cname>/pull/<pr-number>/``. The action also removes the deployed
   PR documentation once the pull request is closed.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push documentation to the gh-pages branch
+     - **pull-requests**: ``write`` - Required to add comments on pull requests about documentation deployment
+
 inputs:
 
   # Required inputs

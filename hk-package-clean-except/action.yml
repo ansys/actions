@@ -29,6 +29,10 @@ description: |
     If an image matched by ``tags-kept`` has multiple tags (which are potentially not in the ``tags-kept`` list),
     then the entire image (with all its tags) will be kept.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **packages**: ``delete`` - Required to delete package versions from GitHub Container Registry (GHCR)
+
 inputs:
   package-name:
     description: "Package name."

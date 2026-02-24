@@ -48,6 +48,12 @@ description: |
     rules requiring a manual approval. For more information, see how to add
     `required reviewers <https://docs.github.com/en/actions/reference/deployments-and-environments#required-reviewers>`_.
 
+  .. important:: **Required GitHub Permissions**
+
+     This action does not require any GitHub permissions as it only evaluates GitHub context
+     and outputs an environment name. The actual environment approval is configured at the
+     workflow level.
+
 inputs:
 
   # Optional inputs

@@ -55,6 +55,12 @@ description: |
           {% endif %}
           {% endfor %}
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+     - **security-events**: ``write`` - Required to create security advisories
+     - **issues**: ``write`` - Required to create issues (only when create-issues is set to ``true``)
+
 inputs:
   token:
     description: |
@@ -502,10 +508,8 @@ runs:
         fi
         bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
-
-    - name: "Run safety advisory checks"
+    - name: "Run advisory checks"
       shell: bash
-      continue-on-error: true
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         ACTION_PATH: ${{ github.action_path }}
@@ -529,5 +533,3 @@ runs:
         name: vulnerability-results
         path: ./info_*.json
         retention-days: 7
-
-
