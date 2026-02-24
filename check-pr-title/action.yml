@@ -34,7 +34,7 @@ description: |
 
 inputs:
 
-  # Required inputs
+  # Optional inputs
 
   token:
     description: |
@@ -42,8 +42,6 @@ inputs:
       the file section.
     required: false
     type: string
-
-  # Optional inputs
 
   use-upper-case:
     description: |
