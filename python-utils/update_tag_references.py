@@ -54,18 +54,46 @@ import tomli_w
 
 
 def get_project_root() -> Path:
-    """Get the project root directory (parent of python-utils)."""
+    """Get the project root directory (parent of python-utils).
+
+    Returns
+    -------
+    Path
+        Path to the project root directory.
+    """
     return Path(__file__).resolve().parent.parent
 
 
 def read_current_version(project_root: Path) -> str:
-    """Read the current version from the VERSION file."""
+    """Read the current version from the VERSION file.
+
+    Parameters
+    ----------
+    project_root : Path
+        Path to the project root directory.
+
+    Returns
+    -------
+    str
+        The current version string.
+    """
     version_file = project_root / "VERSION"
     return version_file.read_text(encoding="utf-8").strip()
 
 
 def validate_version(version: str) -> bool:
-    """Validate that the version string matches semantic versioning pattern."""
+    """Validate that the version string matches semantic versioning pattern.
+
+    Parameters
+    ----------
+    version : str
+        The version string to validate.
+
+    Returns
+    -------
+    bool
+        True if the version matches X.Y.Z format, False otherwise.
+    """
     pattern = r"^\d+\.\d+\.\d+$"
     return bool(re.match(pattern, version))
 
@@ -73,7 +101,22 @@ def validate_version(version: str) -> bool:
 def update_version_file(
     project_root: Path, new_version: str, dry_run: bool = False
 ) -> bool:
-    """Update the VERSION file with the new version."""
+    """Update the VERSION file with the new version.
+
+    Parameters
+    ----------
+    project_root : Path
+        Path to the project root directory.
+    new_version : str
+        The new version string to write.
+    dry_run : bool, optional
+        If True, only show what would be changed. Default is False.
+
+    Returns
+    -------
+    bool
+        True if successful, False otherwise.
+    """
     version_file = project_root / "VERSION"
     if dry_run:
         click.echo(f"  [DRY RUN] Would update {version_file} to: {new_version}")
@@ -148,7 +191,18 @@ def update_pyproject(
 
 
 def find_action_and_workflow_files(project_root: Path) -> list[Path]:
-    """Find all action.yml files and CI/CD workflow files in the repository."""
+    """Find all action.yml files and CI/CD workflow files in the repository.
+
+    Parameters
+    ----------
+    project_root : Path
+        Path to the project root directory.
+
+    Returns
+    -------
+    list[Path]
+        Sorted list of paths to action.yml and ci_cd_*.yml workflow files.
+    """
     files = []
 
     # Find all action.yml files
@@ -173,7 +227,21 @@ def update_yaml_file(
 ) -> int:
     """Update ansys/actions references in a YAML file.
 
-    Returns the number of replacements made.
+    Parameters
+    ----------
+    yaml_file : Path
+        Path to the YAML file to update.
+    old_version : str
+        The old version string to search for.
+    new_version : str
+        The new version string to replace with.
+    dry_run : bool, optional
+        If True, only show what would be changed. Default is False.
+
+    Returns
+    -------
+    int
+        The number of replacements made.
     """
     content = yaml_file.read_text(encoding="utf-8")
 
@@ -227,9 +295,7 @@ def main(new_version: str, dry_run: bool) -> None:
         click.echo()
 
     if old_version == new_version:
-        click.echo(
-            f"Error: New version ({new_version}) is the same as current version"
-        )
+        click.echo(f"Error: New version ({new_version}) is the same as current version")
         sys.exit(0)
 
     all_success = True
