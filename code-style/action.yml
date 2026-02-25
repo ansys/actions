@@ -63,6 +63,13 @@ inputs:
     default: true
     type: boolean
 
+  install-args:
+    description: |
+      Additional arguments to pass to the install command (pip or poetry).
+    required: false
+    default: ''
+    type: string
+
   use-prek:
     description: |
       Whether to use prek instead of pre-commit. If ``true`` (default), prek will be used
@@ -266,14 +273,15 @@ runs:
       env:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        INSTALL_ARGS: ${{ inputs.install-args }}
       run: |
         ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install
+          poetry install ${INSTALL_ARGS}
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install .
+          uv pip install . ${INSTALL_ARGS}
         else
-          python -m pip install .
+          python -m pip install . ${INSTALL_ARGS}
         fi
 
     - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
