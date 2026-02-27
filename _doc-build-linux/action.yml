@@ -356,13 +356,12 @@ runs:
         GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
         OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
         POETRY_EXTRAS_ARGS: ${{ inputs.optional-dependencies-name != '' && format('--extras {0}', inputs.optional-dependencies-name) || ''}}
+        POETRY_GROUPS_ARGS: ${{ inputs.group-dependencies-name != '' && format('--with {0}', inputs.group-dependencies-name) || ''}}
       run: |
         source .venv/bin/activate
-        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]]; then
-            poetry install --with "${GROUP_DEPENDENCIES_NAME}" "${POETRY_EXTRAS_ARGS}"
-          else
-            poetry install "${POETRY_EXTRAS_ARGS}"
+        if [[ "${BUILD_BACKEND}" == 'poetry'  ]]; then
+          if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]] || [[ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]]; then
+            poetry install "${POETRY_GROUPS_ARGS}" "${POETRY_EXTRAS_ARGS}"
           fi
         else
           # Optional dependencies
