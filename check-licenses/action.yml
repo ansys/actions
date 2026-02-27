@@ -176,7 +176,8 @@ runs:
       with:
         level: "ERROR"
         message: >
-          ansys/actions/check-licenses requires Python 3.10 or higher. The provided Python version is ${{ inputs.python-version }}.
+          The check-licenses action depends on the prettytable package.
+          This package requires Python 3.10 or higher.
 
     - name: Announce the switch to original pip-licenses package
       uses: ansys/actions/_logging@main
@@ -280,8 +281,7 @@ runs:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
-        $INSTALL_COMMAND -U pip
-        $INSTALL_COMMAND pip-licenses
+        $INSTALL_COMMAND -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Check if specific target is requested"
       id: specific-target-requested
