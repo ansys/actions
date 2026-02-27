@@ -159,6 +159,25 @@ runs:
           When skip-install is set to false, activate-venv input is not needed
           and will be ignored.
 
+    - name: Check python version
+      id: check-python-version
+      shell: bash
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+      run: |
+        MIN_VERSION="3.10"
+        if [ "$(printf '%s\n' "$PYTHON_VERSION" "$MIN_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]; then
+          echo "PYTHON_TOO_OLD=true" >> "${GITHUB_OUTPUT}"
+        fi
+
+    - name: Break if Python version is too old
+      uses: ansys/actions/_logging@main
+      if: steps.check-python-version.outputs.PYTHON_TOO_OLD == 'true'
+      with:
+        level: "ERROR"
+        message: >
+          ansys/actions/check-licenses requires Python 3.10 or higher. The provided Python version is ${{ inputs.python-version }}.
+
     - name: Announce the switch to original pip-licenses package
       uses: ansys/actions/_logging@main
       with:
@@ -253,15 +272,6 @@ runs:
             echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
           fi
         fi
-
-    - name: "Update pip"
-      shell: bash
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
-      run: |
-        ${ACTIVATE_VENV}
-        $INSTALL_COMMAND -U pip
 
     - name: "Update pip and install pip-licenses library"
       shell: bash
