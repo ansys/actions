@@ -201,8 +201,10 @@ def changelog_categorize_based_on_labels(labels: str):
         String containing the labels in the pull request.
     """
     # Create a list of labels found in the pull request
-    # For example, "enhancement maintenance".split() -> ["enhancement", "maintenance"]
-    existing_labels = labels.split()
+    # Make sure the labels string is not surrounded by quotes and remove extra whitespace
+    # and finally split the labels into a list.
+    # For example, '"enhancement maintenance"' -> "enhancement maintenance" -> ["enhancement", "maintenance"]
+    existing_labels = labels.strip('"').strip().split()
 
     # Dictionary with the key as a label from .github/workflows/label.yml and
     # value as the corresponding section in the changelog
