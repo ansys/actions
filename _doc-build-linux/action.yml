@@ -355,13 +355,14 @@ runs:
         BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
         GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
         OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        POETRY_EXTRAS_ARGS: ${{ inputs.optional-dependencies-name != '' && format('--extras {0}', inputs.optional-dependencies-name) || ''}}
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]]; then
-            poetry install --with "${GROUP_DEPENDENCIES_NAME}" --extras "${OPTIONAL_DEPENDENCIES_NAME}"
+            poetry install --with "${GROUP_DEPENDENCIES_NAME}" "${POETRY_EXTRAS_ARGS}"
           else
-            poetry install --extras "${OPTIONAL_DEPENDENCIES_NAME}"
+            poetry install "${POETRY_EXTRAS_ARGS}"
           fi
         else
           # Optional dependencies
