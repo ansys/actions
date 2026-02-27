@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ansys-actions-flit"
-version = "10.2.6"
+version = "10.2.7"
 description = "A demo library for testing Ansys actions (uses flit as the build backend)"
 readme = "README.rst"
 requires-python = ">=3.10"
