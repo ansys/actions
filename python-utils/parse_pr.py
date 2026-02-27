@@ -200,7 +200,6 @@ def changelog_categorize_based_on_labels(labels: str):
     labels: str
         String containing the labels in the pull request.
     """
-    # Create a list of labels found in the pull request
     # Make sure the labels string is not surrounded by quotes and remove extra whitespace
     # and finally split the labels into a list.
     # For example, '"enhancement maintenance"' -> "enhancement maintenance" -> ["enhancement", "maintenance"]
