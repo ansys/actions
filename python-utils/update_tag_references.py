@@ -72,35 +72,11 @@ class VersionMismatchError(FileUpdateError):
         )
 
 
-def get_project_root() -> Path:
-    """Get the project root directory (parent of python-utils).
-
-    Returns
-    -------
-    Path
-        Path to the project root directory.
-    """
-    return Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+VERSION_FILE_PATH = PROJECT_ROOT / "VERSION"
 
 
-def read_current_version(project_root: Path) -> str:
-    """Read the current version from the VERSION file.
-
-    Parameters
-    ----------
-    project_root : Path
-        Path to the project root directory.
-
-    Returns
-    -------
-    str
-        The current version string.
-    """
-    version_file = project_root / "VERSION"
-    return version_file.read_text(encoding="utf-8").strip()
-
-
-def validate_version(version: str) -> bool:
+def is_semver(version: str) -> bool:
     """Validate that the version string matches semantic versioning pattern.
 
     Parameters
@@ -118,14 +94,14 @@ def validate_version(version: str) -> bool:
 
 
 def update_version_file(
-    project_root: Path, new_version: str, dry_run: bool = False
+    version_file_path: Path, new_version: str, dry_run: bool = False
 ) -> None:
     """Update the VERSION file with the new version.
 
     Parameters
     ----------
-    project_root : Path
-        Path to the project root directory.
+    version_file_path : Path
+        Path to the VERSION file.
     new_version : str
         The new version string to write.
     dry_run : bool, optional
@@ -136,17 +112,16 @@ def update_version_file(
     FileUpdateError
         If the VERSION file cannot be written.
     """
-    version_file = project_root / "VERSION"
     if dry_run:
-        click.echo(f"  [DRY RUN] Would update {version_file} to: {new_version}")
+        click.echo(f"  [DRY RUN] Would update {version_file_path} to: {new_version}")
         return
 
     try:
-        version_file.write_text(f"{new_version}\n", encoding="utf-8")
-        click.echo(f"  Updated {version_file}")
+        version_file_path.write_text(f"{new_version}\n", encoding="utf-8")
+        click.echo(f"  Updated {version_file_path}")
     except OSError as e:
         raise FileUpdateError(
-            f"Failed to write VERSION file: {version_file}", version_file
+            f"Failed to write VERSION file: {version_file_path}", version_file_path
         ) from e
 
 
@@ -260,19 +235,19 @@ def find_action_and_workflow_files(project_root: Path) -> list[Path]:
     return sorted(files)
 
 
-def update_yaml_file(
-    yaml_file: Path, old_version: str, new_version: str, dry_run: bool = False
+def replace_action_refs_in_yaml_file(
+    yaml_file_path: Path, old_ref: str, new_ref: str, dry_run: bool = False
 ) -> int:
     """Update ansys/actions references in a YAML file.
 
     Parameters
     ----------
-    yaml_file : Path
+    yaml_file_path : Path
         Path to the YAML file to update.
-    old_version : str
-        The old version string to search for.
-    new_version : str
-        The new version string to replace with.
+    old_ref : str
+        The old version reference string to search for.
+    new_ref : str
+        The new version reference string to replace with.
     dry_run : bool, optional
         If True, only show what would be changed. Default is False.
 
@@ -287,30 +262,34 @@ def update_yaml_file(
         If the file cannot be read or written.
     """
     try:
-        content = yaml_file.read_text(encoding="utf-8")
+        content = yaml_file_path.read_text(encoding="utf-8")
     except OSError as e:
-        raise FileUpdateError(f"Failed to read {yaml_file}", yaml_file) from e
+        raise FileUpdateError(f"Failed to read {yaml_file_path}", yaml_file_path) from e
 
     # Pattern to match: ansys/actions/<action-name>@v<version>
-    old_pattern = f"ansys/actions/([^@]+)@v{re.escape(old_version)}"
-    new_replacement = f"ansys/actions/\\1@v{new_version}"
+    old_pattern = f"ansys/actions/([^@]+)@v{re.escape(old_ref)}"
+    new_replacement = f"ansys/actions/\\1@v{new_ref}"
 
     new_content, count = re.subn(old_pattern, new_replacement, content)
 
     if count > 0:
         if dry_run:
-            click.echo(f"  [DRY RUN] Would update {yaml_file}: {count} reference(s)")
+            click.echo(
+                f"  [DRY RUN] Would update {yaml_file_path}: {count} reference(s)"
+            )
         else:
             try:
-                yaml_file.write_text(new_content, encoding="utf-8")
-                click.echo(f"  Updated {yaml_file}: {count} reference(s)")
+                yaml_file_path.write_text(new_content, encoding="utf-8")
+                click.echo(f"  Updated {yaml_file_path}: {count} reference(s)")
             except OSError as e:
-                raise FileUpdateError(f"Failed to write {yaml_file}", yaml_file) from e
+                raise FileUpdateError(
+                    f"Failed to write {yaml_file_path}", yaml_file_path
+                ) from e
     else:
         if dry_run:
-            click.echo(f"  [DRY RUN] No references to update in {yaml_file}")
+            click.echo(f"  [DRY RUN] No references to update in {yaml_file_path}")
         else:
-            click.echo(f"  No references to update in {yaml_file}")
+            click.echo(f"  No references to update in {yaml_file_path}")
 
     return count
 
@@ -333,14 +312,13 @@ def main(new_version: str, dry_run: bool) -> None:
         python update_version.py 10.2.6 --dry-run
     """
     # Validate the new version format
-    if not validate_version(new_version):
+    if not is_semver(new_version):
         raise click.BadParameter(
             f"Invalid version format '{new_version}'. Expected format: X.Y.Z",
             param_hint="'NEW_VERSION'",
         )
 
-    project_root = get_project_root()
-    old_version = read_current_version(project_root)
+    old_version = VERSION_FILE_PATH.read_text(encoding="utf-8").strip()
 
     click.echo(f"Updating version from {old_version} to {new_version}")
     if dry_run:
@@ -356,12 +334,12 @@ def main(new_version: str, dry_run: bool) -> None:
 
     click.echo("1. Updating VERSION file...")
     try:
-        update_version_file(project_root, new_version, dry_run)
+        update_version_file(VERSION_FILE_PATH, new_version, dry_run)
     except FileUpdateError as e:
         errors.append(e)
 
     click.echo("\n2. Updating .ci/ansys-actions-flit/pyproject.toml...")
-    flit_path = project_root / ".ci" / "ansys-actions-flit" / "pyproject.toml"
+    flit_path = PROJECT_ROOT / ".ci" / "ansys-actions-flit" / "pyproject.toml"
     try:
         update_pyproject(
             flit_path, ["project", "version"], old_version, new_version, dry_run
@@ -370,7 +348,7 @@ def main(new_version: str, dry_run: bool) -> None:
         errors.append(e)
 
     click.echo("\n3. Updating .ci/ansys-actions-poetry/pyproject.toml...")
-    poetry_path = project_root / ".ci" / "ansys-actions-poetry" / "pyproject.toml"
+    poetry_path = PROJECT_ROOT / ".ci" / "ansys-actions-poetry" / "pyproject.toml"
     try:
         update_pyproject(
             poetry_path,
@@ -383,13 +361,15 @@ def main(new_version: str, dry_run: bool) -> None:
         errors.append(e)
 
     click.echo("\n4. Updating action.yml and workflow files...")
-    yaml_files = find_action_and_workflow_files(project_root)
+    yaml_files = find_action_and_workflow_files(PROJECT_ROOT)
     total_refs = 0
     files_updated = 0
 
     for yaml_file in yaml_files:
         try:
-            count = update_yaml_file(yaml_file, old_version, new_version, dry_run)
+            count = replace_action_refs_in_yaml_file(
+                yaml_file, old_version, new_version, dry_run
+            )
             if count > 0:
                 files_updated += 1
                 total_refs += count
