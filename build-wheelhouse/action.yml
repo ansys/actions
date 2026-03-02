@@ -34,6 +34,17 @@ description: |
       Since version 4.1, the input parameter ``library-namespace`` is no longer
       required.
 
+  .. important:: **Required GitHub Permissions**
+
+     **Base permissions:**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
+     **Conditional permissions** (only when ``attest-provenance: true``):
+
+     - **id-token**: ``write`` - Required for generating OIDC tokens for provenance attestations
+     - **attestations**: ``write`` - Required for creating artifact attestations
+
 inputs:
 
   # Required inputs
@@ -315,13 +326,12 @@ runs:
 
     - name: Run smoke test for the library
       env:
-        ACTION_PATH: ${{ github.action_path }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         LIBRARY_NAME: ${{ inputs.library-name }}
       shell: bash
       run: |
         ${ACTIVATE_VENV}
-        python ${ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
+        python ${GITHUB_ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
 
     - name: "Create Software Bill of Materials (SBOM) using Syft"
       env:

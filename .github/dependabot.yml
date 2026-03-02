@@ -6,6 +6,7 @@ updates:
       - "/check-vulnerabilities"
       - "/hk-package-clean-except"
       - "/hk-package-clean-untagged"
+      - "/check-licenses"
     schedule:
       interval: "daily"
     cooldown:

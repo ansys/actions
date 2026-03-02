@@ -21,7 +21,12 @@
 # SOFTWARE.
 
 name: "Clean untagged package versions."
-description: "Action cleaning up untagged package versions published at ghcr.io."
+description: |
+  Action cleaning up untagged package versions published at ghcr.io.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **packages**: ``delete`` - Required to delete package versions from GitHub Container Registry (GHCR)
 
 inputs:
   package-name:
@@ -77,11 +82,9 @@ runs:
 
     - name: "Install required packages"
       shell: bash
-      env:
-        ACTION_PATH: ${{ github.action_path }}
       run: |
         uv pip install --no-managed-python --system --upgrade pip
-        uv pip install --no-managed-python --system --no-deps -r ${ACTION_PATH}/requirements.txt
+        uv pip install --no-managed-python --system --no-deps -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Run package cleanup"
       shell: bash
@@ -90,7 +93,6 @@ runs:
         PACKAGE_ORG: ${{ inputs.package-org }}
         PACKAGE_NAME: ${{ inputs.package-name }}
         PACKAGE_DELETION_TOKEN: ${{ inputs.token }}
-        ACTION_PATH: ${{ github.action_path }}
       run: |
-        python ${ACTION_PATH}/../python-utils/hk_package_clean_untagged.py
+        python ${GITHUB_ACTION_PATH}/../python-utils/hk_package_clean_untagged.py
 
