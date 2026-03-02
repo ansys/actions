@@ -1,0 +1,3 @@
+pip-licenses==5.5.1
+prettytable==3.17.0
+wcwidth==0.6.0
