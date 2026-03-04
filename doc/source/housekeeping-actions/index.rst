@@ -20,3 +20,9 @@ Auto-merge pull requests
 
 .. jinja:: hk-automerge-prs
     :file: _templates/action.rst.jinja
+
+Migrate fork pull requests
+---------------------------
+
+.. jinja:: hk-migrate-fork-pr
+    :file: _templates/action.rst.jinja

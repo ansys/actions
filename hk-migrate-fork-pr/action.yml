@@ -1,0 +1,619 @@
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  Migrate fork PR to main repository
+
+description: |
+  Migrates pull requests from forks to branches within the main repository,
+  enabling workflows that require repository secrets to run. This action
+  handles team membership verification, conflict resolution, and automated PR
+  creation.
+
+  .. note::
+      This action is designed to be called from workflows triggered by issue
+      comments or workflow dispatch events. It requires write access to
+      repository contents and pull requests.
+
+  .. warning::
+      This action requires a GitHub token with team read permissions to
+      verify team membership. Ensure the token has the appropriate scopes.
+
+inputs:
+
+  # Required inputs
+
+  pr-number:
+    description: |
+      The pull request number to migrate. This should be the PR number from
+      the fork that needs to be migrated to the main repository.
+    required: true
+    type: string
+
+  comment-id:
+    description: |
+      The comment ID that triggered the migration. Used for adding reactions
+      to indicate success or failure.
+    required: true
+    type: string
+
+  user-triggering:
+    description: |
+      The GitHub username of the user triggering the migration. This user
+      will be verified for team membership before proceeding.
+    required: true
+    type: string
+
+  github-token:
+    description: |
+      GitHub token with permissions to create branches, push code, create
+      pull requests, and manage comments/reactions. Typically a bot token
+      with ``contents: write`` and ``pull-requests: write`` permissions.
+    required: true
+    type: string
+
+  team-read-token:
+    description: |
+      GitHub token with ``read:org`` permissions to check team membership.
+      This should be a separate token from ``github-token`` to maintain
+      proper permission separation.
+    required: true
+    type: string
+
+  bot-username:
+    description: |
+      The username of the bot that will be used for git commits during the
+      migration process.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      The email address of the bot that will be used for git commits during
+      the migration process.
+    required: true
+    type: string
+
+  team-slug:
+    description: |
+      The slug of the GitHub team that has permission to trigger migrations.
+      For example, ``pymapdl-maintainers`` or ``pyansys-core``.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  comment-body:
+    description: |
+      The body of the comment that triggered the migration. Used to detect
+      conflict resolution mode. Should contain ``@pyansys-ci-bot migrate``
+      or ``@pyansys-ci-bot sync`` with optional ``theirs`` or ``ours``
+      modifiers.
+    required: false
+    type: string
+    default: '@pyansys-ci-bot migrate'
+
+  organization:
+    description: |
+      The GitHub organization name. Defaults to ``ansys``.
+    required: false
+    type: string
+    default: 'ansys'
+
+  repository:
+    description: |
+      The repository name (without organization). If not provided, it will be
+      inferred from the GitHub context.
+    required: false
+    type: string
+    default: ''
+
+  conflict-mode:
+    description: |
+      Override for conflict resolution mode. Valid values are ``auto``,
+      ``theirs``, or ``ours``. If not provided, the mode will be detected
+      from the comment body. Use ``theirs`` to accept changes from the fork
+      branch, ``ours`` to keep changes from the main branch, or ``auto`` to
+      exit on conflicts.
+    required: false
+    type: string
+    default: 'auto'
+
+outputs:
+
+  migration-successful:
+    description: |
+      Boolean indicating whether the migration completed successfully.
+    value: ${{ steps.finalize.outputs.migration-successful }}
+
+  new-pr-number:
+    description: |
+      The pull request number of the newly created PR in the main repository.
+      Empty if migration was skipped or failed.
+    value: ${{ steps.create-pr.outputs.new-pr-number }}
+
+  migration-branch:
+    description: |
+      The name of the migration branch created in the main repository.
+    value: ${{ steps.pr-details.outputs.migration-branch }}
+
+  skip-migration:
+    description: |
+      Boolean indicating whether the migration was skipped (e.g., user not
+      authorized, PR already in main repo).
+    value: ${{ steps.finalize.outputs.skip-migration }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Log start of migration"
+      uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: |
+          Starting fork PR migration for PR #${{ inputs.pr-number }}
+          Triggered by: ${{ inputs.user-triggering }}
+
+    - name: "Setup configuration and detect conflict mode"
+      id: setup
+      shell: bash
+      env:
+        PR_NUMBER: ${{ inputs.pr-number }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+        USER_TRIGGERING: ${{ inputs.user-triggering }}
+        COMMENT_BODY: ${{ inputs.comment-body }}
+        CONFLICT_MODE_INPUT: ${{ inputs.conflict-mode }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ inputs.repository }}
+      run: |
+        # Export environment variables for downstream steps
+        echo "PR_NUMBER=${PR_NUMBER}" >> $GITHUB_ENV
+        echo "COMMENT_ID=${COMMENT_ID}" >> $GITHUB_ENV
+        echo "USER_TRIGGERING=${USER_TRIGGERING}" >> $GITHUB_ENV
+        echo "ORGANIZATION=${ORGANIZATION}" >> $GITHUB_ENV
+        
+        # Set repository name
+        if [ -z "${REPOSITORY}" ]; then
+          # Extract from GITHUB_REPOSITORY (format: org/repo)
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+        else
+          REPO_NAME="${REPOSITORY}"
+        fi
+        echo "REPOSITORY=${REPO_NAME}" >> $GITHUB_ENV
+        
+        # Detect conflict resolution mode
+        # 1. auto - exits on conflicts (default)
+        # 2. theirs - resolves conflicts by taking changes from the head branch
+        # 3. ours - resolves conflicts by taking changes from the base branch
+        
+        MODE=''
+        if [ "${CONFLICT_MODE_INPUT}" != "auto" ]; then
+          # Use explicit override
+          if [ "${CONFLICT_MODE_INPUT}" == "theirs" ]; then
+            MODE='--theirs'
+            echo "Using explicit conflict mode: theirs"
+          elif [ "${CONFLICT_MODE_INPUT}" == "ours" ]; then
+            MODE='--ours'
+            echo "Using explicit conflict mode: ours"
+          fi
+        else
+          # Detect from comment body
+          if echo "${COMMENT_BODY}" | grep -q "pyansys-ci-bot sync theirs\|pyansys-ci-bot migrate theirs"; then
+            echo "Resolving conflicts by taking 'theirs' changes"
+            MODE='--theirs'
+          elif echo "${COMMENT_BODY}" | grep -q "pyansys-ci-bot sync ours\|pyansys-ci-bot migrate ours"; then
+            echo "Resolving conflicts by taking 'ours' changes"
+            MODE='--ours'
+          else
+            echo "No specific sync mode provided, defaulting to 'auto' which will exit if there are conflicts."
+          fi
+        fi
+        
+        echo "MODE=${MODE}" >> $GITHUB_ENV
+        echo "CONTINUE=unknown" >> $GITHUB_ENV
+
+    - name: "Check team membership"
+      id: check-membership
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      env:
+        TEAM_SLUG: ${{ inputs.team-slug }}
+      with:
+        github-token: ${{ inputs.team-read-token }}
+        script: |
+          try {
+            const { data } = await github.rest.teams.getMembershipForUserInOrg({
+              org: process.env.ORGANIZATION,
+              team_slug: process.env.TEAM_SLUG,
+              username: process.env.USER_TRIGGERING,
+            });
+            
+            if (core.isDebug()) {
+              core.debug(JSON.stringify(data, null, 2));
+            }
+            
+            // Check if the user is a member or maintainer of the team
+            if (data && data.state === 'active' && (data.role === 'member' || data.role === 'maintainer')) {
+              core.info(`User ${process.env.USER_TRIGGERING} is a ${data.role} of team ${process.env.TEAM_SLUG}`);
+              core.setOutput('is_member', 'true');
+              core.exportVariable('CONTINUE', 'true');
+            } else {
+              core.warning(`User ${process.env.USER_TRIGGERING} is not an active member of team ${process.env.TEAM_SLUG}`);
+              core.setOutput('is_member', 'false');
+              core.exportVariable('CONTINUE', 'false');
+            }
+          } catch (error) {
+            core.error(`Error fetching team membership: ${error.message}`);
+            core.setOutput('is_member', 'false');
+            core.exportVariable('CONTINUE', 'false');
+          }
+
+    - name: "Delete previous reactions"
+      if: always()
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          try {
+            const { data } = await github.rest.reactions.listForIssueComment({
+              owner: process.env.ORGANIZATION,
+              repo: process.env.REPOSITORY,
+              comment_id: process.env.COMMENT_ID,
+            });
+            
+            if (data && data.length > 0) {
+              core.info(`Found ${data.length} reactions for comment ${process.env.COMMENT_ID}`);
+              
+              // Remove reactions from the bot
+              const botUsername = '${{ inputs.bot-username }}';
+              for (const reaction of data) {
+                if (reaction.user.login === botUsername) {
+                  await github.rest.reactions.deleteForIssueComment({
+                    owner: process.env.ORGANIZATION,
+                    repo: process.env.REPOSITORY,
+                    comment_id: process.env.COMMENT_ID,
+                    reaction_id: reaction.id,
+                  });
+                  core.info(`Deleted reaction ${reaction.content} from ${reaction.user.login}`);
+                }
+              }
+            } else {
+              core.debug(`No reactions found for comment ${process.env.COMMENT_ID}`);
+            }
+          } catch (error) {
+            core.warning(`Error managing reactions: ${error.message}`);
+          }
+
+    - name: "React to comment based on authorization"
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      env:
+        TEAM_SLUG: ${{ inputs.team-slug }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const continueValue = process.env.CONTINUE;
+          
+          if (continueValue === 'true') {
+            core.info('User is authorized. Adding positive reaction.');
+            await github.rest.reactions.createForIssueComment({
+              owner: process.env.ORGANIZATION,
+              repo: process.env.REPOSITORY,
+              comment_id: process.env.COMMENT_ID,
+              content: '+1',
+            });
+          } else {
+            core.warning(`User is NOT authorized to migrate PRs!`);
+            
+            // React negatively
+            await github.rest.reactions.createForIssueComment({
+              owner: process.env.ORGANIZATION,
+              repo: process.env.REPOSITORY,
+              comment_id: process.env.COMMENT_ID,
+              content: '-1',
+            });
+            
+            // Create a comment to notify the user
+            const teamSlug = process.env.TEAM_SLUG;
+            await github.rest.issues.createComment({
+              owner: process.env.ORGANIZATION,
+              repo: process.env.REPOSITORY,
+              issue_number: process.env.PR_NUMBER,
+              body: `**:stop_sign: Insufficient Permissions! :stop_sign:**\n\nYou are not a member of the \`${process.env.ORGANIZATION}/${teamSlug}\` team. Please contact a team member to migrate this PR.`,
+            });
+          }
+
+    - name: "Get pull request details"
+      if: env.CONTINUE == 'true'
+      id: pr-details
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const { data } = await github.rest.pulls.get({
+            owner: process.env.ORGANIZATION,
+            repo: process.env.REPOSITORY,
+            pull_number: process.env.PR_NUMBER,
+          });
+          
+          if (!data || !data.head || !data.base) {
+            throw new Error('Pull request data is incomplete');
+          }
+          
+          if (core.isDebug()) {
+            core.debug(JSON.stringify(data, null, 2));
+          }
+          
+          // Check if PR is already in the main repository
+          const expectedFullName = `${process.env.ORGANIZATION}/${process.env.REPOSITORY}`;
+          if (data.head.repo.full_name === expectedFullName) {
+            core.warning('The PR is already in the main repository. No migration needed. Exiting...');
+            core.exportVariable('CONTINUE', 'false');
+            
+            // React with confused emoji
+            await github.rest.reactions.createForIssueComment({
+              owner: process.env.ORGANIZATION,
+              repo: process.env.REPOSITORY,
+              comment_id: process.env.COMMENT_ID,
+              content: 'confused',
+            });
+            
+            // Notify user
+            await github.rest.issues.createComment({
+              owner: process.env.ORGANIZATION,
+              repo: process.env.REPOSITORY,
+              issue_number: process.env.PR_NUMBER,
+              body: `**:question: Wrong Command? :confused:**\n\nYou are trying to migrate a PR that is already in the main repository. No migration needed.`,
+            });
+            return;
+          }
+          
+          // Set PR information as environment variables
+          core.exportVariable('PR_HEAD_BRANCH', data.head.ref);
+          core.exportVariable('PR_HEAD_REPO', data.head.repo.full_name);
+          core.exportVariable('PR_BASE_BRANCH', `migration/pr-${process.env.PR_NUMBER}`);
+          core.exportVariable('PR_BASE_REPO', data.base.repo.full_name);
+          core.exportVariable('PR_TITLE', data.title);
+          core.exportVariable('PR_BODY', data.body || '');
+          core.exportVariable('PR_AUTHOR', data.user.login);
+          
+          core.setOutput('migration-branch', `migration/pr-${process.env.PR_NUMBER}`);
+          
+          core.info('PR Head: ' + data.head.repo.full_name + '/' + data.head.ref);
+          core.info('PR Base: ' + data.base.repo.full_name + '/' + data.base.ref);
+          core.info('Migration branch: migration/pr-' + process.env.PR_NUMBER);
+
+    - name: "Checkout repository"
+      if: env.CONTINUE == 'true'
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        ref: main
+        token: ${{ inputs.github-token }}
+        fetch-depth: 0
+        persist-credentials: true # zizmor: ignore[artipacked]
+
+    - name: "Clone head repo and merge with main"
+      if: env.CONTINUE == 'true'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        BOT_USERNAME: ${{ inputs.bot-username }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+      run: |
+        # Configure git
+        git config user.name "${BOT_USERNAME}"
+        git config user.email "${BOT_EMAIL}"
+        
+        # Add head repo as remote
+        echo "Adding head repo as remote: ${PR_HEAD_REPO}"
+        git remote add head_repo https://x-access-token:${GITHUB_TOKEN}@github.com/${PR_HEAD_REPO}.git
+        
+        echo "Fetching '${PR_HEAD_BRANCH}' branch from '${PR_HEAD_REPO}'"
+        git fetch head_repo ${PR_HEAD_BRANCH}
+        
+        echo "Checking out '${PR_BASE_BRANCH}' branch from 'head_repo/${PR_HEAD_BRANCH}'"
+        git checkout -b ${PR_BASE_BRANCH} head_repo/${PR_HEAD_BRANCH}
+        
+        echo "Pulling '${PR_HEAD_BRANCH}' from '${PR_HEAD_REPO}'"
+        git pull head_repo ${PR_HEAD_BRANCH} || true
+        
+        echo "Merging 'main' branch into '${PR_BASE_BRANCH}'"
+        git merge origin/main || true
+        
+        # Check for merge conflicts
+        CONFLICTS=$(git ls-files -u | wc -l)
+        echo "Number of conflicting files: ${CONFLICTS}"
+        
+        if [[ "$CONFLICTS" -gt 0 ]]; then
+          if [[ -n "${MODE}" ]]; then
+            echo "::warning::Conflicts detected. Attempting to resolve using mode ${MODE}."
+            
+            # Show conflicting files
+            echo "Conflicting files:"
+            git status
+            echo ""
+            
+            # Resolve conflicts
+            echo "Resolving conflicts by taking '${MODE}' changes"
+            git checkout ${MODE} .
+            git add .
+            
+            # Verify if conflicts are resolved
+            REMAINING_CONFLICTS=$(git ls-files -u | wc -l)
+            if [ "$REMAINING_CONFLICTS" -gt 0 ]; then
+              echo "::error::Conflicts remain after resolution. Aborting."
+              exit 1
+            fi
+            
+            # Continue the merge
+            git -c core.editor=true merge --continue || { echo "::error::Merge failed. Aborting."; exit 1; }
+          else
+            echo "::error::Merge conflicts detected and no resolution mode specified. Aborting."
+            git status
+            exit 1
+          fi
+        else
+          echo "No merge conflicts detected."
+        fi
+        
+        echo "Pushing changes to '${ORGANIZATION}/${REPOSITORY}' repo"
+        git push origin ${PR_BASE_BRANCH} --force-with-lease || \
+          (git fetch --all && git push origin ${PR_BASE_BRANCH} --force-with-lease) || \
+          { echo "::error::Push failed. Aborting."; exit 1; }
+        
+        # If using 'ours' mode, also push to the head repo
+        if [[ "${MODE}" == "--ours" ]]; then
+          echo "Sync mode is 'ours'. Pushing to head_repo/${PR_HEAD_BRANCH} with 'ours' changes"
+          git push head_repo ${PR_BASE_BRANCH}:${PR_HEAD_BRANCH} --force-with-lease || \
+            { echo "::error::Push to head_repo/${PR_HEAD_BRANCH} failed. Aborting."; exit 1; }
+        fi
+
+    - name: "Create pull request"
+      if: env.CONTINUE == 'true'
+      id: create-pr
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const prNumber = process.env.PR_NUMBER;
+          const prBaseBranch = process.env.PR_BASE_BRANCH;
+          const prTitle = process.env.PR_TITLE;
+          const prBody = process.env.PR_BODY;
+          const prAuthor = process.env.PR_AUTHOR;
+          const userTriggering = process.env.USER_TRIGGERING;
+          
+          core.info(`Checking for existing PRs with base branch ${prBaseBranch}...`);
+          
+          // Check if PR already exists
+          const existingPrs = await github.rest.pulls.list({
+            owner: process.env.ORGANIZATION,
+            repo: process.env.REPOSITORY,
+            head: `${process.env.ORGANIZATION}:${prBaseBranch}`,
+            state: 'open',
+          });
+          
+          if (existingPrs.data.length > 0) {
+            core.info(`PR already exists for branch ${prBaseBranch}. Skipping creation.`);
+            core.setOutput('new-pr-number', existingPrs.data[0].number);
+            return;
+          }
+          
+          // Create new PR
+          core.info(`Creating new PR for branch ${prBaseBranch}...`);
+          
+          const newPrBody = `This PR is a migrated pull request created from [#${prNumber}](https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}/pull/${prNumber}) to allow the code to access repository secrets for CI/CD.\n\nCheck the [original PR](https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}/pull/${prNumber}) made by @${prAuthor} for more details.\n\nCloses #${prNumber}\n\n## Original Pull Request\n\n### ${prTitle}\n\n${prBody}`;
+          
+          const newPr = await github.rest.pulls.create({
+            owner: process.env.ORGANIZATION,
+            repo: process.env.REPOSITORY,
+            head: prBaseBranch,
+            base: 'main',
+            title: 'migrated (PR ' + prNumber + '): ' + prTitle,
+            body: newPrBody,
+          });
+          
+          core.info('New PR created: #' + newPr.data.number);
+          core.setOutput('new-pr-number', newPr.data.number);
+          core.exportVariable('NEW_PR_NUMBER', newPr.data.number);
+          core.exportVariable('NEW_PR_URL', newPr.data.html_url);
+          
+          // Assign PR to triggering user and original author
+          core.info('Assigning PR to: ' + userTriggering + ' and ' + prAuthor);
+          try {
+            await github.rest.issues.addAssignees({
+              owner: process.env.ORGANIZATION,
+              repo: process.env.REPOSITORY,
+              issue_number: newPr.data.number,
+              assignees: [userTriggering, prAuthor],
+            });
+          } catch (error) {
+            core.warning('Failed to assign PR: ' + error.message);
+          }
+          
+          // React positively to the triggering comment
+          await github.rest.reactions.createForIssueComment({
+            owner: process.env.ORGANIZATION,
+            repo: process.env.REPOSITORY,
+            comment_id: process.env.COMMENT_ID,
+            content: 'rocket',
+          });
+          
+          // Create success comment
+          const successBody = `## :rocket: Migration Completed!\n\nThe pull request [#${newPr.data.number}](${newPr.data.html_url}) has been created successfully.\n\nThank you @${prAuthor} for your contribution! Please review the new PR and make any necessary changes.\n\nThis PR will be closed by the maintainers soon.\n\nYou can now work on the new pull request by cloning this pull request branch:\n\n\`\`\`terminal\ngit clone -b ${prBaseBranch} --single-branch https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}.git\n\`\`\`\n\nIf you have [GitHub CLI](https://cli.github.com/) installed, you can also use:\n\n\`\`\`terminal\ngh pr checkout ${newPr.data.html_url}\n\`\`\`\n\nThank you again for your contribution @${prAuthor}!`;
+          
+          await github.rest.issues.createComment({
+            owner: process.env.ORGANIZATION,
+            repo: process.env.REPOSITORY,
+            issue_number: prNumber,
+            body: successBody,
+          });
+
+    - name: "Handle failure"
+      if: failure() && env.CONTINUE == 'true'
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      env:
+        TEAM_SLUG: ${{ inputs.team-slug }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          // React negatively to the comment
+          await github.rest.reactions.createForIssueComment({
+            owner: process.env.ORGANIZATION,
+            repo: process.env.REPOSITORY,
+            comment_id: process.env.COMMENT_ID,
+            content: '-1',
+          });
+          
+          // Create error comment
+          const teamSlug = process.env.TEAM_SLUG;
+          const runUrl = process.env.GITHUB_SERVER_URL + '/' + process.env.GITHUB_REPOSITORY + '/actions/runs/' + process.env.GITHUB_RUN_ID;
+          
+          await github.rest.issues.createComment({
+            owner: process.env.ORGANIZATION,
+            repo: process.env.REPOSITORY,
+            issue_number: process.env.PR_NUMBER,
+            body: `**:x: Migration Failed :x:**\n\nAn error occurred while migrating or syncing the PR. Pinging @${process.env.ORGANIZATION}/${teamSlug} for assistance.\n\nPlease check the [workflow run](${runUrl}) for details.`,
+          });
+
+    - name: "Finalize and set outputs"
+      if: always()
+      id: finalize
+      shell: bash
+      run: |
+        if [ "${CONTINUE}" == "true" ] && [ -n "${NEW_PR_NUMBER}" ]; then
+          echo "migration-successful=true" >> $GITHUB_OUTPUT
+          echo "skip-migration=false" >> $GITHUB_OUTPUT
+        elif [ "${CONTINUE}" == "false" ]; then
+          echo "migration-successful=false" >> $GITHUB_OUTPUT
+          echo "skip-migration=true" >> $GITHUB_OUTPUT
+        else
+          echo "migration-successful=false" >> $GITHUB_OUTPUT
+          echo "skip-migration=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Log completion"
+      if: always()
+      uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: |
+          Migration process completed for PR #${{ inputs.pr-number }}
+          Status: ${{ steps.finalize.outputs.migration-successful == 'true' && 'Success' || 'Failed or Skipped' }}
