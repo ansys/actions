@@ -24,8 +24,7 @@ import os
 import re
 from pathlib import Path
 
-import tomli
-import tomli_w
+import tomlkit
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -307,10 +306,10 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
 
     towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
     with towncrier_config.open("rb") as file:
-        config = tomli.load(file)
+        config = tomlkit.load(file)
 
     tool = config.get("tool", "DNE")
-    
+
     towncrier = "DNE"
     if tool != "DNE":
         towncrier = tool.get("towncrier", "DNE")
@@ -374,7 +373,7 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     write_missing_types(config, changelog_sections)
 
     # Serialize the updated config and write to file
-    write_file_content(towncrier_config, tomli_w.dumps(config))
+    write_file_content(towncrier_config, tomlkit.dumps(config))
 
 
 def write_towncrier_config_section(
@@ -440,18 +439,18 @@ def write_missing_types(config: dict, changelog_sections: list):
     config.setdefault("tool", {}).setdefault("towncrier", {})
     towncrier_section = config["tool"]["towncrier"]
 
-    # Get or create the type list
-    types = towncrier_section.setdefault("type", [])
+    # Get existing type array or create a new array of tables (AoT)
+    if "type" not in towncrier_section:
+        towncrier_section["type"] = tomlkit.aot()
+    types = towncrier_section["type"]
 
-    # Append each missing section as a new type entry
+    # Append each missing section as a new [[tool.towncrier.type]] entry
     for section in changelog_sections:
-        types.append(
-            {
-                "directory": section,
-                "name": section.title(),
-                "showcontent": True,
-            }
-        )
+        entry = tomlkit.table()
+        entry.add("directory", section)
+        entry.add("name", section.title())
+        entry.add("showcontent", True)
+        types.append(entry)
 
 
 def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
@@ -479,7 +478,7 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
     if pyproject_toml.is_file():
         # Load pyproject.toml
         with pyproject_toml.open("rb") as pyproj:
-            config = tomli.load(pyproj)
+            config = tomlkit.load(pyproj)
             # Get the tool category in pyproject.toml
             tool = config.get("tool", "")
             if tool:
