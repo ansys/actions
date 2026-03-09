@@ -25,6 +25,7 @@ import re
 from pathlib import Path
 
 import tomli
+import tomli_w
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -309,7 +310,10 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
         config = tomli.load(file)
 
     tool = config.get("tool", "DNE")
-    towncrier = tool.get("towncrier", "DNE")
+    
+    towncrier = "DNE"
+    if tool != "DNE":
+        towncrier = tool.get("towncrier", "DNE")
 
     # List containing changelog sections under each release
     changelog_sections = [
@@ -325,20 +329,20 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
 
     # Dictionary containing [tool.towncrier] keys and values
     towncrier_config_sections = {
-        "directory": '"doc/changelog.d"',
-        "template": '"doc/changelog.d/changelog_template.jinja"',
-        "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
+        "directory": "doc/changelog.d",
+        "template": "doc/changelog.d/changelog_template.jinja",
+        "filename": {"web": "doc/source/changelog.rst", "repo": "CHANGELOG.md"},
         "start_string": {
-            "web": '".. towncrier release notes start\\n"',
-            "repo": '"<!-- towncrier release notes start -->\\n"',
+            "web": ".. towncrier release notes start\n",
+            "repo": "<!-- towncrier release notes start -->\n",
         },
         "title_format": {
-            "web": f'"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"',
-            "repo": f'"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"',
+            "web": f"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}",
+            "repo": f"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}",
         },
         "issue_format": {
-            "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
-            "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
+            "web": f"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_",
+            "repo": f"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})",
         },
     }
 
@@ -351,7 +355,7 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
             name = module.get("name", "DNE")
             # If [tool.flit.module] name exists, create the package string
             if name != ("DNE" and ""):
-                towncrier_config_sections["package"] = f'"{name}"'
+                towncrier_config_sections["package"] = name
 
     if towncrier != "DNE":
         # Get the existing [[tool.towncrier.type]] sections
@@ -363,49 +367,45 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
         # If there is no towncrier configuration information or if [[tool.towncrier.type]]
         # is the only towncrier information in the pyproject.toml file
         if towncrier == "DNE" or len(towncrier) == 1:
-            # Write the [tool.towncrier] section
-            with towncrier_config.open("a") as file:
-                write_towncrier_config_section(file, towncrier_config_sections, True)
+            # Update the [tool.towncrier] section in the config dict
+            write_towncrier_config_section(config, towncrier_config_sections, True)
 
-    # Add missing [[tool.towncrier.type]] sections
-    with towncrier_config.open("a") as file:
-        write_missing_types(changelog_sections, file)
+    # Add missing [[tool.towncrier.type]] sections to the config dict
+    write_missing_types(config, changelog_sections)
+
+    # Serialize the updated config and write to file
+    write_file_content(towncrier_config, tomli_w.dumps(config))
 
 
 def write_towncrier_config_section(
-    file, towncrier_config_sections: dict, web_release_notes: bool
+    config: dict, towncrier_config_sections: dict, web_release_notes: bool
 ):
-    """Write the information in the [tool.towncrier] section.
+    """Update the [tool.towncrier] section in the config dictionary.
 
     Parameters
     ----------
-    file: _io.TextIOWrapper
-        File to write to.
+    config: dict
+        The parsed TOML configuration dictionary to update in place.
     towncrier_config_sections: dict
         Dictionary containing the [tool.towncrier] keys and values.
     web_release_notes: bool
         Whether or not the release notes are in the online documentation or the repository.
     """
-    # Append the tool.towncrier section
-    file.write("\n[tool.towncrier]\n")
+    # Ensure the [tool.towncrier] section exists in the config dict
+    config.setdefault("tool", {}).setdefault("towncrier", {})
+    towncrier_section = config["tool"]["towncrier"]
+
+    # Keys that have web/repo variants
+    variant_keys = {"filename", "start_string", "title_format", "issue_format"}
 
     # For each key and value in the towncrier_config_sections dictionary
     for key, value in towncrier_config_sections.items():
-        # If the key has values that depend on the web_release_notes boolean
-        if (
-            key == "filename"
-            or key == "start_string"
-            or key == "title_format"
-            or key == "issue_format"
-        ):
+        if key in variant_keys:
             # Select the value based on the web_release_notes boolean
-            if web_release_notes:
-                file.write(f'{key} = {value["web"]}\n')
-            else:
-                file.write(f'{key} = {value["repo"]}\n')
+            variant = "web" if web_release_notes else "repo"
+            towncrier_section[key] = value[variant]
         else:
-            # Write the key and value from the towncrier_config_sections dictionary
-            file.write(f"{key} = {value}\n")
+            towncrier_section[key] = value
 
 
 def remove_existing_types(types: list, changelog_sections: list):
@@ -426,24 +426,31 @@ def remove_existing_types(types: list, changelog_sections: list):
             changelog_sections.remove(section)
 
 
-def write_missing_types(changelog_sections: list, file):
-    """Write the missing types in [[tool.towncrier.types]]
+def write_missing_types(config: dict, changelog_sections: list):
+    """Add missing type entries to the config dictionary under [[tool.towncrier.type]].
 
     Parameters
     ----------
+    config: dict
+        The parsed TOML configuration dictionary to update in place.
     changelog_sections: list
         List containing changelog sections under each release.
-    file: _io.TextIOWrapper
-        File to write to.
     """
-    # Write each missing section to the pyproject.toml file
+    # Ensure the [tool.towncrier] section exists in the config dict
+    config.setdefault("tool", {}).setdefault("towncrier", {})
+    towncrier_section = config["tool"]["towncrier"]
+
+    # Get or create the type list
+    types = towncrier_section.setdefault("type", [])
+
+    # Append each missing section as a new type entry
     for section in changelog_sections:
-        file.write(
-            f"""
-[[tool.towncrier.type]]
-directory = "{section}"
-name = "{section.title()}"
-showcontent = true\n"""
+        types.append(
+            {
+                "directory": section,
+                "name": section.title(),
+                "showcontent": True,
+            }
         )
 
 

@@ -87,6 +87,13 @@ inputs:
     required: false
     type: string
 
+  tomli-w-version:
+    description: |
+      Tomli-w version used for writing the towncrier configuration.
+    default: '1.2.0'
+    required: false
+    type: string
+
   use-python-cache:
     description: |
       Whether to use the Python cache for installing previously downloaded
@@ -188,14 +195,15 @@ runs:
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: "Install towncrier and tomli"
+    - name: "Install towncrier, tomli, and tomli_w"
       shell: bash
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOMLI_VERSION: ${{ inputs.tomli-version }}
+        TOMLI_W_VERSION: ${{ inputs.tomli-w-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
+        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION} tomli_w==${TOMLI_W_VERSION}
 
     - name: "Get first letter of conventional commit type"
       if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
