@@ -314,16 +314,16 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     if tool != "DNE":
         towncrier = tool.get("towncrier", "DNE")
 
-    # List containing changelog sections under each release
+    # Ordered list containing changelog sections under each release
     changelog_sections = [
-        "breaking",
         "added",
-        "dependencies",
-        "documentation",
+        "breaking",
         "fixed",
+        "documentation",
+        "test",
+        "dependencies",
         "maintenance",
         "miscellaneous",
-        "test",
     ]
 
     # Dictionary containing [tool.towncrier] keys and values
@@ -356,6 +356,9 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
             if name != ("DNE" and ""):
                 towncrier_config_sections["package"] = name
 
+    # Preserve the full ordered list before remove_existing_types mutates it
+    all_changelog_sections = list(changelog_sections)
+
     if towncrier != "DNE":
         # Get the existing [[tool.towncrier.type]] sections
         types = towncrier.get("type", "DNE")
@@ -371,6 +374,9 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
 
     # Add missing [[tool.towncrier.type]] sections to the config dict
     write_missing_types(config, changelog_sections)
+
+    # Sort the [[tool.towncrier.type]] entries to match the canonical order
+    sort_towncrier_types(config, all_changelog_sections)
 
     # Serialize the updated config and write to file
     write_file_content(towncrier_config, tomlkit.dumps(config))
@@ -451,6 +457,53 @@ def write_missing_types(config: dict, changelog_sections: list):
         entry.add("name", section.title())
         entry.add("showcontent", True)
         types.append(entry)
+
+
+def sort_towncrier_types(config: dict, changelog_sections: list):
+    """Sort [[tool.towncrier.type]] entries to match the canonical changelog_sections order.
+
+    Known types (those whose directory is in changelog_sections) are sorted
+    according to their position in changelog_sections. Custom types (not in
+    changelog_sections) are appended afterwards in their original relative order.
+
+    Parameters
+    ----------
+    config: dict
+        The parsed TOML configuration dictionary to update in place.
+    changelog_sections: list
+        The full ordered list of canonical changelog section names.
+    """
+    towncrier_section = config.get("tool", {}).get("towncrier", {})
+    types = towncrier_section.get("type")
+
+    if not types:
+        return
+
+    # Sort
+    order = {name: idx for idx, name in enumerate(changelog_sections)}
+    known = []
+    custom = []
+    for entry in types:
+        directory = entry.get("directory", "")
+        if directory in order:
+            known.append(entry)
+        else:
+            custom.append(entry)
+    known.sort(key=lambda e: order[e.get("directory", "")])
+    sorted_entries = known + custom
+
+    # Quick check: if already in the correct order, skip the rebuild
+    current_dirs = [e.get("directory", "") for e in types]
+    sorted_dirs = [e.get("directory", "") for e in sorted_entries]
+    if current_dirs == sorted_dirs:
+        return
+
+    # Rebuild the AoT in the correct order
+    new_aot = tomlkit.aot()
+    for entry in sorted_entries:
+        new_aot.append(entry)
+
+    towncrier_section["type"] = new_aot
 
 
 def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
