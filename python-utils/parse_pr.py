@@ -25,6 +25,7 @@ import re
 from pathlib import Path
 
 import tomlkit
+from tomlkit.items import AoT, Array
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -452,7 +453,14 @@ def write_missing_types(config: dict, changelog_sections: list):
 
     # Append each missing section as a new [[tool.towncrier.type]] entry
     for section in changelog_sections:
-        entry = tomlkit.table()
+        if isinstance(types, AoT):
+            entry = tomlkit.table()  # AoT objects can only contain tables
+        elif isinstance(types, Array):
+            entry = (
+                tomlkit.inline_table()
+            )  # Array objects can only contain inline tables
+        else:
+            entry = tomlkit.table()
         entry.add("directory", section)
         entry.add("name", section.title())
         entry.add("showcontent", True)
@@ -499,7 +507,14 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
         return
 
     # Rebuild the AoT in the correct order
-    new_aot = tomlkit.aot()
+    if isinstance(types, AoT):
+        new_aot = (
+            tomlkit.aot()
+        )  # tomlkit parses non-inline array-of-tables as an AoT object
+    elif isinstance(types, Array):
+        new_aot = (
+            tomlkit.array()
+        )  # tomlkit parses inline array-of-tables as an Array object
     for entry in sorted_entries:
         new_aot.append(entry)
 
