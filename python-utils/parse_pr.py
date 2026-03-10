@@ -25,7 +25,7 @@ import re
 from pathlib import Path
 
 import tomlkit
-from tomlkit.items import AoT, Array
+from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -380,7 +380,10 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     sort_towncrier_types(config, all_changelog_sections)
 
     # Serialize the updated config and write to file
-    write_file_content(towncrier_config, tomlkit.dumps(config))
+    output = tomlkit.dumps(config)
+    # Normalize runs of 3+ consecutive newlines to exactly 2 (one blank line)
+    output = re.sub(r"\n{3,}", "\n\n", output)
+    write_file_content(towncrier_config, output)
 
 
 def write_towncrier_config_section(
@@ -453,17 +456,24 @@ def write_missing_types(config: dict, changelog_sections: list):
 
     # Append each missing section as a new [[tool.towncrier.type]] entry
     for section in changelog_sections:
-        if isinstance(types, AoT):
-            entry = tomlkit.table()  # AoT objects can only contain tables
-        elif isinstance(types, Array):
-            entry = (
-                tomlkit.inline_table()
-            )  # Array objects can only contain inline tables
+        if isinstance(types, Array):
+            # Parse a formatted string so the inline table has consistent
+            # spacing (e.g. "{ key = val }") matching existing parsed entries.
+            entry = tomlkit.value(
+                f'{{ directory = "{section}",'
+                f' name = "{section.title()}",'
+                f" showcontent = true }}"
+            )
+        elif isinstance(types, AoT):
+            entry = tomlkit.table()
+            entry.add("directory", section)
+            entry.add("name", section.title())
+            entry.add("showcontent", True)
         else:
             entry = tomlkit.table()
-        entry.add("directory", section)
-        entry.add("name", section.title())
-        entry.add("showcontent", True)
+            entry.add("directory", section)
+            entry.add("name", section.title())
+            entry.add("showcontent", True)
         types.append(entry)
 
 
@@ -506,19 +516,45 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
     if current_dirs == sorted_dirs:
         return
 
-    # Rebuild the AoT in the correct order
+    # Rebuild the type collection in the correct order
     if isinstance(types, AoT):
-        new_aot = (
-            tomlkit.aot()
-        )  # tomlkit parses non-inline array-of-tables as an AoT object
+        new_types = tomlkit.aot()
+        for entry in sorted_entries:
+            new_types.append(entry)
     elif isinstance(types, Array):
-        new_aot = (
-            tomlkit.array()
-        )  # tomlkit parses inline array-of-tables as an Array object
-    for entry in sorted_entries:
-        new_aot.append(entry)
+        # Capture per-item trivia (indent, comma) from the original array so
+        # the rebuilt array preserves the same multiline style and indentation.
+        # tomlkit's multiline(True) hardcodes 4-space indent, so we copy trivia
+        # directly from the original _ArrayItemGroup items instead.
+        content_items = [g for g in types._value if g.value is not None]
+        trailing_items = [g for g in types._value if g.value is None]
+        entry_indent = content_items[0].indent if content_items else None
+        entry_comma = content_items[0].comma if content_items else None
 
-    towncrier_section["type"] = new_aot
+        new_types = tomlkit.array()
+        for entry in sorted_entries:
+            new_types.append(entry)
+
+        # Restore original indent and comma on each content item
+        if entry_indent is not None:
+            for item_group in new_types._value:
+                if item_group.value is not None:
+                    item_group.indent = entry_indent
+                    item_group.comma = entry_comma
+
+        # Restore trailing closer (e.g. the "\n]" line)
+        for trailing in trailing_items:
+            new_types._value.append(
+                _ArrayItemGroup(
+                    value=Null(), indent=trailing.indent, comma=None, comment=None
+                )
+            )
+    else:
+        new_types = tomlkit.aot()
+        for entry in sorted_entries:
+            new_types.append(entry)
+
+    towncrier_section["type"] = new_types
 
 
 def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
