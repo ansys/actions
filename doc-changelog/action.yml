@@ -350,7 +350,7 @@ runs:
       run: |
         import pathlib
         import os
-        import tomli
+        import tomlkit
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -363,7 +363,7 @@ runs:
 
         # Load pyproject.toml
         with open(towncrier_config, 'rb') as f:
-            config = tomli.load(f)
+            config = tomlkit.load(f)
             template = config["tool"]["towncrier"]["template"]
             filename = config["tool"]["towncrier"]["filename"]
 
