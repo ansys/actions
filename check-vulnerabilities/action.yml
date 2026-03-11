@@ -206,16 +206,6 @@ inputs:
     required: false
     type: boolean
 
-  safety-policy-file:
-    description: |
-      Path to a custom Safety policy file (`.safety-ignore.yaml`) in the repository.
-      If provided, this file will be used **instead of** the default action's policy file.
-      The custom file should follow the Safety CLI policy file format.
-      See https://docs.pyup.io/docs/safety-20-policy-file for more information.
-    default: ''
-    required: false
-    type: string
-
 runs:
   using: "composite"
   steps:
@@ -478,7 +468,7 @@ runs:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
-        SAFETY_POLICY_FILE: ${{ inputs.safety-policy-file != '' && inputs.safety-policy-file || format('{0}//.safety-ignore.yaml', github.action_path) }}
+        SAFETY_POLICY_FILE: ${{ format('{0}/.safety-ignore.yaml', github.action_path) }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
 
