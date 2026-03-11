@@ -351,8 +351,15 @@ def load_safety_ignore_yaml(file_path):
     """
     with open(file_path) as yaml_file:
         content = yaml.safe_load(yaml_file)
-        if content and "security" in content and "ignore-vulnerabilities" in content["security"]:
-            return [str(vuln_id) for vuln_id in content["security"]["ignore-vulnerabilities"].keys()]
+        if (
+            content
+            and "security" in content
+            and "ignore-vulnerabilities" in content["security"]
+        ):
+            return [
+                str(vuln_id)
+                for vuln_id in content["security"]["ignore-vulnerabilities"].keys()
+            ]
         return []
 
 

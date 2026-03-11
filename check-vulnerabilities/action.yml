@@ -481,7 +481,7 @@ runs:
         SAFETY_POLICY_FILE: ${{ inputs.safety-policy-file != '' && inputs.safety-policy-file || format('{0}//.safety-ignore.yaml', github.action_path) }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
-        
+
         # Run security tools with policy file
         safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
 
