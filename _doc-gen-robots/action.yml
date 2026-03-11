@@ -45,7 +45,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.2.7
+    - uses: ansys/actions/_logging@v10.2.8
       with:
         level: "INFO"
         message: >
