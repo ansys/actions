@@ -1,0 +1,508 @@
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  "Check library and third-party vulnerabilities."
+
+description: |
+  Action actively checking for library and third party vulnerabilities by
+  means of the `bandit <https://bandit.readthedocs.io/en/latest/>`_ and
+  `safety <https://pyup.io/safety/>`_ Python packages. These packages
+  allow you to identify security issues and vulnerabilities inside your code.
+
+  This action has two running modes:
+
+  - **Default mode**: when running on default mode, if a security advisory
+    is detected, this action will publish both the security advisory and
+    an issue so that end users are informed about existing issues.
+
+  - **Development mode**: repository maintainers are asked to activate
+    the ``dev-mode`` option, which will activate both ``dry-run`` and
+    ``exit-with-error-on-new-advisory`` (independently of other configurations
+    provided). This way developers are informed of potential vulnerabilities
+    being introduced by them on their feature branch (while no new advisories
+    are created).
+
+
+  The following list of `safety`_ vulnerabilities are accepted:
+
+  .. card:: :octicon:`codescan-checkmark` Accepted safety vulnerabilities
+
+      .. jinja:: check-vulnerabilities
+
+          {% for v_id in ignored_safety %}
+          {% if v_id != '' %}
+          - `Vulnerability {{ v_id }} <https://pyup.io/v/{{ v_id }}/f17>`_
+          {% endif %}
+          {% endfor %}
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+     - **security-events**: ``write`` - Required to create security advisories
+     - **issues**: ``write`` - Required to create issues (only when create-issues is set to ``true``)
+
+inputs:
+  token:
+    description: |
+      Token with write permissions on the repository.
+    required: true
+    type: string
+
+  python-package-name:
+    description: |
+      Python package name being evaluate as it is shown on PyPI.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  extra-targets:
+    description: |
+      Extra targets to be evaluated by safety. By default, it is set to an
+      empty string. In case the library is installed (default behavior with
+      ``skip-install`` set to ``false``), this gets substituted into the install
+      command as follows (inside <INPUT>)::
+
+        # For pip install
+        pip install .[<INPUT>]
+        # For poetry install
+        poetry install --extras '<INPUT>'
+
+      If project installation is skipped (``skip-install`` set to
+      ``true`` - for pure documentation projects), this input can be used to
+      specify the suffix of a requirements file found in the ``/requirements``
+      folder of the project. In that case, setting for instance
+      ``extra-targets: 'doc'`` will therefore let safety evaluate targets
+      listed in the ``requirements/requirements_doc.txt`` file.
+    default: ''
+    required: false
+    type: string
+
+  bandit-configfile:
+    description: |
+      Optional config file to use for selecting plugins, overriding defaults,
+      and customizing checks performed by bandit.
+
+    default: ''
+    required: false
+    type: string
+
+  source-directory:
+    description: |
+      The source folder of the repository to be evaluated by bandit.
+      By default, it is set to ``src``
+    default: 'src'
+    required: false
+    type: string
+
+  repo-full-name:
+    description: |
+      The repository to be evaluated. By default, it is extracted from the
+      GitHub context.
+    default: ''
+    required: false
+    type: string
+
+  dev-mode:
+    description: |
+      Whether to run or not this action in development mode. It will activate
+      by default the ``dry-run`` and ``exit-with-error-on-new-advisory`` flags.
+    required: false
+    default: false
+    type: boolean
+
+  dry-run:
+    description: |
+      Whether to run or not this action in dry run mode. Dry run mode executes
+      all the action steps and prints on screen the results (if any).
+    required: false
+    default: false
+    type: boolean
+
+  exit-with-error-on-new-advisory:
+    description: |
+      Whether to exit the action on error if a new advisory is detected.
+      This mode is not recommended on ``main`` branches since it will cause the
+      workflow to fail. To be used on ``feature`` branches in combination with
+      ``dry-run`` mode.
+    required: false
+    default: false
+    type: boolean
+
+  hide-log:
+    description: |
+      Whether to hide the output log of the GitHub action.
+      By default, the log is available to anyone for public repositories.
+      This would disclose any potential vulnerabilities to anyone.
+    default: true
+    required: false
+    type: boolean
+
+  upload-reports:
+    description: |
+      Whether to upload the artifacts containing the vulnerability report.
+      By default, the report artifacts is not uploaded.
+      This option should not be enabled unless strictly necessary.
+    default: false
+    required: false
+    type: boolean
+
+  create-issues:
+    description: |
+      Whether to create issues for new advisories detected.
+      By default, issues are NOT created for new advisories detected.
+    default: false
+    required: false
+    type: boolean
+
+  checkout:
+    description: |
+      Whether to clone the repository in the CI/CD machine. Default value is
+      ``true``.
+    default: true
+    required: false
+    type: boolean
+
+  skip-install:
+    description: |
+      Whether to skip the installation of the project.
+      Pure documentation projects require that this input be set to ``true``
+      because there is no Python library associated with the project.
+    default: false
+    required: false
+    type: boolean
+
+  python-version:
+    description: |
+      Desired Python version.
+    default: '3.11'
+    required: false
+    type: string
+
+  use-uv:
+    description: |
+      Whether to use uv as the default package manager instead of pip. Default value is ``true``.
+    default: true
+    required: false
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Declare needed environment variables"
+      shell: bash
+      env:
+        DRY_RUN: ${{ inputs.dry-run }}
+        EXIT_WITH_ERROR_ON_NEW_ADVISORY: ${{ inputs.exit-with-error-on-new-advisory }}
+        DEV_MODE: ${{ inputs.dev-mode }}
+      run: |  # zizmor: ignore[github-env]
+        if [[ "${DRY_RUN}" == 'true' ]]; then
+          echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
+        fi
+
+        if [[ "${EXIT_WITH_ERROR_ON_NEW_ADVISORY}" == 'true' ]]; then
+          echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
+        fi
+
+        if [[ "${DEV_MODE}" == 'true' ]]; then
+          echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
+          echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
+        fi
+
+    - name: "Install Git and clone project"
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      if: ${{ inputs.checkout == 'true' }}
+      with:
+        repository: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
+        persist-credentials: false
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Determine context.
+
+    - name: "Determine GitHub environment variables"
+      id: github-environment-variables
+      shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+        elif [[ "${USE_UV}" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
+        else
+          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
+        fi
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Build backend: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Set up python to check vulnerabilities.
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: false
+        provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: true
+
+    # NOTE: Installation of poetry in a separate environment to the project to
+    # avoid situations in which both poetry and the project have shared
+    # dependencies with different version. This can lead to CICD failures. For
+    # more information, see https://github.com/ansys/actions/pull/560
+    - name: "Add pipx/bin directory to Github Path"
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> ${GITHUB_PATH} # zizmor: ignore[github-env] no workaround for this
+
+    # NOTE: Poetry uses virtual environments when installing a project. As we
+    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
+    # in the GitHub environment.
+    - name: "Set poetry environment variable(s)"
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+
+    # NOTE: Install pipx in a location that can be used in following CICD jobs
+    # but ensure that poetry is installed in a temporary folder cleaned before
+    # and after each job. This way poetry is kinda "installed at system level"
+    # making it available in the following call and installed in a different
+    # environment from the project.
+    - name: "Install poetry and create a virtual environment"
+      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
+      shell: bash
+      run: |
+        python -m pip install pipx
+        python -m pipx install poetry
+        python -m pipx inject poetry poetry-plugin-export
+      env:
+        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
+        PIPX_HOME : ${{ runner.temp }}/pipx/home
+
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
+    - name: "Create a virtual environment"
+      shell: bash
+      run: |
+        python -m venv .venv
+        python -m venv .venv_bandit_safety
+
+    - name: "Set up virtual environment activation command"
+      id: virtual-environment-activation-command
+      shell: bash
+      run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
+          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/scripts/activate')" >> ${GITHUB_OUTPUT}
+        else
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
+          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/bin/activate')" >> ${GITHUB_OUTPUT}
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install package and save installed packages in requirements-for-safety.txt
+
+    - name: "Update pip"
+      shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ "${USE_UV}" == 'true' ]]; then
+          uv pip install -U pip
+        else
+          python -m pip install -U pip
+        fi
+
+    - name: "Install library"
+      shell: bash
+      if: ${{ inputs.skip-install == 'false' }}
+      env:
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        EXTRA_TARGETS: ${{ inputs.extra-targets }}
+      # Note: we need to use an array to store the extra targets, otherwise
+      # the shell expansion messes with the quotes in the poetry case.
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ "${EXTRA_TARGETS}" != '' ]]; then
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
+            extra_targets=${EXTRA_TARGETS}
+          else
+            echo "Installing extra targets with pip: ${EXTRA_TARGETS}"
+            extra_targets=[${EXTRA_TARGETS}]
+          fi
+        else
+          echo "No extra targets to install"
+          extra_targets=""
+        fi
+
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          poetry install --extras "${extra_targets}"
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install ."${extra_targets}"
+        else
+          python -m pip install ."${extra_targets}"
+        fi
+
+    - name: "Check if requirements.txt file exists"
+      id: check-exists-requirements-file
+      shell: bash
+      if: ${{ inputs.skip-install == 'true' }}
+      env:
+        EXTRA_TARGETS: ${{ inputs.extra-targets }}
+      run: |
+        echo "EXISTS_REQUIREMENTS=$(if [ -f requirements/requirements_${EXTRA_TARGETS}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+
+    - name: "Install dependencies from the requirements file"
+      shell: bash
+      if: ${{ (inputs.skip-install == 'true' ) && (steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true') }}
+      env:
+        EXTRA_TARGETS: ${{ inputs.extra-targets }}
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        $ACTIVATE_VENV
+        if [[ "$USE_UV" == 'true' ]]; then
+          uv pip install -r requirements/requirements_${EXTRA_TARGETS}.txt
+        else
+          python -m pip install -r requirements/requirements_${EXTRA_TARGETS}.txt
+        fi
+
+    - name: "Save installed packages"
+      shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          poetry export --without-hashes --format=requirements.txt > "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip freeze > "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+        else
+          python -m pip freeze > "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Install and run security tools without installing the library.
+
+    - name: "Update pip"
+      shell: bash
+      env:
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
+        if [[ "${USE_UV}" == 'true' ]]; then
+          uv pip install -U pip
+        else
+          python -m pip install -U pip
+        fi
+
+    - name: "Install action requirements"
+      shell: bash
+      env:
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+      run: |
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
+        if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
+        else
+          python -m pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
+        fi
+
+    - name: "Run safety and bandit"
+      shell: bash
+      continue-on-error: true
+      env:
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
+        BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
+        SOURCE_DIRECTORY: ${{ inputs.source-directory }}
+        SAFETY_POLICY_FILE: ${{ format('{0}/.safety-ignore.yaml', github.action_path) }}
+      run: |
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
+
+        # Run security tools with policy file
+        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+
+        if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
+          CONFIGFILE=""
+        else
+          CONFIGFILE="-c ${BANDIT_CONFIGFILE}"
+        fi
+        bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
+
+    - name: "Run advisory checks"
+      shell: bash
+      env:
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
+        HIDE_LOG: ${{ inputs.hide-log }}
+        DEPENDENCY_CHECK_TOKEN: ${{ inputs.token }}
+        DEPENDENCY_CHECK_PACKAGE_NAME: ${{ inputs.python-package-name }}
+        DEPENDENCY_CHECK_REPOSITORY: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
+        DEPENDENCY_CHECK_CREATE_ISSUES: ${{ inputs.create-issues == 'true' && '1' || '' }}
+      run: |
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
+        if [[ "${HIDE_LOG}" == 'true' ]]; then
+          python "${GITHUB_ACTION_PATH}/check_vulnerabilities.py" > /dev/null 2>&1
+        else
+          python "${GITHUB_ACTION_PATH}/check_vulnerabilities.py"
+        fi
+
+    - name: "Uploading safety and bandit results"
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      if: inputs.upload-reports == 'true' || ( failure() && inputs.upload-reports == 'true' )
+      with:
+        name: vulnerability-results
+        path: ./info_*.json
+        retention-days: 7
