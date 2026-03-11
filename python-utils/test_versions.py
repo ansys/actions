@@ -11,6 +11,7 @@ from versions import (
     get_version_and_ref_type,
     get_versions_list,
     set_version_variable,
+    write_versions_file,
 )
 
 
@@ -471,3 +472,102 @@ def test_maximum_three_prerelease(test_environment_setup):
     ]
 
     assert len(prerelease_versions) == 2
+
+
+############################################################################
+# Pre-release as first release tests, requires specific setup and datasets #
+############################################################################
+
+# Test find_stable_release returns None when only pre-releases exist
+FIRST_PRERELEASE_FIND_STABLE_DATA = [
+    {
+        "ref_type": "tag",
+        "ref_name": "v0.1.0a0",
+        "independent_patch_release": "false",
+        "versions": [],
+        "create_versions_directories": True,
+    },
+    {
+        "ref_type": "tag",
+        "ref_name": "v0.2.0b0",
+        "independent_patch_release": "false",
+        "versions": ["0.2.0a0"],
+        "create_versions_directories": True,
+    },
+]
+
+
+@pytest.mark.parametrize(
+    "test_environment_setup", FIRST_PRERELEASE_FIND_STABLE_DATA, indirect=True
+)
+def test_find_stable_release_no_stable_versions(test_environment_setup):
+    stable_release = find_stable_release()
+    assert stable_release is None
+
+
+# Test first pre-release: set_version_variable succeeds with no prior versions
+FIRST_PRERELEASE_SET_VERSION_DATA = [
+    {
+        "ref_type": "tag",
+        "ref_name": "v0.1.0a0",
+        "independent_patch_release": "false",
+        "versions": [],
+        "create_versions_directories": True,
+        "create_github_output_file": True,
+    },
+    {
+        "ref_type": "branch",
+        "ref_name": "release/0.1.0a0",
+        "independent_patch_release": "false",
+        "versions": [],
+        "create_versions_directories": True,
+        "create_github_output_file": True,
+    },
+]
+
+
+@pytest.mark.parametrize(
+    "test_environment_setup", FIRST_PRERELEASE_SET_VERSION_DATA, indirect=True
+)
+def test_set_version_variable_first_prerelease(test_environment_setup):
+    set_version_variable()
+    gh_output_path = os.getenv("GITHUB_OUTPUT")
+    gh_output_content = Path(gh_output_path).read_text()
+
+    test_data = test_environment_setup
+    ref_name = test_data["ref_name"]
+    expected_result = expected_github_output(ref_name)
+
+    assert gh_output_content == expected_result
+
+
+# Test write_versions_file with no stable release (only pre-releases)
+FIRST_PRERELEASE_WRITE_VERSIONS_DATA = [
+    {
+        "ref_type": "tag",
+        "ref_name": "v0.1.0a0",
+        "independent_patch_release": "false",
+        "versions": ["0.1.0a0"],
+        "create_versions_directories": True,
+        "create_github_output_file": True,
+    },
+]
+
+
+@pytest.mark.parametrize(
+    "test_environment_setup", FIRST_PRERELEASE_WRITE_VERSIONS_DATA, indirect=True
+)
+def test_write_versions_file_no_stable(test_environment_setup):
+    write_versions_file()
+
+    # Verify versions.json has no "(stable)" entry
+    with open("versions.json", "r") as f:
+        content = json.load(f)
+
+    for entry in content:
+        assert "(stable)" not in entry["name"]
+
+    # Verify LATEST_STABLE_VERSION is empty
+    gh_output_path = os.getenv("GITHUB_OUTPUT")
+    gh_output_content = Path(gh_output_path).read_text()
+    assert "LATEST_STABLE_VERSION=\n" in gh_output_content

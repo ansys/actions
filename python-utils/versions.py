@@ -86,15 +86,18 @@ def export_to_github_output(var_name: str, var_value: str) -> None:
             file.write(f"{var_name}={var_value}\n")
 
 
-def find_stable_release() -> str:
+def find_stable_release() -> str | None:
     """Find the latest stable release version.
 
     Returns
     -------
-    str
-        The latest stable release version as a string.
+    str | None
+        The latest stable release version as a string, or ``None`` if no
+        stable (non-pre-release) version exists yet.
     """
     versions_list = get_versions_list(exclude_prereleases=True)
+    if not versions_list:
+        return None
     stable_release = max(versions_list)
     return str(stable_release)
 
@@ -108,7 +111,7 @@ def write_versions_file() -> None:
     cname = os.getenv("CNAME")
     render_last = int(os.getenv("RENDER_LAST"))
     stable_release = find_stable_release()
-    url_stable = f"https://{cname}/version/stable/"
+    url_stable = f"https://{cname}/version/stable/" if stable_release else None
     content = []
 
     # version dev
@@ -118,7 +121,7 @@ def write_versions_file() -> None:
     # Other versions (including stable)
     full_list = sorted(get_versions_list(), reverse=True)
     for version in full_list[:render_last]:
-        if version == Version(stable_release):
+        if stable_release and version == Version(stable_release):
             content.append(
                 make_entry((f"{stable_release} (stable)", stable_release, url_stable))
             )
@@ -133,7 +136,9 @@ def write_versions_file() -> None:
     with open("versions.json", "w", encoding="utf-8") as file:
         json.dump(content, file, indent=2)
 
-    export_to_github_output("LATEST_STABLE_VERSION", stable_release)
+    export_to_github_output(
+        "LATEST_STABLE_VERSION", stable_release if stable_release else ""
+    )
 
 
 def set_version_variable() -> None:
@@ -186,12 +191,14 @@ def set_version_variable() -> None:
         ]
         if current_version.is_prerelease:
 
-            latest_stable_version = Version(find_stable_release())
-            if latest_stable_version > current_version:  # This is not allowable
-                print(
-                    f"Stable release version higher than the pre-release version found: {latest_stable_version}"
-                )
-                exit(1)
+            latest_stable_str = find_stable_release()
+            if latest_stable_str is not None:
+                latest_stable_version = Version(latest_stable_str)
+                if latest_stable_version > current_version:  # This is not allowable
+                    print(
+                        f"Stable release version higher than the pre-release version found: {latest_stable_version}"
+                    )
+                    exit(1)
 
             # Ensure highest hierarchy of current pre-release
             valid_prerelease = all(
