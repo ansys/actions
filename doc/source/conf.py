@@ -18,7 +18,7 @@ ACTIONS_SUFFIXES = "-style"
 ACTIONS_INPUTS_FIELDS = ("description", "required", "type", "default")
 ACCEPTED_LICENSES = BASE_DIR / "check-licenses" / "accepted-licenses.txt"
 IGNORED_PACKAGES = BASE_DIR / "check-licenses" / "ignored-packages.txt"
-IGNORED_SAFETY = BASE_DIR / "check-vulnerabilities" / ".safety-ignore.yaml"
+IGNORED_SAFETY = BASE_DIR / "_check-vulnerabilities" / ".safety-ignore.yaml"
 
 # Project information
 project = "Ansys Actions"
