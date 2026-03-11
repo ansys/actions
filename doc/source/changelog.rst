@@ -9,6 +9,42 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.2.8 <https://github.com/ansys/actions/releases/tag/v10.2.8>`_ - March 11, 2026
+==================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Tox implementation
+          - `#1163 <https://github.com/ansys/actions/pull/1163>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update zizmor version in documentation
+          - `#1113 <https://github.com/ansys/actions/pull/1113>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow pre-releases as first ever documentation release
+          - `#1199 <https://github.com/ansys/actions/pull/1199>`_
+
+
 `10.2.7 <https://github.com/ansys/actions/releases/tag/v10.2.7>`_ - February 27, 2026
 =====================================================================================
 
