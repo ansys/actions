@@ -18,7 +18,7 @@ ACTIONS_SUFFIXES = "-style"
 ACTIONS_INPUTS_FIELDS = ("description", "required", "type", "default")
 ACCEPTED_LICENSES = BASE_DIR / "check-licenses" / "accepted-licenses.txt"
 IGNORED_PACKAGES = BASE_DIR / "check-licenses" / "ignored-packages.txt"
-IGNORED_SAFETY = BASE_DIR / "check-vulnerabilities" / "ignored-safety.txt"
+IGNORED_SAFETY = BASE_DIR / "check-vulnerabilities" / ".safety-ignore.yaml"
 
 # Project information
 project = "Ansys Actions"
@@ -335,6 +335,27 @@ def load_file_lines_as_list(file_path):
         return list(accepted_licenses_file.read().split("\n"))
 
 
+def load_safety_ignore_yaml(file_path):
+    """Loads vulnerability IDs from a Safety ignore YAML file.
+
+    Parameters
+    ----------
+    file_path : ~pathlib.Path
+        The ``Path`` instance representing the Safety ignore YAML file location.
+
+    Returns
+    -------
+    list[str]
+        A list of strings representing the vulnerability IDs.
+
+    """
+    with open(file_path) as yaml_file:
+        content = yaml.safe_load(yaml_file)
+        if content and "security" in content and "ignore-vulnerabilities" in content["security"]:
+            return [str(vuln_id) for vuln_id in content["security"]["ignore-vulnerabilities"].keys()]
+        return []
+
+
 # Check licenses
 for var, file in zip(
     ["accepted_licenses", "ignored_packages"], [ACCEPTED_LICENSES, IGNORED_PACKAGES]
@@ -342,7 +363,7 @@ for var, file in zip(
     jinja_contexts["check-licenses"][var] = load_file_lines_as_list(file)
 
 # Check vulnerabilities
-jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_file_lines_as_list(
+jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_safety_ignore_yaml(
     IGNORED_SAFETY
 )
 
