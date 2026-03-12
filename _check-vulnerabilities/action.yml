@@ -468,12 +468,11 @@ runs:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
-        SAFETY_POLICY_FILE: ${{ format('{0}/.safety-ignore.yaml', github.action_path) }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
 
         # Run security tools with policy file
-        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${GITHUB_ACTION_PATH}/.safety-ignore.yaml" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
 
         if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
           CONFIGFILE=""
