@@ -1,0 +1,343 @@
+{
+    "dependencies": [
+        {
+            "name": "annotated-doc",
+            "version": "0.0.4",
+            "vulns": []
+        },
+        {
+            "name": "annotated-types",
+            "version": "0.7.0",
+            "vulns": []
+        },
+        {
+            "name": "anyio",
+            "version": "4.12.1",
+            "vulns": []
+        },
+        {
+            "name": "authlib",
+            "version": "1.6.9",
+            "vulns": []
+        },
+        {
+            "name": "boolean-py",
+            "version": "5.0",
+            "vulns": []
+        },
+        {
+            "name": "cachecontrol",
+            "version": "0.14.4",
+            "vulns": []
+        },
+        {
+            "name": "certifi",
+            "version": "2026.2.25",
+            "vulns": []
+        },
+        {
+            "name": "cffi",
+            "version": "2.0.0",
+            "vulns": []
+        },
+        {
+            "name": "charset-normalizer",
+            "version": "3.4.4",
+            "vulns": []
+        },
+        {
+            "name": "click",
+            "version": "8.3.1",
+            "vulns": []
+        },
+        {
+            "name": "colorama",
+            "version": "0.4.6",
+            "vulns": []
+        },
+        {
+            "name": "cryptography",
+            "version": "46.0.5",
+            "vulns": []
+        },
+        {
+            "name": "cyclonedx-python-lib",
+            "version": "11.6.0",
+            "vulns": []
+        },
+        {
+            "name": "defusedxml",
+            "version": "0.7.1",
+            "vulns": []
+        },
+        {
+            "name": "dparse",
+            "version": "0.6.4",
+            "vulns": []
+        },
+        {
+            "name": "filelock",
+            "version": "3.25.0",
+            "vulns": []
+        },
+        {
+            "name": "h11",
+            "version": "0.16.0",
+            "vulns": []
+        },
+        {
+            "name": "httpcore",
+            "version": "1.0.9",
+            "vulns": []
+        },
+        {
+            "name": "httpx",
+            "version": "0.28.1",
+            "vulns": []
+        },
+        {
+            "name": "idna",
+            "version": "3.11",
+            "vulns": []
+        },
+        {
+            "name": "jinja2",
+            "version": "3.1.6",
+            "vulns": []
+        },
+        {
+            "name": "joblib",
+            "version": "1.5.3",
+            "vulns": []
+        },
+        {
+            "name": "license-expression",
+            "version": "30.4.4",
+            "vulns": []
+        },
+        {
+            "name": "lxml",
+            "version": "6.0.2",
+            "vulns": []
+        },
+        {
+            "name": "markdown-it-py",
+            "version": "4.0.0",
+            "vulns": []
+        },
+        {
+            "name": "markupsafe",
+            "version": "3.0.3",
+            "vulns": []
+        },
+        {
+            "name": "marshmallow",
+            "version": "4.2.2",
+            "vulns": []
+        },
+        {
+            "name": "mdurl",
+            "version": "0.1.2",
+            "vulns": []
+        },
+        {
+            "name": "msgpack",
+            "version": "1.1.2",
+            "vulns": []
+        },
+        {
+            "name": "nltk",
+            "version": "3.9.3",
+            "vulns": []
+        },
+        {
+            "name": "packageurl-python",
+            "version": "0.17.6",
+            "vulns": []
+        },
+        {
+            "name": "packaging",
+            "version": "26.0",
+            "vulns": []
+        },
+        {
+            "name": "pillow",
+            "version": "12.1.1",
+            "vulns": []
+        },
+        {
+            "name": "pip",
+            "version": "25.2",
+            "vulns": [
+                {
+                    "id": "CVE-2025-8869",
+                    "fix_versions": [
+                        "25.3"
+                    ],
+                    "aliases": [
+                        "GHSA-4xh5-x5gv-qwph",
+                        "BIT-pip-2025-8869"
+                    ],
+                    "description": "When extracting a tar archive pip may not check symbolic links point into the extraction directory if the tarfile module doesn't implement PEP 706. Note that upgrading pip to a \"fixed\" version for this vulnerability doesn't fix all known vulnerabilities that are remediated by using a Python version that implements PEP 706. Note that this is a vulnerability in pip's fallback implementation of tar extraction for Python versions that don't implement PEP 706 and therefore are not secure to all vulnerabilities in the Python 'tarfile' module. If you're using a Python version that implements PEP 706 then pip doesn't use the \"vulnerable\" fallback code. Mitigations include upgrading to a version of pip that includes the fix, upgrading to a Python version that implements PEP 706 (Python >=3.9.17, >=3.10.12, >=3.11.4, or >=3.12), applying the linked patch, or inspecting source distributions (sdists) before installation as is already a best-practice."
+                },
+                {
+                    "id": "CVE-2026-1703",
+                    "fix_versions": [
+                        "26.0"
+                    ],
+                    "aliases": [
+                        "GHSA-6vgw-5pg2-w6jp",
+                        "BIT-pip-2026-1703"
+                    ],
+                    "description": "When pip is installing and extracting a maliciously crafted wheel archive, files may be extracted outside the installation directory. The path traversal is limited to prefixes of the installation directory, thus isn't able to inject or overwrite executable files in typical situations."
+                }
+            ]
+        },
+        {
+            "name": "pip-api",
+            "version": "0.0.34",
+            "vulns": []
+        },
+        {
+            "name": "pip-audit",
+            "version": "2.10.0",
+            "vulns": []
+        },
+        {
+            "name": "pip-requirements-parser",
+            "version": "32.0.1",
+            "vulns": []
+        },
+        {
+            "name": "platformdirs",
+            "version": "4.9.2",
+            "vulns": []
+        },
+        {
+            "name": "py-serializable",
+            "version": "2.1.0",
+            "vulns": []
+        },
+        {
+            "name": "pycparser",
+            "version": "3.0",
+            "vulns": []
+        },
+        {
+            "name": "pydantic",
+            "version": "2.12.5",
+            "vulns": []
+        },
+        {
+            "name": "pydantic-core",
+            "version": "2.41.5",
+            "vulns": []
+        },
+        {
+            "name": "pygments",
+            "version": "2.19.2",
+            "vulns": []
+        },
+        {
+            "name": "pyparsing",
+            "version": "3.3.2",
+            "vulns": []
+        },
+        {
+            "name": "python-pptx",
+            "version": "1.0.2",
+            "vulns": []
+        },
+        {
+            "name": "regex",
+            "version": "2026.2.28",
+            "vulns": []
+        },
+        {
+            "name": "requests",
+            "version": "2.32.5",
+            "vulns": []
+        },
+        {
+            "name": "rich",
+            "version": "14.3.3",
+            "vulns": []
+        },
+        {
+            "name": "ruamel-yaml",
+            "version": "0.19.1",
+            "vulns": []
+        },
+        {
+            "name": "safety",
+            "version": "3.7.0",
+            "vulns": []
+        },
+        {
+            "name": "safety-schemas",
+            "version": "0.0.16",
+            "vulns": []
+        },
+        {
+            "name": "shellingham",
+            "version": "1.5.4",
+            "vulns": []
+        },
+        {
+            "name": "sortedcontainers",
+            "version": "2.4.0",
+            "vulns": []
+        },
+        {
+            "name": "tenacity",
+            "version": "9.1.4",
+            "vulns": []
+        },
+        {
+            "name": "tomli",
+            "version": "2.4.0",
+            "vulns": []
+        },
+        {
+            "name": "tomli-w",
+            "version": "1.2.0",
+            "vulns": []
+        },
+        {
+            "name": "tomlkit",
+            "version": "0.14.0",
+            "vulns": []
+        },
+        {
+            "name": "tqdm",
+            "version": "4.67.3",
+            "vulns": []
+        },
+        {
+            "name": "typer",
+            "version": "0.24.1",
+            "vulns": []
+        },
+        {
+            "name": "typing-extensions",
+            "version": "4.15.0",
+            "vulns": []
+        },
+        {
+            "name": "typing-inspection",
+            "version": "0.4.2",
+            "vulns": []
+        },
+        {
+            "name": "urllib3",
+            "version": "2.6.3",
+            "vulns": []
+        },
+        {
+            "name": "xlsxwriter",
+            "version": "3.2.9",
+            "vulns": []
+        }
+    ],
+    "fixes": []
+}

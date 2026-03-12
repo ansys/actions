@@ -357,7 +357,7 @@ jobs:
           trust-ansys-actions: true
           checkout: false
 
-  python-utilites-test:
+  python-utilities-test:
     name: "Run all python utilities tests"
     runs-on: ubuntu-latest
     steps:

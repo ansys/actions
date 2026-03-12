@@ -33,7 +33,7 @@ import hashlib
 import json
 import os
 import sys
-from typing import Any, Dict
+from typing import Any
 
 import click
 import github
@@ -48,20 +48,20 @@ ERROR_IF_NEW_ADVISORY = (
 CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
 
 
-def dict_hash(dictionary: Dict[str, Any]) -> str:
-    """MD5 hash of a dictionary.
+def dict_hash(dictionary: dict[str, Any]) -> str:
+    """SHA-256 hash of a dictionary.
 
     Parameters
     ----------
-    dictionary : Dict[str, Any]
+    dictionary : dict[str, Any]
         Dictionary to hash.
 
     Returns
     -------
     str
-        MD5 hash of the dictionary.
+        SHA-256 hash of the dictionary.
     """
-    dhash = hashlib.md5()
+    dhash = hashlib.sha256()
     # We need to sort arguments so {'a': 1, 'b': 2} is
     # the same as {'b': 2, 'a': 1}
     encoded = json.dumps(dictionary, sort_keys=True).encode()
@@ -94,15 +94,15 @@ def check_vulnerabilities():
         print("Information will be presented on screen.\n")
 
     # Load the security checks
-    safety_results = {}
-    with open("info_safety.json", "r") as json_file:
-        safety_results = json.loads(json_file.read())
+    audit_results = {}
+    with open("info_pip_audit.json", "r") as json_file:
+        audit_results = json.loads(json_file.read())
 
     # If the security checks have not been loaded... problem ahead!
-    if not safety_results:
+    if not audit_results:
         raise RuntimeError(
-            "Safety results have not been generated... Something went wrong during",
-            "the execution of 'safety check -o bare --save-json info_safety.json'. ",
+            "pip-audit results have not been generated... Something went wrong during",
+            "the execution of 'pip-audit --format json --output info_pip_audit.json'. ",
             "Verify workflow logs.",
         )
 
@@ -128,54 +128,56 @@ def check_vulnerabilities():
     # THIRD PARTY SECURITY ADVISORIES
     ###############################################################################
 
-    # Process the detected advisories by Safety
-    safety_results_reported = 0
-    vulnerability: dict
-    for vulnerability in safety_results["vulnerabilities"]:
-        # Retrieve the needed values
-        v_id = vulnerability.get("vulnerability_id")
-        v_package = vulnerability.get("package_name")
-        v_cve = vulnerability.get("CVE")
-        v_url = vulnerability.get("more_info_url")
-        v_desc = vulnerability.get("advisory")
-        v_affected_versions = vulnerability.get("vulnerable_spec")
-        v_fixed_versions = vulnerability.get("fixed_versions")
+    # Process the detected advisories by pip-audit
+    pip_audit_results_reported = 0
+    for dep in audit_results.get("dependencies", []):
+        for vulnerability in dep.get("vulns", []):
+            # Retrieve the needed values
+            v_id = vulnerability.get("id")
+            v_package = dep.get("name")
+            v_cve = next(
+                (a for a in vulnerability.get("aliases", []) if a.startswith("CVE-")),
+                None,
+            )
+            v_url = f"https://osv.dev/vulnerability/{v_id}"
+            v_desc = vulnerability.get("description")
+            v_fixed_versions = vulnerability.get("fix_versions")
 
-        # Advisory info
-        summary = f"Safety vulnerability {v_id} for package '{v_package}'"
-        vuln_adv = {
-            "package": {"name": f"{v_package}", "ecosystem": "pip"},
-            "vulnerable_version_range": f"{v_affected_versions}",
-            "patched_versions": f"{v_fixed_versions}",
-            "vulnerable_functions": [],
-        }
-        desc = f"""
+            # Advisory info
+            summary = f"pip-audit vulnerability {v_id} for package '{v_package}'"
+            vuln_adv = {
+                "package": {"name": f"{v_package}", "ecosystem": "pip"},
+                "vulnerable_version_range": None,
+                "patched_versions": str(v_fixed_versions) if v_fixed_versions else None,
+                "vulnerable_functions": [],
+            }
+            desc = f"""
 {v_desc}
 
 #### More information
 
 Visit {v_url} to find out more information.
 """
-        # Check if the advisory already exists
-        if existing_advisories.get(summary):
-            continue
-        elif not DRY_RUN:
-            # New safety advisory detected
-            safety_results_reported += 1
-            new_advisory_detected = True
+            # Check if the advisory already exists
+            if existing_advisories.get(summary):
+                continue
+            elif not DRY_RUN:
+                # New pip-audit advisory detected
+                pip_audit_results_reported += 1
+                new_advisory_detected = True
 
-            # Create the advisory but do not publish it
-            advisory = repo.create_repository_advisory(
-                summary=summary,
-                description=desc,
-                severity_or_cvss_vector_string="medium",
-                cve_id=v_cve,
-                vulnerabilities=[vuln_adv],
-            )
+                # Create the advisory but do not publish it
+                advisory = repo.create_repository_advisory(
+                    summary=summary,
+                    description=desc,
+                    severity_or_cvss_vector_string="medium",
+                    cve_id=v_cve,
+                    vulnerabilities=[vuln_adv],
+                )
 
-            # Create an issue
-            if CREATE_ISSUES:
-                issue_body = f"""
+                # Create an issue
+                if CREATE_ISSUES:
+                    issue_body = f"""
 A new security advisory was open in this repository. See {advisory.html_url}.
 
 ---
@@ -190,14 +192,14 @@ once it has been verified (since it has been created in draft mode).
 
 {desc}
 """
-                repo.create_issue(title=summary, body=issue_body, labels=["security"])
-        else:
-            # New safety advisory detected
-            safety_results_reported += 1
-            new_advisory_detected = True
-            print("===========================================\n")
-            print(f"{summary}")
-            print(f"{desc}")
+                    repo.create_issue(title=summary, body=issue_body, labels=["security"])
+            else:
+                # New pip-audit advisory detected
+                pip_audit_results_reported += 1
+                new_advisory_detected = True
+                print("===========================================\n")
+                print(f"{summary}")
+                print(f"{desc}")
 
     ###############################################################################
     # LIBRARY SECURITY ADVISORIES
@@ -302,17 +304,19 @@ once it has been verified (since it has been created in draft mode).
             print(f"{desc}")
 
     # Print out information
-    safety_entries = len(safety_results["vulnerabilities"])
+    audit_entries = sum(
+        len(dep.get("vulns", [])) for dep in audit_results.get("dependencies", [])
+    )
     bandit_entries = len(bandit_results["results"])
     print("\n*******************************************")
-    print(f"Total 'safety' advisories detected: {safety_entries}")
-    print(f"Total 'safety' advisories reported: {safety_results_reported}")
+    print(f"Total 'pip-audit' advisories detected: {audit_entries}")
+    print(f"Total 'pip-audit' advisories reported: {pip_audit_results_reported}")
     print(f"Total 'bandit' advisories detected: {bandit_entries}")
     print(f"Total 'bandit' advisories reported: {bandit_results_reported}")
     print("*******************************************")
-    print(f"Total advisories detected: {safety_entries + bandit_entries}")
+    print(f"Total advisories detected: {audit_entries + bandit_entries}")
     print(
-        f"Total advisories reported: {safety_results_reported + bandit_results_reported}"
+        f"Total advisories reported: {pip_audit_results_reported + bandit_results_reported}"
     )
     print("*******************************************")
 
@@ -331,31 +335,32 @@ def generate_advisory_files():
     -----
     This function should ONLY be used for local purposes.
     """
+    import subprocess
+
     import bandit.cli.main as bandit
-    import safety.cli as safety
 
     # Delete previous advisory files
-    if os.path.exists("info_safety.json"):
-        os.remove("info_safety.json")
+    if os.path.exists("info_pip_audit.json"):
+        os.remove("info_pip_audit.json")
     if os.path.exists("info_bandit.json"):
         os.remove("info_bandit.json")
 
-    # Safety check
+    # pip-audit check
     try:
-        safety.cli.main(
-            ["check", "-o", "bare", "--save-json", "info_safety.json"],
-            standalone_mode=False,
+        subprocess.run(
+            ["pip-audit", "--format", "json", "--output", "info_pip_audit.json"],
+            check=False,
         )
-    except:  # noqa: E722
-        print("Safety check performed.")
-        pass
+        print("pip-audit check performed.")
+    except Exception:
+        print("pip-audit check performed.")
 
     # Bandit check
     try:
         sys.argv.pop()
         sys.argv.extend(["-r", "./src", "-o", "info_bandit.json", "-f", "json"])
         bandit.main()
-    except:  # noqa: E722
+    except Exception:
         pass
     finally:
         print("Bandit check performed.")

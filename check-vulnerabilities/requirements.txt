@@ -1,4 +1,4 @@
 bandit>=1.7,<2
 click>=7.0,<9
+pip-audit>=2.7,<3
 pygithub>=1.59,<3
-safety>=2.3,<4
