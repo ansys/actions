@@ -31,12 +31,15 @@ description: |
 
   .. note::
       This action is designed to be called from workflows triggered by issue
-      comments or workflow dispatch events. It requires write access to
-      repository contents and pull requests.
+      comments or workflow dispatch events.
 
-  .. warning::
-      This action requires a GitHub token with team read permissions to
-      verify team membership. Ensure the token has the appropriate scopes.
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push migration branches to the main repository
+     - **pull-requests**: ``write`` - Required to create pull requests, add comments, and manage reactions
+
+     Additionally, the provided ``github-token`` must have ``read:org`` scope
+     to check team membership for authorization.
 
 inputs:
 
@@ -66,16 +69,9 @@ inputs:
   github-token:
     description: |
       GitHub token with permissions to create branches, push code, create
-      pull requests, and manage comments/reactions. Typically a bot token
-      with ``contents: write`` and ``pull-requests: write`` permissions.
-    required: true
-    type: string
-
-  team-read-token:
-    description: |
-      GitHub token with ``read:org`` permissions to check team membership.
-      This should be a separate token from ``github-token`` to maintain
-      proper permission separation.
+      pull requests, manage comments/reactions, and check team membership.
+      Typically a bot token with ``contents: write``, ``pull-requests: write``,
+      and ``read:org`` permissions.
     required: true
     type: string
 
@@ -225,7 +221,7 @@ runs:
       id: check-membership
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.team-read-token }}
+        GH_TOKEN: ${{ inputs.github-token }}
         TEAM_SLUG: ${{ inputs.team-slug }}
         ORGANIZATION: ${{ inputs.organization }}
         USER_TRIGGERING: ${{ inputs.user-triggering }}

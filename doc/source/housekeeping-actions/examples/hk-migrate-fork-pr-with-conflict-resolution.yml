@@ -17,7 +17,6 @@ hk-migrate-fork-pr-with-conflicts:
         comment-id: ${{ '{{ github.event.comment.id }}' }}
         user-triggering: ${{ '{{ github.event.comment.user.login }}' }}
         github-token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
-        team-read-token: ${{ '{{ secrets.PYANSYS_CI_BOT_TEAMS_READ_TOKEN }}' }}
         bot-username: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
         bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
         team-slug: 'pyansys-maintainers'
