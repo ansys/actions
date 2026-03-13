@@ -317,14 +317,14 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
 
     # Ordered list containing changelog sections under each release
     changelog_sections = [
-        "added",
         "breaking",
+        "added",
         "fixed",
         "documentation",
-        "test",
         "dependencies",
         "maintenance",
         "miscellaneous",
+        "test",
     ]
 
     # Dictionary containing [tool.towncrier] keys and values
@@ -517,6 +517,9 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
         return
 
     # Rebuild the type collection in the correct order
+    # tomlkit container types cannot be sorted in place,
+    # see https://github.com/python-poetry/tomlkit/issues/233
+    # for more information.
     if isinstance(types, AoT):
         new_types = tomlkit.aot()
         for entry in sorted_entries:
