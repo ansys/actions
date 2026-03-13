@@ -178,20 +178,10 @@ runs:
       id: setup
       shell: bash
       env:
-        PR_NUMBER: ${{ inputs.pr-number }}
-        COMMENT_ID: ${{ inputs.comment-id }}
-        USER_TRIGGERING: ${{ inputs.user-triggering }}
         COMMENT_BODY: ${{ inputs.comment-body }}
         CONFLICT_MODE_INPUT: ${{ inputs.conflict-mode }}
-        ORGANIZATION: ${{ inputs.organization }}
         REPOSITORY: ${{ inputs.repository }}
-      run: | # zizmor: ignore[github-env]
-        # Export environment variables for downstream steps
-        echo "PR_NUMBER=${PR_NUMBER}" >> $GITHUB_ENV
-        echo "COMMENT_ID=${COMMENT_ID}" >> $GITHUB_ENV
-        echo "USER_TRIGGERING=${USER_TRIGGERING}" >> $GITHUB_ENV
-        echo "ORGANIZATION=${ORGANIZATION}" >> $GITHUB_ENV
-
+      run: |
         # Set repository name
         if [ -z "${REPOSITORY}" ]; then
           # Extract from GITHUB_REPOSITORY (format: org/repo)
@@ -199,7 +189,7 @@ runs:
         else
           REPO_NAME="${REPOSITORY}"
         fi
-        echo "REPOSITORY=${REPO_NAME}" >> $GITHUB_ENV
+        echo "repository=${REPO_NAME}" >> "$GITHUB_OUTPUT"
 
         # Detect conflict resolution mode
         # 1. auto - exits on conflicts (default)
@@ -229,182 +219,198 @@ runs:
           fi
         fi
 
-        echo "MODE=${MODE}" >> $GITHUB_ENV
-        echo "CONTINUE=unknown" >> $GITHUB_ENV
+        echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
 
     - name: "Check team membership"
       id: check-membership
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      shell: bash
       env:
+        GH_TOKEN: ${{ inputs.team-read-token }}
         TEAM_SLUG: ${{ inputs.team-slug }}
-      with:
-        github-token: ${{ inputs.team-read-token }}
-        script: |
-          try {
-            const { data } = await github.rest.teams.getMembershipForUserInOrg({
-              org: process.env.ORGANIZATION,
-              team_slug: process.env.TEAM_SLUG,
-              username: process.env.USER_TRIGGERING,
-            });
+        ORGANIZATION: ${{ inputs.organization }}
+        USER_TRIGGERING: ${{ inputs.user-triggering }}
+      run: |
+        # Check if user is a member of the required team
+        set +e
+        MEMBERSHIP=$(gh api \
+          "orgs/${ORGANIZATION}/teams/${TEAM_SLUG}/memberships/${USER_TRIGGERING}" \
+          --jq '{state: .state, role: .role}' 2>&1)
+        API_EXIT=$?
+        set -e
 
-            if (core.isDebug()) {
-              core.debug(JSON.stringify(data, null, 2));
-            }
+        if [ $API_EXIT -ne 0 ]; then
+          echo "::error::Error fetching team membership: ${MEMBERSHIP}"
+          echo "is_member=false" >> "$GITHUB_OUTPUT"
+          echo "continue=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
 
-            // Check if the user is a member or maintainer of the team
-            if (data && data.state === 'active' && (data.role === 'member' || data.role === 'maintainer')) {
-              core.info(`User ${process.env.USER_TRIGGERING} is a ${data.role} of team ${process.env.TEAM_SLUG}`);
-              core.setOutput('is_member', 'true');
-              core.exportVariable('CONTINUE', 'true');
-            } else {
-              core.warning(`User ${process.env.USER_TRIGGERING} is not an active member of team ${process.env.TEAM_SLUG}`);
-              core.setOutput('is_member', 'false');
-              core.exportVariable('CONTINUE', 'false');
-            }
-          } catch (error) {
-            core.error(`Error fetching team membership: ${error.message}`);
-            core.setOutput('is_member', 'false');
-            core.exportVariable('CONTINUE', 'false');
-          }
+        STATE=$(echo "${MEMBERSHIP}" | jq -r '.state')
+        ROLE=$(echo "${MEMBERSHIP}" | jq -r '.role')
+
+        if [ "${STATE}" = "active" ] && { [ "${ROLE}" = "member" ] || [ "${ROLE}" = "maintainer" ]; }; then
+          echo "User ${USER_TRIGGERING} is a ${ROLE} of team ${TEAM_SLUG}"
+          echo "is_member=true" >> "$GITHUB_OUTPUT"
+          echo "continue=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "::warning::User ${USER_TRIGGERING} is not an active member of team ${TEAM_SLUG}"
+          echo "is_member=false" >> "$GITHUB_OUTPUT"
+          echo "continue=false" >> "$GITHUB_OUTPUT"
+        fi
 
     - name: "Delete previous reactions"
       if: always()
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      shell: bash
       env:
+        GH_TOKEN: ${{ inputs.github-token }}
         BOT_USERNAME: ${{ inputs.bot-username }}
-      with:
-        github-token: ${{ inputs.github-token }}
-        script: |
-          try {
-            const { data } = await github.rest.reactions.listForIssueComment({
-              owner: process.env.ORGANIZATION,
-              repo: process.env.REPOSITORY,
-              comment_id: process.env.COMMENT_ID,
-            });
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+      run: |
+        # List all reactions on the triggering comment
+        set +e
+        REACTIONS=$(gh api \
+          "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+          --jq '.[] | select(.user.login == env.BOT_USERNAME) | {id: .id, content: .content}' 2>&1)
+        API_EXIT=$?
+        set -e
 
-            if (data && data.length > 0) {
-              core.info(`Found ${data.length} reactions for comment ${process.env.COMMENT_ID}`);
+        if [ $API_EXIT -ne 0 ]; then
+          echo "::warning::Error listing reactions: ${REACTIONS}"
+          exit 0
+        fi
 
-              // Remove reactions from the bot
-              const botUsername = process.env.BOT_USERNAME;
-              for (const reaction of data) {
-                if (reaction.user.login === botUsername) {
-                  await github.rest.reactions.deleteForIssueComment({
-                    owner: process.env.ORGANIZATION,
-                    repo: process.env.REPOSITORY,
-                    comment_id: process.env.COMMENT_ID,
-                    reaction_id: reaction.id,
-                  });
-                  core.info(`Deleted reaction ${reaction.content} from ${reaction.user.login}`);
-                }
-              }
-            } else {
-              core.debug(`No reactions found for comment ${process.env.COMMENT_ID}`);
-            }
-          } catch (error) {
-            core.warning(`Error managing reactions: ${error.message}`);
-          }
+        if [ -z "${REACTIONS}" ]; then
+          echo "No bot reactions found for comment ${COMMENT_ID}"
+          exit 0
+        fi
+
+        # Delete each bot reaction
+        echo "${REACTIONS}" | jq -c '.' | while IFS= read -r reaction; do
+          REACTION_ID=$(echo "${reaction}" | jq -r '.id')
+          CONTENT=$(echo "${reaction}" | jq -r '.content')
+          set +e
+          gh api -X DELETE \
+            "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions/${REACTION_ID}" 2>&1
+          set -e
+          echo "Deleted reaction ${CONTENT} (id: ${REACTION_ID}) from ${BOT_USERNAME}"
+        done
 
     - name: "React to comment based on authorization"
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      shell: bash
       env:
+        GH_TOKEN: ${{ inputs.github-token }}
         TEAM_SLUG: ${{ inputs.team-slug }}
-      with:
-        github-token: ${{ inputs.github-token }}
-        script: |
-          const continueValue = process.env.CONTINUE;
+        CONTINUE: ${{ steps.check-membership.outputs.continue }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+      run: |
+        if [ "${CONTINUE}" = "true" ]; then
+          echo "User is authorized. Adding positive reaction."
+          gh api -X POST \
+            "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+            -f content='+1' > /dev/null
+        else
+          echo "::warning::User is NOT authorized to migrate PRs!"
 
-          if (continueValue === 'true') {
-            core.info('User is authorized. Adding positive reaction.');
-            await github.rest.reactions.createForIssueComment({
-              owner: process.env.ORGANIZATION,
-              repo: process.env.REPOSITORY,
-              comment_id: process.env.COMMENT_ID,
-              content: '+1',
-            });
-          } else {
-            core.warning(`User is NOT authorized to migrate PRs!`);
+          # React negatively
+          gh api -X POST \
+            "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+            -f content='-1' > /dev/null
 
-            // React negatively
-            await github.rest.reactions.createForIssueComment({
-              owner: process.env.ORGANIZATION,
-              repo: process.env.REPOSITORY,
-              comment_id: process.env.COMMENT_ID,
-              content: '-1',
-            });
+          # Create a comment to notify the user
+          BODY=$(cat <<EOF
+        **:stop_sign: Insufficient Permissions! :stop_sign:**
 
-            // Create a comment to notify the user
-            const teamSlug = process.env.TEAM_SLUG;
-            await github.rest.issues.createComment({
-              owner: process.env.ORGANIZATION,
-              repo: process.env.REPOSITORY,
-              issue_number: process.env.PR_NUMBER,
-              body: `**:stop_sign: Insufficient Permissions! :stop_sign:**\n\nYou are not a member of the \`${process.env.ORGANIZATION}/${teamSlug}\` team. Please contact a team member to migrate this PR.`,
-            });
-          }
+        You are not a member of the \`${ORGANIZATION}/${TEAM_SLUG}\` team. Please contact a team member to migrate this PR.
+        EOF
+          )
+          gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${BODY}"
+        fi
 
     - name: "Get pull request details"
-      if: env.CONTINUE == 'true'
+      if: steps.check-membership.outputs.continue == 'true'
       id: pr-details
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-      with:
-        github-token: ${{ inputs.github-token }}
-        script: |
-          const { data } = await github.rest.pulls.get({
-            owner: process.env.ORGANIZATION,
-            repo: process.env.REPOSITORY,
-            pull_number: process.env.PR_NUMBER,
-          });
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+      run: |
+        # Fetch PR details
+        PR_DATA=$(gh pr view "${PR_NUMBER}" \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --json headRefName,headRepository,headRepositoryOwner,baseRefName,title,body,author,isCrossRepository)
 
-          if (!data || !data.head || !data.base) {
-            throw new Error('Pull request data is incomplete');
-          }
+        if [ -z "${PR_DATA}" ]; then
+          echo "::error::Pull request data is incomplete"
+          exit 1
+        fi
 
-          if (core.isDebug()) {
-            core.debug(JSON.stringify(data, null, 2));
-          }
+        IS_CROSS_REPO=$(echo "${PR_DATA}" | jq -r '.isCrossRepository')
+        HEAD_REF=$(echo "${PR_DATA}" | jq -r '.headRefName')
+        HEAD_REPO_NAME=$(echo "${PR_DATA}" | jq -r '.headRepository.name')
+        HEAD_REPO_OWNER=$(echo "${PR_DATA}" | jq -r '.headRepositoryOwner.login')
+        HEAD_REPO_FULL="${HEAD_REPO_OWNER}/${HEAD_REPO_NAME}"
+        BASE_REF=$(echo "${PR_DATA}" | jq -r '.baseRefName')
+        TITLE=$(echo "${PR_DATA}" | jq -r '.title')
+        BODY=$(echo "${PR_DATA}" | jq -r '.body // ""')
+        AUTHOR=$(echo "${PR_DATA}" | jq -r '.author.login')
 
-          // Check if PR is already in the main repository
-          const expectedFullName = `${process.env.ORGANIZATION}/${process.env.REPOSITORY}`;
-          if (data.head.repo.full_name === expectedFullName) {
-            core.warning('The PR is already in the main repository. No migration needed. Exiting...');
-            core.exportVariable('CONTINUE', 'false');
+        # Check if PR is already in the main repository (not cross-repo)
+        if [ "${IS_CROSS_REPO}" = "false" ]; then
+          echo "::warning::The PR is already in the main repository. No migration needed. Exiting..."
+          echo "skip=true" >> "$GITHUB_OUTPUT"
 
-            // React with confused emoji
-            await github.rest.reactions.createForIssueComment({
-              owner: process.env.ORGANIZATION,
-              repo: process.env.REPOSITORY,
-              comment_id: process.env.COMMENT_ID,
-              content: 'confused',
-            });
+          # React with confused emoji
+          gh api -X POST \
+            "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+            -f content='confused' > /dev/null
 
-            // Notify user
-            await github.rest.issues.createComment({
-              owner: process.env.ORGANIZATION,
-              repo: process.env.REPOSITORY,
-              issue_number: process.env.PR_NUMBER,
-              body: `**:question: Wrong Command? :confused:**\n\nYou are trying to migrate a PR that is already in the main repository. No migration needed.`,
-            });
-            return;
-          }
+          # Notify user
+          NOTIFY_BODY=$(cat <<EOF
+        **:question: Wrong Command? :confused:**
 
-          // Set PR information as environment variables
-          core.exportVariable('PR_HEAD_BRANCH', data.head.ref);
-          core.exportVariable('PR_HEAD_REPO', data.head.repo.full_name);
-          core.exportVariable('PR_BASE_BRANCH', `migration/pr-${process.env.PR_NUMBER}`);
-          core.exportVariable('PR_BASE_REPO', data.base.repo.full_name);
-          core.exportVariable('PR_TITLE', data.title);
-          core.exportVariable('PR_BODY', data.body || '');
-          core.exportVariable('PR_AUTHOR', data.user.login);
+        You are trying to migrate a PR that is already in the main repository. No migration needed.
+        EOF
+          )
+          gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${NOTIFY_BODY}"
+          exit 0
+        fi
 
-          core.setOutput('migration-branch', `migration/pr-${process.env.PR_NUMBER}`);
+        # Set PR information as step outputs
+        {
+          echo "pr-head-branch=${HEAD_REF}"
+          echo "pr-head-repo=${HEAD_REPO_FULL}"
+          echo "pr-base-branch=migration/pr-${PR_NUMBER}"
+          echo "pr-author=${AUTHOR}"
+          echo "migration-branch=migration/pr-${PR_NUMBER}"
+        } >> "$GITHUB_OUTPUT"
 
-          core.info('PR Head: ' + data.head.repo.full_name + '/' + data.head.ref);
-          core.info('PR Base: ' + data.base.repo.full_name + '/' + data.base.ref);
-          core.info('Migration branch: migration/pr-' + process.env.PR_NUMBER);
+        # Use delimiter for multiline values (title and body may contain special chars)
+        {
+          echo "pr-title<<GHEOF"
+          echo "${TITLE}"
+          echo "GHEOF"
+        } >> "$GITHUB_OUTPUT"
+
+        {
+          echo "pr-body<<GHEOF"
+          echo "${BODY}"
+          echo "GHEOF"
+        } >> "$GITHUB_OUTPUT"
+
+        echo "PR Head: ${HEAD_REPO_FULL}/${HEAD_REF}"
+        echo "PR Base: ${ORGANIZATION}/${REPOSITORY}/${BASE_REF}"
+        echo "Migration branch: migration/pr-${PR_NUMBER}"
 
     - name: "Checkout repository"
-      if: env.CONTINUE == 'true'
+      if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         ref: main
@@ -413,12 +419,18 @@ runs:
         persist-credentials: true # zizmor: ignore[artipacked]
 
     - name: "Clone head repo and merge with main"
-      if: env.CONTINUE == 'true'
+      if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         BOT_USERNAME: ${{ inputs.bot-username }}
         BOT_EMAIL: ${{ inputs.bot-email }}
+        PR_HEAD_REPO: ${{ steps.pr-details.outputs.pr-head-repo }}
+        PR_HEAD_BRANCH: ${{ steps.pr-details.outputs.pr-head-branch }}
+        PR_BASE_BRANCH: ${{ steps.pr-details.outputs.pr-base-branch }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        MODE: ${{ steps.setup.outputs.mode }}
       run: |
         # Configure git
         git config user.name "${BOT_USERNAME}"
@@ -489,121 +501,154 @@ runs:
         fi
 
     - name: "Create pull request"
-      if: env.CONTINUE == 'true'
+      if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
       id: create-pr
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-      with:
-        github-token: ${{ inputs.github-token }}
-        script: |
-          const prNumber = process.env.PR_NUMBER;
-          const prBaseBranch = process.env.PR_BASE_BRANCH;
-          const prTitle = process.env.PR_TITLE;
-          const prBody = process.env.PR_BODY;
-          const prAuthor = process.env.PR_AUTHOR;
-          const userTriggering = process.env.USER_TRIGGERING;
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        PR_BASE_BRANCH: ${{ steps.pr-details.outputs.pr-base-branch }}
+        PR_TITLE: ${{ steps.pr-details.outputs.pr-title }}
+        PR_BODY: ${{ steps.pr-details.outputs.pr-body }}
+        PR_AUTHOR: ${{ steps.pr-details.outputs.pr-author }}
+        USER_TRIGGERING: ${{ inputs.user-triggering }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+      run: |
+        PR_BASE="${PR_BASE_BRANCH}"
 
-          core.info(`Checking for existing PRs with base branch ${prBaseBranch}...`);
+        echo "Checking for existing PRs with head branch ${PR_BASE}..."
 
-          // Check if PR already exists
-          const existingPrs = await github.rest.pulls.list({
-            owner: process.env.ORGANIZATION,
-            repo: process.env.REPOSITORY,
-            head: `${process.env.ORGANIZATION}:${prBaseBranch}`,
-            state: 'open',
-          });
+        # Check if PR already exists
+        EXISTING_PR=$(gh pr list \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --head "${PR_BASE}" \
+          --state open \
+          --json number \
+          --jq '.[0].number // empty')
 
-          if (existingPrs.data.length > 0) {
-            core.info(`PR already exists for branch ${prBaseBranch}. Skipping creation.`);
-            core.setOutput('new-pr-number', existingPrs.data[0].number);
-            return;
-          }
+        if [ -n "${EXISTING_PR}" ]; then
+          echo "PR already exists for branch ${PR_BASE}: #${EXISTING_PR}. Skipping creation."
+          echo "new-pr-number=${EXISTING_PR}" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
 
-          // Create new PR
-          core.info(`Creating new PR for branch ${prBaseBranch}...`);
+        # Build the new PR body
+        NEW_PR_BODY=$(cat <<EOF
+        This PR is a migrated pull request created from [#${PR_NUMBER}](https://github.com/${ORGANIZATION}/${REPOSITORY}/pull/${PR_NUMBER}) to allow the code to access repository secrets for CI/CD.
 
-          const newPrBody = `This PR is a migrated pull request created from [#${prNumber}](https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}/pull/${prNumber}) to allow the code to access repository secrets for CI/CD.\n\nCheck the [original PR](https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}/pull/${prNumber}) made by @${prAuthor} for more details.\n\nCloses #${prNumber}\n\n## Original Pull Request\n\n### ${prTitle}\n\n${prBody}`;
+        Check the [original PR](https://github.com/${ORGANIZATION}/${REPOSITORY}/pull/${PR_NUMBER}) made by @${PR_AUTHOR} for more details.
 
-          const newPr = await github.rest.pulls.create({
-            owner: process.env.ORGANIZATION,
-            repo: process.env.REPOSITORY,
-            head: prBaseBranch,
-            base: 'main',
-            title: 'migrated (PR ' + prNumber + '): ' + prTitle,
-            body: newPrBody,
-          });
+        Closes #${PR_NUMBER}
 
-          core.info('New PR created: #' + newPr.data.number);
-          core.setOutput('new-pr-number', newPr.data.number);
-          core.exportVariable('NEW_PR_NUMBER', newPr.data.number);
-          core.exportVariable('NEW_PR_URL', newPr.data.html_url);
+        ## Original Pull Request
 
-          // Assign PR to triggering user and original author
-          core.info('Assigning PR to: ' + userTriggering + ' and ' + prAuthor);
-          try {
-            await github.rest.issues.addAssignees({
-              owner: process.env.ORGANIZATION,
-              repo: process.env.REPOSITORY,
-              issue_number: newPr.data.number,
-              assignees: [userTriggering, prAuthor],
-            });
-          } catch (error) {
-            core.warning('Failed to assign PR: ' + error.message);
-          }
+        ### ${PR_TITLE}
 
-          // React positively to the triggering comment
-          await github.rest.reactions.createForIssueComment({
-            owner: process.env.ORGANIZATION,
-            repo: process.env.REPOSITORY,
-            comment_id: process.env.COMMENT_ID,
-            content: 'rocket',
-          });
+        ${PR_BODY}
+        EOF
+        )
 
-          // Create success comment
-          const successBody = `## :rocket: Migration Completed!\n\nThe pull request [#${newPr.data.number}](${newPr.data.html_url}) has been created successfully.\n\nThank you @${prAuthor} for your contribution! Please review the new PR and make any necessary changes.\n\nThis PR will be closed by the maintainers soon.\n\nYou can now work on the new pull request by cloning this pull request branch:\n\n\`\`\`terminal\ngit clone -b ${prBaseBranch} --single-branch https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}.git\n\`\`\`\n\nIf you have [GitHub CLI](https://cli.github.com/) installed, you can also use:\n\n\`\`\`terminal\ngh pr checkout ${newPr.data.html_url}\n\`\`\`\n\nThank you again for your contribution @${prAuthor}!`;
+        # Create new PR
+        echo "Creating new PR for branch ${PR_BASE}..."
+        NEW_PR_URL=$(gh pr create \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --head "${PR_BASE}" \
+          --base main \
+          --title "migrated (PR ${PR_NUMBER}): ${PR_TITLE}" \
+          --body "${NEW_PR_BODY}")
 
-          await github.rest.issues.createComment({
-            owner: process.env.ORGANIZATION,
-            repo: process.env.REPOSITORY,
-            issue_number: prNumber,
-            body: successBody,
-          });
+        # Extract new PR number from URL
+        NEW_PR_NUM=$(echo "${NEW_PR_URL}" | grep -oP '\d+$')
+        echo "New PR created: #${NEW_PR_NUM} (${NEW_PR_URL})"
+        echo "new-pr-number=${NEW_PR_NUM}" >> "$GITHUB_OUTPUT"
+
+        # Assign PR to triggering user and original author
+        echo "Assigning PR to: ${USER_TRIGGERING} and ${PR_AUTHOR}"
+        set +e
+        gh pr edit "${NEW_PR_NUM}" \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --add-assignee "${USER_TRIGGERING},${PR_AUTHOR}" 2>&1 || \
+          echo "::warning::Failed to assign PR"
+        set -e
+
+        # React with rocket to the triggering comment
+        gh api -X POST \
+          "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+          -f content='rocket' > /dev/null
+
+        # Create success comment
+        SUCCESS_BODY=$(cat <<EOF
+        ## :rocket: Migration Completed!
+
+        The pull request [#${NEW_PR_NUM}](${NEW_PR_URL}) has been created successfully.
+
+        Thank you @${PR_AUTHOR} for your contribution! Please review the new PR and make any necessary changes.
+
+        This PR will be closed by the maintainers soon.
+
+        You can now work on the new pull request by cloning this pull request branch:
+
+        \`\`\`terminal
+        git clone -b ${PR_BASE} --single-branch https://github.com/${ORGANIZATION}/${REPOSITORY}.git
+        \`\`\`
+
+        If you have [GitHub CLI](https://cli.github.com/) installed, you can also use:
+
+        \`\`\`terminal
+        gh pr checkout ${NEW_PR_URL}
+        \`\`\`
+
+        Thank you again for your contribution @${PR_AUTHOR}!
+        EOF
+        )
+
+        gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${SUCCESS_BODY}"
 
     - name: "Handle failure"
-      if: failure() && env.CONTINUE == 'true'
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      if: failure() && steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
+      shell: bash
       env:
+        GH_TOKEN: ${{ inputs.github-token }}
         TEAM_SLUG: ${{ inputs.team-slug }}
-      with:
-        github-token: ${{ inputs.github-token }}
-        script: |
-          // React negatively to the comment
-          await github.rest.reactions.createForIssueComment({
-            owner: process.env.ORGANIZATION,
-            repo: process.env.REPOSITORY,
-            comment_id: process.env.COMMENT_ID,
-            content: '-1',
-          });
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+      run: |
+        # React negatively to the comment
+        gh api -X POST \
+          "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+          -f content='-1' > /dev/null
 
-          // Create error comment
-          const teamSlug = process.env.TEAM_SLUG;
-          const runUrl = process.env.GITHUB_SERVER_URL + '/' + process.env.GITHUB_REPOSITORY + '/actions/runs/' + process.env.GITHUB_RUN_ID;
+        # Create error comment
+        RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
-          await github.rest.issues.createComment({
-            owner: process.env.ORGANIZATION,
-            repo: process.env.REPOSITORY,
-            issue_number: process.env.PR_NUMBER,
-            body: `**:x: Migration Failed :x:**\n\nAn error occurred while migrating or syncing the PR. Pinging @${process.env.ORGANIZATION}/${teamSlug} for assistance.\n\nPlease check the [workflow run](${runUrl}) for details.`,
-          });
+        ERROR_BODY=$(cat <<EOF
+        **:x: Migration Failed :x:**
+
+        An error occurred while migrating or syncing the PR. Pinging @${ORGANIZATION}/${TEAM_SLUG} for assistance.
+
+        Please check the [workflow run](${RUN_URL}) for details.
+        EOF
+        )
+
+        gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${ERROR_BODY}"
 
     - name: "Finalize and set outputs"
       if: always()
       id: finalize
       shell: bash
+      env:
+        CONTINUE: ${{ steps.check-membership.outputs.continue }}
+        SKIP: ${{ steps.pr-details.outputs.skip }}
+        NEW_PR_NUMBER: ${{ steps.create-pr.outputs.new-pr-number }}
       run: |
-        if [ "${CONTINUE}" == "true" ] && [ -n "${NEW_PR_NUMBER}" ]; then
+        if [ "${CONTINUE}" == "true" ] && [ "${SKIP}" != "true" ] && [ -n "${NEW_PR_NUMBER}" ]; then
           echo "migration-successful=true" >> $GITHUB_OUTPUT
           echo "skip-migration=false" >> $GITHUB_OUTPUT
-        elif [ "${CONTINUE}" == "false" ]; then
+        elif [ "${CONTINUE}" == "false" ] || [ "${SKIP}" == "true" ]; then
           echo "migration-successful=false" >> $GITHUB_OUTPUT
           echo "skip-migration=true" >> $GITHUB_OUTPUT
         else
