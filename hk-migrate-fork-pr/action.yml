@@ -185,13 +185,13 @@ runs:
         CONFLICT_MODE_INPUT: ${{ inputs.conflict-mode }}
         ORGANIZATION: ${{ inputs.organization }}
         REPOSITORY: ${{ inputs.repository }}
-      run: |
+      run: | # zizmor: ignore[github-env]
         # Export environment variables for downstream steps
         echo "PR_NUMBER=${PR_NUMBER}" >> $GITHUB_ENV
         echo "COMMENT_ID=${COMMENT_ID}" >> $GITHUB_ENV
         echo "USER_TRIGGERING=${USER_TRIGGERING}" >> $GITHUB_ENV
         echo "ORGANIZATION=${ORGANIZATION}" >> $GITHUB_ENV
-        
+
         # Set repository name
         if [ -z "${REPOSITORY}" ]; then
           # Extract from GITHUB_REPOSITORY (format: org/repo)
@@ -200,12 +200,12 @@ runs:
           REPO_NAME="${REPOSITORY}"
         fi
         echo "REPOSITORY=${REPO_NAME}" >> $GITHUB_ENV
-        
+
         # Detect conflict resolution mode
         # 1. auto - exits on conflicts (default)
         # 2. theirs - resolves conflicts by taking changes from the head branch
         # 3. ours - resolves conflicts by taking changes from the base branch
-        
+
         MODE=''
         if [ "${CONFLICT_MODE_INPUT}" != "auto" ]; then
           # Use explicit override
@@ -228,7 +228,7 @@ runs:
             echo "No specific sync mode provided, defaulting to 'auto' which will exit if there are conflicts."
           fi
         fi
-        
+
         echo "MODE=${MODE}" >> $GITHUB_ENV
         echo "CONTINUE=unknown" >> $GITHUB_ENV
 
@@ -246,11 +246,11 @@ runs:
               team_slug: process.env.TEAM_SLUG,
               username: process.env.USER_TRIGGERING,
             });
-            
+
             if (core.isDebug()) {
               core.debug(JSON.stringify(data, null, 2));
             }
-            
+
             // Check if the user is a member or maintainer of the team
             if (data && data.state === 'active' && (data.role === 'member' || data.role === 'maintainer')) {
               core.info(`User ${process.env.USER_TRIGGERING} is a ${data.role} of team ${process.env.TEAM_SLUG}`);
@@ -270,6 +270,8 @@ runs:
     - name: "Delete previous reactions"
       if: always()
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      env:
+        BOT_USERNAME: ${{ inputs.bot-username }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
@@ -279,12 +281,12 @@ runs:
               repo: process.env.REPOSITORY,
               comment_id: process.env.COMMENT_ID,
             });
-            
+
             if (data && data.length > 0) {
               core.info(`Found ${data.length} reactions for comment ${process.env.COMMENT_ID}`);
-              
+
               // Remove reactions from the bot
-              const botUsername = '${{ inputs.bot-username }}';
+              const botUsername = process.env.BOT_USERNAME;
               for (const reaction of data) {
                 if (reaction.user.login === botUsername) {
                   await github.rest.reactions.deleteForIssueComment({
@@ -311,7 +313,7 @@ runs:
         github-token: ${{ inputs.github-token }}
         script: |
           const continueValue = process.env.CONTINUE;
-          
+
           if (continueValue === 'true') {
             core.info('User is authorized. Adding positive reaction.');
             await github.rest.reactions.createForIssueComment({
@@ -322,7 +324,7 @@ runs:
             });
           } else {
             core.warning(`User is NOT authorized to migrate PRs!`);
-            
+
             // React negatively
             await github.rest.reactions.createForIssueComment({
               owner: process.env.ORGANIZATION,
@@ -330,7 +332,7 @@ runs:
               comment_id: process.env.COMMENT_ID,
               content: '-1',
             });
-            
+
             // Create a comment to notify the user
             const teamSlug = process.env.TEAM_SLUG;
             await github.rest.issues.createComment({
@@ -353,21 +355,21 @@ runs:
             repo: process.env.REPOSITORY,
             pull_number: process.env.PR_NUMBER,
           });
-          
+
           if (!data || !data.head || !data.base) {
             throw new Error('Pull request data is incomplete');
           }
-          
+
           if (core.isDebug()) {
             core.debug(JSON.stringify(data, null, 2));
           }
-          
+
           // Check if PR is already in the main repository
           const expectedFullName = `${process.env.ORGANIZATION}/${process.env.REPOSITORY}`;
           if (data.head.repo.full_name === expectedFullName) {
             core.warning('The PR is already in the main repository. No migration needed. Exiting...');
             core.exportVariable('CONTINUE', 'false');
-            
+
             // React with confused emoji
             await github.rest.reactions.createForIssueComment({
               owner: process.env.ORGANIZATION,
@@ -375,7 +377,7 @@ runs:
               comment_id: process.env.COMMENT_ID,
               content: 'confused',
             });
-            
+
             // Notify user
             await github.rest.issues.createComment({
               owner: process.env.ORGANIZATION,
@@ -385,7 +387,7 @@ runs:
             });
             return;
           }
-          
+
           // Set PR information as environment variables
           core.exportVariable('PR_HEAD_BRANCH', data.head.ref);
           core.exportVariable('PR_HEAD_REPO', data.head.repo.full_name);
@@ -394,9 +396,9 @@ runs:
           core.exportVariable('PR_TITLE', data.title);
           core.exportVariable('PR_BODY', data.body || '');
           core.exportVariable('PR_AUTHOR', data.user.login);
-          
+
           core.setOutput('migration-branch', `migration/pr-${process.env.PR_NUMBER}`);
-          
+
           core.info('PR Head: ' + data.head.repo.full_name + '/' + data.head.ref);
           core.info('PR Base: ' + data.base.repo.full_name + '/' + data.base.ref);
           core.info('Migration branch: migration/pr-' + process.env.PR_NUMBER);
@@ -421,48 +423,48 @@ runs:
         # Configure git
         git config user.name "${BOT_USERNAME}"
         git config user.email "${BOT_EMAIL}"
-        
+
         # Add head repo as remote
         echo "Adding head repo as remote: ${PR_HEAD_REPO}"
         git remote add head_repo https://x-access-token:${GITHUB_TOKEN}@github.com/${PR_HEAD_REPO}.git
-        
+
         echo "Fetching '${PR_HEAD_BRANCH}' branch from '${PR_HEAD_REPO}'"
         git fetch head_repo ${PR_HEAD_BRANCH}
-        
+
         echo "Checking out '${PR_BASE_BRANCH}' branch from 'head_repo/${PR_HEAD_BRANCH}'"
         git checkout -b ${PR_BASE_BRANCH} head_repo/${PR_HEAD_BRANCH}
-        
+
         echo "Pulling '${PR_HEAD_BRANCH}' from '${PR_HEAD_REPO}'"
         git pull head_repo ${PR_HEAD_BRANCH} || true
-        
+
         echo "Merging 'main' branch into '${PR_BASE_BRANCH}'"
         git merge origin/main || true
-        
+
         # Check for merge conflicts
         CONFLICTS=$(git ls-files -u | wc -l)
         echo "Number of conflicting files: ${CONFLICTS}"
-        
+
         if [[ "$CONFLICTS" -gt 0 ]]; then
           if [[ -n "${MODE}" ]]; then
             echo "::warning::Conflicts detected. Attempting to resolve using mode ${MODE}."
-            
+
             # Show conflicting files
             echo "Conflicting files:"
             git status
             echo ""
-            
+
             # Resolve conflicts
             echo "Resolving conflicts by taking '${MODE}' changes"
             git checkout ${MODE} .
             git add .
-            
+
             # Verify if conflicts are resolved
             REMAINING_CONFLICTS=$(git ls-files -u | wc -l)
             if [ "$REMAINING_CONFLICTS" -gt 0 ]; then
               echo "::error::Conflicts remain after resolution. Aborting."
               exit 1
             fi
-            
+
             # Continue the merge
             git -c core.editor=true merge --continue || { echo "::error::Merge failed. Aborting."; exit 1; }
           else
@@ -473,12 +475,12 @@ runs:
         else
           echo "No merge conflicts detected."
         fi
-        
+
         echo "Pushing changes to '${ORGANIZATION}/${REPOSITORY}' repo"
         git push origin ${PR_BASE_BRANCH} --force-with-lease || \
           (git fetch --all && git push origin ${PR_BASE_BRANCH} --force-with-lease) || \
           { echo "::error::Push failed. Aborting."; exit 1; }
-        
+
         # If using 'ours' mode, also push to the head repo
         if [[ "${MODE}" == "--ours" ]]; then
           echo "Sync mode is 'ours'. Pushing to head_repo/${PR_HEAD_BRANCH} with 'ours' changes"
@@ -499,9 +501,9 @@ runs:
           const prBody = process.env.PR_BODY;
           const prAuthor = process.env.PR_AUTHOR;
           const userTriggering = process.env.USER_TRIGGERING;
-          
+
           core.info(`Checking for existing PRs with base branch ${prBaseBranch}...`);
-          
+
           // Check if PR already exists
           const existingPrs = await github.rest.pulls.list({
             owner: process.env.ORGANIZATION,
@@ -509,18 +511,18 @@ runs:
             head: `${process.env.ORGANIZATION}:${prBaseBranch}`,
             state: 'open',
           });
-          
+
           if (existingPrs.data.length > 0) {
             core.info(`PR already exists for branch ${prBaseBranch}. Skipping creation.`);
             core.setOutput('new-pr-number', existingPrs.data[0].number);
             return;
           }
-          
+
           // Create new PR
           core.info(`Creating new PR for branch ${prBaseBranch}...`);
-          
+
           const newPrBody = `This PR is a migrated pull request created from [#${prNumber}](https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}/pull/${prNumber}) to allow the code to access repository secrets for CI/CD.\n\nCheck the [original PR](https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}/pull/${prNumber}) made by @${prAuthor} for more details.\n\nCloses #${prNumber}\n\n## Original Pull Request\n\n### ${prTitle}\n\n${prBody}`;
-          
+
           const newPr = await github.rest.pulls.create({
             owner: process.env.ORGANIZATION,
             repo: process.env.REPOSITORY,
@@ -529,12 +531,12 @@ runs:
             title: 'migrated (PR ' + prNumber + '): ' + prTitle,
             body: newPrBody,
           });
-          
+
           core.info('New PR created: #' + newPr.data.number);
           core.setOutput('new-pr-number', newPr.data.number);
           core.exportVariable('NEW_PR_NUMBER', newPr.data.number);
           core.exportVariable('NEW_PR_URL', newPr.data.html_url);
-          
+
           // Assign PR to triggering user and original author
           core.info('Assigning PR to: ' + userTriggering + ' and ' + prAuthor);
           try {
@@ -547,7 +549,7 @@ runs:
           } catch (error) {
             core.warning('Failed to assign PR: ' + error.message);
           }
-          
+
           // React positively to the triggering comment
           await github.rest.reactions.createForIssueComment({
             owner: process.env.ORGANIZATION,
@@ -555,10 +557,10 @@ runs:
             comment_id: process.env.COMMENT_ID,
             content: 'rocket',
           });
-          
+
           // Create success comment
           const successBody = `## :rocket: Migration Completed!\n\nThe pull request [#${newPr.data.number}](${newPr.data.html_url}) has been created successfully.\n\nThank you @${prAuthor} for your contribution! Please review the new PR and make any necessary changes.\n\nThis PR will be closed by the maintainers soon.\n\nYou can now work on the new pull request by cloning this pull request branch:\n\n\`\`\`terminal\ngit clone -b ${prBaseBranch} --single-branch https://github.com/${process.env.ORGANIZATION}/${process.env.REPOSITORY}.git\n\`\`\`\n\nIf you have [GitHub CLI](https://cli.github.com/) installed, you can also use:\n\n\`\`\`terminal\ngh pr checkout ${newPr.data.html_url}\n\`\`\`\n\nThank you again for your contribution @${prAuthor}!`;
-          
+
           await github.rest.issues.createComment({
             owner: process.env.ORGANIZATION,
             repo: process.env.REPOSITORY,
@@ -581,11 +583,11 @@ runs:
             comment_id: process.env.COMMENT_ID,
             content: '-1',
           });
-          
+
           // Create error comment
           const teamSlug = process.env.TEAM_SLUG;
           const runUrl = process.env.GITHUB_SERVER_URL + '/' + process.env.GITHUB_REPOSITORY + '/actions/runs/' + process.env.GITHUB_RUN_ID;
-          
+
           await github.rest.issues.createComment({
             owner: process.env.ORGANIZATION,
             repo: process.env.REPOSITORY,
