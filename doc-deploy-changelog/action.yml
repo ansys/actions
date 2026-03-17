@@ -136,6 +136,13 @@ inputs:
     required: false
     type: string
 
+  tomlkit-version:
+    description: |
+      Tomlkit version used for reading and writing the towncrier configuration.
+    default: '0.14.0'
+    required: false
+    type: string
+
   use-python-cache:
     description: |
       Whether to use the Python cache for installing previously downloaded
@@ -219,13 +226,14 @@ runs:
           echo "IS_PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
         fi
 
-    - name: "Install towncrier, toml, and the project"
+    - name: "Install towncrier, toml, tomlkit, and the project"
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
         TOMLI_VERSION: ${{ inputs.tomli-version }}
+        TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}"
+        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}" tomlkit=="${TOMLKIT_VERSION}"
 
     - name: "Get towncrier directory and project name"
       shell: python
