@@ -360,11 +360,14 @@ runs:
           # Run towncrier with the tag specified
           # Update changelog with the tag version
           if [[ "${IS_PRE_RELEASE}" == "true" ]]; then
+            echo "Creating CHANGELOG section for pre-release version ${TAG_VERSION}"
             buildcmd=$(towncrier build --keep --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
           else
+            echo "Creating CHANGELOG section for version ${TAG_VERSION}"
             buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
           fi
 
+          cat builderr.txt
           section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
 
           # Remove builderr.txt
