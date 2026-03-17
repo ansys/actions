@@ -86,7 +86,7 @@ updates:
       # Group dedicated to vale due to the use of a release branch (reviewdog20)
       vale-action:
         patterns:
-          - "errata-ai/vale-action"
+          - "vale-cli/vale-action"
       # Actions associated to our documentation composite actions
       doc-related-actions:
         patterns:
