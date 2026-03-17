@@ -204,12 +204,20 @@ runs:
         provision-uv: false
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: Save tag version
+    - name: Save tag version and check if pre-release
       id: save-tag-version
       shell: bash
       run: |
         # /refs/tags/v0.1.0 -> 0.1.0
-        echo "TAG_VERSION=${GITHUB_REF##*/v}" >> ${GITHUB_OUTPUT}
+        tag_version=${GITHUB_REF##*/v}
+        echo "TAG_VERSION=$tag_version" >> ${GITHUB_OUTPUT}
+
+        # Check if the tag is a pre-release by seeing if the last part of the tag is not only a number
+        if [[ ! $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "IS_PRE_RELEASE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "IS_PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
+        fi
 
     - name: "Install towncrier, toml, and the project"
       env:
@@ -321,6 +329,7 @@ runs:
       id: new-section-changelog
       env:
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
+        IS_PRE_RELEASE: ${{ steps.save-tag-version.outputs.IS_PRE_RELEASE }}
         UPDATE_BRANCH: ${{ steps.set-branch-changelog.outputs.UPDATE_BRANCH }}
         RELEASE_BRANCH_EXISTS: ${{ steps.set-branch-changelog.outputs.RELEASE_BRANCH_EXISTS }}
         BOT_USER: ${{ inputs.bot-user }}
@@ -342,7 +351,12 @@ runs:
 
           # Run towncrier with the tag specified
           # Update changelog with the tag version
-          buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          if [[ "${IS_PRE_RELEASE}" == "true" ]]; then
+            buildcmd=$(towncrier build --yes --keep --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          else
+            buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          fi
+
           section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
 
           # Remove builderr.txt
