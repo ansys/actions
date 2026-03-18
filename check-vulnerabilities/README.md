@@ -6,7 +6,7 @@ vulnerability is added to `.safety-ignore.yml`, it is also added to `ignored-saf
 the migration is complete. This ensures that the CI checks continue to function correctly
 during the transition period.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > The `ignored-safety.txt` file is still required for the consumers of this action to work properly. Old action
 > versions will continue to use `ignored-safety.txt` until repository maintainers upgrade to the latest
 > version of the action that supports `.safety-ignore.yml`.
