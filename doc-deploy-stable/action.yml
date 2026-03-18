@@ -38,6 +38,10 @@ description: |
       Pre-releases are not supported prior to ``ansys/actions/v10.1``. `See the migration guide <https://actions.docs.ansys.com/version/stable/migrations/index.html>`_
       for information on supported pre-releases.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push documentation to the gh-pages branch
+
 inputs:
 
   # Required inputs
@@ -229,7 +233,7 @@ runs:
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credential must be persisted in this case
@@ -314,7 +318,7 @@ runs:
         rm -rf version/${VERSION} && mkdir -p version/${VERSION}
 
     - name: "Download the stable documentation artifact"
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/${{ steps.version-number.outputs.VERSION }}
@@ -378,6 +382,7 @@ runs:
         write_versions_file()
 
     - name: "Update the content for the 'version/stable' folder"
+      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       shell: bash
       env:
         LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
@@ -387,6 +392,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       with:
         level: "INFO"
         message: >
@@ -394,6 +400,7 @@ runs:
           file in each one of outdated stable versions.
 
     - name: "Generate the template content for the 'announcement.html' file"
+      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       shell: bash
       run: |
         cat > announcement.html <<'EOF'
@@ -404,6 +411,7 @@ runs:
         EOF
 
     - name: "Render the 'announcement.html' template with the desired stable version"
+      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       env:
         LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
         CNAME: ${{ inputs.cname }}
@@ -415,6 +423,7 @@ runs:
         sed -i "s|STABLE_URL|$stable_url|g" announcement.html
 
     - name: "Place the 'announcement.html' file in every public folder of all the outdated versions"
+      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       shell: bash
       env:
         LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
@@ -427,6 +436,7 @@ runs:
         done
 
     - name: "Delete the 'announcement.html' file used as template"
+      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       shell: bash
       run: |
         rm -rf announcement.html
@@ -453,11 +463,14 @@ runs:
         level: "INFO"
         message: >
           Copy the index.html from the stable version and update all
-          local href and source links to point to either the stable or dev version.
+          local href and source links to point to either the stable version (or prerelease version
+          if that happens to be the first ever release).
 
-    - name: "Use the latest 'version/{stable|dev}/index.html' in the landing page"
+    - name: "Use the latest 'version/{stable|<prerelease>}/index.html' in the landing page if present"
       if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       shell: bash
+      env:
+        VERSION: ${{ steps.version-number.outputs.VERSION }}
       run: |
         if [[ -f 'version/stable/index.html' ]]; then
           cp version/stable/index.html index.html
@@ -467,8 +480,16 @@ runs:
           sed -i 's|const SEARCH_FILE = ".*_static/search.json";|const SEARCH_FILE = "version/stable/_static/search.json";|g' index.html
           sed -i '/const ADVANCE_SEARCH_PATH = "search.html";/s|search.html|version/stable/search.html|' index.html
           sed -i 's|<html lang="en" data-content_root="./" >|<html lang="en" data-content_root="./version/stable/" >|g' index.html
+        elif [[ -f "version/${VERSION}/index.html" ]]; then
+          cp "version/${VERSION}/index.html" index.html
+          sed -i "s/href=\"\([^:\"]*\)\"/href=\"version\/${VERSION}\/\1\"/g" index.html
+          sed -i "s/src=\"\([^:\"]*\)\"/src=\"version\/${VERSION}\/\1\"/g" index.html
+          sed -i "s/action=\"search.html\"/action=\"version\/${VERSION}\/search.html\"/g" index.html
+          sed -i "s|const SEARCH_FILE = \".*_static/search.json\";|const SEARCH_FILE = \"version/${VERSION}/_static/search.json\";|g" index.html
+          sed -i "/const ADVANCE_SEARCH_PATH = \"search.html\";/s|search.html|version/${VERSION}/search.html|" index.html
+          sed -i "s|<html lang=\"en\" data-content_root=\"./\" >|<html lang=\"en\" data-content_root=\"./version/${VERSION}/\" >|g" index.html
         else
-          echo "Error: The 'index.html' file does not exist." >&2
+          echo "Error: No 'index.html' file found in version/stable or version/${VERSION}." >&2
           exit 1
         fi
 
@@ -526,7 +547,7 @@ runs:
       uses: ansys/actions/_doc-gen-sitemap@main
       with:
         cname: ${{ inputs.cname }}
-        html-directory: version/stable
+        html-directory: version/${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION != '' && 'stable' || steps.version-number.outputs.VERSION }}
 
     # ------------------------------------------------------------------------
 

@@ -34,6 +34,17 @@ description: |
       <https://actions.docs.ansys.com/version/stable/build-actions/index.html#build-ci-wheels-action>`_
       if your library is a pure Python project with no source code to be compiled.
 
+  .. important:: **Required GitHub Permissions**
+
+     **Base permissions:**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
+     **Conditional permissions** (only when ``attest-provenance: true``):
+
+     - **id-token**: ``write`` - Required for generating OIDC tokens for provenance attestations
+     - **attestations**: ``write`` - Required for creating artifact attestations
+
 inputs:
 
   # Required inputs
@@ -130,7 +141,7 @@ runs:
 
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
         fetch-depth: ${{ inputs.checkout-fetch-depth }}
@@ -197,7 +208,7 @@ runs:
         python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.library-name }}-artifacts
         path: dist/
@@ -205,6 +216,6 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
       with:
         subject-path: dist/

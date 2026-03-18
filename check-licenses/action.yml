@@ -39,6 +39,10 @@ description: |
     Even though packages may define their license as of a certain type, the
     package could be not applying properly its licensing conditions.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
   .. jinja:: check-licenses
 
       .. grid:: 1 1 1 2
@@ -172,11 +176,19 @@ runs:
       with:
         level: "ERROR"
         message: >
-          The check-licenses action leverages Ansys fork of pip-licenses.
+          The check-licenses action depends on the prettytable package.
           This package requires Python 3.10 or higher.
 
+    - name: Announce the switch to original pip-licenses package
+      uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Maintenance of the original pip-licenses package has resumed, and the Ansys fork is being discontinued.
+          Therefore, the check-licenses action has been updated to use the original pip-licenses package.
+
     - name: "Install Git and clone project"
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
@@ -262,31 +274,14 @@ runs:
           fi
         fi
 
-    - name: "Update pip"
+    - name: "Update pip and install pip-licenses library"
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
-        $INSTALL_COMMAND -U pip
-
-    - name: Clone ansys/pip-licenses on main branch
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-      with:
-        repository: ansys/pip-licenses
-        path: "external/pip-licenses"
-        ref: "main"
-        persist-credentials: false
-
-    - name: Install ansys/pip-licenses main branch
-      shell: bash
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --no-cache' || 'python -m pip install --no-cache-dir' }}
-      run: |
-        ${ACTIVATE_VENV}
-        $INSTALL_COMMAND external/pip-licenses
+        $INSTALL_COMMAND -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Check if specific target is requested"
       id: specific-target-requested
@@ -303,7 +298,7 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
-      run:
+      run: |
         ${ACTIVATE_VENV}
         ${INSTALL_COMMAND} "$INSTALL_TARGET"
 

@@ -21,7 +21,14 @@
 # SOFTWARE.
 
 name: "Automerge dependabot and pre-commit.ci PRs"
-description: "Action merging dependabot and pre-commit.ci PRs."
+
+description: |
+  Action merging dependabot and pre-commit.ci PRs.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to merge pull requests
+     - **pull-requests**: ``write`` - Required to approve and enable auto-merge on pull requests
 
 inputs:
   approver:

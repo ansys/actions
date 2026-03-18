@@ -25,8 +25,13 @@ name: |
 
 description: |
     Check documentation style using `Vale <https://vale.sh/>`_. This action is a
-    wrapper on top of the `errata-ai/vale-action
-    <https://github.com/errata-ai/vale-action>`_.
+    wrapper on top of the `vale-cli/vale-action
+    <https://github.com/vale-cli/vale-action>`_.
+
+    .. important:: **Required GitHub Permissions**
+
+       - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+       - **pull-requests**: ``write`` - Required for Vale to add review comments and suggestions on pull requests
 
 inputs:
 
@@ -116,7 +121,7 @@ runs:
           input accordingly. The ``toml-version`` input will be removed in v11.
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
       if: inputs.checkout == 'true'
@@ -220,7 +225,7 @@ runs:
     # reviewdog20 branch with the new release changes, see next step.
     - name: "Dummy step to track vale-action changes"
       if: false
-      uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
+      uses: vale-cli/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
       with:
         reporter: github-pr-check
         filter_mode: nofilter
@@ -230,12 +235,12 @@ runs:
     # dependabot, we need to update the reviewdog20 branch with the new release changes.
     # Once performed, we can manually update the commit hash below.
     - name: "Run Vale"
-      uses: errata-ai/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # zizmor: ignore[stale-action-refs] , Read warning above
+      uses: vale-cli/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # zizmor: ignore[stale-action-refs] , Read warning above
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
         files: ${{ inputs.files }}
-        reporter: github-pr-check
+        reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
         fail_level: ${{ inputs.fail-level }}
         filter_mode: nofilter
         vale_flags: "${{ steps.vale-flags.outputs.VALE_FLAGS }}"

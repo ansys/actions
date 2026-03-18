@@ -34,6 +34,10 @@ description: |
     setup guide, https://actions.docs.ansys.com/version/dev/migrations/docs-changelog-setup.html,
     the changelog for your release is included in the release notes on GitHub.
 
+    .. important:: **Required GitHub Permissions**
+
+       - **contents**: ``write`` - Required to create GitHub releases and upload release assets
+
 
 inputs:
 
@@ -201,7 +205,7 @@ runs:
           can be true. Please set one of them to false.
 
     - name: "Checkout repository" # zizmor: ignore[artipacked] , credentials must be persisted in this case
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
     # ------------------------------------------------------------------------
 
@@ -213,7 +217,7 @@ runs:
           directory containing the final artifacts to be published in GitHub.
 
     - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
       with:
         path: /tmp/artifacts
 

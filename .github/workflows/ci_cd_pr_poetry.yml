@@ -25,7 +25,7 @@ jobs:
       environment: ${{ steps.block.outputs.environment }}
     steps:
 
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -60,13 +60,14 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
       attestations: write # Needed for provenance attestation
     steps:
 
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -90,7 +91,7 @@ jobs:
       attestations: write # Needed for provenance attestation
     steps:
 
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -113,7 +114,7 @@ jobs:
     steps:
 
     - name: "Download distribution artifacts"
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
       with:
         name: ${{ env.LIBRARY_NAME }}-artifacts
         path: dist
@@ -142,6 +143,7 @@ jobs:
             library: pygranta
           - name: pydpf-composites
             library: ansys-dpf-composites
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -149,14 +151,14 @@ jobs:
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           path: actions
@@ -185,6 +187,7 @@ jobs:
             library: ansys-mechanical-core
           - name: pydpf-composites
             library: ansys-dpf-composites
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -192,14 +195,14 @@ jobs:
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           path: actions
@@ -223,17 +226,18 @@ jobs:
             library: pytwin
           - name: pymechanical
             library: ansys-mechanical-core
+      fail-fast: false
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           path: actions
@@ -260,17 +264,18 @@ jobs:
             library: ansys-mechanical-core
           - name: pydpf-composites
             library: ansys-dpf-composites
+      fail-fast: false
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           path: actions

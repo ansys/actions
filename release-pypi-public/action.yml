@@ -36,6 +36,14 @@ description: |
       :ref:`release_pypi_trusted_publisher` if you wish to use this security
       feature.
 
+  .. important:: **Required GitHub Permissions**
+
+     **Conditional permissions** (only when using PyPI trusted publishers):
+
+     - **id-token**: ``write`` - Required for OIDC authentication with PyPI trusted publishers
+
+     When using API tokens, no GitHub permissions are required.
+
 inputs:
 
   # Required inputs

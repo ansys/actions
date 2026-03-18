@@ -185,7 +185,7 @@ runs:
 
     - name: Cache Chocolatey packages
       id: cache
-      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
       if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
@@ -216,7 +216,7 @@ runs:
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install quarto --version=1.6.43 -y
+        choco install quarto -y
         echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     # ------------------------------------------------------------------------
@@ -598,14 +598,14 @@ runs:
           Upload HTML and PDF
 
     - name: Upload HTML documentation artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: Upload PDF documentation artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf
