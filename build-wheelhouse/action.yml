@@ -412,20 +412,20 @@ runs:
       uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
       with:
         files: wheelhouse
-        dest: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
+        dest: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: "Upload the compressed wheelhouse"
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
-        name: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}"
-        path: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
+        name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
+        path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
       with:
-        subject-path: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
+        subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
       uses: ansys/actions/check-licenses@main
