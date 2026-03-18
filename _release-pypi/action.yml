@@ -174,8 +174,8 @@ runs:
 
         # Extract version from filename
         # Examples:
-        #   ansys-project-1.2.3-py3-none-any.whl
-        #   ansys-project-1.2.3.tar.gz
+        #   ansys_project-1.2.3-py3-none-any.whl
+        #   ansys_project-1.2.3.tar.gz
         ARTIFACT_VERSION="$(basename "${ARTIFACT_FILE}" \
           | sed -E 's/^[^0-9]+//; s/-.*$//; s/\.(tar\.gz|whl)$//')"
 

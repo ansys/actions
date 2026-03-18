@@ -344,21 +344,12 @@ runs:
         fi
         echo "Found artifact: ${ARTIFACT_FILE}"
 
-        # Extract version from filename.
-        # Wheel format (name uses underscores): ansys_project-1.2.3-py3-none-any.whl
-        # Sdist format (name may use hyphens):  ansys-project-1.2.3.tar.gz
-        ARTIFACT_FILENAME="$(basename "${ARTIFACT_FILE}")"
-        if [[ "${ARTIFACT_FILENAME}" == *.whl ]]; then
-          # Version is the second '-'-delimited field (name uses underscores, not hyphens)
-          _tmp="${ARTIFACT_FILENAME#*-}"
-          ARTIFACT_VERSION="${_tmp%%-*}"
-        elif [[ "${ARTIFACT_FILENAME}" == *.tar.gz ]]; then
-          # Version is the last '-'-delimited field after stripping the extension
-          _tmp="${ARTIFACT_FILENAME%.tar.gz}"
-          ARTIFACT_VERSION="${_tmp##*-}"
-        else
-          ARTIFACT_VERSION=""
-        fi
+        # Extract version from filename
+        # Examples:
+        #   ansys_project-1.2.3-py3-none-any.whl
+        #   ansys_project-1.2.3.tar.gz
+        ARTIFACT_VERSION="$(basename "${ARTIFACT_FILE}" \
+          | sed -E 's/^[^0-9]+//; s/-.*$//; s/\.(tar\.gz|whl)$//')"
 
         if [[ -z "${ARTIFACT_VERSION}" ]]; then
           echo "Failed to extract version from artifact filename"
