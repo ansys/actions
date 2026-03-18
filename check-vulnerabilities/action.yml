@@ -489,7 +489,7 @@ runs:
             SAFETY_CONFIG_ERROR="true"
           fi
         fi
-        
+
         # Check if provided bandit config file exists
         if [[ "${BANDIT_CONFIGFILE}" != "" ]]; then
           if [[ ! -f "${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}" ]]; then
