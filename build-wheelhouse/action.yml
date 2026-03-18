@@ -366,8 +366,6 @@ runs:
     - name: Generate build provenance attestation
       if: ${{ inputs.attest-provenance == 'true' }}
       uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
-      env:
-        LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}
       with:
         subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
 
@@ -401,26 +399,20 @@ runs:
 
     - name: "Compress the wheelhouse"
       uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
-      env:
-        LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}-
       with:
         files: wheelhouse
         dest: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
 
     - name: "Upload the compressed wheelhouse"
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-      env:
-        LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}-
       with:
-        name: "${LIBRARY_NAME}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}"
-        path: "${LIBRARY_NAME}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
+        name: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}"
+        path: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
       uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
-      env:
-        LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}
       with:
         subject-path: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
 
