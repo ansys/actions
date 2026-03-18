@@ -99,8 +99,9 @@ inputs:
   bandit-configfile:
     description: |
       Optional config file to use for selecting plugins, overriding defaults,
-      and customizing checks performed by bandit.
-
+      and customizing checks performed by bandit. Path location should be relative
+      to the repository root. If the provided file does not exist, the action will
+      fail with an error.
     default: ''
     required: false
     type: string
@@ -471,36 +472,100 @@ runs:
           python -m pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
         fi
 
-    - name: "Run safety and bandit"
+    - name: "Validate configuration files"
+      id: validate-config-files
+      shell: bash
+      env:
+        BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
+        SAFETY_CONFIGFILE: ${{ inputs.safety-configfile }}
+      run: |
+        # Initialize validation results
+        SAFETY_CONFIG_ERROR="false"
+        BANDIT_CONFIG_ERROR="false"
+
+        # Check if provided safety policy file exists
+        if [[ "${SAFETY_CONFIGFILE}" != "" ]]; then
+          if [[ ! -f "${GITHUB_WORKSPACE}/${SAFETY_CONFIGFILE}" ]]; then
+            SAFETY_CONFIG_ERROR="true"
+          fi
+        fi
+        
+        # Check if provided bandit config file exists
+        if [[ "${BANDIT_CONFIGFILE}" != "" ]]; then
+          if [[ ! -f "${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}" ]]; then
+            BANDIT_CONFIG_ERROR="true"
+          fi
+        fi
+
+        # Set outputs
+        echo "SAFETY_CONFIG_ERROR=${SAFETY_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
+        echo "BANDIT_CONFIG_ERROR=${BANDIT_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ steps.validate-config-files.outputs.SAFETY_CONFIG_ERROR == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          The provided safety policy file '${{ inputs.safety-configfile }}' does not exist in the repository.
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ steps.validate-config-files.outputs.BANDIT_CONFIG_ERROR == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          The provided bandit config file '${{ inputs.bandit-configfile }}' does not exist in the repository.
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Running safety vulnerability checks.
+
+    - name: "Run safety checks"
       shell: bash
       continue-on-error: true
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
-        BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
         SAFETY_CONFIGFILE: ${{ inputs.safety-configfile }}
-        SOURCE_DIRECTORY: ${{ inputs.source-directory }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         # Set the safety policy file to use
         if [[ "${SAFETY_CONFIGFILE}" == "" ]]; then
           SAFETY_POLICY_FILE="${GITHUB_ACTION_PATH}/.safety-ignore.yml"
+          echo "Using default safety policy file: ${SAFETY_POLICY_FILE}"
         else
           SAFETY_POLICY_FILE="${GITHUB_WORKSPACE}/${SAFETY_CONFIGFILE}"
-          # Check if the provided policy file exists
-          if [[ ! -f "${SAFETY_POLICY_FILE}" ]]; then
-            echo "Error: The provided safety policy file '${SAFETY_CONFIGFILE}' does not exist in the repository."
-            exit 1
-          fi
+          echo "Using custom safety policy file: ${SAFETY_POLICY_FILE}"
         fi
 
-        # Run security tools using the specified policy file
+        # Run safety vulnerability checks
         safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
 
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Running bandit security checks.
+
+    - name: "Run bandit checks"
+      shell: bash
+      continue-on-error: true
+      env:
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
+        BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
+        SOURCE_DIRECTORY: ${{ inputs.source-directory }}
+      run: |
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
+        # Set the bandit config file to use
         if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
           CONFIGFILE=""
+          echo "Using default bandit configuration"
         else
-          CONFIGFILE="-c ${BANDIT_CONFIGFILE}"
+          CONFIGFILE="-c ${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}"
+          echo "Using custom bandit config file: ${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}"
         fi
+
+        # Run bandit security checks
         bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
     - name: "Run advisory checks"
