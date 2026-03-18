@@ -105,6 +105,18 @@ inputs:
     required: false
     type: string
 
+  safety-configfile:
+    description: |
+      Path to a custom .safety-ignore.yml policy file to use with safety.
+      If not provided, the action will use its default policy file. Path
+      location should be relative to the repository root. For instance, if the policy
+      file is located in the ``/config`` folder of the repository and is named
+      ``my-safety-policy.yml``, the input should be set to ``config/my-safety-policy.yml``.
+      If the provided file does not exist, the action will fail with an error.
+    default: ''
+    required: false
+    type: string
+
   source-directory:
     description: |
       The source folder of the repository to be evaluated by bandit.
@@ -465,11 +477,24 @@ runs:
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
+        SAFETY_CONFIGFILE: ${{ inputs.safety-configfile }}
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
-        # Run security tools using the .safety-ignore.yml policy file
-        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${GITHUB_ACTION_PATH}/.safety-ignore.yml" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+        # Set the safety policy file to use
+        if [[ "${SAFETY_CONFIGFILE}" == "" ]]; then
+          SAFETY_POLICY_FILE="${GITHUB_ACTION_PATH}/.safety-ignore.yml"
+        else
+          SAFETY_POLICY_FILE="${GITHUB_WORKSPACE}/${SAFETY_CONFIGFILE}"
+          # Check if the provided policy file exists
+          if [[ ! -f "${SAFETY_POLICY_FILE}" ]]; then
+            echo "Error: The provided safety policy file '${SAFETY_CONFIGFILE}' does not exist in the repository."
+            exit 1
+          fi
+        fi
+
+        # Run security tools using the specified policy file
+        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
 
         if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
           CONFIGFILE=""
