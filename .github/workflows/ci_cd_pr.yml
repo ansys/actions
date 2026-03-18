@@ -144,6 +144,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+      fail-fast: false
     steps:
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -173,6 +174,7 @@ jobs:
             container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
           - name: ubuntu-latest
             container-image-tag: ghcr.io/ansys/geometry:core-linux-latest
+      fail-fast: false
     env:
       ANSRV_GEO_IMAGE_DOCS_TAG: ${{ matrix.os.container-image-tag }}
       ANSRV_GEO_PORT: 700
@@ -250,6 +252,7 @@ jobs:
 #            container-image-tag:
           - name: ubuntu-latest
             container-image-tag: 2025r2
+      fail-fast: false
     env:
       PACKAGE_NAME: 'ansys-dpf-composites'
       PYDPF_COMPOSITES_DOCKER_CONTAINER_PORT: "50052"
