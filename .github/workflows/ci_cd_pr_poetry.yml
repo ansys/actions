@@ -60,6 +60,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -142,6 +143,7 @@ jobs:
             library: pygranta
           - name: pydpf-composites
             library: ansys-dpf-composites
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -185,6 +187,7 @@ jobs:
             library: ansys-mechanical-core
           - name: pydpf-composites
             library: ansys-dpf-composites
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -223,6 +226,7 @@ jobs:
             library: pytwin
           - name: pymechanical
             library: ansys-mechanical-core
+      fail-fast: false
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
@@ -260,6 +264,7 @@ jobs:
             library: ansys-mechanical-core
           - name: pydpf-composites
             library: ansys-dpf-composites
+      fail-fast: false
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
