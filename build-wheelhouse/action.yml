@@ -353,17 +353,14 @@ runs:
         LIBRARY_NAME: "${{ inputs.library-name }}"
       run: |
         # Replace all hyphens with underscores
-        SANITIZED_NAME="${LIBRARY_NAME}"
-        SANITIZED_NAME="${SANITIZED_NAME//-/_}"
+        SANITIZED_NAME="${LIBRARY_NAME//-/_}"
         echo "sanitized_library_name=${SANITIZED_NAME}" >> "${GITHUB_OUTPUT}"
 
     - name: "Upload the SBOM file"
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-      env:
-        LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}
       with:
-        name: ${LIBRARY_NAME}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
-        path: ${LIBRARY_NAME}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+        name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
+        path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
         retention-days: 7
 
     - name: Generate build provenance attestation
@@ -372,7 +369,7 @@ runs:
       env:
         LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}
       with:
-        subject-path: ${LIBRARY_NAME}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+        subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
 
     - name: "Optionally install build and wheel"
       if: ${{ inputs.install-build-and-wheel == 'true' }}
@@ -408,7 +405,7 @@ runs:
         LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}-
       with:
         files: wheelhouse
-        dest: "${LIBRARY_NAME}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
+        dest: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
 
     - name: "Upload the compressed wheelhouse"
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -425,7 +422,7 @@ runs:
       env:
         LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}
       with:
-        subject-path: "${LIBRARY_NAME}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
+        subject-path: "${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip"
 
     - name: Check library's dependencies license
       uses: ansys/actions/check-licenses@main
