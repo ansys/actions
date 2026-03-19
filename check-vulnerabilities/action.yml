@@ -282,7 +282,7 @@ runs:
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@feat/install-python-with-uv
+      uses: ansys/actions/_setup-python@install-python-with-uv
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
