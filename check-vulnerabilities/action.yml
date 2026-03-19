@@ -206,6 +206,15 @@ inputs:
     required: false
     type: boolean
 
+  install-python-with-uv:
+    description: |
+      Whether to install Python using uv. The python distribution provided by uv are coming from
+      the Astral `python-build-standalone <https://github.com/astral-sh/python-build-standalone>`_
+      project. The uv Python distributions are self-contained, highly-portable, and performant.
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -279,6 +288,7 @@ runs:
         use-cache: false
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: true
+        use-uv-python: ${{ inputs.install-python-with-uv }}
 
     # NOTE: Installation of poetry in a separate environment to the project to
     # avoid situations in which both poetry and the project have shared
