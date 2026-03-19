@@ -49,24 +49,26 @@ runs:
   using: "composite"
   steps:
     - name: Pick the input semantic version
-      shell: pwsh
+      shell: bash
+      id: pick_version
       env:
         RELEASE_VERSION: ${{ inputs.release-version }}
         GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
       run: |
-        if ("${RELEASE_VERSION}" -ne "") {
-          $semantic_input = "${RELEASE_VERSION}"
-        }
-        else {
-          $semantic_input = "${GITHUB_EVENT_RELEASE_TAG_NAME}"
-        }
+        if [ -n "${RELEASE_VERSION}" ]; then
+          semantic_input="${RELEASE_VERSION}"
+        else
+          semantic_input="${GITHUB_EVENT_RELEASE_TAG_NAME}"
+        fi
 
         # save this value for use in later steps
-        echo "SEMANTIC_VERSION=$semantic_input" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "SEMANTIC_VERSION=$semantic_input" >> $GITHUB_OUTPUT
 
     - name: Semantic version from tag
       shell: bash
       id: semantic_version
+      env:
+        SEMANTIC_VERSION: ${{ steps.pick_version.outputs.SEMANTIC_VERSION }}
       run: |
         MAJOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 1)
         MINOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 2)
@@ -86,6 +88,7 @@ runs:
         MINOR_VERSION: ${{ steps.semantic_version.outputs.MINOR_VERSION }}
         MAJOR_VERSION: ${{ steps.semantic_version.outputs.MAJOR_VERSION }}
         LATEST_BRANCH_NAME: ${{ inputs.latest-branch-name }}
+        GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "noreply@github.com"
@@ -95,8 +98,8 @@ runs:
         git push --delete origin v${MAJOR_VERSION}.${MINOR_VERSION} || true
 
         # Create new vX and vX.Y tag
-        git tag -a v${MAJOR_VERSION} -m "Latest v${MAJOR_VERSION} is Release ${{ github.event.release.tag_name }}"
-        git tag -a v${MAJOR_VERSION}.${MINOR_VERSION} -m "Latest v${MAJOR_VERSION}.${MINOR_VERSION} is Release ${{ github.event.release.tag_name }}"
+        git tag -a v${MAJOR_VERSION} -m "Latest v${MAJOR_VERSION} is Release ${GITHUB_EVENT_RELEASE_TAG_NAME}"
+        git tag -a v${MAJOR_VERSION}.${MINOR_VERSION} -m "Latest v${MAJOR_VERSION}.${MINOR_VERSION} is Release ${GITHUB_EVENT_RELEASE_TAG_NAME}"
         git push origin v${MAJOR_VERSION}
         git push origin v${MAJOR_VERSION}.${MINOR_VERSION}
 
