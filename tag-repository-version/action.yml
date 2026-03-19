@@ -1,0 +1,83 @@
+name: Update Latest vX and vX.Y Tag
+
+description: |
+
+  Update the latest vX and vX.Y tag to point to the latest Release version.
+  And push a new branch 'release/vX.Y.Z' to be used for hotfixes
+
+  # Note!
+  This action is intended to be used in a workflow triggered by a release event.
+  If the release event was created by a different workflow, the workflow using this action may not be triggered.
+
+inputs:
+  gh-token:
+    description: "GitHub token with repo and workflow scope."
+    required: true
+  release-version:
+    description: "Tagged release version that you want to use - typically 'vX.Y.Z'"
+    required: true
+    default: ""
+  latest-branch-name:
+    description: Create/update a branch with the latest copy of main. To disable, set to ""
+    required: false
+    default: "latest"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Pick the input semantic version
+      shell: pwsh
+      run: |
+        if ("${{ inputs.release-version }}" -ne "") {
+          $semantic_input = "${{ inputs.release-version }}"
+        }
+        else {
+          $semantic_input = "${{ github.event.release.tag_name }}"
+        }
+
+        # save this value for use in later steps
+        echo "SEMANTIC_VERSION=$semantic_input" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Semantic version from tag
+      shell: bash
+      id: semantic_version
+      run: |
+        MAJOR_VERSION=$(echo ${{ env.SEMANTIC_VERSION }} |  cut -d 'v' -f 2 | cut -d '.' -f 1)
+        MINOR_VERSION=$(echo ${{ env.SEMANTIC_VERSION }} |  cut -d 'v' -f 2 | cut -d '.' -f 2)
+        PATCH_VERSION=$(echo ${{ env.SEMANTIC_VERSION }} |  cut -d 'v' -f 2 | cut -d '.' -f 3)
+        echo "Major version: $MAJOR_VERSION"
+        echo "Minor version: $MINOR_VERSION"
+        echo "Patch version: $PATCH_VERSION"
+        echo "MAJOR_VERSION=$MAJOR_VERSION" >> $GITHUB_OUTPUT
+        echo "MINOR_VERSION=$MINOR_VERSION" >> $GITHUB_OUTPUT
+        echo "PATCH_VERSION=$PATCH_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Update SemVer tag
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.gh-token }}
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "noreply@github.com"
+
+        # Try to delete existing vX and vX.Y tag to avoid conflicts
+        git push --delete origin v${{ steps.semantic_version.outputs.major_version }} || true
+        git push --delete origin v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }} || true
+
+        # Create new vX and vX.Y tag
+        git tag -a v${{ steps.semantic_version.outputs.major_version }} -m "Latest v${{ steps.semantic_version.outputs.major_version }} is Release ${{ github.event.release.tag_name }}"
+        git tag -a v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }} -m "Latest v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }} is Release ${{ github.event.release.tag_name }}"
+        git push origin v${{ steps.semantic_version.outputs.major_version }}
+        git push origin v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }}
+
+        # Create and push 'release/vX.Y.Z' branch
+        VERSION="release/v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }}.${{ steps.semantic_version.outputs.patch_version }}"
+        # custom code to also push to a release branch
+        git checkout -b $VERSION
+        git push -u origin $VERSION
+
+        # Create and push 'lastest' branch, if set
+        if [ "${{ inputs.latest-branch-name }}" != "" ]; then
+          git checkout --force -b ${{ inputs.latest-branch-name }}
+          git push --force -u origin ${{ inputs.latest-branch-name }}
+        fi
