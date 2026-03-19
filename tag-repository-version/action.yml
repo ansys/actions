@@ -2,12 +2,13 @@ name: Update Latest vX and vX.Y Tag
 
 description: |
 
-  Update the latest vX and vX.Y tag to point to the latest Release version.
-  And push a new branch 'release/vX.Y.Z' to be used for hotfixes
+  Custom action to create latest vX and vX.Y tag to point to the latest released version.
+  And push a new branch 'release/vX.Y.Z' to be used for hotfixes.
 
-  # Note!
-  This action is intended to be used in a workflow triggered by a release event.
-  If the release event was created by a different workflow, the workflow using this action may not be triggered.
+  .. note::
+
+      This action is intended to be used in a workflow triggered by a release event.
+      If the release event was created by a different workflow, the workflow using this action may not be triggered.
 
 inputs:
   gh-token:
@@ -16,7 +17,6 @@ inputs:
   release-version:
     description: "Tagged release version that you want to use - typically 'vX.Y.Z'"
     required: true
-    default: ""
   latest-branch-name:
     description: Create/update a branch with the latest copy of main. To disable, set to ""
     required: false
