@@ -50,12 +50,15 @@ runs:
   steps:
     - name: Pick the input semantic version
       shell: pwsh
+      env:
+        RELEASE_VERSION: ${{ inputs.release-version }}
+        GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
       run: |
-        if ("${{ inputs.release-version }}" -ne "") {
-          $semantic_input = "${{ inputs.release-version }}"
+        if ("${RELEASE_VERSION}" -ne "") {
+          $semantic_input = "${RELEASE_VERSION}"
         }
         else {
-          $semantic_input = "${{ github.event.release.tag_name }}"
+          $semantic_input = "${GITHUB_EVENT_RELEASE_TAG_NAME}"
         }
 
         # save this value for use in later steps
@@ -65,9 +68,9 @@ runs:
       shell: bash
       id: semantic_version
       run: |
-        MAJOR_VERSION=$(echo ${{ env.SEMANTIC_VERSION }} |  cut -d 'v' -f 2 | cut -d '.' -f 1)
-        MINOR_VERSION=$(echo ${{ env.SEMANTIC_VERSION }} |  cut -d 'v' -f 2 | cut -d '.' -f 2)
-        PATCH_VERSION=$(echo ${{ env.SEMANTIC_VERSION }} |  cut -d 'v' -f 2 | cut -d '.' -f 3)
+        MAJOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 1)
+        MINOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 2)
+        PATCH_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 3)
         echo "Major version: $MAJOR_VERSION"
         echo "Minor version: $MINOR_VERSION"
         echo "Patch version: $PATCH_VERSION"
@@ -79,28 +82,32 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.gh-token }}
+        PATCH_VERSION: ${{ steps.semantic_version.outputs.PATCH_VERSION }}
+        MINOR_VERSION: ${{ steps.semantic_version.outputs.MINOR_VERSION }}
+        MAJOR_VERSION: ${{ steps.semantic_version.outputs.MAJOR_VERSION }}
+        LATEST_BRANCH_NAME: ${{ inputs.latest-branch-name }}
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "noreply@github.com"
 
         # Try to delete existing vX and vX.Y tag to avoid conflicts
-        git push --delete origin v${{ steps.semantic_version.outputs.major_version }} || true
-        git push --delete origin v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }} || true
+        git push --delete origin v${MAJOR_VERSION} || true
+        git push --delete origin v${MAJOR_VERSION}.${MINOR_VERSION} || true
 
         # Create new vX and vX.Y tag
-        git tag -a v${{ steps.semantic_version.outputs.major_version }} -m "Latest v${{ steps.semantic_version.outputs.major_version }} is Release ${{ github.event.release.tag_name }}"
-        git tag -a v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }} -m "Latest v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }} is Release ${{ github.event.release.tag_name }}"
-        git push origin v${{ steps.semantic_version.outputs.major_version }}
-        git push origin v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }}
+        git tag -a v${MAJOR_VERSION} -m "Latest v${MAJOR_VERSION} is Release ${{ github.event.release.tag_name }}"
+        git tag -a v${MAJOR_VERSION}.${MINOR_VERSION} -m "Latest v${MAJOR_VERSION}.${MINOR_VERSION} is Release ${{ github.event.release.tag_name }}"
+        git push origin v${MAJOR_VERSION}
+        git push origin v${MAJOR_VERSION}.${MINOR_VERSION}
 
         # Create and push 'release/vX.Y.Z' branch
-        VERSION="release/v${{ steps.semantic_version.outputs.major_version }}.${{ steps.semantic_version.outputs.minor_version }}.${{ steps.semantic_version.outputs.patch_version }}"
+        VERSION="release/v${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
         # custom code to also push to a release branch
         git checkout -b $VERSION
         git push -u origin $VERSION
 
-        # Create and push 'lastest' branch, if set
-        if [ "${{ inputs.latest-branch-name }}" != "" ]; then
-          git checkout --force -b ${{ inputs.latest-branch-name }}
-          git push --force -u origin ${{ inputs.latest-branch-name }}
+        # Create and push 'latest' branch, if set
+        if [ "${LATEST_BRANCH_NAME}" != "" ]; then
+          git checkout --force -b ${LATEST_BRANCH_NAME}
+          git push --force -u origin ${LATEST_BRANCH_NAME}
         fi
