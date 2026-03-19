@@ -204,7 +204,7 @@ runs:
 
     - name: "Set up Python"
       if: inputs.skip-install == 'false'
-      uses: ansys/actions/_setup-python@install-python-with-uv
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

@@ -188,7 +188,7 @@ runs:
           Set up python to test.
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@install-python-with-uv
+      uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
