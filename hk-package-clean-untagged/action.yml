@@ -81,7 +81,7 @@ runs:
           up in a separate step.'
 
     - name: "Set up Python 3.13"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@install-python-with-uv
       with:
         python-version: '3.13'
         use-cache: false

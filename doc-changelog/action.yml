@@ -190,7 +190,7 @@ runs:
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials should be persisted
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@install-python-with-uv
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
