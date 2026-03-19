@@ -157,7 +157,7 @@ runs:
         fetch-tags:  ${{ inputs.checkout-fetch-tags }}
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@install-python-with-uv
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
