@@ -114,4 +114,4 @@ runs:
     - name: Install Python with uv
       if: ${{ inputs.provision-uv == 'true' && inputs.use-uv-python == 'true' }}
       shell: bash
-      run: uv pip install --python=${{ inputs.python-version }}
+      run: uv python install ${{ inputs.python-version }}
