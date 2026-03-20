@@ -24,7 +24,8 @@ import os
 import re
 from pathlib import Path
 
-import tomli
+import tomlkit
+from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -306,18 +307,21 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
 
     towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
     with towncrier_config.open("rb") as file:
-        config = tomli.load(file)
+        config = tomlkit.load(file)
 
     tool = config.get("tool", "DNE")
-    towncrier = tool.get("towncrier", "DNE")
 
-    # List containing changelog sections under each release
+    towncrier = "DNE"
+    if tool != "DNE":
+        towncrier = tool.get("towncrier", "DNE")
+
+    # Ordered list containing changelog sections under each release
     changelog_sections = [
         "breaking",
         "added",
-        "dependencies",
-        "documentation",
         "fixed",
+        "documentation",
+        "dependencies",
         "maintenance",
         "miscellaneous",
         "test",
@@ -325,20 +329,20 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
 
     # Dictionary containing [tool.towncrier] keys and values
     towncrier_config_sections = {
-        "directory": '"doc/changelog.d"',
-        "template": '"doc/changelog.d/changelog_template.jinja"',
-        "filename": {"web": '"doc/source/changelog.rst"', "repo": '"CHANGELOG.md"'},
+        "directory": "doc/changelog.d",
+        "template": "doc/changelog.d/changelog_template.jinja",
+        "filename": {"web": "doc/source/changelog.rst", "repo": "CHANGELOG.md"},
         "start_string": {
-            "web": '".. towncrier release notes start\\n"',
-            "repo": '"<!-- towncrier release notes start -->\\n"',
+            "web": ".. towncrier release notes start\n",
+            "repo": "<!-- towncrier release notes start -->\n",
         },
         "title_format": {
-            "web": f'"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}"',
-            "repo": f'"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}"',
+            "web": f"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}",
+            "repo": f"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}",
         },
         "issue_format": {
-            "web": f'"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_"',
-            "repo": f'"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})"',
+            "web": f"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_",
+            "repo": f"[#{{issue}}](https://github.com/{org_name}/{repo_name}/pull/{{issue}})",
         },
     }
 
@@ -351,7 +355,10 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
             name = module.get("name", "DNE")
             # If [tool.flit.module] name exists, create the package string
             if name != ("DNE" and ""):
-                towncrier_config_sections["package"] = f'"{name}"'
+                towncrier_config_sections["package"] = name
+
+    # Preserve the full ordered list before remove_existing_types mutates it
+    all_changelog_sections = list(changelog_sections)
 
     if towncrier != "DNE":
         # Get the existing [[tool.towncrier.type]] sections
@@ -363,49 +370,51 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
         # If there is no towncrier configuration information or if [[tool.towncrier.type]]
         # is the only towncrier information in the pyproject.toml file
         if towncrier == "DNE" or len(towncrier) == 1:
-            # Write the [tool.towncrier] section
-            with towncrier_config.open("a") as file:
-                write_towncrier_config_section(file, towncrier_config_sections, True)
+            # Update the [tool.towncrier] section in the config dict
+            write_towncrier_config_section(config, towncrier_config_sections, True)
 
-    # Add missing [[tool.towncrier.type]] sections
-    with towncrier_config.open("a") as file:
-        write_missing_types(changelog_sections, file)
+    # Add missing [[tool.towncrier.type]] sections to the config dict
+    write_missing_types(config, changelog_sections)
+
+    # Sort the [[tool.towncrier.type]] entries to match the canonical order
+    sort_towncrier_types(config, all_changelog_sections)
+
+    # Serialize the updated config and write to file
+    output = tomlkit.dumps(config)
+    # Normalize runs of 3+ consecutive newlines to exactly 2 (one blank line)
+    output = re.sub(r"\n{3,}", "\n\n", output)
+    write_file_content(towncrier_config, output)
 
 
 def write_towncrier_config_section(
-    file, towncrier_config_sections: dict, web_release_notes: bool
+    config: dict, towncrier_config_sections: dict, web_release_notes: bool
 ):
-    """Write the information in the [tool.towncrier] section.
+    """Update the [tool.towncrier] section in the config dictionary.
 
     Parameters
     ----------
-    file: _io.TextIOWrapper
-        File to write to.
+    config: dict
+        The parsed TOML configuration dictionary to update in place.
     towncrier_config_sections: dict
         Dictionary containing the [tool.towncrier] keys and values.
     web_release_notes: bool
         Whether or not the release notes are in the online documentation or the repository.
     """
-    # Append the tool.towncrier section
-    file.write("\n[tool.towncrier]\n")
+    # Ensure the [tool.towncrier] section exists in the config dict
+    config.setdefault("tool", {}).setdefault("towncrier", {})
+    towncrier_section = config["tool"]["towncrier"]
+
+    # Keys that have web/repo variants
+    variant_keys = {"filename", "start_string", "title_format", "issue_format"}
 
     # For each key and value in the towncrier_config_sections dictionary
     for key, value in towncrier_config_sections.items():
-        # If the key has values that depend on the web_release_notes boolean
-        if (
-            key == "filename"
-            or key == "start_string"
-            or key == "title_format"
-            or key == "issue_format"
-        ):
+        if key in variant_keys:
             # Select the value based on the web_release_notes boolean
-            if web_release_notes:
-                file.write(f'{key} = {value["web"]}\n')
-            else:
-                file.write(f'{key} = {value["repo"]}\n')
+            variant = "web" if web_release_notes else "repo"
+            towncrier_section[key] = value[variant]
         else:
-            # Write the key and value from the towncrier_config_sections dictionary
-            file.write(f"{key} = {value}\n")
+            towncrier_section[key] = value
 
 
 def remove_existing_types(types: list, changelog_sections: list):
@@ -426,25 +435,129 @@ def remove_existing_types(types: list, changelog_sections: list):
             changelog_sections.remove(section)
 
 
-def write_missing_types(changelog_sections: list, file):
-    """Write the missing types in [[tool.towncrier.types]]
+def write_missing_types(config: dict, changelog_sections: list):
+    """Add missing type entries to the config dictionary under [[tool.towncrier.type]].
 
     Parameters
     ----------
+    config: dict
+        The parsed TOML configuration dictionary to update in place.
     changelog_sections: list
         List containing changelog sections under each release.
-    file: _io.TextIOWrapper
-        File to write to.
     """
-    # Write each missing section to the pyproject.toml file
+    # Ensure the [tool.towncrier] section exists in the config dict
+    config.setdefault("tool", {}).setdefault("towncrier", {})
+    towncrier_section = config["tool"]["towncrier"]
+
+    # Get existing type array or create a new array of tables (AoT)
+    if "type" not in towncrier_section:
+        towncrier_section["type"] = tomlkit.aot()
+    types = towncrier_section["type"]
+
+    # Append each missing section as a new [[tool.towncrier.type]] entry
     for section in changelog_sections:
-        file.write(
-            f"""
-[[tool.towncrier.type]]
-directory = "{section}"
-name = "{section.title()}"
-showcontent = true\n"""
-        )
+        if isinstance(types, Array):
+            # Parse a formatted string so the inline table has consistent
+            # spacing (e.g. "{ key = val }") matching existing parsed entries.
+            entry = tomlkit.value(
+                f'{{ directory = "{section}",'
+                f' name = "{section.title()}",'
+                f" showcontent = true }}"
+            )
+        elif isinstance(types, AoT):
+            entry = tomlkit.table()
+            entry.add("directory", section)
+            entry.add("name", section.title())
+            entry.add("showcontent", True)
+        else:
+            entry = tomlkit.table()
+            entry.add("directory", section)
+            entry.add("name", section.title())
+            entry.add("showcontent", True)
+        types.append(entry)
+
+
+def sort_towncrier_types(config: dict, changelog_sections: list):
+    """Sort [[tool.towncrier.type]] entries to match the canonical changelog_sections order.
+
+    Known types (those whose directory is in changelog_sections) are sorted
+    according to their position in changelog_sections. Custom types (not in
+    changelog_sections) are appended afterwards in their original relative order.
+
+    Parameters
+    ----------
+    config: dict
+        The parsed TOML configuration dictionary to update in place.
+    changelog_sections: list
+        The full ordered list of canonical changelog section names.
+    """
+    towncrier_section = config.get("tool", {}).get("towncrier", {})
+    types = towncrier_section.get("type")
+
+    if not types:
+        return
+
+    # Sort
+    order = {name: idx for idx, name in enumerate(changelog_sections)}
+    known = []
+    custom = []
+    for entry in types:
+        directory = entry.get("directory", "")
+        if directory in order:
+            known.append(entry)
+        else:
+            custom.append(entry)
+    known.sort(key=lambda e: order[e.get("directory", "")])
+    sorted_entries = known + custom
+
+    # Quick check: if already in the correct order, skip the rebuild
+    current_dirs = [e.get("directory", "") for e in types]
+    sorted_dirs = [e.get("directory", "") for e in sorted_entries]
+    if current_dirs == sorted_dirs:
+        return
+
+    # Rebuild the type collection in the correct order
+    # tomlkit container types cannot be sorted in place,
+    # see https://github.com/python-poetry/tomlkit/issues/233
+    # for more information.
+    if isinstance(types, AoT):
+        new_types = tomlkit.aot()
+        for entry in sorted_entries:
+            new_types.append(entry)
+    elif isinstance(types, Array):
+        # Capture per-item trivia (indent, comma) from the original array so
+        # the rebuilt array preserves the same multiline style and indentation.
+        # tomlkit's multiline(True) hardcodes 4-space indent, so we copy trivia
+        # directly from the original _ArrayItemGroup items instead.
+        content_items = [g for g in types._value if g.value is not None]
+        trailing_items = [g for g in types._value if g.value is None]
+        entry_indent = content_items[0].indent if content_items else None
+        entry_comma = content_items[0].comma if content_items else None
+
+        new_types = tomlkit.array()
+        for entry in sorted_entries:
+            new_types.append(entry)
+
+        # Restore original indent and comma on each content item
+        if entry_indent is not None:
+            for item_group in new_types._value:
+                if item_group.value is not None:
+                    item_group.indent = entry_indent
+                    item_group.comma = entry_comma
+
+        # Restore trailing closer (e.g. the "\n]" line)
+        for trailing in trailing_items:
+            new_types._value.append(
+                _ArrayItemGroup(
+                    value=Null(), indent=trailing.indent, comma=None, comment=None
+                )
+            )
+    else:
+        new_types = tomlkit.aot()
+        for entry in sorted_entries:
+            new_types.append(entry)
+
+    towncrier_section["type"] = new_types
 
 
 def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
@@ -472,7 +585,7 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
     if pyproject_toml.is_file():
         # Load pyproject.toml
         with pyproject_toml.open("rb") as pyproj:
-            config = tomli.load(pyproj)
+            config = tomlkit.load(pyproj)
             # Get the tool category in pyproject.toml
             tool = config.get("tool", "")
             if tool:

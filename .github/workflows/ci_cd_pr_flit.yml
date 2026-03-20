@@ -60,6 +60,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -142,6 +143,7 @@ jobs:
             library: ansys-fluent-core
           - name: pymechanical
             library: ansys-mechanical-core
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -185,6 +187,7 @@ jobs:
             library: ansys-fluent-core
           - name: pymechanical
             library: ansys-mechanical-core
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -225,6 +228,7 @@ jobs:
             library: ansys-fluent-core
           - name: pymechanical
             library: ansys-mechanical-core
+      fail-fast: false
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
@@ -262,6 +266,7 @@ jobs:
             library: ansys-fluent-core
           - name: pymechanical
             library: ansys-mechanical-core
+      fail-fast: false
     steps:
 
       - name: "Install Git and clone ${{ matrix.repository.name }} repository"
