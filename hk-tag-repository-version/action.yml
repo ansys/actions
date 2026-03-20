@@ -38,8 +38,9 @@ inputs:
     description: "GitHub token with repo and workflow scope."
     required: true
   release-version:
-    description: "Tagged release version that you want to use - typically 'vX.Y.Z'"
-    required: true
+    description: "Tagged release version to use (typically 'vX.Y.Z'). If not provided, uses the tag from the GitHub release event."
+    required: false
+    default: ""
   latest-branch-name:
     description: Create/update a branch with the latest copy of main. To disable, set to ""
     required: false
