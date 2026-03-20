@@ -80,10 +80,17 @@ inputs:
     required: false
     type: string
 
-  tomli-version:
+  tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       Tomli version used for retrieving the towncrier directory.
     default: '2.2.1'
+    required: false
+    type: string
+
+  tomlkit-version:
+    description: |
+      Tomlkit version used for reading and writing the towncrier configuration.
+    default: '0.14.0'
     required: false
     type: string
 
@@ -167,6 +174,15 @@ runs:
           The ``use-conventional-commits`` input is deprecated and will be removed in v12.
           Please use the ``use-pull-request-title`` input instead.
 
+    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
+      if: inputs.tomli-version != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``tomli-version`` input is deprecated and will be removed in v12.
+          This action now uses the ``tomlkit`` library instead. Please use the
+          ``tomlkit-version`` input accordingly.
+
     - name: "Mapping to env vars"
       shell: bash
       id: use-pull-request
@@ -198,14 +214,14 @@ runs:
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
         use-uv-python: ${{ inputs.install-python-with-uv }}
 
-    - name: "Install towncrier and tomli"
+    - name: "Install towncrier and tomlkit"
       shell: bash
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOMLI_VERSION: ${{ inputs.tomli-version }}
+        TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
+        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomlkit==${TOMLKIT_VERSION}
 
     - name: "Get first letter of conventional commit type"
       if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
@@ -344,7 +360,7 @@ runs:
       run: |
         import pathlib
         import os
-        import tomli
+        import tomlkit
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -357,7 +373,7 @@ runs:
 
         # Load pyproject.toml
         with open(towncrier_config, 'rb') as f:
-            config = tomli.load(f)
+            config = tomlkit.load(f)
             template = config["tool"]["towncrier"]["template"]
             filename = config["tool"]["towncrier"]["filename"]
 
