@@ -49,6 +49,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
