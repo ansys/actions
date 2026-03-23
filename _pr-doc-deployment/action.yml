@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -138,16 +138,16 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "$INPUT_REPOSITORY" == "current" ]]; then
-          echo "REPOSITORY=${{ github.repository }}" >> $GITHUB_OUTPUT
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> $GITHUB_OUTPUT
         else
           echo "REPOSITORY=${INPUT_REPOSITORY}" >> $GITHUB_OUTPUT
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
     - name: "Ensure that the desired branch exists"
       shell: bash
@@ -239,14 +239,14 @@ runs:
     - name: "Detect if deployment rejection comment had been previously added to the same PR"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
       id: find-comment
-      uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+      uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body-includes: Pull request documentation preview limit
 
     - name: "Make a PR comment stating reason for not deploying pr documentation"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -257,7 +257,7 @@ runs:
 
     - name: "Download the pr documentation artifact"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: pull/${{ github.event.pull_request.number }}
@@ -343,10 +343,15 @@ runs:
 
     - name: "Make a PR comment the first time a PR documentation is deployed"
       if: ${{ steps.create-pull-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body: >
           The documentation for this pull request will be available at
           [https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}).
           Please allow some time for the documentation to be deployed.
+
+    - name: "Check directory structure"
+      shell: bash
+      run: |
+        tree -L 3

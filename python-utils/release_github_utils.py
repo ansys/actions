@@ -1,8 +1,30 @@
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import re
 from pathlib import Path
 
 import pypandoc
-from parse_pr_title import get_towncrier_config_value, save_env_variable
+from parse_pr import get_towncrier_config_value, save_env_variable
 
 """Semantic version regex as found on semver.org:
 https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string"""
@@ -108,6 +130,10 @@ def get_tag_section(changelog_file: Path, body: str) -> str:
                 body = pypandoc.convert_text(body, "markdown_strict", format="rst")
         else:
             print("Cannot generate release notes from changelog file.")
+
+    # Trimming first line to remove the tag and date since it is not needed for
+    # the github release notes
+    body = "\n".join(body.split("\n")[1:])
 
     return body
 

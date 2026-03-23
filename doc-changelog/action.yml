@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -28,6 +28,11 @@ description: |
   containing the title and number of the pull request.
 
   This action will only work on Linux/macOS runners.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to commit and push changelog fragments
+     - **pull-requests**: ``read`` - Required to read pull request labels via GitHub API
 
 inputs:
   # Required inputs
@@ -64,7 +69,7 @@ inputs:
   towncrier-version:
     description: |
       Towncrier version used for creating fragment files.
-    default: '23.11.0'
+    default: '24.8.0'
     required: false
     type: string
 
@@ -75,10 +80,17 @@ inputs:
     required: false
     type: string
 
-  tomli-version:
+  tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       Tomli version used for retrieving the towncrier directory.
     default: '2.2.1'
+    required: false
+    type: string
+
+  tomlkit-version:
+    description: |
+      Tomlkit version used for reading and writing the towncrier configuration.
+    default: '0.14.0'
     required: false
     type: string
 
@@ -91,12 +103,23 @@ inputs:
     default: true
     type: boolean
 
-  use-conventional-commits:
+  use-pull-request-title:
     description: |
-      Use conventional commits to cateogrize towncrier fragments.
+      Use pull request title to determine the changelog category based on
+      conventional commits. If ``false``, the labels in the pull request are used
+      to determine the changelog category.
     required: false
     default: false
     type: boolean
+
+  use-conventional-commits: # TODO: Remove deprecated input in v12
+    description: |
+      [DEPRECATED] Use pull request title to determine the changelog category based on
+      conventional commits. If ``false``, the labels in the pull request are used
+      to determine the changelog category.
+    required: false
+    default: ''
+    type: string
 
   use-default-towncrier-config:
     description: |
@@ -134,14 +157,44 @@ runs:
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly. The ``toml-version`` input will be removed in v11.
 
+    - uses: ansys/actions/_logging@main # Switch logging level to ERROR in v12
+      if: inputs.use-conventional-commits != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``use-conventional-commits`` input is deprecated and will be removed in v12.
+          Please use the ``use-pull-request-title`` input instead.
+
+    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
+      if: inputs.tomli-version != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``tomli-version`` input is deprecated and will be removed in v12.
+          This action now uses the ``tomlkit`` library instead. Please use the
+          ``tomlkit-version`` input accordingly.
+
+    - name: "Mapping to env vars"
+      shell: bash
+      id: use-pull-request
+      env:
+        USE_CONVENTIONAL_COMMITS: ${{ inputs.use-conventional-commits }}
+        USE_PULL_REQUEST_TITLE: ${{ inputs.use-pull-request-title }}
+      run: |
+        if [ ! -z "$USE_CONVENTIONAL_COMMITS" ]; then
+          echo "USE_PULL_REQUEST_TITLE=${USE_CONVENTIONAL_COMMITS}" >> "$GITHUB_OUTPUT"
+        else
+          echo "USE_PULL_REQUEST_TITLE=${USE_PULL_REQUEST_TITLE}" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: "Install Git and clone project"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         # Required to checkout branch from origin rather than remote
         ref: ${{ env.PR_BRANCH }}
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials should be persisted
 
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
@@ -151,106 +204,121 @@ runs:
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: "Install towncrier and tomli"
+    - name: "Install towncrier and tomlkit"
       shell: bash
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOMLI_VERSION: ${{ inputs.tomli-version }}
+        TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
+        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomlkit==${TOMLKIT_VERSION}
 
     - name: "Get first letter of conventional commit type"
-      if: ${{ inputs.use-conventional-commits == 'true' }}
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
       shell: python
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import get_first_letter_case
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import get_first_letter_case
 
         pr_title = os.environ.get("PR_TITLE")
         get_first_letter_case(pr_title)
 
     - name: "Check pull-request title follows conventional commits style"
-      if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'lowercase') }}
+      if: ${{ (steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'lowercase') }}
       uses: ansys/actions/check-pr-title@main
       with:
         token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
-      if: ${{ (inputs.use-conventional-commits == 'true') && (env.FIRST_LETTER == 'uppercase') }}
+      if: ${{ (steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'uppercase') }}
       uses: ansys/actions/check-pr-title@main
       with:
         token: ${{ inputs.token }}
         use-upper-case: true
 
-    - name: "Get conventional commit type from title"
-      if: ${{ inputs.use-conventional-commits == 'true' }}
+    - name: "Get conventional commit type"
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_BODY: ${{ github.event.pull_request.body }}
       shell: python
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import get_conventional_commit_type
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import get_conventional_commit_type
 
         pr_title = os.environ.get("PR_TITLE")
-        get_conventional_commit_type(pr_title)
+        pr_body = os.environ.get("PR_BODY")
+
+        get_conventional_commit_type(pr_title, pr_body)
 
     - name: "Get labels in the pull request"
       id: get-labels
-      if: ${{ inputs.use-conventional-commits == 'false' }}
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'false' }}
       env:
         GH_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ github.event.repository.name }}
+        GH_EVENT_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
         # Get the labels in the pull request
-        pr_labels=$(gh api repos/${{ github.repository_owner }}/${REPO_NAME}/pulls/${{ github.event.number }} --jq '.labels.[].name')
+        pr_labels=$(gh api repos/${GITHUB_REPOSITORY_OWNER}/${REPO_NAME}/pulls/${GH_EVENT_NUMBER} --jq '.labels.[].name')
 
         # Save the labels to an environment variable
         # For example, LABELS="enhancement maintenance"
         echo LABELS='"'$pr_labels'"' >> ${GITHUB_OUTPUT}
 
     - name: "Set CHANGELOG category based on conventional commit type"
-      if: ${{ inputs.use-conventional-commits == 'true' }}
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
       shell: python
       run: |
+        import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import changelog_category_cc
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
-        cc_type = ${{ env.CC_TYPE }}
+        from parse_pr import changelog_category_cc
+
+        cc_type = os.getenv("CC_TYPE")
         changelog_category_cc(cc_type)
 
     - name: "Set PR label environment variable"
-      if: ${{ inputs.use-conventional-commits == 'false' }}
+      if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'false' }}
       shell: python
       env:
         LABELS: ${{ steps.get-labels.outputs.LABELS }}
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import changelog_cateogry_labels
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import changelog_categorize_based_on_labels
 
         labels = os.environ.get("LABELS")
-        changelog_cateogry_labels(labels)
+        changelog_categorize_based_on_labels(labels)
 
     - name: "Remove PR fragment file if it already exists"
       shell: bash
+      env:
+        GH_EVENT_NUMBER: ${{ github.event.number }}
       run: |
         # Find files containing the PR number
         # For example, 20.*.md
-        file=`find . -type f -name "${{ github.event.number }}.*.md"`
+        file=`find . -type f -name "${GH_EVENT_NUMBER}.*.md"`
 
         # If the fragment file exists, then delete the file
         if [ ! -z "$file" ]; then
@@ -261,26 +329,28 @@ runs:
     - name: "Clean PR title"
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
-        USE_CONVENTIONAL_COMMITS: ${{ inputs.use-conventional-commits }}
+        USE_PULL_REQUEST_TITLE: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE }}
       shell: python
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import clean_pr_title
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import clean_pr_title
 
         pr_title = os.environ.get("PR_TITLE")
-        use_cc = True if os.environ.get("USE_CONVENTIONAL_COMMITS") == "true" else False
+        use_pr_title = True if os.environ.get("USE_PULL_REQUEST_TITLE") == "true" else False
 
-        clean_pr_title(pr_title, use_cc)
+        clean_pr_title(pr_title, use_pr_title)
 
     - name: "Get towncrier directory and template"
       shell: python
       run: |
         import pathlib
         import os
-        import tomli
+        import tomlkit
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -293,7 +363,7 @@ runs:
 
         # Load pyproject.toml
         with open(towncrier_config, 'rb') as f:
-            config = tomli.load(f)
+            config = tomlkit.load(f)
             template = config["tool"]["towncrier"]["template"]
             filename = config["tool"]["towncrier"]["filename"]
 
@@ -312,12 +382,14 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import add_towncrier_config
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import add_towncrier_config
 
         repo_name = os.environ.get("REPO_NAME")
-        org_name = "${{ github.repository_owner }}"
+        org_name = os.getenv("GITHUB_REPOSITORY_OWNER")
 
         default_config = True if os.environ.get("USE_DEFAULT_TOWNCRIER_CONFIG") == "true" else False
 
@@ -329,9 +401,11 @@ runs:
       run: |
         import os
         import sys
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
 
-        from parse_pr_title import rewrite_template
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import rewrite_template
 
         template_status = rewrite_template(os.getenv('TEMPLATE'), os.getenv('FILENAME'))
 
@@ -342,7 +416,7 @@ runs:
 
     - name: "Make PR comment if template rewritten"
       if: ${{ env.TEMPLATE_STATUS == 'True' }}
-      uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
         issue-number: ${{ github.event.number }}
         body: |
@@ -357,14 +431,15 @@ runs:
       env:
         BOT_USER: ${{ inputs.bot-user }}
         BOT_EMAIL: ${{ inputs.bot-email }}
+        GH_EVENT_NUMBER: ${{ github.event.number }}
       run: |
         # Changelog fragment file in the following format
         # For example, 20.added.md
-        fragment="${{ github.event.number }}.${{ env.CHANGELOG_SECTION }}.md"
+        fragment="${GH_EVENT_NUMBER}.${CHANGELOG_SECTION}.md"
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "${{ env.CLEAN_TITLE }}" $fragment
+        towncrier create -c "${CLEAN_TITLE}" $fragment
 
         # Configure git username & email
         git config user.name "${BOT_USER}"

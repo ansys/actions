@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -36,6 +36,14 @@ description: |
       input parameter is deprecated. Refer to the
       :ref:`release_pypi_trusted_publisher` if you wish to use this security
       feature.
+
+  .. important:: **Required GitHub Permissions**
+
+     **Conditional permissions** (only when using PyPI trusted publishers):
+
+     - **id-token**: ``write`` - Required for OIDC authentication with PyPI trusted publishers
+
+     When using API tokens, no GitHub permissions are required.
 
 inputs:
 

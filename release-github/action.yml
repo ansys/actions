@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -33,6 +33,10 @@ description: |
     If you are using the ``title_format`` and ``issue_format`` from the ``doc-changelog`` action
     setup guide, https://actions.docs.ansys.com/version/dev/migrations/docs-changelog-setup.html,
     the changelog for your release is included in the release notes on GitHub.
+
+    .. important:: **Required GitHub Permissions**
+
+       - **contents**: ``write`` - Required to create GitHub releases and upload release assets
 
 
 inputs:
@@ -132,7 +136,10 @@ inputs:
 
   add-artifact-attestation-notes:
     description: |
-      Whether or not to add artifact attestation notes to the release notes.
+      Whether or not to add artifact attestation notes to the release notes. The
+      artifact attestations need to be generated during the build process using the
+      ``attest-provenance: true`` input parameter in the ``build-wheelhouse`` and
+      ``build-library`` actions with the appropriate permissions.
     default: false
     required: false
     type: boolean
@@ -197,8 +204,8 @@ runs:
           Only one of the inputs ``generate-release-notes`` and ``changelog-release-notes``
           can be true. Please set one of them to false.
 
-    - name: "Checkout repository"
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    - name: "Checkout repository" # zizmor: ignore[artipacked] , credentials must be persisted in this case
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
     # ------------------------------------------------------------------------
 
@@ -210,7 +217,7 @@ runs:
           directory containing the final artifacts to be published in GitHub.
 
     - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
       with:
         path: /tmp/artifacts
 
@@ -239,14 +246,14 @@ runs:
 
     - name: "Compressing HTML documentation"
       if: inputs.only-code == 'false'
-      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
+      uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: dist/documentation/documentation-html
         dest: dist/documentation/documentation-html.zip
 
     - name: "Compressing PDF documentation"
       if: inputs.only-code == 'false'
-      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
+      uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: dist/documentation/documentation-pdf
         dest: dist/documentation/documentation-pdf.zip
@@ -358,14 +365,18 @@ runs:
       if: inputs.changelog-release-notes == 'true'
       shell: python
       run: |
+        import os
         import sys
         from pathlib import Path
-        sys.path.insert(1, '${{ github.action_path }}/../python-utils/')
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
 
         from release_github_utils import get_release_notes
 
         # Get the path to your pyproject.toml file
-        pyproject_path = Path("${{ github.workspace }}") / "pyproject.toml"
+        github_workspace = os.getenv("GITHUB_WORKSPACE")
+        pyproject_path = Path(github_workspace) / "pyproject.toml"
 
         get_release_notes(pyproject_path)
 
@@ -375,7 +386,7 @@ runs:
       run: echo "RELEASE_NOTES_BODY= " >> $GITHUB_ENV
 
     - name: "Extend RELEASE_NOTES_BODY with attestation notes"
-      if: inputs.add-artifact-attestation-notes == 'true'
+      if: ${{ inputs.add-artifact-attestation-notes == 'true' && (inputs.only-code == 'false' || inputs.additional-artifacts != '') }}
       shell: bash
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
@@ -392,7 +403,8 @@ runs:
 
           # Find the following artifacts: wheels, source distribution, wheelhouse and SBOM files
           for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
-            echo "\$ gh attestation verify --owner ${{ github.repository_owner }} ${artifact}"
+            filename=$(basename "$artifact")
+            echo "\$ gh attestation verify --owner ${GITHUB_REPOSITORY_OWNER} ${filename}"
           done
 
           echo "\`\`\`"
@@ -400,7 +412,7 @@ runs:
         } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+      uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
       env:
         REPO_NAME: ${{ github.event.repository.name }}
       if: inputs.dry-run == 'false'

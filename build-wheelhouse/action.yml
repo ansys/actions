@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -33,6 +33,17 @@ description: |
 
       Since version 4.1, the input parameter ``library-namespace`` is no longer
       required.
+
+  .. important:: **Required GitHub Permissions**
+
+     **Base permissions:**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
+     **Conditional permissions** (only when ``attest-provenance: true``):
+
+     - **id-token**: ``write`` - Required for generating OIDC tokens for provenance attestations
+     - **attestations**: ``write`` - Required for creating artifact attestations
 
 inputs:
 
@@ -153,7 +164,9 @@ runs:
 
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        persist-credentials: false
 
     - name: "Set up Python ${{ inputs.python-version }}"
       uses: ansys/actions/_setup-python@main
@@ -178,13 +191,12 @@ runs:
       shell: bash
       env:
         TARGET: ${{ inputs.target }}
-        WORKING_DIRECTORY: ${{ inputs.working-directory }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '' || echo "--with ${TARGET}")" >> ${GITHUB_OUTPUT}
         else
-          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "${WORKING_DIRECTORY}" || echo "${WORKING_DIRECTORY}[${TARGET}]")" >> ${GITHUB_OUTPUT}
+          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "." || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
         fi
         echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
 
@@ -195,7 +207,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${{ runner.temp }}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -236,7 +248,7 @@ runs:
       id: virtual-environment-activation-command
       shell: bash
       run: |
-        if [[ ${{ runner.os }} == 'Windows' ]]; then
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
           echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
         else
           echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
@@ -261,9 +273,11 @@ runs:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       shell: bash
       run: |
         ${ACTIVATE_VENV}
+        cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install ${INSTALL_TARGET}
         else
@@ -312,13 +326,12 @@ runs:
 
     - name: Run smoke test for the library
       env:
-        ACTION_PATH: ${{ github.action_path }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         LIBRARY_NAME: ${{ inputs.library-name }}
       shell: bash
       run: |
         ${ACTIVATE_VENV}
-        python ${ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
+        python ${GITHUB_ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
 
     - name: "Create Software Bill of Materials (SBOM) using Syft"
       env:
@@ -344,7 +357,7 @@ runs:
         mv sbom.spdx "${LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
 
     - name: "Upload the SBOM file"
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
         path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
@@ -352,7 +365,7 @@ runs:
 
     - name: Generate build provenance attestation
       if: ${{ inputs.attest-provenance == 'true' }}
-      uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
       with:
         subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
 
@@ -372,23 +385,26 @@ runs:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
       run: |
         ${ACTIVATE_VENV}
+        cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
-          pip wheel -w wheelhouse -r wheel_reqs.txt
+          pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
         else
-          python -m pip wheel "${INSTALL_TARGET}" -w wheelhouse
+          python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
         fi
 
     - name: "Compress the wheelhouse"
-      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
+      uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: wheelhouse
         dest: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: "Upload the compressed wheelhouse"
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
@@ -396,7 +412,7 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
       with:
         subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
@@ -405,6 +421,10 @@ runs:
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}
+        use-python-cache: ${{ inputs.use-python-cache }}
+        target: ${{ inputs.target }}
+        whitelist-license-check: ${{ inputs.whitelist-license-check }}
         skip-install: true
         checkout: false
-        whitelist-license-check: ${{ inputs.whitelist-license-check }}
+        use-uv: ${{ inputs.use-uv }}
+        activate-venv: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}

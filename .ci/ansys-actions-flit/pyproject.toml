@@ -1,0 +1,31 @@
+[build-system]
+requires = ["flit_core >=3.2,<3.11"]
+build-backend = "flit_core.buildapi"
+
+[project]
+# Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
+name = "ansys-actions-flit"
+version = "10.3.dev0"
+description = "A demo library for testing Ansys actions (uses flit as the build backend)"
+readme = "README.rst"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "ANSYS, Inc.", email = "pyansys.core@ansys.com" }]
+maintainers = [
+    { name = "PyAnsys developers", email = "pyansys.core@ansys.com" },
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["importlib-metadata >=4.0"]
+
+[tool.flit.module]
+name = "ansys.actions.flit"
+
+[project.urls]
+Source = "https://github.com/ansys/actions"
+Documentation = "https://actions.docs.ansys.com"
