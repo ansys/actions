@@ -373,7 +373,7 @@ runs:
           # Remove builderr.txt
           rm builderr.txt
 
-          if [ -n "$section_exists_err" ]; then
+          if [ -n "$section_exists_err" ] && [[ "${IS_PRE_RELEASE}" == "false" ]]; then
             # Print error message on how to fix this
             message="Your changelog file already contains section ${TAG_VERSION} in the \
             ${UPDATE_BRANCH} branch. Please checkout ${UPDATE_BRANCH}, revert \
@@ -382,6 +382,9 @@ runs:
 
             echo -e "\033[1;91m[ERROR]: $message\033[0m"
             exit 1
+          elif [ -n "$section_exists_err" ] && [[ "${IS_PRE_RELEASE}" == "true" ]]; then
+            echo "Changelog section for pre-release version ${TAG_VERSION} already exists. This is expected behavior for pre-releases, so the workflow will continue without exiting with an error."
+            exit 0
           fi
 
           # Configure git username & email
