@@ -173,7 +173,8 @@ runs:
         level: "INFO"
         message: >
           Install system dependencies. Even if no dependencies are provided,
-          Miktex is installed to build the documentation.
+          Miktex is installed to build the documentation when it is not already
+          installed in the system.
 
     - name: Collect system dependencies
       id: collect-system-dependencies
@@ -199,11 +200,31 @@ runs:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
       run: choco install $env:NEEDED_DEPS -y
 
-    - name: Install Miktex and update PATH with Miktex binaries
+    - name: Install Miktex and update PATH with Miktex binaries (if needed)
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install miktex -y
-        echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        $miktexPath = "C:\Program Files\MiKTeX\miktex\bin\x64"
+
+        # Check if MiKTeX is already installed
+        if (Test-Path $miktexPath) {
+          Write-Host "MiKTeX already installed at $miktexPath"
+        } else {
+          $miktexPath = Join-Path $env:LOCALAPPDATA "Programs\MiKTeX\miktex\bin\x64"
+          if (Test-Path $miktexPath) {
+            Write-Host "MiKTeX already installed at $miktexPath"
+          } else {
+            Write-Host "MiKTeX not found. Installing MiKTeX in user mode..."
+            # Install in user mode to avoid initexmf error
+            choco install miktex -y --params="'/NoAdmin'"
+            # Check if the installation was successful
+            if (-Not (Test-Path $miktexPath)) {
+                Write-Error "MiKTeX installation failed! Exiting."
+                exit 1
+            }
+          }
+        }
+
+        echo "$miktexPath" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
