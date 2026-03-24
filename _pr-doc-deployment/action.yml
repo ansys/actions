@@ -248,6 +248,7 @@ runs:
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
       uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
+        token: ${{ inputs.token }}
         issue-number: ${{ github.event.pull_request.number }}
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
         edit-mode: replace
@@ -345,6 +346,7 @@ runs:
       if: ${{ steps.create-pull-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
+        token: ${{ inputs.token }}
         issue-number: ${{ github.event.pull_request.number }}
         body: >
           The documentation for this pull request will be available at
