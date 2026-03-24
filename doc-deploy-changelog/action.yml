@@ -219,11 +219,14 @@ runs:
         tag_version=${GITHUB_REF##*/v}
         echo "TAG_VERSION=$tag_version" >> ${GITHUB_OUTPUT}
 
-        # Check if the tag is a pre-release by seeing if the last part of the tag is not only a number
-        if [[ ! $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          echo "IS_PRE_RELEASE=true" >> ${GITHUB_OUTPUT}
+        # Check if the tag is a pre-release
+        if [[ $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+           echo "IS_PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
+        elif [[ $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$ ]]; then
+           echo "IS_PRE_RELEASE=true" >> ${GITHUB_OUTPUT}
         else
-          echo "IS_PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
+           echo "Error: '${tag_version}' is not a valid release or pre-release tag."
+           exit 1
         fi
 
     - name: "Install towncrier, toml, tomlkit, and the project"
