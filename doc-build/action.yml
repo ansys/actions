@@ -237,7 +237,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@main
+      uses: ansys/actions/_doc-build-linux@fix/miktex-installation-with-recent-choco
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -265,7 +265,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@main
+      uses: ansys/actions/_doc-build-windows@fix/miktex-installation-with-recent-choco
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
