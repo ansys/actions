@@ -213,14 +213,9 @@ runs:
           if (Test-Path $miktexPath) {
             Write-Host "MiKTeX already installed at $miktexPath"
           } else {
-            Write-Host "MiKTeX not found. Installing MiKTeX in user mode..."
-            # Install in user mode to avoid initexmf error
-            choco install miktex -y --params="'/NoAdmin'"
-            # Check if the installation was successful
-            if (-Not (Test-Path $miktexPath)) {
-                Write-Error "MiKTeX installation failed! Exiting."
-                exit 1
-            }
+            Write-Host "MiKTeX not found. Installing MiKTeX..."
+            choco install miktex -y
+            $miktexPath = "C:\Program Files\MiKTeX\miktex\bin\x64"
           }
         }
 
