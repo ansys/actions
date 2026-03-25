@@ -236,9 +236,9 @@ runs:
             Write-Host "MiKTeX not found. Installing MiKTeX..."
             choco install miktex -y
             $miktexBin = Get-MiKTeXBin
-            echo "$miktexBin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
           }
         }
+        echo "$miktexBin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
