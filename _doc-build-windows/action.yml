@@ -203,28 +203,41 @@ runs:
     - name: Install Miktex and update PATH with Miktex binaries (if needed)
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        if (choco list miktex | Select-String "miktex") {
-          Write-Host "MiKTeX is already installed"
-          $exePath = (Get-Command pdflatex -ErrorAction SilentlyContinue).Source
-          $miktexPath = Split-Path $exePath
-        } else {
-          $miktexPath = "C:\Program Files\MiKTeX\miktex\bin\x64"
-
-          # Check if MiKTeX is already installed
-          if (Test-Path $miktexPath) {
-            Write-Host "MiKTeX already installed at $miktexPath"
-          } else {
-            $miktexPath = Join-Path $env:LOCALAPPDATA "Programs\MiKTeX\miktex\bin\x64"
-            if (Test-Path $miktexPath) {
-              Write-Host "MiKTeX already installed at $miktexPath"
+        function Get-MiKTeXBin {
+            $possiblePaths = @(
+                "$env:ProgramFiles\MiKTeX\miktex\bin\x64",
+                "$env:ProgramFiles(x86)\MiKTeX\miktex\bin\x64",
+                "$env:LocalAppData\MiKTeX\miktex\bin\x64",
+                "$env:ProgramData\MiKTeX\miktex\bin\x64"
+            )
+            $miktexBin = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if ($miktexBin) {
+                Write-Host "MiKTeX x64 folder found: $miktexBin"
+                return $miktexBin
             } else {
-              Write-Host "MiKTeX not found. Installing MiKTeX..."
-              choco install miktex -y
-              $exePath = (Get-Command pdflatex -ErrorAction SilentlyContinue).Source
-              $miktexPath = Split-Path $exePath
+                Write-Host "MiKTeX bin folder not found!"
+                return $null
             }
+        }
+
+        if (choco list miktex | Select-String "miktex") {
+          Write-Host "MiKTeX is already installed with chocolatey, checking for binaries path..."
+          $miktexBin = Get-MiKTeXBin
+          if (-not $miktexBin) {
+            Write-Host "Unable to find MiKTeX binaries path, please check the installation of MiKTeX"
+            exit 1
           }
-          echo "$miktexPath" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        } else {
+          Write-Host "MiKTeX is not already installed with chocolatey, checking if it is already installed in the system..."
+          $miktexBin = Get-MiKTeXBin
+          if ($miktexBin) {
+            Write-Host "MiKTeX already installed at $miktexBin"
+          } else {
+            Write-Host "MiKTeX not found. Installing MiKTeX..."
+            choco install miktex -y
+            $miktexBin = Get-MiKTeXBin
+            echo "$miktexBin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          }
         }
 
     - name: "Install Poppler for PDF to PNG conversion"
