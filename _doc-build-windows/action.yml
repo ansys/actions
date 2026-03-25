@@ -203,23 +203,29 @@ runs:
     - name: Install Miktex and update PATH with Miktex binaries (if needed)
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        $miktexPath = "C:\Program Files\MiKTeX\miktex\bin\x64"
-
-        # Check if MiKTeX is already installed
-        if (Test-Path $miktexPath) {
-          Write-Host "MiKTeX already installed at $miktexPath"
+        if (choco list miktex | Select-String "miktex") {
+          Write-Host "MiKTeX is already installed"
+          $exePath = (Get-Command pdflatex -ErrorAction SilentlyContinue).Source
+          $miktexPath = Split-Path $exePath
         } else {
-          $miktexPath = Join-Path $env:LOCALAPPDATA "Programs\MiKTeX\miktex\bin\x64"
+          $miktexPath = "C:\Program Files\MiKTeX\miktex\bin\x64"
+
+          # Check if MiKTeX is already installed
           if (Test-Path $miktexPath) {
             Write-Host "MiKTeX already installed at $miktexPath"
           } else {
-            Write-Host "MiKTeX not found. Installing MiKTeX..."
-            choco install miktex -y
-            $miktexPath = "C:\Program Files\MiKTeX\miktex\bin\x64"
+            $miktexPath = Join-Path $env:LOCALAPPDATA "Programs\MiKTeX\miktex\bin\x64"
+            if (Test-Path $miktexPath) {
+              Write-Host "MiKTeX already installed at $miktexPath"
+            } else {
+              Write-Host "MiKTeX not found. Installing MiKTeX..."
+              choco install miktex -y
+              $exePath = (Get-Command pdflatex -ErrorAction SilentlyContinue).Source
+              $miktexPath = Split-Path $exePath
+            }
           }
+          echo "$miktexPath" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
         }
-
-        echo "$miktexPath" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
