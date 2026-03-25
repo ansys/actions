@@ -129,7 +129,7 @@ inputs:
     required: false
     type: string
 
-  tomli-version:
+  tomli-version: # TODO: Remove deprecated input in v11
     description: |
       Tomli version used for retrieving the towncrier directory.
     default: '2.2.1'
@@ -229,21 +229,20 @@ runs:
            exit 1
         fi
 
-    - name: "Install towncrier, toml, tomlkit, and the project"
+    - name: "Install towncrier, tomlkit, and the project"
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOMLI_VERSION: ${{ inputs.tomli-version }}
         TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}" tomlkit=="${TOMLKIT_VERSION}"
+        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomlkit=="${TOMLKIT_VERSION}"
 
     - name: "Get towncrier directory and project name"
       shell: python
       run: |
         import pathlib
         import os
-        import tomli
+        import tomlkit
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -256,7 +255,7 @@ runs:
 
         # Load pyproject.toml
         with open(towncrier_config, 'rb') as f:
-            config = tomli.load(f)
+            config = tomlkit.load(f)
             directory = config["tool"]["towncrier"]["directory"]
             project_name = config["tool"]["towncrier"].get("package")
 
