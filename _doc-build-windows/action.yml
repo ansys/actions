@@ -248,7 +248,6 @@ runs:
             New-Item -ItemType Directory -Force -Path $repo | Out-Null
 
             # Download the MiKTeX setup executable in a zip file
-            echo "Downloading MiKTeX setup from $zipUrl..."
             New-Item -ItemType Directory -Force -Path ${env:RUNNER_TEMP}\miktexsetup | Out-Null
             Invoke-WebRequest $zipUrl -OutFile ${env:RUNNER_TEMP}\miktexsetup.zip
 
@@ -256,11 +255,10 @@ runs:
             Expand-Archive ${env:RUNNER_TEMP}\miktexsetup.zip -DestinationPath ${env:RUNNER_TEMP}\miktexsetup -Force
             $env:PATH = "${env:RUNNER_TEMP}\miktexsetup;{$env:PATH}"
 
-            echo "Downloading MikTeX packages..."
-
+            echo "Downloading MiKTeX setup from $zipUrl..."
             # Add retry mechanism to the download of MiKTeX packages as it can be unstable sometimes
             $retryCount = 3
-            $succes = $false
+            $success = $false
             for ($i = 1; $i -le $retryCount; $i++) {
               try {
                 miktexsetup_standalone.exe `
@@ -268,14 +266,14 @@ runs:
                   --remote-package-repository=$remoteRepo `
                   --package-set=basic `
                   download
-                $succes = $true
+                $success = $true
                 break
               } catch {
                 Write-Host "Download failed, retry $i/$retryCount"
                 Start-Sleep -Seconds (5 * $i)
               }
             }
-            if (-not $succes) {
+            if (-not $success) {
               Write-Host "Failed to download MiKTeX packages after $retryCount attempts. Exiting with error."
               exit 1
             }
