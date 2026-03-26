@@ -49,15 +49,10 @@ description: |
 
       .. jinja:: check-vulnerabilities
 
-<<<<<<< feat/improve-vuln-action
-          {% for v_id in ignored_safety %}
-          - `Vulnerability {{ v_id }} <https://pyup.io/v/{{ v_id }}/f17>`_
-=======
           {% for v_id in ignored_safety | select %}
           - `Vulnerability {{ v_id }} <https://pyup.io/v/{{ v_id }}/f17>`_
           {% else %}
           No safety vulnerabilities are accepted at this moment.
->>>>>>> main
           {% endfor %}
 
   .. important:: **Required GitHub Permissions**
