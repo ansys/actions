@@ -237,7 +237,6 @@ runs:
 
             # Remote repository for MiKTeX packages
             $remoteRepo = "https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/"
-            $remoteRepo = "https://mirror.ctan.org/systems/win32/miktex/tm/packages/"
             # URL of the MiKTeX setup standalone executable in a zip file
             $zipUrl = "https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0+1763023-x64.zip"
 
@@ -261,18 +260,24 @@ runs:
 
             # Add retry mechanism to the download of MiKTeX packages as it can be unstable sometimes
             $retryCount = 3
+            $succes = $false
             for ($i = 1; $i -le $retryCount; $i++) {
-                try {
-                    miktexsetup_standalone.exe `
-                      --local-package-repository=$repo `
-                      --remote-package-repository=$remoteRepo `
-                      --package-set=basic `
-                      download
-                    break
-                } catch {
-                    Write-Host "Download failed, retry $i/$retryCount"
-                    Start-Sleep -Seconds (5 * $i)
-                }
+              try {
+                miktexsetup_standalone.exe `
+                  --local-package-repository=$repo `
+                  --remote-package-repository=$remoteRepo `
+                  --package-set=basic `
+                  download
+                $succes = $true
+                break
+              } catch {
+                Write-Host "Download failed, retry $i/$retryCount"
+                Start-Sleep -Seconds (5 * $i)
+              }
+            }
+            if (-not $succes) {
+              Write-Host "Failed to download MiKTeX packages after $retryCount attempts. Exiting with error."
+              exit 1
             }
 
             echo "Installing MiKTeX packages..."
