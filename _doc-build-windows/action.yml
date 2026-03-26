@@ -173,7 +173,7 @@ runs:
         level: "INFO"
         message: >
           Install system dependencies. Even if no dependencies are provided,
-          Miktex is installed to build the documentation when it is not already
+          MiKTeX is installed to build the documentation when it is not already
           installed in the system.
 
     - name: Collect system dependencies
@@ -200,7 +200,7 @@ runs:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
       run: choco install $env:NEEDED_DEPS -y
 
-    - name: Install Miktex and update PATH with Miktex binaries (if needed)
+    - name: Install MiKTeX and update PATH with MiKTeX binaries (if needed)
       shell: powershell
       run: | # zizmor: ignore[github-env]
         function Get-MiKTeXBin {
@@ -245,6 +245,7 @@ runs:
             New-Item -ItemType Directory -Force -Path $repo | Out-Null
 
             # Download the MiKTeX setup executable in a zip file
+            echo "Downloading MiKTeX setup from $zipUrl..."
             New-Item -ItemType Directory -Force -Path ${env:RUNNER_TEMP}\miktexsetup | Out-Null
             Invoke-WebRequest $zipUrl -OutFile ${env:RUNNER_TEMP}\miktexsetup.zip
 
@@ -252,12 +253,14 @@ runs:
             Expand-Archive ${env:RUNNER_TEMP}\miktexsetup.zip -DestinationPath ${env:RUNNER_TEMP}\miktexsetup -Force
             $env:PATH = "${env:RUNNER_TEMP}\miktexsetup;{$env:PATH}"
 
+            echo "Downloading MikTeX packages..."
             miktexsetup_standalone.exe `
               --local-package-repository=$repo `
               --remote-package-repository=$remoteRepo `
               --package-set=basic `
               download
 
+            echo "Installing MiKTeX packages..."
             miktexsetup_standalone.exe `
               --local-package-repository=$repo `
               --package-set=basic `
@@ -288,9 +291,9 @@ runs:
       with:
         level: "INFO"
         message: >
-          Set up Miktex to allow downloading missing packages when building documentation.
+          Set up MiKTeX to allow downloading missing packages when building documentation.
 
-    - name: Set up Miktex to automatically install packages
+    - name: Set up MiKTeX to automatically install packages
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
