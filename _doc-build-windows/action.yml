@@ -205,10 +205,10 @@ runs:
       run: | # zizmor: ignore[github-env]
         function Get-MiKTeXBin {
             $possiblePaths = @(
-                "$env:ProgramFiles\MiKTeX\miktex\bin\x64",
-                "$env:ProgramFiles(x86)\MiKTeX\miktex\bin\x64",
-                "$env:LocalAppData\MiKTeX\miktex\bin\x64",
-                "$env:ProgramData\MiKTeX\miktex\bin\x64"
+                "${env:ProgramFiles}\MiKTeX\miktex\bin\x64",
+                "${env:ProgramFiles(x86)}\MiKTeX\miktex\bin\x64",
+                "${env:LocalAppData}\MiKTeX\miktex\bin\x64",
+                "${env:ProgramData}\MiKTeX\miktex\bin\x64"
             )
             $miktexBin = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
             if ($miktexBin) {
@@ -233,8 +233,36 @@ runs:
           if ($miktexBin) {
             Write-Host "MiKTeX already installed at $miktexBin"
           } else {
-            Write-Host "MiKTeX not found. Installing MiKTeX..."
-            choco install miktex -y
+            Write-Host "MiKTeX not found. Installing MiKTeX from official miktexsetup..."
+
+            # Remote repository for MiKTeX packages
+            $remoteRepo = "https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/"
+            # URL of the MiKTeX setup standalone executable in a zip file
+            $zipUrl = "https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0+1763023-x64.zip"
+
+            # Local repository for MiKTeX packages
+            $repo = "${env:USERPROFILE}\.miktex-repo"
+            New-Item -ItemType Directory -Force -Path $repo | Out-Null
+
+            # Download the MiKTeX setup executable in a zip file
+            New-Item -ItemType Directory -Force -Path ${env:RUNNER_TEMP}\miktexsetup | Out-Null
+            Invoke-WebRequest $zipUrl -OutFile ${env:RUNNER_TEMP}\miktexsetup.zip
+
+            # Extract the MiKTeX setup executable and run it to install MiKTeX in the system
+            Expand-Archive ${env:RUNNER_TEMP}\miktexsetup.zip -DestinationPath ${env:RUNNER_TEMP}\miktexsetup -Force
+            echo "${env:RUNNER_TEMP}\miktexsetup" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append # zizmor: ignore[github-env]
+
+            miktexsetup_standalone.exe `
+              --local-package-repository=$repo `
+              --remote-package-repository=$remoteRepo `
+              --package-set=basic `
+              download
+
+            miktexsetup_standalone.exe `
+              --local-package-repository=$repo `
+              --package-set=basic `
+              install
+
             $miktexBin = Get-MiKTeXBin
           }
         }
