@@ -477,7 +477,7 @@ runs:
     - name: "Download the list of ignored safety vulnerabilities"
       shell: bash
       run: |
-        wget https://raw.githubusercontent.com/ansys/actions/feat/cleanup/check-vulnerabilities/ignored-safety.txt
+        wget https://raw.githubusercontent.com/ansys/actions/main/check-vulnerabilities/ignored-safety.txt
 
     - name: "Run safety and bandit"
       shell: bash
