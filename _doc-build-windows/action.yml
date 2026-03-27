@@ -200,7 +200,7 @@ runs:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
       run: choco install $env:NEEDED_DEPS -y
 
-    - name: Install MiKTeX and update PATH with MiKTeX binaries (if needed)
+    - name: Install MiKTeX and update PATH with MiKTeX binaries
       shell: powershell
       run: | # zizmor: ignore[github-env]
         choco install miktex --params '"/Set:basic /ThisUser"' -y
