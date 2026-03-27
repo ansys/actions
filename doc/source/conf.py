@@ -329,7 +329,7 @@ def load_safety_ignore_vulnerabilities(file_path: pathlib.Path):
     with file_path.open() as safety_ignore_file:
         data = yaml.safe_load(safety_ignore_file)
         vulnerabilities = data.get("security", {}).get("ignore-vulnerabilities", {})
-        return list(vulnerabilities.keys())
+        return list(vulnerabilities.keys()) if vulnerabilities else []
 
 
 def load_file_lines_as_list(file_path: pathlib.Path):
