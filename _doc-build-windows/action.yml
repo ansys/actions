@@ -203,6 +203,9 @@ runs:
     - name: Install MiKTeX and update PATH with MiKTeX binaries
       shell: powershell
       run: | # zizmor: ignore[github-env]
+        # NOTE: Install at user level to avoid errors when running on self-hosted runners
+        # where choco was already installed at system level.
+        # For more information, see https://github.com/ansys/actions/pull/1233
         choco install miktex --params '"/Set:basic /ThisUser"' -y
         echo "$env:LocalAppData\Programs\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
