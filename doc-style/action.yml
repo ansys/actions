@@ -74,10 +74,17 @@ inputs:
     required: false
     type: string
 
-  tomli-version:
+  tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       Tomli version used for retrieving the towncrier directory.
     default: '2.2.1'
+    required: false
+    type: string
+
+  tomlkit-version:
+    description: |
+      Tomlkit version used for reading the towncrier configuration.
+    default: '0.14.0'
     required: false
     type: string
 
@@ -119,6 +126,15 @@ runs:
           include other groups. This action now uses the ``tomli`` library instead. If you
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly. The ``toml-version`` input will be removed in v11.
+
+    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
+      if: inputs.tomli-version != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``tomli-version`` input is deprecated and will be removed in v12.
+          This action now uses the ``tomlkit`` library instead. Please use the
+          ``tomlkit-version`` input accordingly.
 
     - name: "Install Git and clone project"
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -168,12 +184,12 @@ runs:
           fi
         fi
 
-    - name: "Install tomli"
+    - name: "Install tomlkit"
       shell: bash
       env:
-       TOMLI_VERSION: ${{ inputs.tomli-version }}
+       TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
       run: |
-        python -m pip install --upgrade pip tomli==${TOMLI_VERSION}
+        python -m pip install --upgrade pip tomlkit==${TOMLKIT_VERSION}
 
     - name: "Install docutils"
       shell: bash
@@ -184,12 +200,12 @@ runs:
       shell: python
       run: |
         import os
-        import tomli
+        import tomlkit
 
         if os.path.exists("pyproject.toml"):
             # Load pyproject.toml
-            with open('pyproject.toml', 'rb') as f:
-                config = tomli.load(f)
+            with open('pyproject.toml', 'r') as f:
+                config = tomlkit.load(f)
                 try:
                     # Get towncrier directory
                     directory=config["tool"]["towncrier"]["directory"]
