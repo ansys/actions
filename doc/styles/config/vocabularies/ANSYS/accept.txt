@@ -19,6 +19,8 @@ pyyaml
 SBOM
 Syft
 toctree
+toml
+tomlkit
 towncrier
 TXT
 PyAnsys Dashboard
