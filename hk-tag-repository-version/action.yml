@@ -1,0 +1,117 @@
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
+name: Update latest vX and vX.Y tag
+
+description: |
+
+  Custom action to create latest vX and vX.Y tag to point to the latest released version.
+  A new branch 'release/vX.Y.Z' is also pushed to be used for hotfixes.
+
+  .. note::
+
+      This action is intended to be used in a workflow triggered by a release event.
+      If the release event was created by a different workflow, the workflow using this action may not be triggered.
+
+inputs:
+  gh-token:
+    description: GitHub token with repo and workflow scope.
+    required: true
+  release-version:
+    description: Tagged release version to use (typically 'vX.Y.Z'). If not provided, uses the tag from the GitHub release event.
+    required: false
+    default: ""
+  latest-branch-name:
+    description: Create/update a branch with the latest copy of main. To disable, set to ``""``
+    required: false
+    default: "latest"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Pick the input semantic version
+      shell: bash
+      id: pick_version
+      env:
+        RELEASE_VERSION: ${{ inputs.release-version }}
+        GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+      run: |
+        if [ -n "${RELEASE_VERSION}" ]; then
+          semantic_input="${RELEASE_VERSION}"
+        else
+          semantic_input="${GITHUB_EVENT_RELEASE_TAG_NAME}"
+        fi
+
+        # save this value for use in later steps
+        echo "SEMANTIC_VERSION=$semantic_input" >> $GITHUB_OUTPUT
+
+    - name: Semantic version from tag
+      shell: bash
+      id: semantic_version
+      env:
+        SEMANTIC_VERSION: ${{ steps.pick_version.outputs.SEMANTIC_VERSION }}
+      run: |
+        MAJOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 1)
+        MINOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 2)
+        PATCH_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 3)
+        echo "Major version: $MAJOR_VERSION"
+        echo "Minor version: $MINOR_VERSION"
+        echo "Patch version: $PATCH_VERSION"
+        echo "MAJOR_VERSION=$MAJOR_VERSION" >> $GITHUB_OUTPUT
+        echo "MINOR_VERSION=$MINOR_VERSION" >> $GITHUB_OUTPUT
+        echo "PATCH_VERSION=$PATCH_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Update SemVer tag
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.gh-token }}
+        PATCH_VERSION: ${{ steps.semantic_version.outputs.PATCH_VERSION }}
+        MINOR_VERSION: ${{ steps.semantic_version.outputs.MINOR_VERSION }}
+        MAJOR_VERSION: ${{ steps.semantic_version.outputs.MAJOR_VERSION }}
+        LATEST_BRANCH_NAME: ${{ inputs.latest-branch-name }}
+        GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+
+        # Try to delete existing vX and vX.Y tag to avoid conflicts
+        git push --delete origin v${MAJOR_VERSION} || true
+        git push --delete origin v${MAJOR_VERSION}.${MINOR_VERSION} || true
+
+        # Create new vX and vX.Y tag
+        git tag -a v${MAJOR_VERSION} -m "Latest v${MAJOR_VERSION} is Release ${GITHUB_EVENT_RELEASE_TAG_NAME}"
+        git tag -a v${MAJOR_VERSION}.${MINOR_VERSION} -m "Latest v${MAJOR_VERSION}.${MINOR_VERSION} is Release ${GITHUB_EVENT_RELEASE_TAG_NAME}"
+        git push origin v${MAJOR_VERSION}
+        git push origin v${MAJOR_VERSION}.${MINOR_VERSION}
+
+        # Create and push 'release/vX.Y.Z' branch
+        VERSION="release/v${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
+        # custom code to also push to a release branch
+        git checkout -b $VERSION
+        git push -u origin $VERSION
+
+        # Create and push 'latest' branch, if set
+        if [ "${LATEST_BRANCH_NAME}" != "" ]; then
+          git checkout --force -b ${LATEST_BRANCH_NAME}
+          git push --force -u origin ${LATEST_BRANCH_NAME}
+        fi
