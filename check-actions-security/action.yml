@@ -77,6 +77,12 @@ inputs:
     default: true
     type: boolean
 
+  zizmor-version:
+    description: |
+      Zizmor version to use.
+    required: false
+    default: '1.16.0'
+
 runs:
   using: "composite"
   steps:
@@ -92,8 +98,10 @@ runs:
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.16.0
+        uv tool install zizmor${ZIZMOR_VERSION}
         zizmor --version
+      env:
+        ZIZMOR_VERSION: ${{ inputs.zizmor-version != '' && format('=={0}', inputs.zizmor-version) || '' }}
 
     - name: "Optionally set GH_TOKEN"
       if: ${{ inputs.token != '' }}
