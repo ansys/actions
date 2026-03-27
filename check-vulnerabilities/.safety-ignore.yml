@@ -28,21 +28,7 @@
 security:
   ignore-vulnerabilities:
     # List of vulnerability IDs to ignore
-    52495:
-      reason: "Accepted vulnerability"
-      expires: null
-    62044:
-      reason: "Accepted vulnerability"
-      expires: null
-    67599:
-      reason: "Accepted vulnerability"
-      expires: null
-    72236:
-      reason: "Accepted vulnerability"
-      expires: null
-    76752:
-      reason: "Accepted vulnerability"
-      expires: null
-    83150:
-      reason: "Accepted vulnerability"
-      expires: null
+    # Example:
+    # 52495:
+    #   reason: "Accepted vulnerability"
+    #   expires: null
