@@ -173,8 +173,7 @@ runs:
         level: "INFO"
         message: >
           Install system dependencies. Even if no dependencies are provided,
-          MiKTeX is installed to build the documentation when it is not already
-          installed in the system.
+          MiKTeX is installed at user level to build the documentation.
 
     - name: Collect system dependencies
       id: collect-system-dependencies
