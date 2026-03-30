@@ -141,6 +141,15 @@ inputs:
     default: false
     type: boolean
 
+  upload-documentation:
+    description: |
+      Whether to include documentation artifacts (HTML and PDF) in the GitHub
+      release. Set to ``false`` to skip uploading documentation. Default value
+      is ``true``.
+    required: false
+    default: true
+    type: boolean
+
   add-artifact-attestation-notes:
     description: |
       Whether or not to add artifact attestation notes to the release notes. The
@@ -244,7 +253,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: inputs.only-code == 'false'
+      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       with:
         level: "INFO"
         message: >
@@ -253,7 +262,7 @@ runs:
           Finally, compress both artifacts.
 
     - name: "Moving documentation artifacts to dist/documentation directory"
-      if: inputs.only-code == 'false'
+      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       shell: bash
       run: |
         mkdir -p dist/documentation
@@ -261,14 +270,14 @@ runs:
         mv /tmp/artifacts/documentation-pdf dist/documentation/documentation-pdf
 
     - name: "Compressing HTML documentation"
-      if: inputs.only-code == 'false'
+      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: dist/documentation/documentation-html
         dest: dist/documentation/documentation-html.zip
 
     - name: "Compressing PDF documentation"
-      if: inputs.only-code == 'false'
+      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: dist/documentation/documentation-pdf
@@ -325,6 +334,62 @@ runs:
         LIBRARY_NAME: ${{ inputs.library-name }}
       run: |
         mv /tmp/artifacts/${LIBRARY_NAME}-artifacts dist/${LIBRARY_NAME}-artifacts
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: inputs.only-code == 'false'
+      with:
+        level: "INFO"
+        message: >
+          Verify that the tag version and the artifact version agree.
+
+    - name: "Verify tag and artifacts version agree"
+      if: inputs.only-code == 'false'
+      shell: bash
+      env:
+        ARTIFACT_DIR: dist/${{ inputs.library-name }}-artifacts
+      run: |
+
+        if [[ ! -d "${ARTIFACT_DIR}" ]]; then
+          echo "Artifact directory not found: ${ARTIFACT_DIR}"
+          exit 1
+        fi
+
+        # Extract version from git tag (strip refs/tags/ and optional leading 'v')
+        TAG_VERSION="${GITHUB_REF_NAME#v}"
+        echo "Git tag version: ${TAG_VERSION}"
+
+        # Find first wheel or sdist
+        ARTIFACT_FILE="$(ls "${ARTIFACT_DIR}"/*.whl "${ARTIFACT_DIR}"/*.tar.gz 2>/dev/null | head -n 1)"
+
+        if [[ -z "${ARTIFACT_FILE}" ]]; then
+          echo "No wheel or sdist found in ${ARTIFACT_DIR}"
+          exit 1
+        fi
+        echo "Found artifact: ${ARTIFACT_FILE}"
+
+        # Extract version from filename
+        # Examples:
+        #   ansys_project-1.2.3-py3-none-any.whl
+        #   ansys_project-1.2.3.tar.gz
+        ARTIFACT_VERSION="$(basename "${ARTIFACT_FILE}" \
+          | sed -E 's/^[^0-9]+//; s/-.*$//; s/\.(tar\.gz|whl)$//')"
+
+        if [[ -z "${ARTIFACT_VERSION}" ]]; then
+          echo "Failed to extract version from artifact filename"
+          exit 1
+        fi
+        echo "Artifact version: ${ARTIFACT_VERSION}"
+
+        if [[ "${TAG_VERSION}" != "${ARTIFACT_VERSION}" ]]; then
+          echo "Version mismatch!"
+          echo "  Git tag version:     ${TAG_VERSION}"
+          echo "  Artifact version:    ${ARTIFACT_VERSION}"
+          exit 1
+        fi
+
+        echo "Version check passed: tag and artifact versions match."
 
     # ------------------------------------------------------------------------
 
