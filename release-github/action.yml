@@ -338,6 +338,62 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: inputs.only-code == 'false'
+      with:
+        level: "INFO"
+        message: >
+          Verify that the tag version and the artifact version agree.
+
+    - name: "Verify tag and artifacts version agree"
+      if: inputs.only-code == 'false'
+      shell: bash
+      env:
+        ARTIFACT_DIR: dist/${{ inputs.library-name }}-artifacts
+      run: |
+
+        if [[ ! -d "${ARTIFACT_DIR}" ]]; then
+          echo "Artifact directory not found: ${ARTIFACT_DIR}"
+          exit 1
+        fi
+
+        # Extract version from git tag (strip refs/tags/ and optional leading 'v')
+        TAG_VERSION="${GITHUB_REF_NAME#v}"
+        echo "Git tag version: ${TAG_VERSION}"
+
+        # Find first wheel or sdist
+        ARTIFACT_FILE="$(ls "${ARTIFACT_DIR}"/*.whl "${ARTIFACT_DIR}"/*.tar.gz 2>/dev/null | head -n 1)"
+
+        if [[ -z "${ARTIFACT_FILE}" ]]; then
+          echo "No wheel or sdist found in ${ARTIFACT_DIR}"
+          exit 1
+        fi
+        echo "Found artifact: ${ARTIFACT_FILE}"
+
+        # Extract version from filename
+        # Examples:
+        #   ansys_project-1.2.3-py3-none-any.whl
+        #   ansys_project-1.2.3.tar.gz
+        ARTIFACT_VERSION="$(basename "${ARTIFACT_FILE}" \
+          | sed -E 's/^[^0-9]+//; s/-.*$//; s/\.(tar\.gz|whl)$//')"
+
+        if [[ -z "${ARTIFACT_VERSION}" ]]; then
+          echo "Failed to extract version from artifact filename"
+          exit 1
+        fi
+        echo "Artifact version: ${ARTIFACT_VERSION}"
+
+        if [[ "${TAG_VERSION}" != "${ARTIFACT_VERSION}" ]]; then
+          echo "Version mismatch!"
+          echo "  Git tag version:     ${TAG_VERSION}"
+          echo "  Artifact version:    ${ARTIFACT_VERSION}"
+          exit 1
+        fi
+
+        echo "Version check passed: tag and artifact versions match."
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
