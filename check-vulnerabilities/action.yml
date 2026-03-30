@@ -251,7 +251,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       with:
         level: "INFO"
         message: >
@@ -271,7 +271,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       with:
         level: "INFO"
         message: >
@@ -279,14 +279,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       with:
         level: "INFO"
         message: >
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v10.2.12
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
@@ -350,7 +350,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       with:
         level: "INFO"
         message: >
@@ -442,7 +442,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       with:
         level: "INFO"
         message: >
@@ -503,21 +503,21 @@ runs:
         echo "SAFETY_CONFIG_ERROR=${SAFETY_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
         echo "BANDIT_CONFIG_ERROR=${BANDIT_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       if: ${{ steps.validate-config-files.outputs.SAFETY_CONFIG_ERROR == 'true' }}
       with:
         level: "ERROR"
         message: >
           The provided safety policy file '${{ inputs.safety-configfile }}' does not exist in the repository.
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       if: ${{ steps.validate-config-files.outputs.BANDIT_CONFIG_ERROR == 'true' }}
       with:
         level: "ERROR"
         message: >
           The provided bandit config file '${{ inputs.bandit-configfile }}' does not exist in the repository.
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       with:
         level: "INFO"
         message: >
@@ -543,7 +543,7 @@ runs:
         # Run safety vulnerability checks
         safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v10.2.12
       with:
         level: "INFO"
         message: >
