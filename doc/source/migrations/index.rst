@@ -27,6 +27,10 @@ Version ``v10.2``
   version ``v10.2``, you no longer need to include the ``closed`` pull request event in your workflows because
   deployed documentation is cleaned up asynchronously. For more details, see :ref:`docs-deploy-pr-setup`.
 
+- **Release-Github Changes:** The ``release-github`` action now includes a ``upload-documentation`` (default: ``true``) input. This input allows users
+  to control whether documentation artifacts are included in the GitHub release. Setting this to ``false`` will skip the upload of documentation artifacts,
+  which can be useful for releases without documentation artifacts.
+
 Version ``v10.1``
 -----------------
 

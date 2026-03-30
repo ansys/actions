@@ -104,10 +104,17 @@ inputs:
     required: false
     type: string
 
-  tomli-version:
+  tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       Tomli version used for retrieving the towncrier directory.
     default: '2.2.1'
+    required: false
+    type: string
+
+  tomlkit-version:
+    description: |
+      Tomlkit version used for reading the towncrier configuration.
+    default: '0.14.0'
     required: false
     type: string
 
@@ -132,6 +139,15 @@ inputs:
       repositories that don't create wheels and/or documentation.
     required: false
     default: false
+    type: boolean
+
+  upload-documentation:
+    description: |
+      Whether to include documentation artifacts (HTML and PDF) in the GitHub
+      release. Set to ``false`` to skip uploading documentation. Default value
+      is ``true``.
+    required: false
+    default: true
     type: boolean
 
   add-artifact-attestation-notes:
@@ -186,6 +202,15 @@ runs:
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly. The ``toml-version`` input will be removed in v11.
 
+    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
+      if: inputs.tomli-version != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``tomli-version`` input is deprecated and will be removed in v12.
+          This action now uses the ``tomlkit`` library instead. Please use the
+          ``tomlkit-version`` input accordingly.
+
     - uses: ansys/actions/_logging@main
       if: ${{ inputs.generate_release_notes == 'true' }}
       with:
@@ -217,7 +242,7 @@ runs:
           directory containing the final artifacts to be published in GitHub.
 
     - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         path: /tmp/artifacts
 
@@ -228,7 +253,7 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
-      if: inputs.only-code == 'false'
+      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       with:
         level: "INFO"
         message: >
@@ -237,7 +262,7 @@ runs:
           Finally, compress both artifacts.
 
     - name: "Moving documentation artifacts to dist/documentation directory"
-      if: inputs.only-code == 'false'
+      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       shell: bash
       run: |
         mkdir -p dist/documentation
@@ -245,15 +270,15 @@ runs:
         mv /tmp/artifacts/documentation-pdf dist/documentation/documentation-pdf
 
     - name: "Compressing HTML documentation"
-      if: inputs.only-code == 'false'
-      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
+      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
+      uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: dist/documentation/documentation-html
         dest: dist/documentation/documentation-html.zip
 
     - name: "Compressing PDF documentation"
-      if: inputs.only-code == 'false'
-      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
+      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
+      uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: dist/documentation/documentation-pdf
         dest: dist/documentation/documentation-pdf.zip
@@ -313,6 +338,62 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: inputs.only-code == 'false'
+      with:
+        level: "INFO"
+        message: >
+          Verify that the tag version and the artifact version agree.
+
+    - name: "Verify tag and artifacts version agree"
+      if: inputs.only-code == 'false'
+      shell: bash
+      env:
+        ARTIFACT_DIR: dist/${{ inputs.library-name }}-artifacts
+      run: |
+
+        if [[ ! -d "${ARTIFACT_DIR}" ]]; then
+          echo "Artifact directory not found: ${ARTIFACT_DIR}"
+          exit 1
+        fi
+
+        # Extract version from git tag (strip refs/tags/ and optional leading 'v')
+        TAG_VERSION="${GITHUB_REF_NAME#v}"
+        echo "Git tag version: ${TAG_VERSION}"
+
+        # Find first wheel or sdist
+        ARTIFACT_FILE="$(ls "${ARTIFACT_DIR}"/*.whl "${ARTIFACT_DIR}"/*.tar.gz 2>/dev/null | head -n 1)"
+
+        if [[ -z "${ARTIFACT_FILE}" ]]; then
+          echo "No wheel or sdist found in ${ARTIFACT_DIR}"
+          exit 1
+        fi
+        echo "Found artifact: ${ARTIFACT_FILE}"
+
+        # Extract version from filename
+        # Examples:
+        #   ansys_project-1.2.3-py3-none-any.whl
+        #   ansys_project-1.2.3.tar.gz
+        ARTIFACT_VERSION="$(basename "${ARTIFACT_FILE}" \
+          | sed -E 's/^[^0-9]+//; s/-.*$//; s/\.(tar\.gz|whl)$//')"
+
+        if [[ -z "${ARTIFACT_VERSION}" ]]; then
+          echo "Failed to extract version from artifact filename"
+          exit 1
+        fi
+        echo "Artifact version: ${ARTIFACT_VERSION}"
+
+        if [[ "${TAG_VERSION}" != "${ARTIFACT_VERSION}" ]]; then
+          echo "Version mismatch!"
+          echo "  Git tag version:     ${TAG_VERSION}"
+          echo "  Artifact version:    ${ARTIFACT_VERSION}"
+          exit 1
+        fi
+
+        echo "Version check passed: tag and artifact versions match."
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -351,14 +432,14 @@ runs:
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: "Install toml and pypandoc"
+    - name: "Install tomlkit and pypandoc"
       shell: bash
       env:
-        TOMLI_VERSION: ${{ inputs.tomli-version }}
+        TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
         PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip tomli=="$TOMLI_VERSION"
+        ${INSTALL_COMMAND} --upgrade pip tomlkit=="$TOMLKIT_VERSION"
         ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
 
     - name: "Get the release notes body"
@@ -412,7 +493,7 @@ runs:
         } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+      uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
       env:
         REPO_NAME: ${{ github.event.repository.name }}
       if: inputs.dry-run == 'false'
