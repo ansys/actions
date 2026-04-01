@@ -525,7 +525,8 @@ runs:
 
         The pull request [#${NEW_PR_NUM}](${NEW_PR_URL}) has been created successfully.
 
-        Thank you @${PR_AUTHOR} for your contribution!
+        Thank you @${PR_AUTHOR} for your contribution! Your PR has been migrated to the main repository to enable successful run of CI/CD workflows
+        that require repository secrets.
 
         **What this means for you:**
         - Keep pushing commits to your fork branch \`${PR_HEAD_BRANCH}\` as you normally would.
