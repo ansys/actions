@@ -26,13 +26,14 @@ name: |
 description: |
   Migrates pull requests from forks to branches within the main repository,
   enabling workflows that require repository secrets to run. This action
-  handles team membership verification and automated PR creation.
+  handles team membership verification and automated PR creation during migration.
+  After migration, triggering the action subsequently will sync the migration branch
+  with the latest changes from the fork branch.
 
   When syncing, the migration branch is kept as a mirror of the fork branch.
-  If ``main`` has been merged into the migration branch (e.g., via the
-  "Update branch" button on GitHub) but not into the fork branch, the sync
-  will be blocked and the contributor will be asked to merge ``main`` into
-  their fork branch first.
+  This means than any changes pushed to the fork branch will be reflected in the
+  migration branch after a sync, and any changes made directly to the migration
+  branch (e.g., by maintainers) will be overwritten on the next sync.
 
   .. note::
       This action is designed to be called from workflows triggered by issue
@@ -473,7 +474,14 @@ runs:
 
         Check the [original PR](https://github.com/${ORGANIZATION}/${REPOSITORY}/pull/${PR_NUMBER}) made by @${PR_AUTHOR} for more details.
 
-        Closes #${PR_NUMBER}
+        If further collaboration is anticipated with the original author before this PR can be merged, maintainers should contribute directly to the forked PR and sync changes from there.
+        This will ensure the following:
+          1. The original author can continue to contribute to their fork branch as they normally would, they normally wouldn't be able to push to the migration branch.
+          2. The original PR remains the source of truth for the contribution
+          3. The migration branch can be kept in sync with the fork branch without worrying about merge conflicts or overwriting commits.
+
+        > [!NOTE]
+        > If maintainers are unable to add commits to the fork branch, they should ask the contributor to check the "Allow edits by maintainers" option on the original PR.
 
         ## Original Pull Request
 
