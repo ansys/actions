@@ -475,8 +475,7 @@ runs:
 
         Check the [original PR](https://github.com/${ORGANIZATION}/${REPOSITORY}/pull/${PR_NUMBER}) made by @${PR_AUTHOR} for more details.
 
-        If further collaboration is anticipated with the original author before this PR can be merged, maintainers should contribute directly to the forked PR and sync changes from there.
-        This will ensure the following:
+        If further collaboration is anticipated with the original author before this PR can be merged, maintainers should contribute directly to the forked PR and sync changes from there. That will ensure the following:
           1. The original author can continue to contribute to their fork branch as they normally would, they normally wouldn't be able to push to the migration branch.
           2. The original PR remains the source of truth for the contribution
           3. The migration branch can be kept in sync with the fork branch without worrying about merge conflicts or overwriting commits.
