@@ -233,16 +233,14 @@ runs:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
     - name: "Create a virtual environment"
       shell: bash
-      env:
-        USE_UV: ${{ inputs.use-uv }}
       run: |
-        if [[ "$USE_UV" == 'true' ]]; then
-          uv venv .venv
-        else
-          python -m venv .venv
-        fi
+        python -m venv .venv
 
     - name: "Set up virtual environment activation command"
       id: virtual-environment-activation-command
@@ -333,8 +331,19 @@ runs:
         ${ACTIVATE_VENV}
         python ${GITHUB_ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
 
+    - name: "Sanitize library name"
+      id: sanitize
+      shell: bash
+      env:
+        LIBRARY_NAME: "${{ inputs.library-name }}"
+      run: |
+        # Replace all hyphens with underscores
+        SANITIZED_NAME="${LIBRARY_NAME//-/_}"
+        echo "sanitized_library_name=${SANITIZED_NAME}" >> "${GITHUB_OUTPUT}"
+
     - name: "Create Software Bill of Materials (SBOM) using Syft"
       env:
+        SANITIZED_LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}
         LIBRARY_NAME: ${{ inputs.library-name }}
         LIBRARY_VERSION: ${{ steps.library-version.outputs.library_version }}
         WHEELHOUSE_TARGET: ${{ steps.specific-target-requested.outputs.wheelhouse_target }}
@@ -354,20 +363,20 @@ runs:
         ~/.local/bin/syft .venv --source-name "${LIBRARY_NAME}" --source-version "${LIBRARY_VERSION}" -o spdx > sbom.spdx
 
         echo "Renaming SBOM file..."
-        mv sbom.spdx "${LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
+        mv sbom.spdx "${SANITIZED_LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
 
     - name: "Upload the SBOM file"
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
-        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
-        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+        name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
+        path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: ${{ inputs.attest-provenance == 'true' }}
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
       with:
-        subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+        subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
 
     - name: "Optionally install build and wheel"
       if: ${{ inputs.install-build-and-wheel == 'true' }}
@@ -401,20 +410,20 @@ runs:
       uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: wheelhouse
-        dest: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        dest: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: "Upload the compressed wheelhouse"
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
-        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
-        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
+        path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
       with:
-        subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
       uses: ansys/actions/check-licenses@main
