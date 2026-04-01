@@ -481,7 +481,7 @@ runs:
           3. The migration branch can be kept in sync with the fork branch without worrying about merge conflicts or overwriting commits.
 
         > [!NOTE]
-        > If maintainers are unable to add commits to the fork branch, they should ask the contributor to check the "Allow edits by maintainers" option on the original PR.
+        > If maintainers are unable to add commits to the fork branch, they should ask the contributor to check the "Allow edits by maintainers" option on the fork PR.
 
         ## Original Pull Request
 
