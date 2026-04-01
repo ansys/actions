@@ -26,8 +26,13 @@ name: |
 description: |
   Migrates pull requests from forks to branches within the main repository,
   enabling workflows that require repository secrets to run. This action
-  handles team membership verification, conflict resolution, and automated PR
-  creation.
+  handles team membership verification and automated PR creation.
+
+  When syncing, the migration branch is kept as a mirror of the fork branch.
+  If ``main`` has been merged into the migration branch (e.g., via the
+  "Update branch" button on GitHub) but not into the fork branch, the sync
+  will be blocked and the contributor will be asked to merge ``main`` into
+  their fork branch first.
 
   .. note::
       This action is designed to be called from workflows triggered by issue
@@ -98,16 +103,6 @@ inputs:
 
   # Optional inputs
 
-  comment-body:
-    description: |
-      The body of the comment that triggered the migration. Used to detect
-      conflict resolution mode. Should contain ``@pyansys-ci-bot migrate``
-      or ``@pyansys-ci-bot sync`` with optional ``theirs`` or ``ours``
-      modifiers.
-    required: false
-    type: string
-    default: '@pyansys-ci-bot migrate'
-
   organization:
     description: |
       The GitHub organization name. Defaults to ``ansys``.
@@ -122,17 +117,6 @@ inputs:
     required: false
     type: string
     default: ''
-
-  conflict-mode:
-    description: |
-      Override for conflict resolution mode. Valid values are ``auto``,
-      ``theirs``, or ``ours``. If not provided, the mode will be detected
-      from the comment body. Use ``theirs`` to accept changes from the fork
-      branch, ``ours`` to keep changes from the main branch, or ``auto`` to
-      exit on conflicts.
-    required: false
-    type: string
-    default: 'auto'
 
 outputs:
 
@@ -170,12 +154,10 @@ runs:
           Starting fork PR migration for PR #${{ inputs.pr-number }}
           Triggered by: ${{ inputs.user-triggering }}
 
-    - name: "Setup configuration and detect conflict mode"
+    - name: "Setup configuration"
       id: setup
       shell: bash
       env:
-        COMMENT_BODY: ${{ inputs.comment-body }}
-        CONFLICT_MODE_INPUT: ${{ inputs.conflict-mode }}
         REPOSITORY: ${{ inputs.repository }}
       run: |
         # Set repository name
@@ -186,36 +168,6 @@ runs:
           REPO_NAME="${REPOSITORY}"
         fi
         echo "repository=${REPO_NAME}" >> "$GITHUB_OUTPUT"
-
-        # Detect conflict resolution mode
-        # 1. auto - exits on conflicts (default)
-        # 2. theirs - resolves conflicts by taking changes from the head branch
-        # 3. ours - resolves conflicts by taking changes from the base branch
-
-        MODE=''
-        if [ "${CONFLICT_MODE_INPUT}" != "auto" ]; then
-          # Use explicit override
-          if [ "${CONFLICT_MODE_INPUT}" == "theirs" ]; then
-            MODE='--theirs'
-            echo "Using explicit conflict mode: theirs"
-          elif [ "${CONFLICT_MODE_INPUT}" == "ours" ]; then
-            MODE='--ours'
-            echo "Using explicit conflict mode: ours"
-          fi
-        else
-          # Detect from comment body
-          if echo "${COMMENT_BODY}" | grep -q "pyansys-ci-bot sync theirs\|pyansys-ci-bot migrate theirs"; then
-            echo "Resolving conflicts by taking 'theirs' changes"
-            MODE='--theirs'
-          elif echo "${COMMENT_BODY}" | grep -q "pyansys-ci-bot sync ours\|pyansys-ci-bot migrate ours"; then
-            echo "Resolving conflicts by taking 'ours' changes"
-            MODE='--ours'
-          else
-            echo "No specific sync mode provided, defaulting to 'auto' which will exit if there are conflicts."
-          fi
-        fi
-
-        echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
 
     - name: "Check team membership"
       id: check-membership
@@ -236,7 +188,6 @@ runs:
 
         if [ $API_EXIT -ne 0 ]; then
           echo "::error::Error fetching team membership: ${MEMBERSHIP}"
-          echo "is_member=false" >> "$GITHUB_OUTPUT"
           echo "continue=false" >> "$GITHUB_OUTPUT"
           exit 0
         fi
@@ -246,11 +197,9 @@ runs:
 
         if [ "${STATE}" = "active" ] && { [ "${ROLE}" = "member" ] || [ "${ROLE}" = "maintainer" ]; }; then
           echo "User ${USER_TRIGGERING} is a ${ROLE} of team ${TEAM_SLUG}"
-          echo "is_member=true" >> "$GITHUB_OUTPUT"
           echo "continue=true" >> "$GITHUB_OUTPUT"
         else
           echo "::warning::User ${USER_TRIGGERING} is not an active member of team ${TEAM_SLUG}"
-          echo "is_member=false" >> "$GITHUB_OUTPUT"
           echo "continue=false" >> "$GITHUB_OUTPUT"
         fi
 
@@ -414,87 +363,75 @@ runs:
         fetch-depth: 0
         persist-credentials: true # zizmor: ignore[artipacked]
 
-    - name: "Clone head repo and merge with main"
+    - name: "Mirror fork branch to migration branch"
       if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
       shell: bash
       env:
+        GH_TOKEN: ${{ inputs.github-token }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
         BOT_USERNAME: ${{ inputs.bot-username }}
         BOT_EMAIL: ${{ inputs.bot-email }}
+        PR_NUMBER: ${{ inputs.pr-number }}
         PR_HEAD_REPO: ${{ steps.pr-details.outputs.pr-head-repo }}
         PR_HEAD_BRANCH: ${{ steps.pr-details.outputs.pr-head-branch }}
         PR_BASE_BRANCH: ${{ steps.pr-details.outputs.pr-base-branch }}
         ORGANIZATION: ${{ inputs.organization }}
         REPOSITORY: ${{ steps.setup.outputs.repository }}
-        MODE: ${{ steps.setup.outputs.mode }}
       run: |
         # Configure git
         git config user.name "${BOT_USERNAME}"
         git config user.email "${BOT_EMAIL}"
 
-        # Add head repo as remote
-        echo "Adding head repo as remote: ${PR_HEAD_REPO}"
+        # Add fork as remote and fetch its branch
+        echo "Adding fork as remote: ${PR_HEAD_REPO}"
         git remote add head_repo https://x-access-token:${GITHUB_TOKEN}@github.com/${PR_HEAD_REPO}.git
 
-        echo "Fetching '${PR_HEAD_BRANCH}' branch from '${PR_HEAD_REPO}'"
+        echo "Fetching '${PR_HEAD_BRANCH}' from '${PR_HEAD_REPO}'"
         git fetch head_repo ${PR_HEAD_BRANCH}
 
-        echo "Checking out '${PR_BASE_BRANCH}' branch from 'head_repo/${PR_HEAD_BRANCH}'"
-        git checkout -b ${PR_BASE_BRANCH} head_repo/${PR_HEAD_BRANCH}
+        # Fetch the migration branch from origin if it already exists
+        git fetch origin ${PR_BASE_BRANCH} || true
 
-        echo "Pulling '${PR_HEAD_BRANCH}' from '${PR_HEAD_REPO}'"
-        git pull head_repo ${PR_HEAD_BRANCH} || true
+        # Divergence guard: if main has been merged into the migration branch
+        # but not into the fork branch, a mirror sync would lose those commits.
+        # Block and ask the contributor to merge main into their fork branch first.
+        if git rev-parse --verify origin/${PR_BASE_BRANCH} > /dev/null 2>&1; then
+          MAIN_IN_MIGRATION=false
+          MAIN_IN_FORK=false
 
-        echo "Merging 'main' branch into '${PR_BASE_BRANCH}'"
-        git merge origin/main || true
+          git merge-base --is-ancestor origin/main origin/${PR_BASE_BRANCH} && MAIN_IN_MIGRATION=true || true
+          git merge-base --is-ancestor origin/main head_repo/${PR_HEAD_BRANCH} && MAIN_IN_FORK=true || true
 
-        # Check for merge conflicts
-        CONFLICTS=$(git ls-files -u | wc -l)
-        echo "Number of conflicting files: ${CONFLICTS}"
+          echo "main in migration branch: ${MAIN_IN_MIGRATION}"
+          echo "main in fork branch: ${MAIN_IN_FORK}"
 
-        if [[ "$CONFLICTS" -gt 0 ]]; then
-          if [[ -n "${MODE}" ]]; then
-            echo "::warning::Conflicts detected. Attempting to resolve using mode ${MODE}."
+          if [ "${MAIN_IN_MIGRATION}" = "true" ] && [ "${MAIN_IN_FORK}" = "false" ]; then
+            echo "::error::Divergence detected: main has been merged into the migration branch but not into the fork branch."
 
-            # Show conflicting files
-            echo "Conflicting files:"
-            git status
-            echo ""
+            BLOCK_BODY=$(cat <<EOF
+        **:warning: Sync Blocked: Fork Branch Is Behind**
 
-            # Resolve conflicts
-            echo "Resolving conflicts by taking '${MODE}' changes"
-            git checkout ${MODE} .
-            git add .
+        The migration branch \`${PR_BASE_BRANCH}\` has had \`main\` merged into it, but your fork branch \`${PR_HEAD_BRANCH}\` does not include those changes.
 
-            # Verify if conflicts are resolved
-            REMAINING_CONFLICTS=$(git ls-files -u | wc -l)
-            if [ "$REMAINING_CONFLICTS" -gt 0 ]; then
-              echo "::error::Conflicts remain after resolution. Aborting."
-              exit 1
-            fi
+        A sync at this point would overwrite the migration branch and discard those commits.
 
-            # Continue the merge
-            git -c core.editor=true merge --continue || { echo "::error::Merge failed. Aborting."; exit 1; }
-          else
-            echo "::error::Merge conflicts detected and no resolution mode specified. Aborting."
-            git status
+        Please merge \`main\` into your fork branch first, then trigger the sync again.
+        EOF
+            )
+            gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${BLOCK_BODY}"
+            echo "MIGRATION_BLOCKED=true" >> "$GITHUB_ENV"
             exit 1
           fi
-        else
-          echo "No merge conflicts detected."
         fi
 
-        echo "Pushing changes to '${ORGANIZATION}/${REPOSITORY}' repo"
+        # Mirror the fork branch onto the migration branch
+        echo "Checking out '${PR_BASE_BRANCH}' from 'head_repo/${PR_HEAD_BRANCH}'"
+        git checkout -b ${PR_BASE_BRANCH} head_repo/${PR_HEAD_BRANCH}
+
+        echo "Pushing mirror to '${ORGANIZATION}/${REPOSITORY}'"
         git push origin ${PR_BASE_BRANCH} --force-with-lease || \
           (git fetch --all && git push origin ${PR_BASE_BRANCH} --force-with-lease) || \
           { echo "::error::Push failed. Aborting."; exit 1; }
-
-        # If using 'ours' mode, also push to the head repo
-        if [[ "${MODE}" == "--ours" ]]; then
-          echo "Sync mode is 'ours'. Pushing to head_repo/${PR_HEAD_BRANCH} with 'ours' changes"
-          git push head_repo ${PR_BASE_BRANCH}:${PR_HEAD_BRANCH} --force-with-lease || \
-            { echo "::error::Push to head_repo/${PR_HEAD_BRANCH} failed. Aborting."; exit 1; }
-        fi
 
     - name: "Create pull request"
       if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
@@ -603,7 +540,7 @@ runs:
         gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${SUCCESS_BODY}"
 
     - name: "Handle failure"
-      if: failure() && steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
+      if: failure() && steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true' && env.MIGRATION_BLOCKED != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
