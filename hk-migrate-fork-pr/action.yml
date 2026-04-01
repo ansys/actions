@@ -517,23 +517,14 @@ runs:
 
         The pull request [#${NEW_PR_NUM}](${NEW_PR_URL}) has been created successfully.
 
-        Thank you @${PR_AUTHOR} for your contribution! Please review the new PR and make any necessary changes.
+        Thank you @${PR_AUTHOR} for your contribution!
 
-        This PR will be closed by the maintainers soon.
+        **What this means for you:**
+        - Keep pushing commits to your fork branch \`${PR_HEAD_BRANCH}\` as you normally would.
+        - Whenever you want your latest changes reflected in the migration PR, ping a maintainer of this repository and ask them to trigger a sync.
+        - A team member can sync the migration branch at any time by commenting \`@pyansys-ci-bot sync\` on this PR.
 
-        You can now work on the new pull request by cloning this pull request branch:
-
-        \`\`\`terminal
-        git clone -b ${PR_BASE} --single-branch https://github.com/${ORGANIZATION}/${REPOSITORY}.git
-        \`\`\`
-
-        If you have [GitHub CLI](https://cli.github.com/) installed, you can also use:
-
-        \`\`\`terminal
-        gh pr checkout ${NEW_PR_URL}
-        \`\`\`
-
-        Thank you again for your contribution @${PR_AUTHOR}!
+        This PR will be closed by the maintainers once your contribution is merged.
         EOF
         )
 
