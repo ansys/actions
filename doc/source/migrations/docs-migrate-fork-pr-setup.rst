@@ -18,9 +18,9 @@ Subsequent syncs keep the migration branch up to date with the contributor's for
 
    The ``github-token`` input must be a token with the following permissions:
 
-   - ``contents: write`` — push migration branches
-   - ``pull-requests: write`` — create PRs, manage comments and reactions
-   
+   - ``contents: write`` - push migration branches
+   - ``pull-requests: write`` - create PRs, manage comments and reactions
+
    Additionally, the provided ``github-token`` must have ``read:org`` scope
    to check team membership for authorization.
 
@@ -83,8 +83,8 @@ workflow with the following content:
 How the action works
 ---------------------
 
-The following describes the end-to-end flow from both the contributor's and the
-maintainer's perspective.
+The following describes the end-to-end flow from the perspective of both the contributor and the
+maintainer.
 
 **First migration**
 

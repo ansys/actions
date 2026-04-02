@@ -32,7 +32,7 @@ Version ``v10.2``
   deployed documentation is cleaned up asynchronously. For more details, see :ref:`docs-deploy-pr-setup`.
 
 - **Release-Github Changes:** The ``release-github`` action now includes a ``upload-documentation`` (default: ``true``) input. This input allows users
-  to control whether documentation artifacts are included in the GitHub release. Setting this to ``false`` will skip the upload of documentation artifacts,
+  to control whether documentation artifacts are included in the GitHub release. Setting this to ``false`` skips the upload of documentation artifacts,
   which can be useful for releases without documentation artifacts.
 
 Version ``v10.1``
