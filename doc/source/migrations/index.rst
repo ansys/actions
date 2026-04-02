@@ -477,3 +477,4 @@ Version ``v4``
    docs-style-vale-version-update
    docs-deploy-pr-setup
    release-pypi-trusted-publisher
+   docs-migrate-fork-pr-setup

@@ -37,7 +37,7 @@ description: |
 
   .. note::
       This action is designed to be called from workflows triggered by issue
-      comments or workflow dispatch events.
+      comments.
 
   .. important:: **Required GitHub Permissions**
 
