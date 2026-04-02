@@ -18,7 +18,7 @@ ACTIONS_SUFFIXES = "-style"
 ACTIONS_INPUTS_FIELDS = ("description", "required", "type", "default")
 ACCEPTED_LICENSES = BASE_DIR / "check-licenses" / "accepted-licenses.txt"
 IGNORED_PACKAGES = BASE_DIR / "check-licenses" / "ignored-packages.txt"
-IGNORED_SAFETY = BASE_DIR / "check-vulnerabilities" / "ignored-safety.txt"
+IGNORED_SAFETY = BASE_DIR / "check-vulnerabilities" / ".safety-ignore.yml"
 
 # Project information
 project = "Ansys Actions"
@@ -312,8 +312,27 @@ for action_dir in public_actions:
     ]
 
 
-# Dynamically load the file contents for accepted licenses and ignored packages
-def load_file_lines_as_list(file_path):
+def load_safety_ignore_vulnerabilities(file_path: pathlib.Path):
+    """Loads the vulnerability IDs from the safety ignore YAML file.
+
+    Parameters
+    ----------
+    file_path : ~pathlib.Path
+        The ``Path`` instance representing the YAML file location.
+
+    Returns
+    -------
+    list[str]
+        A list of vulnerability ID strings.
+
+    """
+    with file_path.open() as safety_ignore_file:
+        data = yaml.safe_load(safety_ignore_file)
+        vulnerabilities = data.get("security", {}).get("ignore-vulnerabilities", {})
+        return list(vulnerabilities.keys()) if vulnerabilities else []
+
+
+def load_file_lines_as_list(file_path: pathlib.Path):
     """Loads the lines of a file in the form of a Python list.
 
     Parameters
@@ -331,7 +350,7 @@ def load_file_lines_as_list(file_path):
     This function is expected to be used for loading the contents of TXT files.
 
     """
-    with open(file_path) as accepted_licenses_file:
+    with file_path.open() as accepted_licenses_file:
         return list(accepted_licenses_file.read().split("\n"))
 
 
@@ -342,8 +361,8 @@ for var, file in zip(
     jinja_contexts["check-licenses"][var] = load_file_lines_as_list(file)
 
 # Check vulnerabilities
-jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_file_lines_as_list(
-    IGNORED_SAFETY
+jinja_contexts["check-vulnerabilities"]["ignored_safety"] = (
+    load_safety_ignore_vulnerabilities(IGNORED_SAFETY)
 )
 
 

@@ -9,6 +9,99 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.2.12 <https://github.com/ansys/actions/releases/tag/v10.2.12>`_ - March 30, 2026
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Migrate to using \`\`.safety-ignore.yml\`\` file
+          - `#1215 <https://github.com/ansys/actions/pull/1215>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update migration guide for v10.2.12 patch
+          - `#1245 <https://github.com/ansys/actions/pull/1245>`_
+
+
+`10.2.11 <https://github.com/ansys/actions/releases/tag/v10.2.11>`_ - March 27, 2026
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Release-github option to control PDF/HTML doc upload
+          - `#1236 <https://github.com/ansys/actions/pull/1236>`_
+
+
+`10.2.10 <https://github.com/ansys/actions/releases/tag/v10.2.10>`_ - March 24, 2026
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Use token input consistently
+          - `#1222 <https://github.com/ansys/actions/pull/1222>`_
+
+
+`10.2.9 <https://github.com/ansys/actions/releases/tag/v10.2.9>`_ - March 17, 2026
+==================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump packaging from 25.0 to 26.0 in /hk-package-clean-untagged
+          - `#1143 <https://github.com/ansys/actions/pull/1143>`_
+
+        * - Bump actions/cache from 5.0.2 to 5.0.3 in /_doc-build-windows in the github-actions group across 1 directory
+          - `#1157 <https://github.com/ansys/actions/pull/1157>`_
+
+        * - Bump ansys-sphinx-theme from 1.7.1 to 1.7.2 in /requirements
+          - `#1187 <https://github.com/ansys/actions/pull/1187>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove \`\`Quarto\`\` version restriction from docs build
+          - `#1188 <https://github.com/ansys/actions/pull/1188>`_
+
+        * - Change errata-ai for vale-cli org name (URGENT FIX)
+          - `#1211 <https://github.com/ansys/actions/pull/1211>`_
+
+
 `10.2.8 <https://github.com/ansys/actions/releases/tag/v10.2.8>`_ - March 11, 2026
 ==================================================================================
 
