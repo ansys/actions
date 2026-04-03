@@ -98,10 +98,10 @@ runs:
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor${ZIZMOR_VERSION}
+        uv tool install zizmor==${ZIZMOR_VERSION}
         zizmor --version
       env:
-        ZIZMOR_VERSION: ${{ inputs.zizmor-version != '' && format('=={0}', inputs.zizmor-version) || '' }}
+        ZIZMOR_VERSION: ${{ inputs.zizmor-version }}
 
     - name: "Optionally set GH_TOKEN"
       if: ${{ inputs.token != '' }}
