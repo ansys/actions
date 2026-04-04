@@ -49,6 +49,14 @@ inputs:
 
     required: true
     type: boolean
+  use-uv-python:
+    description: |
+      'Whether to use uv python or not. This input only has an effect if
+      ``provision-uv`` is set to ``true``. If ``true``, uv python is used. If ``false``,
+      python provided by ``actions/setup-python`` is used.
+      By default it is set to ``false``.'
+    required: true
+    type: boolean
 
 runs:
   using: "composite"
@@ -82,23 +90,30 @@ runs:
     # NOTE: When a workflow is triggered without using the cache, it can lead to a failure
     # in the Post Run action saying that the cache folder doesn't exist on disk.
     # This is related to our use of uv to install packages, see https://github.com/ansys/actions/pull/811
-    - name: "Set up Python using cache"
-      if: ${{ inputs.use-cache == 'true' && inputs.provision-uv == 'false'}}
+    - name: Set up Python with actions/setup-python and using cache
+      if: ${{ inputs.use-uv-python == 'false' && inputs.use-cache == 'true' && inputs.provision-uv == 'false'}}
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: ${{ inputs.python-version }}
         cache: 'pip'
         cache-dependency-path: 'pyproject.toml'
 
-    - name: "Set up Python without using cache"
-      if: ${{ inputs.use-cache == 'false' || (inputs.use-cache == 'true' && inputs.provision-uv == 'true') }}
+    - name: Set up Python with actions/setup-python and without using cache
+      if: ${{ inputs.use-uv-python == 'false' && inputs.use-cache == 'false' || (inputs.use-cache == 'true' && inputs.provision-uv == 'true') }}
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: ${{ inputs.python-version }}
 
-    - name: "Set up uv"
+    - name: Set up uv
       if: ${{ inputs.provision-uv == 'true' }}
       uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
       with:
         enable-cache: ${{ inputs.use-cache }}
         prune-cache: ${{ inputs.prune-uv-cache }}
+
+    - name: Install Python with uv
+      if: ${{ inputs.provision-uv == 'true' && inputs.use-uv-python == 'true' }}
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+      shell: bash
+      run: uv python install ${PYTHON_VERSION}

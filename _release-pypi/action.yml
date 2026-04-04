@@ -103,6 +103,15 @@ inputs:
     required: false
     type: boolean
 
+  install-python-with-uv:
+    description: |
+      Whether to install Python using uv. The python distribution provided by uv are coming from
+      the Astral `python-build-standalone <https://github.com/astral-sh/python-build-standalone>`_
+      project. The uv Python distributions are self-contained, highly-portable, and performant.
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -128,12 +137,13 @@ runs:
         echo "::notice::We recommend using trusted publishers to securely publish packages on PyPI. You should consider moving to this approach."
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/install-python-with-uv
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: true
+        use-uv-python: ${{ inputs.install-python-with-uv }}
 
     - name: "Install twine"
       shell: bash
