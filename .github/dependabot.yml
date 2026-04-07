@@ -38,6 +38,7 @@ updates:
       - "build-library"
       - "build-wheelhouse"
       - "check-actions-security"
+      - "check-environment-approval"
       - "check-licenses"
       - "check-pr-title"
       - "check-vulnerabilities"
