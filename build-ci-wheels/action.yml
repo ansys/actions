@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -34,6 +34,10 @@ description: |
 
       This actions should only be used by libraries including source code that
       needs to be compiled.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
 
 inputs:
 
@@ -89,19 +93,19 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
 
     - name: "Set up QEMU"
       if: ${{ inputs.cibw-archs == 'aarch64' }}
-      uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+      uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
       with:
         platforms: arm64
 
     - name: "Build wheels for CPython ${{ inputs.python-version }}"
       if: ${{ inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@c923d83ad9c1bc00211c5041d0c3f73294ff88f6 # v3.1.4
+      uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
@@ -110,14 +114,14 @@ runs:
 
     - name: "Build wheels for PyPy"
       if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
-      uses: pypa/cibuildwheel@c923d83ad9c1bc00211c5041d0c3f73294ff88f6 # v3.1.4
+      uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
       env:
         CIBW_BUILD: "pp39-*"
         CIBW_SKIP: ${{ inputs.cibw-skip }}
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: "Upload wheel"
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.library-name }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-wheels
         path: ./wheelhouse/*.whl

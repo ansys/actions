@@ -6,6 +6,7 @@
 
 ## Individual Contributors
 
+* [Acohen-work](https://github.com/Acohen-work)
 * [Alex Fernandez](https://github.com/AlejandroFernandezLuces)
 * [Alex Kaszynski](https://github.com/akaszynski)
 * [Andy Grigg](https://github.com/Andy-Grigg)

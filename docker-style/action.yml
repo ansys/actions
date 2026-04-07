@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -45,6 +45,10 @@ description: |
       This action only looks for docker files named Dockerfile.
       A docker file like Dockerfile.linux will not be linted.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
 inputs:
 
   # Optional inputs
@@ -86,7 +90,7 @@ runs:
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
       if: inputs.checkout == 'true'
@@ -182,7 +186,7 @@ runs:
 
     - name: "Run Hadolint"
       if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}
-      uses: jbergstroem/hadolint-gh-action@39e57273ed8f513872326b228217828be6a42730 # v1.12.2
+      uses: jbergstroem/hadolint-gh-action@d2f58da7f4f242dc0b6c5ef882ad4f8e871ba96b # v1.15.0
       with:
         dockerfile: ${{ steps.format-hadolint-dockerfile-input.outputs.FORMATED_HADOLINT_DOCKERFILE_INPUT }}
         error_level: ${{ inputs.error-level }}

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -28,6 +28,10 @@ description: |
   security issues in typical GitHub Actions CI/CD setups using
   `zizmor <https://docs.zizmor.sh/>`_. Consult `zizmor audit rules <https://docs.zizmor.sh/audits/>`_
   for more information about detected issues and how to remediate them.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
 
 inputs:
 
@@ -78,17 +82,17 @@ runs:
   steps:
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
 
     - name: "Install uv"
-      uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc # v6.4.3
+      uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.12.1
+        uv tool install zizmor==1.16.0
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -134,7 +138,7 @@ runs:
         zizmor ${HIGH_AUDIT_LEVEL} ${STRICT_AUDIT_LEVEL} .
 
     - name: "Output a summary of detected vulnerabilities"
-      if: ${{ inputs.generate-summary == 'true' }}
+      if: ${{ always() && inputs.generate-summary == 'true' }}
       shell: bash
       env:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -185,7 +185,7 @@ runs:
 
     - name: Cache Chocolatey packages
       id: cache
-      uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
@@ -216,7 +216,7 @@ runs:
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install quarto --version=1.6.43 -y
+        choco install quarto -y
         echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     # ------------------------------------------------------------------------
@@ -375,11 +375,16 @@ runs:
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
+          $arguments = @("install")
+
           if ($env:GROUP_DEPENDENCIES_NAME) {
-            poetry install --with "$env:GROUP_DEPENDENCIES_NAME" --extras "$env:OPTIONAL_DEPENDENCIES_NAME"
-          } else {
-            poetry install --extras "$env:OPTIONAL_DEPENDENCIES_NAME"
+              $arguments += @("--with", "$env:GROUP_DEPENDENCIES_NAME")
           }
+          if ($env:OPTIONAL_DEPENDENCIES_NAME) {
+              $arguments += @("--extras", "$env:OPTIONAL_DEPENDENCIES_NAME")
+          }
+
+          poetry @arguments
         }
         else {
           # Optional dependencies
@@ -593,14 +598,14 @@ runs:
           Upload HTML and PDF
 
     - name: Upload HTML documentation artifact
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: Upload PDF documentation artifact
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf

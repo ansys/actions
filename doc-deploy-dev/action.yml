@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -27,6 +27,11 @@ description: |
   This action deploys the desired HTML documentation artifact containing the
   development version of a library to the specified branch of a repository. By
   default, the ``gh-pages`` branch of the current repository is assumed.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push documentation to the gh-pages branch
+     - **pull-requests**: ``write`` - Required to add comments on pull requests about documentation deployment
 
 inputs:
 
@@ -152,7 +157,7 @@ runs:
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials need to be persisted in this case
@@ -210,7 +215,7 @@ runs:
         rm -rf version/dev && mkdir -p version/dev
 
     - name: "Download the development documentation artifact"
-      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/dev
@@ -382,7 +387,39 @@ runs:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
 
-     # ------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
+
+    - name: Clean up pull/ directory if it exists
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }} # For gh CLI authentication
+        CNAME: ${{ inputs.cname }}
+      run: |
+        if [[ -d "pull/" ]]; then
+            for pr_number in $(ls pull/); do
+              closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>/dev/null)
+
+              # If PR does not exist, skip)
+              if [[ -z "${closed}" ]]; then
+                echo "PR #${pr_number}: not found, skipping."
+                continue
+              fi
+
+              echo "PR #${pr_number}: ${closed}"
+
+              # Remove pr directory if it is closed
+              if [[ ${closed} == "true" ]]; then
+                message="This PR has been closed. Documentation for this pull request will shortly be removed from its [former deployment address](https://${CNAME}/pull/${pr_number})."
+                gh pr comment "${pr_number}" --body "${message}"
+                echo "Removing directory ${pr_number}..."
+                rm -rf "pull/${pr_number}"
+              fi
+            done
+        else
+            echo "No pull request directories to clean up."
+        fi
+
+    # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
       with:

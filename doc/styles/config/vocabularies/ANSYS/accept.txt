@@ -6,13 +6,19 @@ cooldown
 dependabot
 dev
 dependabot
+fastcore
+ghapi
 GitHub
+prek
 pypa
 pytest
 PyPI
+pyyaml
 SBOM
 Syft
 toctree
+toml
+tomlkit
 towncrier
 TXT
 PyAnsys Dashboard
