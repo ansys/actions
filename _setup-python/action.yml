@@ -98,7 +98,7 @@ runs:
 
     - name: "Set up uv"
       if: ${{ inputs.provision-uv == 'true' }}
-      uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+      uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
       with:
         enable-cache: ${{ inputs.use-cache }}
         prune-cache: ${{ inputs.prune-uv-cache }}
