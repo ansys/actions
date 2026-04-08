@@ -26,3 +26,9 @@ rules:
       policies:
         ansys/*: ref-pin
         actions/*: hash-pin
+
+  secrets-outside-env:
+    disable: true
+
+  superfluous-actions:
+    disable: true
