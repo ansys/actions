@@ -183,6 +183,15 @@ inputs:
     default: true
     type: boolean
 
+  install-python-with-uv:
+    description: |
+      Whether to install Python using uv. The python distribution provided by uv are coming from
+      the Astral `python-build-standalone <https://github.com/astral-sh/python-build-standalone>`_
+      project. The uv Python distributions are self-contained, highly-portable, and performant.
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -197,12 +206,13 @@ runs:
           'release/<MAJOR>.<MINOR>'.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@feat/install-python-with-uv
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+        use-uv-python: ${{ inputs.install-python-with-uv }}
 
     - name: "Install packaging"
       shell: bash
