@@ -410,7 +410,7 @@ Version ``v6``
   - Inclusion of `canonical` link tags in all HTML files for SEO purposes
 
 - Extend ``ansys/actions/doc-build`` to be able to run in Windows runners.
-  To buid the documentation in a Windows runner, we install ``Chocolatey`` and ``Miktex``.
+  To build the documentation in a Windows runner, we install ``Chocolatey`` and ``MiKTeX``.
 
 - Allow ``ansys/actions/commit-style`` to work with upper case in the type field of a commit.
   Expected types are upper cases of  `conventional commit types
