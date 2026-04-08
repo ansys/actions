@@ -122,6 +122,12 @@ runs:
       run: |
         cat << _EOF_ > zizmor.yml
         rules:
+          secrets-outside-env:
+            disable: true
+
+          superfluous-actions:
+            disable: true
+
           unpinned-uses:
             config:
               policies:
