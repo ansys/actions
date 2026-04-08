@@ -92,7 +92,7 @@ runs:
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.16.0
+        uv tool install zizmor==1.23.1
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -122,6 +122,12 @@ runs:
       run: |
         cat << _EOF_ > zizmor.yml
         rules:
+          secrets-outside-env:
+            disable: true
+
+          superfluous-actions:
+            disable: true
+
           unpinned-uses:
             config:
               policies:
