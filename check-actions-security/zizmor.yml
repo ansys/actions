@@ -21,14 +21,14 @@
 # SOFTWARE.
 
 rules:
-  unpinned-uses:
-    config:
-      policies:
-        ansys/*: ref-pin
-        actions/*: hash-pin
-
   secrets-outside-env:
     disable: true
 
   superfluous-actions:
     disable: true
+
+  unpinned-uses:
+    config:
+      policies:
+        ansys/*: ref-pin
+        actions/*: hash-pin
