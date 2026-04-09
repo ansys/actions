@@ -55,9 +55,6 @@ description: |
      workflow level.
 
 inputs:
-
-  # Optional inputs
-
   manual-check-environment:
     description: Name of the environment used to trigger manual checking.
     required: true
