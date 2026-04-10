@@ -198,24 +198,16 @@ runs:
   using: "composite"
   steps:
     - uses: ansys/actions/_logging@main
-      if: inputs.toml-version != ''
-      with:
-        level: "ERROR"
-        message: >
-          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
-          is no longer used because it cannot parse ``pyproject.toml`` files where groups
-          include other groups. This action now uses the ``tomli`` library instead. If you
-          want to use a specific version of ``tomli``, please set the ``tomli-version``
-          input accordingly. The ``toml-version`` input will be removed in v11.
-
-    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
-      if: inputs.tomli-version != ''
+      if: inputs.toml-version != '' || inputs.tomli-version != ''
       with:
         level: "WARNING"
         message: >
-          The ``tomli-version`` input is deprecated and will be removed in v12.
-          This action now uses the ``tomlkit`` library instead. Please use the
-          ``tomlkit-version`` input accordingly.
+          The ``toml-version`` and ``tomli-version`` inputs are deprecated. With the adoption of
+          dependency groups in PyAnsys packages, the ``toml`` and ``tomli`` libraries are no
+          longer used because they cannot parse ``pyproject.toml`` files where groups include
+          other groups. This action now uses the ``tomlkit`` library instead. Please use the
+          ``tomlkit-version`` input accordingly. The ``toml-version`` and ``tomli-version``
+          inputs will be removed in v11 and v12, respectively.
 
     - name: "Install Git and clone project"
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
