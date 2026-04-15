@@ -125,6 +125,38 @@ jobs:
           use-python-cache: false
           checkout: false
 
+  type-check:
+    name: Type check with Ty
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
+        with:
+          enable-cache: false
+          prune-cache: true
+
+      - name: Create virtual environment
+        run: uv venv .venv
+
+      # TODO: Once depency update logic has been defined, the handling of ty should align
+      - name: Install dependencies
+        run: |
+          source .venv/bin/activate
+          uv pip install ty==0.0.29
+
+      - name: Run ty
+        run: |
+          source .venv/bin/activate
+          ty check --ignore unresolved-import **/*.py
+
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
