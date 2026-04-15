@@ -1,6 +1,7 @@
 Ansys
 ansys
 automerge
+Chocolatey
 CI
 cooldown
 dependabot
@@ -9,6 +10,7 @@ dependabot
 fastcore
 ghapi
 GitHub
+MiKTeX
 prek
 pypa
 pytest

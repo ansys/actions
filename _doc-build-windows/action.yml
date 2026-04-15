@@ -173,7 +173,7 @@ runs:
         level: "INFO"
         message: >
           Install system dependencies. Even if no dependencies are provided,
-          Miktex is installed to build the documentation.
+          MiKTeX is installed at user level to build the documentation.
 
     - name: Collect system dependencies
       id: collect-system-dependencies
@@ -199,11 +199,14 @@ runs:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
       run: choco install $env:NEEDED_DEPS -y
 
-    - name: Install Miktex and update PATH with Miktex binaries
+    - name: Install MiKTeX and update PATH with MiKTeX binaries
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install miktex -y
-        echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        # NOTE: Install at user level to avoid errors when running on self-hosted runners
+        # where choco was already installed at system level.
+        # For more information, see https://github.com/ansys/actions/pull/1233
+        choco install miktex --params '"/Set:basic /ThisUser"' -y
+        echo "$env:LocalAppData\Programs\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
@@ -225,9 +228,9 @@ runs:
       with:
         level: "INFO"
         message: >
-          Set up Miktex to allow downloading missing packages when building documentation.
+          Set up MiKTeX to allow downloading missing packages when building documentation.
 
-    - name: Set up Miktex to automatically install packages
+    - name: Set up MiKTeX to automatically install packages
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
