@@ -329,25 +329,6 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - name: "Filter SBOM or wheelhouse files (if needed)"
-      if: inputs.dist-filter != ''
-      shell: python
-      env:
-        DIST_FILTER: ${{ inputs.dist-filter }}
-      run: |
-        import os
-        import sys
-
-        github_action_path = os.getenv("GITHUB_ACTION_PATH")
-        sys.path.insert(1, f'{github_action_path}/../python-utils/')
-
-        from release_github_utils import filter_dist_files
-
-        dist_filter = os.getenv("DIST_FILTER")
-        filter_dist_files(dist_filter)
-
-    # ------------------------------------------------------------------------
-
     - uses: ansys/actions/_logging@main
       if: inputs.only-code == 'false'
       with:
@@ -447,7 +428,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Display the structure of the 'dist/' folder. Upload all artifacts.
+          Display the structure of the 'dist/' folder. Upload artifacts.
 
     - name: "Display the structure of the 'dist/' folder"
       shell: bash
@@ -470,6 +451,23 @@ runs:
       run: |
         ${INSTALL_COMMAND} --upgrade pip tomlkit=="$TOMLKIT_VERSION"
         ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
+
+    - name: "Filter SBOM or wheelhouse files (if needed)"
+      if: inputs.dist-filter != ''
+      shell: python
+      env:
+        DIST_FILTER: ${{ inputs.dist-filter }}
+      run: |
+        import os
+        import sys
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from release_github_utils import filter_dist_files
+
+        dist_filter = os.getenv("DIST_FILTER")
+        filter_dist_files(dist_filter)
 
     - name: "Get the release notes body"
       if: inputs.changelog-release-notes == 'true'
