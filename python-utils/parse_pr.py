@@ -39,7 +39,7 @@ def save_env_variable(env_var_name: str, env_var_value: str):
         The value of the environment variable.
     """
     # Get the GITHUB_ENV variable
-    github_env = os.getenv("GITHUB_ENV")
+    github_env = os.environ["GITHUB_ENV"]
 
     # Save environment variable with its value
     with open(github_env, "a") as file:
@@ -560,7 +560,9 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
     towncrier_section["type"] = new_types
 
 
-def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
+def get_towncrier_config_value(
+    category: str, pyproject_path: str | Path = "pyproject.toml"
+):
     """Get the value of a category within the [tool.towncrier] section of the pyproject.toml file.
 
     Parameters
@@ -599,14 +601,16 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
     return category_value
 
 
-def rewrite_template(template_path: None, file_name: None):
+def rewrite_template(
+    template_path: str | None = None, file_name: str | None = None
+) -> bool:
     """Rewrite the template.jinja file with the default template.
 
     Parameters
     ----------
-    template_path: str
+    template_path: str | None
         The path to the template.jinja file to be rewritten.
-    file_name: str
+    file_name: str | None
         The name of the file to check if it ends with .md.
 
     Returns
@@ -621,8 +625,14 @@ def rewrite_template(template_path: None, file_name: None):
         # Path to the default template file in the repository
         default_template_path = Path(__file__).parent / "default_template.jinja"
 
+        if not default_template_path.is_file():
+            print(
+                f"Default template file not found at {default_template_path}. Cannot rewrite template."
+            )
+            return False
+
         # Path to the template.jinja file to be rewritten
-        template_path = Path(template_path)
+        template_path: Path = Path(template_path)
 
         # If filename ends with .md, do not change the template
         if file_name.endswith(".md"):
@@ -630,11 +640,11 @@ def rewrite_template(template_path: None, file_name: None):
             return False
 
         # Read the content of the default template
-        default_template_content = read_file_content(default_template_path)
+        default_template_content = default_template_path.read_text()
 
         # Check if the content of the template.jinja file is the same as the default template
         if template_path.is_file():
-            template_content = read_file_content(template_path)
+            template_content = template_path.read_text()
             if template_content == default_template_content:
                 print("The template.jinja file is already the default template.")
                 return False
@@ -650,25 +660,6 @@ def rewrite_template(template_path: None, file_name: None):
     except Exception as e:
         print(f"An error occurred while rewriting the template.jinja file: {e}")
         return False
-
-
-def read_file_content(file_path: Path) -> str:
-    """Read the content of a file.
-
-    Parameters
-    ----------
-    file_path: Path
-        The path to the file to be read.
-
-    Returns
-    -------
-    str
-        The content of the file.
-    """
-    try:
-        return file_path.read_text()
-    except Exception as e:
-        print(f"An error occurred while reading the file: {e}")
 
 
 def write_file_content(file_path: Path, content: str):

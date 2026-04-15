@@ -27,8 +27,11 @@ import shutil
 from pathlib import Path
 
 from packaging.version import Version
+from typing_extensions import Literal, cast
 
 KEYS = ("name", "version", "url")
+# Values that github.ref_type can take, see https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
+REF_TYPES = Literal["tag", "branch"]
 
 
 def make_entry(values: tuple[str, str, str]) -> dict:
@@ -36,7 +39,7 @@ def make_entry(values: tuple[str, str, str]) -> dict:
     return dict(zip(KEYS, values))
 
 
-def get_version_and_ref_type() -> tuple[str, str]:
+def get_version_and_ref_type() -> tuple[str, REF_TYPES]:
     """Get the version and reference type from environment variables.
 
     Returns
@@ -44,8 +47,8 @@ def get_version_and_ref_type() -> tuple[str, str]:
     tuple[str, str]
         A tuple containing the version and reference type.
     """
-    ref_type = os.getenv("REF_TYPE")
-    ref_name = os.getenv("REF_NAME")
+    ref_name = os.environ["REF_NAME"]
+    ref_type: REF_TYPES = cast(REF_TYPES, os.environ["REF_TYPE"])
     match ref_type:
         case "tag":
             version = ref_name.split("v")[1]
@@ -96,10 +99,10 @@ def export_to_github_output(var_name: str, var_value: str) -> None:
         The value of the environment variable.
     """
     # Get the GITHUB_OUTPUT variable
-    github_output = os.getenv("GITHUB_OUTPUT")
+    github_output = os.environ["GITHUB_OUTPUT"]
 
     # Save environment variable with its value
-    with open(github_output, "a") as file:
+    with open(github_output, mode="a") as file:
         if "\n" in var_value or "\r" in var_value:
             file.write(f"{var_name}<<EOF\n")
             file.write(var_value)
@@ -130,8 +133,8 @@ def write_versions_file() -> None:
 
     Also exports the latest stable version to the GITHUB_OUTPUT file.
     """
-    cname = os.getenv("CNAME")
-    render_last = int(os.getenv("RENDER_LAST"))
+    cname = os.environ["CNAME"]
+    render_last = int(os.environ["RENDER_LAST"])
     stable_release = find_stable_release()
     url_stable = f"https://{cname}/version/stable/" if stable_release else None
     content = []
@@ -143,7 +146,11 @@ def write_versions_file() -> None:
     # Other versions (including stable)
     full_list = sorted(get_versions_list(), reverse=True)
     for version in full_list[:render_last]:
-        if stable_release and version == Version(stable_release):
+        if (
+            stable_release is not None
+            and version == Version(stable_release)
+            and url_stable is not None
+        ):
             content.append(
                 make_entry((f"{stable_release} (stable)", stable_release, url_stable))
             )
@@ -200,7 +207,7 @@ def set_version_variable() -> None:
         match = tag_pattern.match(version)
     elif ref_type == "branch":
         match = branch_pattern.match(version)
-    if match.group():
+    if match and match.group():
         assert version == match.group()  # Verify that version is the same as the match
         versions_list = get_versions_list()
         current_version = Version(version)
