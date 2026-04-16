@@ -25,9 +25,9 @@ import os
 import re
 import shutil
 from pathlib import Path
+from typing import Literal, cast
 
 from packaging.version import Version
-from typing_extensions import Literal, cast
 
 KEYS = ("name", "version", "url")
 # Values that github.ref_type can take, see https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
