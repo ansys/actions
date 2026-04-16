@@ -331,8 +331,7 @@ def generate_advisory_files():
     -----
     This function should ONLY be used for local purposes.
     """
-    import bandit.cli.main as bandit
-    import safety.cli as safety
+    import subprocess
 
     # Delete previous advisory files
     if os.path.exists("info_safety.json"):
@@ -340,27 +339,32 @@ def generate_advisory_files():
     if os.path.exists("info_bandit.json"):
         os.remove("info_bandit.json")
 
-    # Safety check
-    try:
-        safety.cli.main(
-            ["check", "-o", "bare", "--save-json", "info_safety.json"],
-            standalone_mode=False,
-        )
-    except:  # noqa: E722
-        print("Safety check performed.")
-        pass
+    scripts_dir = os.path.dirname(sys.executable)
+    safety_exe = os.path.join(scripts_dir, "safety.exe")
+    bandit_exe = os.path.join(scripts_dir, "bandit.exe")
 
-    # Bandit check
+    # Safety - run as a subprocess to avoid Safety reading the parent process arguments
+    # because of a Safety 3.x bug when called via `python -m safety`
     try:
-        sys.argv.pop()
-        sys.argv.extend(["-r", "./src", "-o", "info_bandit.json", "-f", "json"])
-        bandit.main()
-    except:  # noqa: E722
-        pass
+        subprocess.run(
+            [safety_exe, "check", "--output", "json", "--save-json", "info_safety.json"],
+            check=False,
+        )
+    except Exception as e:
+        print(f"Safety check warning: {e}")
+    finally:
+        print("Safety check performed.")
+
+    # Bandit - run as a subprocess for consistency
+    try:
+        subprocess.run(
+            [bandit_exe, "-r", "./src", "-o", "info_bandit.json", "-f", "json"],
+            check=False,
+        )
+    except Exception as e:
+        print(f"Bandit check warning: {e}")
     finally:
         print("Bandit check performed.")
-        sys.argv = sys.argv[: len(sys.argv) - 5]
-        sys.argv.append("--run-local")
 
     print("Advisory files generated successfully.")
 
