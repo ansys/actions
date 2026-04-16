@@ -570,7 +570,7 @@ def get_towncrier_config_value(
     category: str
         The category name within the [tool.towncrier] section you want to obtain information about.
         For example, "filename" or "directory".
-    pyproject_path: str
+    pyproject_path: str | Path
         The path to the pyproject.toml file. By default, this is "pyproject.toml".
 
     Returns
