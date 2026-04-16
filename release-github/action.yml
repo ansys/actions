@@ -469,6 +469,11 @@ runs:
         dist_filter = os.getenv("DIST_FILTER")
         filter_dist_files(dist_filter)
 
+    - name: "Display the structure of the 'dist/' folder after filtering"
+      if: inputs.dist-filter != ''
+      shell: bash
+      run: ls -R dist/
+
     - name: "Get the release notes body"
       if: inputs.changelog-release-notes == 'true'
       shell: python
