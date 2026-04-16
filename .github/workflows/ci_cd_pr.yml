@@ -134,16 +134,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - name: "Set up Python"
+        uses: ansys/actions/_setup-python@main
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
-        with:
-          enable-cache: false
-          prune-cache: true
+          use-cache: false
+          provision-uv: true
+          prune-uv-cache: true
 
       - name: Create virtual environment
         run: uv venv .venv
