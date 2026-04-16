@@ -136,7 +136,8 @@ def write_versions_file() -> None:
     cname = os.environ["CNAME"]
     render_last = int(os.environ["RENDER_LAST"])
     stable_release = find_stable_release()
-    url_stable = f"https://{cname}/version/stable/" if stable_release else None
+    if stable_release is not None:
+        url_stable = f"https://{cname}/version/stable/"
     content = []
 
     # version dev
@@ -146,11 +147,7 @@ def write_versions_file() -> None:
     # Other versions (including stable)
     full_list = sorted(get_versions_list(), reverse=True)
     for version in full_list[:render_last]:
-        if (
-            stable_release is not None
-            and version == Version(stable_release)
-            and url_stable is not None
-        ):
+        if stable_release is not None and version == Version(stable_release):
             content.append(
                 make_entry((f"{stable_release} (stable)", stable_release, url_stable))
             )
