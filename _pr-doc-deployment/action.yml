@@ -329,7 +329,7 @@ runs:
         github_token: ${{ inputs.token }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
-        force_orphan: ${{ inputs.force-orphan }}
+        force_orphan: false
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
       if: ${{ inputs.repository != 'current' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
@@ -342,7 +342,7 @@ runs:
         external_repository: ${{ inputs.repository }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
-        force_orphan: ${{ inputs.force-orphan }}
+        force_orphan: false
 
     - name: "Make a PR comment the first time a PR documentation is deployed"
       if: ${{ steps.create-pull-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
