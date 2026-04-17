@@ -111,14 +111,6 @@ inputs:
     default: 'DOC: update pull request documentation'
     type: string
 
-  force-orphan:
-    description: |
-      Whether to force the deployment branch to be orphan or not. Default value
-      is ``true``.
-    required: false
-    default: true
-    type: string
-
   maximum-pr-doc-deployments:
     description: |
       The maximum number of deployable pull requests documentation.
@@ -130,7 +122,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_pr-doc-deployment@main
+    - uses: ansys/actions/_pr-doc-deployment@refactor/doc-deploy-actions
       if: github.event.pull_request.state == 'open'
       with:
         cname: ${{ inputs.cname }}
@@ -142,10 +134,9 @@ runs:
         repository: ${{ inputs.repository }}
         branch: ${{ inputs.branch }}
         commit-message: ${{ inputs.commit-message }}
-        force-orphan: ${{ inputs.force-orphan }}
         maximum-pr-doc-deployments: ${{ inputs.maximum-pr-doc-deployments }}
 
-    - uses: ansys/actions/_pr-doc-clean@main
+    - uses: ansys/actions/_pr-doc-clean@refactor/doc-deploy-actions
       if: github.event.pull_request.state == 'closed'
       with:
         cname: ${{ inputs.cname }}
@@ -155,4 +146,3 @@ runs:
         repository: ${{ inputs.repository }}
         branch: ${{ inputs.branch }}
         commit-message: ${{ inputs.commit-message }}
-        force-orphan: ${{ inputs.force-orphan }}

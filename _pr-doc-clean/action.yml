@@ -60,37 +60,24 @@ inputs:
     required: true
     type: string
 
-  # Optional inputs
-
   repository:
     description: |
       Repository name in the form of ``username/repository`` to be used for
       deploying the documentation. The current repository is assumed by default.
-    required: false
-    default: 'current'
+    required: true
     type: string
 
   branch:
     description: |
       Branch name for deploying the documentation. The ``gh-pages`` branch is
       used by default.
-    required: false
-    default: 'gh-pages'
+    required: true
     type: string
 
   commit-message:
     description: |
       Commit message used when deploying the documentation.
-    required: false
-    default: 'DOC: remove pull request documentation'
-    type: string
-
-  force-orphan:
-    description: |
-      Whether to force the deployment branch to be orphan or not. Default value
-      is ``true``.
-    required: false
-    default: true
+    required: true
     type: string
 
 runs:
