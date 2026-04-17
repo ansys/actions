@@ -62,15 +62,12 @@ inputs:
     required: true
     type: string
 
-  # Optional inputs
-
   doc-artifact-name:
     description: |
         Name of the HTML documentation artifact. This artifact is expected to
         contain all the HTML and static files. If it contains a compressed file,
         make sure you enable the ``decompress-artifact`` option.
-    required: false
-    default: 'documentation-html'
+    required: true
     type: string
 
   decompress-artifact:
@@ -78,46 +75,40 @@ inputs:
       Whether to decompress the ``doc-artifact-name`` file using `ouch
       <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
       is ``false``.
-    required: false
-    default: false
+    required: true
     type: string
 
   repository:
     description: |
       Repository name in the form of ``username/repository`` to be used for
       deploying the documentation. The current repository is assumed by default.
-    required: false
-    default: 'current'
+    required: true
     type: string
 
   branch:
     description: |
       Branch name for deploying the documentation. The ``gh-pages`` branch is
       used by default.
-    required: false
-    default: 'gh-pages'
+    required: true
     type: string
 
   commit-message:
     description: |
       Commit message used when deploying the documentation.
-    required: false
-    default: 'DOC: update pull request documentation'
+    required: true
     type: string
 
   force-orphan:
     description: |
       Whether to force the deployment branch to be orphan or not. Default value
       is ``true``.
-    required: false
-    default: true
+    required: true
     type: string
 
   maximum-pr-doc-deployments:
     description: |
       The maximum number of pull requests documentation allowed to be deployed.
-    required: false
-    default: 5
+    required: true
     type: number
 
 runs:
