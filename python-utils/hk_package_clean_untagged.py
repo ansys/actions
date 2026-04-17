@@ -34,7 +34,7 @@ org_str = os.environ.get("PACKAGE_ORG")
 pck_str = os.environ.get("PACKAGE_NAME")
 last_days_str = os.environ.get("ALLOW_LAST_DAYS")
 
-last_days = int(last_days_str) if last_days_str != "" else None
+last_days = int(last_days_str) if last_days_str else None
 if last_days:
     delete_before_date = datetime.now() - timedelta(days=last_days)
 

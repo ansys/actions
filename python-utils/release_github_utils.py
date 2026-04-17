@@ -114,20 +114,23 @@ def get_tag_section(changelog_file: Path, body: str) -> str:
             # Find the first section title and content
             match = re.search(pattern, content)
 
-            # Access the match group containing the section title and content
-            # The match.group() could look like this, for example:
-            # `0.1.2 <https://github.com/ansys/.../releases/tag/v0.1.2>`_ - 2024-10-30
-            # ========================================================================
-            #
-            # Added
-            # ^^^^^
-            #
-            # - New feature `#1234 <https://github.com/ansys/.../pull/1234>`_
-            body = match.group()
+            if match is None:
+                print("Cannot find a section title from content.")
+            else:
+                # Access the match group containing the section title and content
+                # The match.group() could look like this, for example:
+                # `0.1.2 <https://github.com/ansys/.../releases/tag/v0.1.2>`_ - 2024-10-30
+                # ========================================================================
+                #
+                # Added
+                # ^^^^^
+                #
+                # - New feature `#1234 <https://github.com/ansys/.../pull/1234>`_
+                body = match.group()
 
-            # Convert rst to markdown
-            if file_type.lower() == "rst":
-                body = pypandoc.convert_text(body, "markdown_strict", format="rst")
+                # Convert rst to markdown
+                if file_type.lower() == "rst":
+                    body = pypandoc.convert_text(body, "markdown_strict", format="rst")
         else:
             print("Cannot generate release notes from changelog file.")
 
