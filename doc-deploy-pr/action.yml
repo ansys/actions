@@ -130,7 +130,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_pr-doc-deployment@main
+    - uses: ansys/actions/_pr-doc-deployment@refactor/doc-deploy-actions
       if: github.event.pull_request.state == 'open'
       with:
         cname: ${{ inputs.cname }}
@@ -145,7 +145,7 @@ runs:
         force-orphan: ${{ inputs.force-orphan }}
         maximum-pr-doc-deployments: ${{ inputs.maximum-pr-doc-deployments }}
 
-    - uses: ansys/actions/_pr-doc-clean@main
+    - uses: ansys/actions/_pr-doc-clean@refactor/doc-deploy-actions
       if: github.event.pull_request.state == 'closed'
       with:
         cname: ${{ inputs.cname }}
