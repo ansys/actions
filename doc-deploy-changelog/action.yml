@@ -129,10 +129,17 @@ inputs:
     required: false
     type: string
 
-  tomli-version:
+  tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       Tomli version used for retrieving the towncrier directory.
     default: '2.2.1'
+    required: false
+    type: string
+
+  tomlkit-version:
+    description: |
+      Tomlkit version used for reading and writing the towncrier configuration.
+    default: '0.14.0'
     required: false
     type: string
 
@@ -190,6 +197,18 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: ansys/actions/_logging@main
+      if: inputs.toml-version != '' || inputs.tomli-version != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``toml-version`` and ``tomli-version`` inputs are deprecated. With the adoption of
+          dependency groups in PyAnsys packages, the ``toml`` and ``tomli`` libraries are no
+          longer used because they cannot parse ``pyproject.toml`` files where groups include
+          other groups. This action now uses the ``tomlkit`` library instead. Please use the
+          ``tomlkit-version`` input accordingly. The ``toml-version`` and ``tomli-version``
+          inputs will be removed in v11 and v12, respectively.
+
     - name: "Install Git and clone project"
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
@@ -204,27 +223,38 @@ runs:
         provision-uv: false
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: Save tag version
+    - name: Save tag version and check if pre-release
       id: save-tag-version
       shell: bash
       run: |
         # /refs/tags/v0.1.0 -> 0.1.0
-        echo "TAG_VERSION=${GITHUB_REF##*/v}" >> ${GITHUB_OUTPUT}
+        tag_version=${GITHUB_REF##*/v}
+        echo "TAG_VERSION=$tag_version" >> ${GITHUB_OUTPUT}
 
-    - name: "Install towncrier, toml, and the project"
+        # Check if the tag is a pre-release
+        if [[ $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+           echo "IS_PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
+        elif [[ $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$ ]]; then
+           echo "IS_PRE_RELEASE=true" >> ${GITHUB_OUTPUT}
+        else
+           echo "Error: '${tag_version}' is not a valid release or pre-release tag."
+           exit 1
+        fi
+
+    - name: "Install towncrier, tomlkit, and the project"
       env:
         TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOMLI_VERSION: ${{ inputs.tomli-version }}
+        TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}"
+        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomlkit=="${TOMLKIT_VERSION}"
 
     - name: "Get towncrier directory and project name"
       shell: python
       run: |
         import pathlib
         import os
-        import tomli
+        import tomlkit
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -237,7 +267,7 @@ runs:
 
         # Load pyproject.toml
         with open(towncrier_config, 'rb') as f:
-            config = tomli.load(f)
+            config = tomlkit.load(f)
             directory = config["tool"]["towncrier"]["directory"]
             project_name = config["tool"]["towncrier"].get("package")
 
@@ -321,6 +351,7 @@ runs:
       id: new-section-changelog
       env:
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
+        IS_PRE_RELEASE: ${{ steps.save-tag-version.outputs.IS_PRE_RELEASE }}
         UPDATE_BRANCH: ${{ steps.set-branch-changelog.outputs.UPDATE_BRANCH }}
         RELEASE_BRANCH_EXISTS: ${{ steps.set-branch-changelog.outputs.RELEASE_BRANCH_EXISTS }}
         BOT_USER: ${{ inputs.bot-user }}
@@ -342,13 +373,21 @@ runs:
 
           # Run towncrier with the tag specified
           # Update changelog with the tag version
-          buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          if [[ "${IS_PRE_RELEASE}" == "true" ]]; then
+            echo "Creating CHANGELOG section for pre-release version ${TAG_VERSION}"
+            buildcmd=$(towncrier build --keep --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          else
+            echo "Creating CHANGELOG section for version ${TAG_VERSION}"
+            buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          fi
+
+          cat builderr.txt
           section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
 
           # Remove builderr.txt
           rm builderr.txt
 
-          if [ -n "$section_exists_err" ]; then
+          if [ -n "$section_exists_err" ] && [[ "${IS_PRE_RELEASE}" == "false" ]]; then
             # Print error message on how to fix this
             message="Your changelog file already contains section ${TAG_VERSION} in the \
             ${UPDATE_BRANCH} branch. Please checkout ${UPDATE_BRANCH}, revert \
@@ -357,6 +396,9 @@ runs:
 
             echo -e "\033[1;91m[ERROR]: $message\033[0m"
             exit 1
+          elif [ -n "$section_exists_err" ] && [[ "${IS_PRE_RELEASE}" == "true" ]]; then
+            echo "Changelog section for pre-release version ${TAG_VERSION} already exists. This is expected behavior for pre-releases, so the workflow will continue without exiting with an error."
+            exit 0
           fi
 
           # Configure git username & email
