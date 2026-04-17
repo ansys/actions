@@ -98,13 +98,6 @@ inputs:
     required: true
     type: string
 
-  force-orphan:
-    description: |
-      Whether to force the deployment branch to be orphan or not. Default value
-      is ``true``.
-    required: true
-    type: string
-
   maximum-pr-doc-deployments:
     description: |
       The maximum number of pull requests documentation allowed to be deployed.
