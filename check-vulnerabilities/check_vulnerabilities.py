@@ -331,20 +331,22 @@ def generate_advisory_files():
     -----
     This function should ONLY be used for local purposes.
     """
+    import shutil
     import subprocess
-
     # Delete previous advisory files
     if os.path.exists("info_safety.json"):
         os.remove("info_safety.json")
     if os.path.exists("info_bandit.json"):
         os.remove("info_bandit.json")
+    safety_exe = shutil.which("safety")
+    if safety_exe is None:
+        raise FileNotFoundError("safety executable not found")
+    bandit_exe = shutil.which("bandit")
+    if bandit_exe is None:
+        raise FileNotFoundError("bandit executable not found")
 
-    scripts_dir = os.path.dirname(sys.executable)
-    safety_exe = os.path.join(scripts_dir, "safety.exe")
-    bandit_exe = os.path.join(scripts_dir, "bandit.exe")
-
-    # Safety - run as a subprocess to avoid Safety reading the parent process arguments
-    # because of a Safety 3.x bug when called via `python -m safety`
+    # Safety check - invoke the safety executable directly to avoid Safety reading
+    # the parent process argv (a Safety 3.x bug when called via `python -m safety`)
     try:
         subprocess.run(
             [safety_exe, "check", "--output", "json", "--save-json", "info_safety.json"],
@@ -355,7 +357,7 @@ def generate_advisory_files():
     finally:
         print("Safety check performed.")
 
-    # Bandit - run as a subprocess for consistency
+    # Bandit check - invoke the bandit executable directly
     try:
         subprocess.run(
             [bandit_exe, "-r", "./src", "-o", "info_bandit.json", "-f", "json"],
