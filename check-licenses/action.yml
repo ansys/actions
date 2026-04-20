@@ -256,17 +256,15 @@ runs:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
-    - name: "Create a virtual environment"
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
+    - name: Create a virtual environment
       if: inputs.skip-install == 'false'
       shell: bash
-      env:
-        USE_UV: ${{ inputs.use-uv }}
       run: |
-        if [[ "$USE_UV" == 'true' ]]; then
-          uv venv .venv
-        else
-          python -m venv .venv
-        fi
+        python -m venv .venv
 
     - name: "Set up virtual environment activation command"
       id: virtual-environment-activation-command

@@ -1,6 +1,7 @@
 Ansys
 ansys
 automerge
+Chocolatey
 CI
 cooldown
 dependabot
@@ -9,6 +10,7 @@ dependabot
 fastcore
 ghapi
 GitHub
+MiKTeX
 prek
 pypa
 pytest
@@ -17,6 +19,8 @@ pyyaml
 SBOM
 Syft
 toctree
+toml
+tomlkit
 towncrier
 TXT
 PyAnsys Dashboard

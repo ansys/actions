@@ -23,9 +23,17 @@ Version ``v10.2``
 - **Changelog Action Changes:** The ``doc-changelog`` action input ``use-conventional-commits`` has been renamed to ``use-pull-request-title`` for clarity.
   If you use the old input, a deprecation warning appears.
 
+- **Check-Vulnerabilities Changes:** The ``check-vulnerabilities`` action now includes a ``safety-configfile`` input (default: ``""``) that allows users to
+  specify a custom configuration file to use with ``safety``. This is useful for users who want to customize the behavior of ``safety`` or provide additional
+  configuration options.
+
 - **PR Documentation Deployment:** The ``doc-deploy-pr`` action is now easier to use. Starting with
   version ``v10.2``, you no longer need to include the ``closed`` pull request event in your workflows because
   deployed documentation is cleaned up asynchronously. For more details, see :ref:`docs-deploy-pr-setup`.
+
+- **Release-Github Changes:** The ``release-github`` action now includes a ``upload-documentation`` (default: ``true``) input. This input allows users
+  to control whether documentation artifacts are included in the GitHub release. Setting this to ``false`` will skip the upload of documentation artifacts,
+  which can be useful for releases without documentation artifacts.
 
 Version ``v10.1``
 -----------------
@@ -402,7 +410,7 @@ Version ``v6``
   - Inclusion of `canonical` link tags in all HTML files for SEO purposes
 
 - Extend ``ansys/actions/doc-build`` to be able to run in Windows runners.
-  To buid the documentation in a Windows runner, we install ``Chocolatey`` and ``Miktex``.
+  To build the documentation in a Windows runner, we install ``Chocolatey`` and ``MiKTeX``.
 
 - Allow ``ansys/actions/commit-style`` to work with upper case in the type field of a commit.
   Expected types are upper cases of  `conventional commit types

@@ -49,10 +49,10 @@ description: |
 
       .. jinja:: check-vulnerabilities
 
-          {% for v_id in ignored_safety %}
-          {% if v_id != '' %}
+          {% for v_id in ignored_safety | select %}
           - `Vulnerability {{ v_id }} <https://pyup.io/v/{{ v_id }}/f17>`_
-          {% endif %}
+          {% else %}
+          No safety vulnerabilities are accepted at this moment.
           {% endfor %}
 
   .. important:: **Required GitHub Permissions**
@@ -101,8 +101,21 @@ inputs:
   bandit-configfile:
     description: |
       Optional config file to use for selecting plugins, overriding defaults,
-      and customizing checks performed by bandit.
+      and customizing checks performed by bandit. Path location should be relative
+      to the repository root. If the provided file does not exist, the action will
+      fail with an error.
+    default: ''
+    required: false
+    type: string
 
+  safety-configfile:
+    description: |
+      Path to a custom .safety-ignore.yml policy file to use with safety.
+      If not provided, the action will use its default policy file. Path
+      location should be relative to the repository root. For instance, if the policy
+      file is located in the ``/config`` folder of the repository and is named
+      ``my-safety-policy.yml``, the input should be set to ``config/my-safety-policy.yml``.
+      If the provided file does not exist, the action will fail with an error.
     default: ''
     required: false
     type: string
@@ -471,25 +484,82 @@ runs:
           python -m pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
         fi
 
-    - name:  "Install wget on Windows"
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        # Check if wget is installed - if not, install it
-        if (-not (Get-Command wget -ErrorAction SilentlyContinue)) {
-            Write-Host "wget is not installed. Installing using Chocolatey..."
-            # Install wget using Chocolatey
-            choco install wget -y
-        } else {
-            Write-Host "wget is already installed."
-        }
-
-    - name: "Download the list of ignored safety vulnerabilities"
+    - name: "Validate configuration files"
+      id: validate-config-files
       shell: bash
+      env:
+        BANDIT_CONFIGFILE: ${{ inputs.bandit-configfile }}
+        SAFETY_CONFIGFILE: ${{ inputs.safety-configfile }}
       run: |
-        wget https://raw.githubusercontent.com/ansys/actions/main/check-vulnerabilities/ignored-safety.txt
+        # Initialize validation results
+        SAFETY_CONFIG_ERROR="false"
+        BANDIT_CONFIG_ERROR="false"
 
-    - name: "Run safety and bandit"
+        # Check if provided safety policy file exists
+        if [[ "${SAFETY_CONFIGFILE}" != "" ]]; then
+          if [[ ! -f "${GITHUB_WORKSPACE}/${SAFETY_CONFIGFILE}" ]]; then
+            SAFETY_CONFIG_ERROR="true"
+          fi
+        fi
+
+        # Check if provided bandit config file exists
+        if [[ "${BANDIT_CONFIGFILE}" != "" ]]; then
+          if [[ ! -f "${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}" ]]; then
+            BANDIT_CONFIG_ERROR="true"
+          fi
+        fi
+
+        # Set outputs
+        echo "SAFETY_CONFIG_ERROR=${SAFETY_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
+        echo "BANDIT_CONFIG_ERROR=${BANDIT_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ steps.validate-config-files.outputs.SAFETY_CONFIG_ERROR == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          The provided safety policy file '${{ inputs.safety-configfile }}' does not exist in the repository.
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ steps.validate-config-files.outputs.BANDIT_CONFIG_ERROR == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          The provided bandit config file '${{ inputs.bandit-configfile }}' does not exist in the repository.
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Running safety vulnerability checks.
+
+    - name: "Run safety checks"
+      shell: bash
+      continue-on-error: true
+      env:
+        ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
+        SAFETY_CONFIGFILE: ${{ inputs.safety-configfile }}
+      run: |
+        ${ACTIVATE_VENV_BANDIT_SAFETY}
+        # Set the safety policy file to use
+        if [[ "${SAFETY_CONFIGFILE}" == "" ]]; then
+          SAFETY_POLICY_FILE="${GITHUB_ACTION_PATH}/.safety-ignore.yml"
+          echo "Using default safety policy file: ${SAFETY_POLICY_FILE}"
+        else
+          SAFETY_POLICY_FILE="${GITHUB_WORKSPACE}/${SAFETY_CONFIGFILE}"
+          echo "Using custom safety policy file: ${SAFETY_POLICY_FILE}"
+        fi
+
+        # Run safety vulnerability checks
+        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Running bandit security checks.
+
+    - name: "Run bandit checks"
       shell: bash
       continue-on-error: true
       env:
@@ -498,21 +568,16 @@ runs:
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
-        # Load accepted safety vulnerabilities
-        mapfile ignored_safety_vulnerabilities < ignored-safety.txt
-        ignored_vulnerabilities=''
-        for pckg in ${ignored_safety_vulnerabilities[*]}; do ignored_vulnerabilities+="-i $pckg "; done
-          ignored_safety_vulnerabilities=${ignored_safety_vulnerabilities::-1}
-        echo "Ignored safety vulnerabilities: $ignored_vulnerabilities"
-
-        # Run security tools
-        safety check -o bare --save-json info_safety.json --continue-on-error $ignored_vulnerabilities -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
-
+        # Set the bandit config file to use
         if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
           CONFIGFILE=""
+          echo "Using default bandit configuration"
         else
-          CONFIGFILE="-c ${BANDIT_CONFIGFILE}"
+          CONFIGFILE="-c ${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}"
+          echo "Using custom bandit config file: ${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}"
         fi
+
+        # Run bandit security checks
         bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
     - name: "Run advisory checks"
