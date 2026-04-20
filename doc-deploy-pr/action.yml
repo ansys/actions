@@ -138,6 +138,7 @@ runs:
 
     - name: "Closed event trigger no longer needed for documentation cleanup"
       if: github.event.pull_request.state == 'closed'
+      uses: ansys/actions/_logging@main
       with:
         level: "WARNING"
         message: >
