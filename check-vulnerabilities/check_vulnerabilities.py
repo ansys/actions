@@ -333,6 +333,7 @@ def generate_advisory_files():
     """
     import shutil
     import subprocess
+
     # Delete previous advisory files
     if os.path.exists("info_safety.json"):
         os.remove("info_safety.json")
@@ -349,7 +350,14 @@ def generate_advisory_files():
     # the parent process argv (a Safety 3.x bug when called via `python -m safety`)
     try:
         subprocess.run(
-            [safety_exe, "check", "--output", "json", "--save-json", "info_safety.json"],
+            [
+                safety_exe,
+                "check",
+                "--output",
+                "json",
+                "--save-json",
+                "info_safety.json",
+            ],
             check=False,
         )
     except Exception as e:
