@@ -112,6 +112,17 @@ runs:
       with:
         level: "INFO"
         message: >
+          Starting with v10.3, doc-deploy-pr action doesn't force the deployment branch to be an orphan with
+          only the latest commit (as opposed doc-deploy-dev and doc-deploy-stable which force the deployment
+          branch to be an orphan with only the latest commit by default). This helps to prevent race conditions in very active
+          repositories (see https://github.com/ansys/actions/issues/1103 for more information). This means PR documentation are
+          added to the deployment branch as separate commits, and only a run of doc-deploy-dev or doc-deploy-stable will consolidate
+          (into a single commit) the linear history that results from a sequence PR documentation deployments.
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
           Checkout the repository branch for deploying the documentation. If this
           step fails, then it means that the provided token is not valid.
 

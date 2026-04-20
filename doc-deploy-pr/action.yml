@@ -136,13 +136,12 @@ runs:
         commit-message: ${{ inputs.commit-message }}
         maximum-pr-doc-deployments: ${{ inputs.maximum-pr-doc-deployments }}
 
-    - uses: ansys/actions/_pr-doc-clean@refactor/doc-deploy-actions
+    - name: "'closed' event trigger no longer needed for documentation cleanup"
       if: github.event.pull_request.state == 'closed'
       with:
-        cname: ${{ inputs.cname }}
-        token: ${{ inputs.token }}
-        bot-user: ${{ inputs.bot-user }}
-        bot-email: ${{ inputs.bot-email }}
-        repository: ${{ inputs.repository }}
-        branch: ${{ inputs.branch }}
-        commit-message: ${{ inputs.commit-message }}
+        level: "WARNING"
+        message: >
+          Starting with version v10.2, the doc-deploy-pr action no longer requires you to add the "closed" GitHub event to "on.pull_request.types" for
+          documentation cleanup when PRs are closed. Documentation for closed PRs is now cleaned up
+          automatically in the background without requiring an explicit event trigger or additional configuration. For more details, see
+          https://actions.docs.ansys.com/version/stable/migrations/docs-deploy-pr-setup.html
