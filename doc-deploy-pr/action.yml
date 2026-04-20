@@ -136,7 +136,7 @@ runs:
         commit-message: ${{ inputs.commit-message }}
         maximum-pr-doc-deployments: ${{ inputs.maximum-pr-doc-deployments }}
 
-    - name: "'closed' event trigger no longer needed for documentation cleanup"
+    - name: "Closed event trigger no longer needed for documentation cleanup"
       if: github.event.pull_request.state == 'closed'
       with:
         level: "WARNING"
