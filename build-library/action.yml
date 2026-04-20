@@ -191,15 +191,25 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        ${INSTALL_COMMAND} build twine
+        if [ "${USE_UV}" == "true" ]; then
+          ${INSTALL_COMMAND} twine
+        else
+          ${INSTALL_COMMAND} build twine
+        fi
 
     - name: "Build distribution artifacts"
       shell: bash
       env:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        python -m build --outdir dist "${WORKING_DIRECTORY}"
+        if [ "${USE_UV}" == "true" ]; then
+          uv build --out-dir dist "${WORKING_DIRECTORY}"
+        else
+          python -m build --outdir dist "${WORKING_DIRECTORY}"
+        fi
 
     - name: "Check build health"
       shell: bash
