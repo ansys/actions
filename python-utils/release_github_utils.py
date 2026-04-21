@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import fnmatch
 import re
 from pathlib import Path
 
@@ -157,3 +158,29 @@ def get_release_notes(pyproject_path: Path):
 
     # Save the env variable
     save_env_variable("RELEASE_NOTES_BODY", body)
+
+
+def filter_dist_files(dist_filter: str) -> None:
+    """Filter files in wheelhouse and SBOM distribution directories.
+
+    Files that do not match any of the provided glob patterns are deleted.
+
+    Parameters
+    ----------
+    dist_filter: str
+        Comma-separated list of glob patterns to keep (e.g. ``'*all*,*graphics*'``).
+    """
+    directories = [Path("dist/wheelhouse"), Path("dist/sbom")]
+
+    patterns = [p.strip() for p in dist_filter.split(",") if p.strip()]
+
+    for directory in directories:
+        if not directory.is_dir():
+            continue
+        print(f"Filtering in {directory} with patterns: {dist_filter}")
+        for file in directory.rglob("*"):
+            if not file.is_file():
+                continue
+            if not any(fnmatch.fnmatch(file.name, pattern) for pattern in patterns):
+                print(f"  Removing: {file}")
+                file.unlink()
