@@ -187,6 +187,16 @@ inputs:
     required: false
     type: boolean
 
+  dist-filter:
+    description: |
+      Comma-separated list of glob patterns to keep in the ``dist/wheelhouse`` and ``dist/sbom``
+      directories, for example ``'*all*,*graphics*'``. All files that do not match any of
+      the provided patterns are deleted after those directories are populated.
+      Default value is ``''``, in which case no filtering is applied.
+    required: false
+    default: ''
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -418,7 +428,7 @@ runs:
       with:
         level: "INFO"
         message: >
-          Display the structure of the 'dist/' folder. Upload all artifacts.
+          Display the structure of the 'dist/' folder. Upload artifacts.
 
     - name: "Display the structure of the 'dist/' folder"
       shell: bash
@@ -441,6 +451,28 @@ runs:
       run: |
         ${INSTALL_COMMAND} --upgrade pip tomlkit=="$TOMLKIT_VERSION"
         ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
+
+    - name: "Filter SBOM or wheelhouse files (if needed)"
+      if: inputs.dist-filter != ''
+      shell: python
+      env:
+        DIST_FILTER: ${{ inputs.dist-filter }}
+      run: |
+        import os
+        import sys
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from release_github_utils import filter_dist_files
+
+        dist_filter = os.getenv("DIST_FILTER")
+        filter_dist_files(dist_filter)
+
+    - name: "Display the structure of the 'dist/' folder after filtering"
+      if: inputs.dist-filter != ''
+      shell: bash
+      run: ls -R dist/
 
     - name: "Get the release notes body"
       if: inputs.changelog-release-notes == 'true'
