@@ -37,6 +37,10 @@ from typing import Any, Dict
 
 import click
 import github
+from github.AdvisoryVulnerability import (
+    SimpleAdvisoryVulnerability,
+    SimpleAdvisoryVulnerabilityPackage,
+)
 
 TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
 PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
@@ -143,12 +147,15 @@ def check_vulnerabilities():
 
         # Advisory info
         summary = f"Safety vulnerability {v_id} for package '{v_package}'"
-        vuln_adv = {
-            "package": {"name": f"{v_package}", "ecosystem": "pip"},
-            "vulnerable_version_range": f"{v_affected_versions}",
-            "patched_versions": f"{v_fixed_versions}",
-            "vulnerable_functions": [],
-        }
+
+        vuln_adv = SimpleAdvisoryVulnerability(
+            package=SimpleAdvisoryVulnerabilityPackage(
+                name=f"{v_package}", ecosystem="pip"
+            ),
+            vulnerable_version_range=f"{v_affected_versions}",
+            patched_versions=f"{v_fixed_versions}",
+            vulnerable_functions=[],
+        )
         desc = f"""
 {v_desc}
 
@@ -234,12 +241,14 @@ once it has been verified (since it has been created in draft mode).
 
         # Advisory info
         summary = f"Bandit [{v_test_id}:{v_test_name}] on {v_filename} - Hash: {v_hash}"
-        vuln_adv = {
-            "package": {"name": f"{v_package}", "ecosystem": "pip"},
-            "vulnerable_functions": [],
-            "vulnerable_version_range": None,
-            "patched_versions": None,
-        }
+        vuln_adv = SimpleAdvisoryVulnerability(
+            package=SimpleAdvisoryVulnerabilityPackage(
+                name=f"{v_package}", ecosystem="pip"
+            ),
+            vulnerable_functions=[],
+            vulnerable_version_range=None,
+            patched_versions=None,
+        )
         desc = f"""
 {v_desc}
 
