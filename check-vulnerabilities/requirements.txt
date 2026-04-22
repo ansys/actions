@@ -1,4 +1,4 @@
-bandit>=1.7,<2
+bandit>=1.9.4,<2
 click>=8.3.2,<9
 pygithub>=1.59,<3
 safety>=3.7.0,<4
