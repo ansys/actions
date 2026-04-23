@@ -125,6 +125,37 @@ jobs:
           use-python-cache: false
           checkout: false
 
+  type-check:
+    name: Type check with Ty
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: "Set up Python"
+        uses: ansys/actions/_setup-python@main
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-cache: false
+          provision-uv: true
+          prune-uv-cache: true
+
+      - name: Create virtual environment
+        run: uv venv .venv
+
+      # TODO: Once depency update logic has been defined, the handling of ty should align
+      - name: Install dependencies
+        run: |
+          source .venv/bin/activate
+          uv pip install ty==0.0.29
+
+      - name: Run ty
+        run: |
+          source .venv/bin/activate
+          ty check --ignore unresolved-import **/*.py
+
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest

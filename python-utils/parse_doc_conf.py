@@ -43,8 +43,9 @@ def get_project_name(conf_path):
     with open(conf_path, "r") as conf_file:
         for line in conf_file:
             if line.strip().startswith(("project =", "project=")):
-                print(line)
-                res = re.search(r'project\s*=\s*[\'"](.+)[\'"]', line).group(1)
+                match = re.search(r'project\s*=\s*[\'"](.+)[\'"]', line)
+                if match:
+                    res = match.group(1)
                 break
     return res
 
@@ -65,7 +66,7 @@ if project_name:
     print(f"PDF file name: {pdf_file_name}")
 
     # Get the GITHUB_ENV variable
-    github_env = os.getenv("GITHUB_ENV")
+    github_env = os.environ["GITHUB_ENV"]
 
     # Append PDF_FILENAME with its value to GITHUB_ENV
     with open(github_env, "a") as f:

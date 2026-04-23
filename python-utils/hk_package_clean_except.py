@@ -35,9 +35,9 @@ PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 org_str = os.environ.get("PACKAGE_ORG")
 pck_str = os.environ.get("PACKAGE_NAME")
 last_days_str = os.environ.get("ALLOW_LAST_DAYS")
-valid_tags_str = os.environ.get("VALID_TAGS_STR")
+valid_tags_str = os.environ.get("VALID_TAGS_STR", "")
 
-last_days = int(last_days_str) if last_days_str != "" else None
+last_days = int(last_days_str) if last_days_str else None
 valid_tags = [x.strip() for x in valid_tags_str.split(",")]
 
 api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
