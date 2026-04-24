@@ -121,20 +121,6 @@ inputs:
     required: false
     type: boolean
 
-  checkout-fetch-depth:
-    description: |
-      Set fetch-depth option for actions/checkout. Default value is ``1``.
-    required: false
-    default: '1'
-    type: string
-
-  checkout-fetch-tags:
-    description: |
-      Set fetch-tags option for actions/checkout. Default value is ``false``.
-    required: false
-    default: false
-    type: boolean
-
 runs:
   using: "composite"
   steps:
@@ -144,8 +130,6 @@ runs:
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
-        fetch-depth: ${{ inputs.checkout-fetch-depth }}
-        fetch-tags:  ${{ inputs.checkout-fetch-tags }}
 
     - name: "Set up Python"
       uses: ansys/actions/_setup-python@main
@@ -191,15 +175,25 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        ${INSTALL_COMMAND} build twine
+        if [ "${USE_UV}" == "true" ]; then
+          ${INSTALL_COMMAND} twine
+        else
+          ${INSTALL_COMMAND} build twine
+        fi
 
     - name: "Build distribution artifacts"
       shell: bash
       env:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        python -m build --outdir dist "${WORKING_DIRECTORY}"
+        if [ "${USE_UV}" == "true" ]; then
+          uv build --out-dir dist "${WORKING_DIRECTORY}"
+        else
+          python -m build --outdir dist "${WORKING_DIRECTORY}"
+        fi
 
     - name: "Check build health"
       shell: bash
@@ -208,7 +202,7 @@ runs:
         python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.library-name }}-artifacts
         path: dist/
