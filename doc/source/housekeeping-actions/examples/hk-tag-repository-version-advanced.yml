@@ -1,0 +1,25 @@
+hk-tag-repository-version:
+  name: "Tag repository version"
+  runs-on: ubuntu-latest
+  if: github.event_name == 'release'
+  permissions:
+    contents: write
+  steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+    - name: vX.Y version from tag
+      shell: bash
+      id: major_minor_version
+      env:
+        SEMANTIC_VERSION: ${{ steps.pick_version.outputs.SEMANTIC_VERSION }}
+      run: |
+        MAJOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 1)
+        MINOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 2)
+        echo "MAJOR_MINOR_VERSION=v${MAJOR_VERSION}.${MINOR_VERSION}" >> $GITHUB_OUTPUT
+    - name: "Update latest vX and vX.Y tag"
+      uses: ansys/actions/hk-tag-repository-version@{{ version }}
+      with:
+        gh-token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
+        latest-branch-name: release/${{ '{{ steps.major_minor_version.outputs.MAJOR_MINOR_VERSION }}' }}
