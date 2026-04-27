@@ -35,7 +35,7 @@ Version ``v10.3``
   - A new ``breaking`` fragment type has been added for tracking breaking changes in the changelog.
   - Changelog tabs are now ordered by importance in the deployed changelog, with the following order:
     Breaking > Added > Changed > Deprecated > Fixed > Dependencies > Maintenance > Miscellaneous.
-  
+
 - **Filtering GitHub Releases:** The ``release-github`` action now includes a ``dist-filter``
   input (default: ``''``) that accepts a comma-separated list of glob patterns for filtering the ``dist/``
   directory. Files that do not match any of the provided patterns are removed before the
