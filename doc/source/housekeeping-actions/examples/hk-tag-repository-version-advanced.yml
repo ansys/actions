@@ -13,7 +13,7 @@ hk-tag-repository-version:
       shell: bash
       id: major_minor_version
       env:
-        SEMANTIC_VERSION: ${{ steps.pick_version.outputs.SEMANTIC_VERSION }}
+        SEMANTIC_VERSION: ${{ '{{ steps.pick_version.outputs.SEMANTIC_VERSION }}' }}
       run: |
         MAJOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 1)
         MINOR_VERSION=$(echo ${SEMANTIC_VERSION} |  cut -d 'v' -f 2 | cut -d '.' -f 2)

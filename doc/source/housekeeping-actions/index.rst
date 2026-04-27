@@ -32,6 +32,3 @@ Tag repository version
 
 .. jinja:: hk-tag-repository-version
     :file: _templates/action.rst.jinja
-
-.. jinja:: hk-tag-repository-version-advanced
-    :file: _templates/action.rst.jinja

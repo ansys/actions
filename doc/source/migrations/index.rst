@@ -32,6 +32,7 @@ Version ``v10.3``
   required to run each action. Check the documentation for each action for details.
 
 - **Changelog Improvements:** The changelog (``doc-changelog`` and ``doc-deploy-changelog``) actions include two new changes:
+
   - A new ``breaking`` fragment type has been added for tracking breaking changes in the changelog.
   - Changelog tabs are now ordered by importance in the deployed changelog, with the following order:
     Breaking > Added > Changed > Deprecated > Fixed > Dependencies > Maintenance > Miscellaneous.
