@@ -232,8 +232,8 @@ runs:
         sudo apt-get install -y cargo && cargo install ouch
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd version/dev && compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact
+        cd version/dev && compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
+        ouch decompress $compressed_artifact --yes
         decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
         mv $decompressed_artifact/* .
         rm -rf $compressed_artifact $decompressed_artifact
