@@ -270,7 +270,7 @@ runs:
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        sudo apt-get install -y cargo && cargo install ouch
+        sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
         cd pull/${PR_NUMBER}
