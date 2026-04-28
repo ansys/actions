@@ -13,3 +13,4 @@ hk-tag-repository-version:
       uses: ansys/actions/hk-tag-repository-version@{{ version }}
       with:
         gh-token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
+        release-version: ${{ github.event.release.tag_name }}
