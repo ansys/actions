@@ -337,11 +337,17 @@ runs:
         sudo apt-get install -y cargo && cargo install ouch
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd version/${VERSION} && compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
-        ouch decompress $compressed_artifact --yes
-        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
-        mv $decompressed_artifact/* .
-        rm -rf $compressed_artifact $decompressed_artifact
+        cd version/${VERSION}
+        compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
+        mkdir _decomp
+        ouch decompress "$compressed_artifact" --output-dir _decomp --yes
+        content=(_decomp/*)
+        if [ "${#content[@]}" -eq 1 ] && [ -d "${content[0]}" ]; then
+          mv "${content[0]}"/* .
+        else
+          mv _decomp/* .
+        fi
+        rm -rf "$compressed_artifact" _decomp
 
     - name: "Display structure of version/dev"
       shell: bash
