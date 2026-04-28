@@ -270,14 +270,20 @@ runs:
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        sudo apt-get install -y cargo && cargo install ouch
+        sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd pull/${PR_NUMBER} && compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact
-        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
-        mv $decompressed_artifact/* .
-        rm -rf $compressed_artifact $decompressed_artifact
+        cd pull/${PR_NUMBER}
+        compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
+        mkdir _decomp
+        ouch decompress "$compressed_artifact" --dir _decomp --yes
+        content=(_decomp/*)
+        if [ "${#content[@]}" -eq 1 ] && [ -d "${content[0]}" ]; then
+          mv "${content[0]}"/* .
+        else
+          mv _decomp/* .
+        fi
+        rm -rf "$compressed_artifact" _decomp
 
     - name: "Display structure of pull/${{ github.event.pull_request.number }}"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
