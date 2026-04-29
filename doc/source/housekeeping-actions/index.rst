@@ -26,3 +26,9 @@ Migrate fork pull requests
 
 .. jinja:: hk-migrate-fork-pr
     :file: _templates/action.rst.jinja
+
+Tag repository version
+----------------------
+
+.. jinja:: hk-tag-repository-version
+    :file: _templates/action.rst.jinja
