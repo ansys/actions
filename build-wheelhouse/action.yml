@@ -169,7 +169,7 @@ runs:
         persist-credentials: false
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v10.3.0
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -426,7 +426,7 @@ runs:
         subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
-      uses: ansys/actions/check-licenses@main
+      uses: ansys/actions/check-licenses@v10.3.0
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}
