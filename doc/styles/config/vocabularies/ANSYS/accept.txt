@@ -3,6 +3,7 @@ ansys
 automerge
 Chocolatey
 CI
+[Cc]ookiecutter
 cooldown
 dependabot
 dev
