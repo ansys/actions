@@ -233,16 +233,14 @@ runs:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
     - name: "Create a virtual environment"
       shell: bash
-      env:
-        USE_UV: ${{ inputs.use-uv }}
       run: |
-        if [[ "$USE_UV" == 'true' ]]; then
-          uv venv .venv
-        else
-          python -m venv .venv
-        fi
+        python -m venv .venv
 
     - name: "Set up virtual environment activation command"
       id: virtual-environment-activation-command
@@ -354,9 +352,9 @@ runs:
       shell: bash
       run: |
         if ! command -v syft > /dev/null; then
-          echo "Syft not found, installation of v1.26.0 in progress..."
+          echo "Syft not found, installation of v1.43.0 in progress..."
           mkdir -p ~/.local/bin
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/ac883f52edb8ca1f5a0a61d12c288d4b34ea3897/install.sh | sh -s -- -b ~/.local/bin v1.26.0
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/ac883f52edb8ca1f5a0a61d12c288d4b34ea3897/install.sh | sh -s -- -b ~/.local/bin v1.43.0
         else
           echo "Syft installation found"
         fi
@@ -368,7 +366,7 @@ runs:
         mv sbom.spdx "${SANITIZED_LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
 
     - name: "Upload the SBOM file"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
         path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
@@ -376,7 +374,7 @@ runs:
 
     - name: Generate build provenance attestation
       if: ${{ inputs.attest-provenance == 'true' }}
-      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
       with:
         subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
 
@@ -415,7 +413,7 @@ runs:
         dest: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: "Upload the compressed wheelhouse"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
@@ -423,7 +421,7 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
       with:
         subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 

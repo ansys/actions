@@ -37,6 +37,10 @@ from typing import Any, Dict
 
 import click
 import github
+from github.AdvisoryVulnerability import (
+    SimpleAdvisoryVulnerability,
+    SimpleAdvisoryVulnerabilityPackage,
+)
 
 TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
 PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
@@ -143,12 +147,15 @@ def check_vulnerabilities():
 
         # Advisory info
         summary = f"Safety vulnerability {v_id} for package '{v_package}'"
-        vuln_adv = {
-            "package": {"name": f"{v_package}", "ecosystem": "pip"},
-            "vulnerable_version_range": f"{v_affected_versions}",
-            "patched_versions": f"{v_fixed_versions}",
-            "vulnerable_functions": [],
-        }
+
+        vuln_adv = SimpleAdvisoryVulnerability(
+            package=SimpleAdvisoryVulnerabilityPackage(
+                name=f"{v_package}", ecosystem="pip"
+            ),
+            vulnerable_version_range=f"{v_affected_versions}",
+            patched_versions=f"{v_fixed_versions}",
+            vulnerable_functions=[],
+        )
         desc = f"""
 {v_desc}
 
@@ -234,12 +241,14 @@ once it has been verified (since it has been created in draft mode).
 
         # Advisory info
         summary = f"Bandit [{v_test_id}:{v_test_name}] on {v_filename} - Hash: {v_hash}"
-        vuln_adv = {
-            "package": {"name": f"{v_package}", "ecosystem": "pip"},
-            "vulnerable_functions": [],
-            "vulnerable_version_range": None,
-            "patched_versions": None,
-        }
+        vuln_adv = SimpleAdvisoryVulnerability(
+            package=SimpleAdvisoryVulnerabilityPackage(
+                name=f"{v_package}", ecosystem="pip"
+            ),
+            vulnerable_functions=[],
+            vulnerable_version_range=None,
+            patched_versions=None,
+        )
         desc = f"""
 {v_desc}
 
@@ -331,36 +340,50 @@ def generate_advisory_files():
     -----
     This function should ONLY be used for local purposes.
     """
-    import bandit.cli.main as bandit
-    import safety.cli as safety
+    import shutil
+    import subprocess
 
     # Delete previous advisory files
     if os.path.exists("info_safety.json"):
         os.remove("info_safety.json")
     if os.path.exists("info_bandit.json"):
         os.remove("info_bandit.json")
+    safety_exe = shutil.which("safety")
+    if safety_exe is None:
+        raise FileNotFoundError("safety executable not found")
+    bandit_exe = shutil.which("bandit")
+    if bandit_exe is None:
+        raise FileNotFoundError("bandit executable not found")
 
-    # Safety check
+    # Safety check - invoke the safety executable directly to avoid Safety reading
+    # the parent process argv (a Safety 3.x bug when called via `python -m safety`)
     try:
-        safety.cli.main(
-            ["check", "-o", "bare", "--save-json", "info_safety.json"],
-            standalone_mode=False,
+        subprocess.run(
+            [
+                safety_exe,
+                "check",
+                "--output",
+                "json",
+                "--save-json",
+                "info_safety.json",
+            ],
+            check=False,
         )
-    except:  # noqa: E722
+    except Exception as e:
+        print(f"Safety check warning: {e}")
+    finally:
         print("Safety check performed.")
-        pass
 
-    # Bandit check
+    # Bandit check - invoke the bandit executable directly
     try:
-        sys.argv.pop()
-        sys.argv.extend(["-r", "./src", "-o", "info_bandit.json", "-f", "json"])
-        bandit.main()
-    except:  # noqa: E722
-        pass
+        subprocess.run(
+            [bandit_exe, "-r", "./src", "-o", "info_bandit.json", "-f", "json"],
+            check=False,
+        )
+    except Exception as e:
+        print(f"Bandit check warning: {e}")
     finally:
         print("Bandit check performed.")
-        sys.argv = sys.argv[: len(sys.argv) - 5]
-        sys.argv.append("--run-local")
 
     print("Advisory files generated successfully.")
 

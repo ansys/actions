@@ -52,6 +52,9 @@ def find_module_from_dist(pkg_name: str, attr: str):
     except PackageNotFoundError:
         raise ImportError(f"Package '{pkg_name}' is not installed")
 
+    if dist.files is None:
+        raise ImportError(f"Metadata file is missing for package '{pkg_name}'")
+
     # Examine files in the distribution to find likely module paths
     candidate_paths = [path for path in dist.files if path.name == "__init__.py"]
 

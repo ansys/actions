@@ -1,6 +1,8 @@
 aiohappyeyeballs
 ansys-corba
 ansys-turbogrid-api
+cmocean
+cookiecutter
 defusedxml
 distlib
 filelock

@@ -189,7 +189,7 @@ def test_environment_setup(request, tmp_path_factory, monkeypatch):
 ##########################################################################
 #         Generic tests, can be applied to multiple datasets             #
 ##########################################################################
-BASE_PRERELEASE_DATA = [
+BASE_PRERELEASE_DATA: list[dict[str, str | list | bool]] = [
     {
         "ref_type": "tag",
         "ref_name": "v0.4.0a0",
@@ -229,7 +229,7 @@ BASE_PRERELEASE_DATA = [
     },
 ]
 
-BASE_NORMAL_RELEASE_DATA = [
+BASE_NORMAL_RELEASE_DATA: list[dict[str, str | list | bool]] = [
     {
         "ref_type": "tag",
         "ref_name": "v0.4.0",
@@ -352,7 +352,7 @@ for data in BASE_DATA_THREE:
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA_THREE, indirect=True)
 def test_set_versions_variable(test_environment_setup):
     set_version_variable()
-    gh_output_path = os.getenv("GITHUB_OUTPUT")
+    gh_output_path = os.environ["GITHUB_OUTPUT"]
     gh_output_content = Path(gh_output_path).read_text()
 
     test_data = test_environment_setup
@@ -404,7 +404,7 @@ SPECIAL_TEST_DATA_ONE = [
 @pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_ONE, indirect=True)
 def test_set_versions_variable_on_independent_patch_release(test_environment_setup):
     set_version_variable()
-    gh_output_path = os.getenv("GITHUB_OUTPUT")
+    gh_output_path = os.environ["GITHUB_OUTPUT"]
     gh_output_content = Path(gh_output_path).read_text()
 
     test_data = test_environment_setup
@@ -553,7 +553,7 @@ FIRST_PRERELEASE_SET_VERSION_DATA = [
 )
 def test_set_version_variable_first_prerelease(test_environment_setup):
     set_version_variable()
-    gh_output_path = os.getenv("GITHUB_OUTPUT")
+    gh_output_path = os.environ["GITHUB_OUTPUT"]
     gh_output_content = Path(gh_output_path).read_text()
 
     test_data = test_environment_setup
@@ -590,6 +590,6 @@ def test_write_versions_file_no_stable(test_environment_setup):
         assert "(stable)" not in entry["name"]
 
     # Verify LATEST_STABLE_VERSION is empty
-    gh_output_path = os.getenv("GITHUB_OUTPUT")
+    gh_output_path = os.environ["GITHUB_OUTPUT"]
     gh_output_content = Path(gh_output_path).read_text()
     assert "LATEST_STABLE_VERSION=\n" in gh_output_content

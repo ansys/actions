@@ -111,14 +111,6 @@ inputs:
     default: 'DOC: update pull request documentation'
     type: string
 
-  force-orphan:
-    description: |
-      Whether to force the deployment branch to be orphan or not. Default value
-      is ``true``.
-    required: false
-    default: true
-    type: string
-
   maximum-pr-doc-deployments:
     description: |
       The maximum number of deployable pull requests documentation.
@@ -142,17 +134,15 @@ runs:
         repository: ${{ inputs.repository }}
         branch: ${{ inputs.branch }}
         commit-message: ${{ inputs.commit-message }}
-        force-orphan: ${{ inputs.force-orphan }}
         maximum-pr-doc-deployments: ${{ inputs.maximum-pr-doc-deployments }}
 
-    - uses: ansys/actions/_pr-doc-clean@main
+    - name: "Closed event trigger no longer needed for documentation cleanup"
       if: github.event.pull_request.state == 'closed'
+      uses: ansys/actions/_logging@main
       with:
-        cname: ${{ inputs.cname }}
-        token: ${{ inputs.token }}
-        bot-user: ${{ inputs.bot-user }}
-        bot-email: ${{ inputs.bot-email }}
-        repository: ${{ inputs.repository }}
-        branch: ${{ inputs.branch }}
-        commit-message: ${{ inputs.commit-message }}
-        force-orphan: ${{ inputs.force-orphan }}
+        level: "WARNING"
+        message: >
+          Starting with version v10.2, the doc-deploy-pr action no longer requires you to add the "closed" GitHub event to "on.pull_request.types" for
+          documentation cleanup when PRs are closed. Documentation for closed PRs is now cleaned up
+          automatically in the background without requiring an explicit event trigger or additional configuration. For more details, see
+          https://actions.docs.ansys.com/version/stable/migrations/docs-deploy-pr-setup.html

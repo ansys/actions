@@ -110,7 +110,7 @@ runs:
     - name: Dependabot metadata (if dependabot PR only)
       if: ${{ steps.verify-allowed-prs.outputs.SKIP_ACTION == '0' && steps.verify-allowed-prs.outputs.DEPENDABOT_PR == '1' }}
       id: metadata
-      uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2.5.0
+      uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
       with:
         github-token: ${{ inputs.approver-token }}
 
