@@ -218,6 +218,15 @@ runs:
         } elseif (Test-Path $systemMiKTeX) {
           Write-Host "MiKTeX already installed at system level, using existing installation."
           echo "$systemMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          # Check if MikTex works by requesting its version
+          $miktexVersion = & "$systemMiKTeX\miktex.exe" --version
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Existing MiKTeX installation at system level is not working properly, installing it at user level..."
+            choco install miktex --params '"/Set:basic /ThisUser"' -y
+            echo "$userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          } else {
+            Write-Host "Existing MiKTeX installation at system level is working properly."
+          }
         } else {
           # NOTE: Install at user level to avoid errors when running on self-hosted runners
           # where choco was already installed at system level.
