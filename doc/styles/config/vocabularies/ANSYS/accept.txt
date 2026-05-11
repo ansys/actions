@@ -29,3 +29,4 @@ rulesets
 rst
 uv
 zizmor
+wcwidth
