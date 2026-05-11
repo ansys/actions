@@ -208,7 +208,7 @@ runs:
         function Invoke-MiKTeXCheck {
           param(
             [string]$InstallPath,
-            [string]$Level,
+            [string]$Level
           )
           Write-Host "MiKTeX already installed at $Level level, using existing installation."
           $miktexVersion = & "$InstallPath\miktex.exe" --version
