@@ -156,6 +156,13 @@ inputs:
       and the Python version already available in the environment is used.
       This is useful when a specific Python installation is already on the
       ``PATH`` and the setup step would override it.
+
+      .. warning::
+
+          The python version available in the environment must match the
+          version specified in the ``python-version`` input. If not, the
+          action will fail.
+
     required: false
     default: false
     type: boolean
@@ -187,6 +194,27 @@ runs:
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - name: "Check Python version matches expected version"
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      shell: bash
+      env:
+        EXPECTED_VERSION: ${{ inputs.python-version }}
+      run: |
+        RAW_VERSION=$(python --version 2>&1)
+        # Fail early if no usable Python (e.g. Windows Microsoft Store stub)
+        if [[ "${RAW_VERSION}" == "Python was not found;"* ]] || [[ -z "${RAW_VERSION}" ]]; then
+          echo "::error::No Python interpreter found on PATH."
+          exit 1
+        fi
+        ACTUAL_VERSION=$(echo "${RAW_VERSION}" | awk '{print $2}')
+        PART_COUNT=$(echo "${EXPECTED_VERSION}" | awk -F. '{print NF}')
+        # Compare only the specified number of parts to allow for flexibility in patch versions.
+        ACTUAL_PREFIX=$(echo "${ACTUAL_VERSION}" | cut -d. -f1-${PART_COUNT})
+        if [[ "${ACTUAL_PREFIX}" != "${EXPECTED_VERSION}" ]]; then
+          echo "::error::Python version mismatch. Expected ${EXPECTED_VERSION} but found ${ACTUAL_VERSION}."
+          exit 1
+        fi
 
     - name: "Identify the build system"
       id: build-system
