@@ -1,6 +1,7 @@
 Ansys
 ansys
 automerge
+caio
 Chocolatey
 CI
 [Cc]ookiecutter
@@ -30,3 +31,4 @@ rulesets
 rst
 uv
 zizmor
+wcwidth
