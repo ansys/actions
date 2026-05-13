@@ -144,7 +144,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.0
+    - uses: ansys/actions/_logging@v10.3.1
       with:
         level: "INFO"
         message: >
@@ -164,7 +164,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ansys/actions/_logging@v10.3.0
+    - uses: ansys/actions/_logging@v10.3.1
       with:
         level: "INFO"
         message: >
@@ -172,14 +172,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.0
+    - uses: ansys/actions/_logging@v10.3.1
       with:
         level: "INFO"
         message: >
           Set up python to test.
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@v10.3.0
+      uses: ansys/actions/_setup-python@v10.3.1
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
