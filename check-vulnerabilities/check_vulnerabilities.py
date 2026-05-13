@@ -355,6 +355,9 @@ def generate_advisory_files():
     if bandit_exe is None:
         raise FileNotFoundError("bandit executable not found")
 
+    if not os.path.exists("requirements-for-safety.txt"):
+        raise FileNotFoundError("Expected requirements-for-safety.txt not found.")
+
     # Safety check - invoke the safety executable directly to avoid Safety reading
     # the parent process argv (a Safety 3.x bug when called via `python -m safety`)
     try:
@@ -366,6 +369,8 @@ def generate_advisory_files():
                 "json",
                 "--save-json",
                 "info_safety.json",
+                "-r",
+                "requirements-for-safety.txt",
             ],
             check=False,
         )
