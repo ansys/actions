@@ -202,11 +202,36 @@ runs:
     - name: Install MiKTeX and update PATH with MiKTeX binaries
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        # NOTE: Install at user level to avoid errors when running on self-hosted runners
-        # where choco was already installed at system level.
-        # For more information, see https://github.com/ansys/actions/pull/1233
-        choco install miktex --params '"/Set:basic /ThisUser"' -y
-        echo "$env:LocalAppData\Programs\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        # NOTE: Declared at script scope so it can be accessed inside function
+        $script:userMiKTeX = "$env:LocalAppData\Programs\MiKTeX\miktex\bin\x64"
+
+        function Invoke-MiKTeXCheck {
+          param(
+            [string]$InstallPath,
+            [string]$Level
+          )
+          Write-Host "MiKTeX already installed at $Level level, using existing installation."
+          $miktexVersion = & "$InstallPath\miktex.exe" --version
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Existing MiKTeX installation at $Level level is not working properly, reinstalling it at user level..."
+            choco install miktex --params '"/Set:basic /ThisUser"' -y --force
+            echo "$script:userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          } else {
+            Write-Host "Existing MiKTeX installation at $Level level is working properly (version: $miktexVersion)."
+            echo "$InstallPath" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          }
+        }
+
+        $systemMiKTeX = "C:\Program Files\MiKTeX\miktex\bin\x64"
+        if (Test-Path "$script:userMiKTeX\miktex.exe") {
+          Invoke-MiKTeXCheck -InstallPath $script:userMiKTeX -Level "user"
+        } elseif (Test-Path "$systemMiKTeX\miktex.exe") {
+          Invoke-MiKTeXCheck -InstallPath $systemMiKTeX -Level "system"
+        } else {
+          Write-Host "MiKTeX is not installed, installing it at user level..."
+          choco install miktex --params '"/Set:basic /ThisUser"' -y
+          echo "$script:userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        }
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
