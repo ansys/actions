@@ -9,6 +9,65 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.3.1 <https://github.com/ansys/actions/releases/tag/v10.3.1>`_ - May 13, 2026
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - If miktex is available then make use of it
+          - `#1305 <https://github.com/ansys/actions/pull/1305>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#1290 <https://github.com/ansys/actions/pull/1290>`_
+
+        * - Bump dependabot/fetch-metadata from 3.0.0 to 3.1.0 in /hk-automerge-prs in the must-be-assigned-actions group across 1 directory
+          - `#1291 <https://github.com/ansys/actions/pull/1291>`_
+
+        * - Update click requirement from <9,>=8.3.2 to >=8.3.3,<9 in /check-vulnerabilities
+          - `#1295 <https://github.com/ansys/actions/pull/1295>`_
+
+        * - Bump fastcore from 1.12.40 to 1.12.42 in /hk-package-clean-except
+          - `#1296 <https://github.com/ansys/actions/pull/1296>`_
+
+        * - Bump fastcore from 1.12.40 to 1.12.42 in /hk-package-clean-untagged
+          - `#1297 <https://github.com/ansys/actions/pull/1297>`_
+
+        * - Bump fastcore from 1.12.42 to 1.12.43 in /hk-package-clean-except
+          - `#1299 <https://github.com/ansys/actions/pull/1299>`_
+
+        * - Bump packaging from 26.1 to 26.2 in /hk-package-clean-except
+          - `#1300 <https://github.com/ansys/actions/pull/1300>`_
+
+        * - Bump fastcore from 1.12.42 to 1.12.43 in /hk-package-clean-untagged
+          - `#1301 <https://github.com/ansys/actions/pull/1301>`_
+
+        * - Bump packaging from 26.1 to 26.2 in /hk-package-clean-untagged
+          - `#1302 <https://github.com/ansys/actions/pull/1302>`_
+
+        * - Bump wcwidth from 0.6.0 to 0.7.0 in /check-licenses
+          - `#1307 <https://github.com/ansys/actions/pull/1307>`_
+
+        * - Bump fastcore from 1.12.43 to 1.12.44 in /hk-package-clean-except
+          - `#1308 <https://github.com/ansys/actions/pull/1308>`_
+
+        * - Bump fastcore from 1.12.43 to 1.12.44 in /hk-package-clean-untagged
+          - `#1309 <https://github.com/ansys/actions/pull/1309>`_
+
+
 `10.3.0 <https://github.com/ansys/actions/releases/tag/v10.3.0>`_ - April 29, 2026
 ==================================================================================
 
