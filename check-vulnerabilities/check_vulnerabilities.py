@@ -356,7 +356,11 @@ def generate_advisory_files():
         raise FileNotFoundError("bandit executable not found")
 
     if not os.path.exists("requirements-for-safety.txt"):
-        raise FileNotFoundError("Expected requirements-for-safety.txt not found.")
+        raise FileNotFoundError(
+            "Expected requirements-for-safety.txt not found. "
+            "This file is required for running the safety vulnerability check and should "
+            "contain the list of dependencies to scan."
+        )
 
     # Safety check - invoke the safety executable directly to avoid Safety reading
     # the parent process argv (a Safety 3.x bug when called via `python -m safety`)
