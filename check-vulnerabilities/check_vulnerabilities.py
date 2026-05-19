@@ -41,6 +41,7 @@ from github.AdvisoryVulnerability import (
     SimpleAdvisoryVulnerability,
     SimpleAdvisoryVulnerabilityPackage,
 )
+from requests.exceptions import SSLError
 
 TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
 PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
@@ -114,7 +115,15 @@ def check_vulnerabilities():
     g = github.Github(auth=github.Auth.Token(TOKEN))
 
     # Get the repository
-    repo = g.get_repo(REPOSITORY)
+    try:
+        repo = g.get_repo(REPOSITORY)
+    except SSLError as e:
+        raise RuntimeError(
+            "SSL error occurred while trying to access the repository. "
+            "If this error occured while running on a corporate network, "
+            "this may be due to a corporate SSL inspection proxy. "
+            "Ensure that REQUESTS_CA_BUNDLE is set correctly."
+        ) from e
 
     # Get the available security advisories
     existing_advisories = {}
@@ -365,7 +374,7 @@ def generate_advisory_files():
     # Safety check - invoke the safety executable directly to avoid Safety reading
     # the parent process argv (a Safety 3.x bug when called via `python -m safety`)
     try:
-        subprocess.run(
+        result = subprocess.run(
             [
                 safety_exe,
                 "check",
@@ -373,11 +382,32 @@ def generate_advisory_files():
                 "json",
                 "--save-json",
                 "info_safety.json",
+                "--policy-file",
+                ".safety-ignore.yml",
                 "-r",
                 "requirements-for-safety.txt",
             ],
             check=False,
+            capture_output=True,
+            text=True,
         )
+        if any(
+            "unable to reach the server" in msg
+            for msg in [result.stdout, result.stderr]
+        ):
+            raise RuntimeError(
+                "Safety could not reach the vulnerability database. "
+                "This typically happens on corporate networks where an SSL inspection proxy "
+                "intercepts HTTPS connections and presents its own certificate, which Python "
+                "does not trust by default. "
+                "To fix this, set REQUESTS_CA_BUNDLE to a combined CA bundle that includes "
+                "both the corporate root CA (exported as PEM from the OS certificate store) "
+                "and the standard certifi bundle. Setting it to the corporate CA alone is not "
+                "sufficient: it replaces certifi entirely, causing connections to domains not "
+                "intercepted by the proxy (e.g. api.github.com) to fail as well. "
+            )
+    except RuntimeError:
+        raise
     except Exception as e:
         print(f"Safety check warning: {e}")
     finally:
