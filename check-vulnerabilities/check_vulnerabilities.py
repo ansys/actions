@@ -52,6 +52,13 @@ ERROR_IF_NEW_ADVISORY = (
 )
 CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
 
+_SSL_CORPORATE_NETWORK_HINT = (
+    "On corporate networks, an SSL inspection proxy may intercept HTTPS connections "
+    "and present its own certificate, which the requests library does not trust by default "
+    "(it uses certifi's CA bundle). To fix this, set REQUESTS_CA_BUNDLE to a combined CA "
+    "bundle that includes both the corporate root CA and the standard certifi bundle."
+)
+
 
 def dict_hash(dictionary: Dict[str, Any]) -> str:
     """MD5 hash of a dictionary.
@@ -119,10 +126,11 @@ def check_vulnerabilities():
         repo = g.get_repo(REPOSITORY)
     except SSLError as e:
         raise RuntimeError(
-            "SSL error occurred while trying to access the repository. "
-            "If this error occured while running on a corporate network, "
-            "this may be due to a corporate SSL inspection proxy. "
-            "Ensure that REQUESTS_CA_BUNDLE is set correctly."
+            "SSL error occurred while trying to access the GitHub API. "
+            + _SSL_CORPORATE_NETWORK_HINT
+            + " Setting it to the corporate CA alone is not sufficient: it replaces "
+            + "certifi entirely, causing connections to domains not intercepted by "
+            + "the proxy to fail as well."
         ) from e
 
     # Get the available security advisories
@@ -396,15 +404,8 @@ def generate_advisory_files():
             for msg in [result.stdout, result.stderr]
         ):
             raise RuntimeError(
-                "Safety could not reach the vulnerability database. "
-                "This typically happens on corporate networks where an SSL inspection proxy "
-                "intercepts HTTPS connections and presents its own certificate, which Python "
-                "does not trust by default. "
-                "To fix this, set REQUESTS_CA_BUNDLE to a combined CA bundle that includes "
-                "both the corporate root CA (exported as PEM from the OS certificate store) "
-                "and the standard certifi bundle. Setting it to the corporate CA alone is not "
-                "sufficient: it replaces certifi entirely, causing connections to domains not "
-                "intercepted by the proxy (e.g. api.github.com) to fail as well. "
+                "Safety could not reach the vulnerability database (pyup.io). "
+                + _SSL_CORPORATE_NETWORK_HINT
             )
     except RuntimeError:
         raise
