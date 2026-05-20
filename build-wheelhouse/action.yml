@@ -149,6 +149,23 @@ inputs:
     required: false
     type: boolean
 
+  skip-python-setup:
+    description: |
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
+
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
+    required: false
+    default: false
+    type: boolean
+
 outputs:
 
   activate-venv:
@@ -169,12 +186,20 @@ runs:
         persist-credentials: false
 
     - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ inputs.skip-python-setup == 'false' }}
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
 
     - name: "Identify the build system"
       id: build-system
