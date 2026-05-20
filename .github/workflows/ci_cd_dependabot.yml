@@ -1,11 +1,7 @@
-# This workflow is necessary because dependabot's support for uv is not perfect. Relevant discussion:
-# https://github.com/dependabot/dependabot-core/issues/10478
-#
-# Also, to avoid unnecessary complications wrt requirements' installation when either uv or pip is being used in an
-# action, requirements.txt files are maintained along side uv.lock files and these requirements files
-# are also updated via this workflow.
+# This helps in syncing dependabot updates to pyproject.toml and uv.lock files (located in the
+# project root) with the corresponding requirements.txt files.
 
-name: fix uv lock file and update requirement.txt files
+name: Update requirement.txt files
 
 on:
   push:
@@ -23,8 +19,8 @@ concurrency:
 
 jobs:
 
-  update-lockfile-and-requirement-files:
-    name: Update lock file and requirement.txt files
+  update-requirement-files:
+    name: Update requirement.txt files
     permissions:
       contents: write # Needed to update files on the dependabot update branch
     runs-on: ubuntu-latest
@@ -43,10 +39,6 @@ jobs:
             provision-uv: true
             prune-uv-cache: false
 
-      - name: "Fix lockfile"
-        run: |
-          uv lock
-
       - name: "Update requirement.txt files"
         run: |
           echo "Directories containing requirements.txt:"
@@ -64,7 +56,7 @@ jobs:
               uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes
           done
 
-      - name: Commit and push uv.lock if changed
+      - name: Commit and push requirements files if changed
         env:
           REF_NAME: ${{ github.ref_name }}
           BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
@@ -76,16 +68,10 @@ jobs:
 
           # Exit if there are no changes to commit
           if git diff --quiet --exit-code; then
-            echo "No changes to commit."
+            echo "No updates to requirements files detected, no changes to commit."
             exit 0
-          fi
-
-          # Check if uv.lock was modified or created
-          if git diff --quiet --exit-code uv.lock; then
-              echo "uv.lock is up-to-date, adding only requirements files' updates"
-              git commit -am "fix: update requirements files [skip ci]"
           else
-              echo "uv.lock changed, adding updates to lock file and requirements files."
-              git commit -am "fix: update lock file and requirements files [skip ci]"
+            echo "Requirements files update detected, preparing to commit."
+            git commit -am "fix: update requirements files [skip ci]"
           fi
           git push origin "HEAD:${REF_NAME}"
