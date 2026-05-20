@@ -1,3 +1,71 @@
+# This project file exists solely for two reasons: managing the python package dependencies for each action; and
+# specifying the towncrier configuration
+
+[project]
+name = "ansys-actions-ci-dependencies"
+version = "10.4.dev0"
+requires-python = ">=3.10"
+
+[dependency-groups]
+build-library = [
+    "build",
+    "twine",
+]
+build-wheelhouse = [
+    "build",
+    "wheel",
+]
+check-licenses = [
+    "pip-licenses",
+    "prettytable",
+    "wcwidth",
+]
+check-vulnerabilities = [
+    "bandit>=1.9.4,<2",
+    "click>=8.3.3,<9",
+    "pygithub>=2.9.1,<3",
+    "safety>=3.7.0,<4",
+]
+code-style = [
+    "pre-commit",
+    "prek",
+]
+doc-changelog = [
+    "tomlkit",
+    "towncrier",
+]
+doc-deploy-changelog = [
+    "tomlkit",
+    "towncrier",
+]
+doc-deploy-stable = [
+    "packaging",
+]
+doc-style = [
+    "docutils",
+    "tomlkit",
+]
+hk-package-clean-except = [
+    "fastcore",
+    "ghapi",
+    "packaging",
+]
+hk-package-clean-untagged = [
+    "fastcore",
+    "ghapi",
+    "packaging",
+]
+release-github = [
+    "pypandoc-binary",
+    "tomlkit",
+]
+release-pypi = [
+    "twine",
+]
+tests-pytest = [
+    "pytest-randomly",
+]
+
 [tool.towncrier]
 package = "ansys.actions.core"
 package_dir  = ".ci/ansys-actions/src"
@@ -47,4 +115,3 @@ showcontent = true
 directory = "test"
 name = "Test"
 showcontent = true
-

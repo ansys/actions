@@ -184,17 +184,17 @@ runs:
           fi
         fi
 
-    - name: "Install tomlkit"
+    - name: "Install tomlkit and docutils"
       shell: bash
       env:
        TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
       run: |
-        python -m pip install --upgrade pip tomlkit==${TOMLKIT_VERSION}
-
-    - name: "Install docutils"
-      shell: bash
-      run: |
-        python -m pip install --upgrade docutils
+        python -m pip install --upgrade pip
+        if [[ "${TOMLKIT_VERSION}" == "0.14.0" ]]; then
+          python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+        else
+          python -m pip install tomlkit==${TOMLKIT_VERSION} docutils
+        fi
 
     - name: "Get towncrier directory"
       shell: python

@@ -449,8 +449,13 @@ runs:
         PYPANDOC_BINARY_VERSION: ${{ inputs.pypandoc-binary-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip tomlkit=="$TOMLKIT_VERSION"
-        ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
+        ${INSTALL_COMMAND} --upgrade pip
+        if [[ "${PYPANDOC_BINARY_VERSION}" == "1.15" && "${TOMLKIT_VERSION}" == "0.14.0" ]]; then
+          ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
+        else
+          ${INSTALL_COMMAND} tomlkit=="$TOMLKIT_VERSION"
+          ${INSTALL_COMMAND} pypandoc-binary=="$PYPANDOC_BINARY_VERSION"
+        fi
 
     - name: "Filter SBOM or wheelhouse files (if needed)"
       if: inputs.dist-filter != ''
