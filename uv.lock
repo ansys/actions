@@ -89,57 +89,57 @@ tests-pytest = [
 
 [package.metadata.requires-dev]
 build-library = [
-    { name = "build" },
-    { name = "twine" },
+    { name = "build", specifier = "<=1.5.0" },
+    { name = "twine", specifier = "<=6.2.0" },
 ]
 build-wheelhouse = [
-    { name = "build" },
-    { name = "wheel" },
+    { name = "build", specifier = "<=1.5.0" },
+    { name = "wheel", specifier = "<=0.47.0" },
 ]
 check-licenses = [
-    { name = "pip-licenses" },
-    { name = "prettytable" },
-    { name = "wcwidth" },
+    { name = "pip-licenses", specifier = "<=5.5.5" },
+    { name = "prettytable", specifier = "<=3.17.0" },
+    { name = "wcwidth", specifier = "<=0.7.0" },
 ]
 check-vulnerabilities = [
-    { name = "bandit", specifier = ">=1.9.4,<2" },
-    { name = "click", specifier = ">=8.3.3,<9" },
-    { name = "pygithub", specifier = ">=2.9.1,<3" },
-    { name = "safety", specifier = ">=3.7.0,<4" },
+    { name = "bandit", specifier = "<=1.9.4" },
+    { name = "click", specifier = "<=8.4.0" },
+    { name = "pygithub", specifier = "<=2.9.1" },
+    { name = "safety", specifier = "<=3.7.0" },
 ]
 code-style = [
-    { name = "pre-commit" },
-    { name = "prek" },
+    { name = "pre-commit", specifier = "<=4.6.0" },
+    { name = "prek", specifier = "<=0.4.1" },
 ]
 doc-changelog = [
-    { name = "tomlkit" },
-    { name = "towncrier" },
+    { name = "tomlkit", specifier = "<=0.15.0" },
+    { name = "towncrier", specifier = "<=25.8.0" },
 ]
 doc-deploy-changelog = [
-    { name = "tomlkit" },
-    { name = "towncrier" },
+    { name = "tomlkit", specifier = "<=0.15.0" },
+    { name = "towncrier", specifier = "<=25.8.0" },
 ]
-doc-deploy-stable = [{ name = "packaging" }]
+doc-deploy-stable = [{ name = "packaging", specifier = "<=26.2" }]
 doc-style = [
-    { name = "docutils" },
-    { name = "tomlkit" },
+    { name = "docutils", specifier = "<=0.22.4" },
+    { name = "tomlkit", specifier = "<=0.15.0" },
 ]
 hk-package-clean-except = [
-    { name = "fastcore" },
-    { name = "ghapi" },
-    { name = "packaging" },
+    { name = "fastcore", specifier = "<=1.13.2" },
+    { name = "ghapi", specifier = "<=1.0.13" },
+    { name = "packaging", specifier = "<=26.2" },
 ]
 hk-package-clean-untagged = [
-    { name = "fastcore" },
-    { name = "ghapi" },
-    { name = "packaging" },
+    { name = "fastcore", specifier = "<=1.13.2" },
+    { name = "ghapi", specifier = "<=1.0.13" },
+    { name = "packaging", specifier = "<=26.2" },
 ]
 release-github = [
-    { name = "pypandoc-binary" },
-    { name = "tomlkit" },
+    { name = "pypandoc-binary", specifier = "<=1.17" },
+    { name = "tomlkit", specifier = "<=0.15.0" },
 ]
-release-pypi = [{ name = "twine" }]
-tests-pytest = [{ name = "pytest-randomly" }]
+release-pypi = [{ name = "twine", specifier = "<=6.2.0" }]
+tests-pytest = [{ name = "pytest-randomly", specifier = "<=4.1.0" }]
 
 [[package]]
 name = "anyio"
