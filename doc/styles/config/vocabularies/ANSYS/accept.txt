@@ -2,6 +2,7 @@ Ansys
 ansys
 automerge
 Chocolatey
+CA
 CI
 clr_loader
 [Cc]ookiecutter
