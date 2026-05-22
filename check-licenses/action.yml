@@ -277,18 +277,17 @@ runs:
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        SKIP_INSTALL: ${{ inputs.skip-install }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
-        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
           grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
             poetry add "${line//\'/\"}" --lock
           done
           poetry install
-        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install --no-managed-python -r ${GITHUB_ACTION_PATH}/requirements.txt
         else
-          python -m pip install -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
+          $INSTALL_COMMAND -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
         fi
 
     - name: "Check if specific target is requested"

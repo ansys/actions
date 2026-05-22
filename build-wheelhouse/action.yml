@@ -417,10 +417,8 @@ runs:
             poetry add "${line//\'/\"}" --lock
           done
           poetry install
-        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install --no-managed-python -r ${GITHUB_ACTION_PATH}/requirements.txt
         else
-          python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+          $INSTALL_COMMAND -r ${GITHUB_ACTION_PATH}/requirements.txt
         fi
 
     - name: "Generate the wheelhouse"

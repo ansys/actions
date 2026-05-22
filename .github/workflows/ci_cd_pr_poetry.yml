@@ -83,6 +83,7 @@ jobs:
           working-directory: .ci/${{ env.LIBRARY_NAME }}
           attest-provenance: true
           checkout: false
+          install-build-and-wheel: true
 
   test-build-library-poetry:
     name: "Test build-library action using ansys-actions-poetry package"
@@ -142,8 +143,6 @@ jobs:
             library: pytwin
           - name: pyacp
             library: ansys-acp-core
-          - name: pygranta
-            library: pygranta
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false
@@ -174,6 +173,7 @@ jobs:
           operating-system: ${{ matrix.os }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
+          install-build-and-wheel: true
 
   test-build-library-poetry-projects:
     name: "Test build-library action for ${{ matrix.repository.name }} project"
@@ -186,8 +186,6 @@ jobs:
             library: pytwin
           - name: pyacp
             library: ansys-acp-core
-          - name: pymechanical
-            library: ansys-mechanical-core
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false
@@ -227,8 +225,10 @@ jobs:
         repository:
           - name: pytwin
             library: pytwin
-          - name: pymechanical
-            library: ansys-mechanical-core
+          - name: pyacp
+            library: ansys-acp-core
+          - name: pydpf-composites
+            library: ansys-dpf-composites
       fail-fast: false
     steps:
 
@@ -263,8 +263,6 @@ jobs:
             library: pytwin
           - name: pyacp
             library: ansys-acp-core
-          - name: pymechanical
-            library: ansys-mechanical-core
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false
