@@ -247,6 +247,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
           checkout: false
+          skip-install: false
 
   test-doc-style-poetry-projects:
     name: "Test doc-style action for ${{ matrix.repository.name }} project"
