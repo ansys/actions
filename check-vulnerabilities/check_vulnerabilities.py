@@ -41,6 +41,7 @@ from github.AdvisoryVulnerability import (
     SimpleAdvisoryVulnerability,
     SimpleAdvisoryVulnerabilityPackage,
 )
+from requests.exceptions import SSLError
 
 TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
 PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
@@ -50,6 +51,13 @@ ERROR_IF_NEW_ADVISORY = (
     True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 )
 CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
+
+_SSL_CORPORATE_NETWORK_HINT = (
+    "On corporate networks, an SSL inspection proxy may intercept HTTPS connections "
+    "and present its own certificate, which the requests library does not trust by default "
+    "(it uses certifi's CA bundle). To fix this, set REQUESTS_CA_BUNDLE to a combined CA "
+    "bundle that includes both the corporate root CA and the standard certifi bundle."
+)
 
 
 def dict_hash(dictionary: Dict[str, Any]) -> str:
@@ -114,7 +122,16 @@ def check_vulnerabilities():
     g = github.Github(auth=github.Auth.Token(TOKEN))
 
     # Get the repository
-    repo = g.get_repo(REPOSITORY)
+    try:
+        repo = g.get_repo(REPOSITORY)
+    except SSLError as e:
+        raise RuntimeError(
+            "SSL error occurred while trying to access the GitHub API. "
+            + _SSL_CORPORATE_NETWORK_HINT
+            + " Setting it to the corporate CA alone is not sufficient: it replaces "
+            + "certifi entirely, causing connections to domains not intercepted by "
+            + "the proxy to fail as well."
+        ) from e
 
     # Get the available security advisories
     existing_advisories = {}
@@ -355,10 +372,17 @@ def generate_advisory_files():
     if bandit_exe is None:
         raise FileNotFoundError("bandit executable not found")
 
+    if not os.path.exists("requirements-for-safety.txt"):
+        raise FileNotFoundError(
+            "Expected requirements-for-safety.txt not found. "
+            "This file is required for running the safety vulnerability check and should "
+            "contain the list of dependencies to scan."
+        )
+
     # Safety check - invoke the safety executable directly to avoid Safety reading
     # the parent process argv (a Safety 3.x bug when called via `python -m safety`)
     try:
-        subprocess.run(
+        result = subprocess.run(
             [
                 safety_exe,
                 "check",
@@ -366,9 +390,25 @@ def generate_advisory_files():
                 "json",
                 "--save-json",
                 "info_safety.json",
+                "--policy-file",
+                ".safety-ignore.yml",
+                "-r",
+                "requirements-for-safety.txt",
             ],
             check=False,
+            capture_output=True,
+            text=True,
         )
+        if any(
+            "unable to reach the server" in msg
+            for msg in [result.stdout, result.stderr]
+        ):
+            raise RuntimeError(
+                "Safety could not reach the vulnerability database (pyup.io). "
+                + _SSL_CORPORATE_NETWORK_HINT
+            )
+    except RuntimeError:
+        raise
     except Exception as e:
         print(f"Safety check warning: {e}")
     finally:
