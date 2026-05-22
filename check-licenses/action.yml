@@ -142,7 +142,7 @@ runs:
 
     - name: Check virutal environment existence (if needed)
       if: ${{ inputs.skip-install == 'true' && inputs.activate-venv == '' }}
-      uses: ansys/actions/_logging@v10.3.1
+      uses: ansys/actions/_logging@v10.3.2
       with:
         level: "ERROR"
         message: >
@@ -152,7 +152,7 @@ runs:
 
     - name: Warn about input combination
       if: ${{ inputs.skip-install == 'false' && inputs.activate-venv != '' }}
-      uses: ansys/actions/_logging@v10.3.1
+      uses: ansys/actions/_logging@v10.3.2
       with:
         level: "WARNING"
         message: >
@@ -171,7 +171,7 @@ runs:
         fi
 
     - name: Break if Python version is too old
-      uses: ansys/actions/_logging@v10.3.1
+      uses: ansys/actions/_logging@v10.3.2
       if: steps.check-python-version.outputs.PYTHON_TOO_OLD == 'true'
       with:
         level: "ERROR"
@@ -180,7 +180,7 @@ runs:
           This package requires Python 3.10 or higher.
 
     - name: Announce the switch to original pip-licenses package
-      uses: ansys/actions/_logging@v10.3.1
+      uses: ansys/actions/_logging@v10.3.2
       with:
         level: "INFO"
         message: >
@@ -195,7 +195,7 @@ runs:
 
     - name: "Set up Python"
       if: inputs.skip-install == 'false'
-      uses: ansys/actions/_setup-python@v10.3.1
+      uses: ansys/actions/_setup-python@v10.3.2
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -357,7 +357,7 @@ runs:
         echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> ${GITHUB_OUTPUT}
 
     - name: Log ignored packages and accepted licenses
-      uses: ansys/actions/_logging@v10.3.1
+      uses: ansys/actions/_logging@v10.3.2
       with:
         level: "INFO"
         message: |
