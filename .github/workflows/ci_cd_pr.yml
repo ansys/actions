@@ -253,7 +253,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
-          dependencies: 'pandoc texlive-science'
+          dependencies: 'pandoc'
           # sphinxopts: '-j 1 -W --color'
           # TODO: Re-enable warnings as errors after numpydoc issues are fixed
           sphinxopts: '-j 1'
