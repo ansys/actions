@@ -8,62 +8,62 @@ requires-python = ">=3.10"
 
 [dependency-groups]
 build-library = [
-    "build<=1.5.0",
-    "twine<=6.2.0",
+    "build<=1.5",
+    "twine<=6.2",
 ]
 build-wheelhouse = [
-    "build<=1.5.0",
-    "wheel<=0.47.0",
+    "build<=1.5",
+    "wheel<=0.47",
 ]
 check-licenses = [
-    "pip-licenses<=5.5.5",
-    "prettytable<=3.17.0",
-    "wcwidth<=0.7.0",
+    "pip-licenses<=5.6",
+    "prettytable<=3.17",
+    "wcwidth<=0.7",
 ]
 check-vulnerabilities = [
-    "bandit>=1.9.4,<2",
-    "click>=8.3.3,<9",
-    "pygithub>=2.9.1,<3",
-    "safety>=3.7.0,<4",
+    "bandit>=1.9,<2",
+    "click>=8.3,<9",
+    "pygithub>=2.9,<3",
+    "safety>=3.7,<4",
 ]
 code-style = [
-    "pre-commit<=4.6.0",
-    "prek<=0.4.1",
+    "pre-commit<=4.6",
+    "prek<=0.5",
 ]
 doc-changelog = [
-    "tomlkit<=0.15.0",
-    "towncrier<=25.8.0",
+    "tomlkit<=0.15",
+    "towncrier<=25.8",
 ]
 doc-deploy-changelog = [
-    "tomlkit<=0.15.0",
-    "towncrier<=25.8.0",
+    "tomlkit<=0.15",
+    "towncrier<=25.8",
 ]
 doc-deploy-stable = [
     "packaging<=26.2",
 ]
 doc-style = [
-    "docutils<=0.22.4",
-    "tomlkit<=0.15.0",
+    "docutils<=0.23",
+    "tomlkit<=0.15",
 ]
 hk-package-clean-except = [
-    "fastcore<=1.13.2",
-    "ghapi<=1.0.13",
+    "fastcore<=1.14",
+    "ghapi<=1.1",
     "packaging<=26.2",
 ]
 hk-package-clean-untagged = [
-    "fastcore<=1.13.2",
-    "ghapi<=1.0.13",
+    "fastcore<=1.14",
+    "ghapi<=1.1",
     "packaging<=26.2",
 ]
 release-github = [
     "pypandoc-binary<=1.17",
-    "tomlkit<=0.15.0",
+    "tomlkit<=0.15",
 ]
 release-pypi = [
-    "twine<=6.2.0",
+    "twine<=6.2",
 ]
 tests-pytest = [
-    "pytest-randomly<=4.1.0",
+    "pytest-randomly<=4.1",
 ]
 
 [tool.towncrier]
