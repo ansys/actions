@@ -286,13 +286,21 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         if [[ "${PRE_COMMIT_VERSION}" == "3.8.0" ]]; then
-          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
+              poetry add "${line//\'/\"}" --lock
+            done
+            poetry install
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             uv pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
           else
             pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
           fi
         else
-          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            poetry add "pre-commit==${PRE_COMMIT_VERSION}" --lock
+            poetry install
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
           else
             python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
@@ -323,13 +331,21 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         if [[ "${PREK_VERSION}" == "0.3.2" ]]; then
-          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
+              poetry add "${line//\'/\"}" --lock
+            done
+            poetry install
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             uv pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
           else
             pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
           fi
         else
-          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            poetry add "prek==${PREK_VERSION}" --lock
+            poetry install
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             uv pip install "prek==${PREK_VERSION}"
           else
             python -m pip install "prek==${PREK_VERSION}"
