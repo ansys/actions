@@ -225,8 +225,6 @@ jobs:
         repository:
           - name: pytwin
             library: pytwin
-          - name: pydpf-composites
-            library: ansys-dpf-composites
       fail-fast: false
     steps:
 
