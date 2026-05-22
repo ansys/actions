@@ -260,6 +260,11 @@ runs:
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
 
+    - name: Install lm-math font package for MiKTeX
+      shell: powershell
+      run: |
+        mpm --install lm-math
+
     # ------------------------------------------------------------------------
 
     - name: Check Quarto Version
