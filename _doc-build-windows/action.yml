@@ -260,6 +260,12 @@ runs:
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
 
+    - name: Install additional packages for MiKTeX (known to be required for Quarto cheatsheet)
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: powershell
+      run: |
+        mpm --install lm-math
+
     # ------------------------------------------------------------------------
 
     - name: Check Quarto Version
