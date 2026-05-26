@@ -328,7 +328,7 @@ jobs:
       - name: Run Ansys documentation building action
         uses: ./actions/doc-build
         with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          python-version: '3.13' # TODO: Update to env.MAIN_PYTHON_VERSION once this library supports 3.14
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
           dependencies: 'pandoc'
