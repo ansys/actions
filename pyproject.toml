@@ -22,7 +22,7 @@ check-licenses = [
 ]
 check-vulnerabilities = [
     "bandit>=1.9,<2",
-    "click>=8.3,<9",
+    "click>=8.4,<9",
     "pygithub>=2.9,<3",
     "safety>=3.7,<4",
 ]

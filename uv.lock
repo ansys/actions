@@ -103,7 +103,7 @@ check-licenses = [
 ]
 check-vulnerabilities = [
     { name = "bandit", specifier = ">=1.9,<2" },
-    { name = "click", specifier = ">=8.3,<9" },
+    { name = "click", specifier = ">=8.4,<9" },
     { name = "pygithub", specifier = ">=2.9,<3" },
     { name = "safety", specifier = ">=3.7,<4" },
 ]
