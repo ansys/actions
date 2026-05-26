@@ -81,10 +81,10 @@ inputs:
     required: false
     type: string
 
-  tomlkit-version:
+  tomlkit-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomlkit version used for reading the towncrier configuration.
-    default: '0.14.0'
+      DEPRECATED ARGUMENT. Tomlkit version used for reading the towncrier configuration.
+    default: ''
     required: false
     type: string
 
@@ -136,6 +136,13 @@ runs:
           This action now uses the ``tomlkit`` library instead. Please use the
           ``tomlkit-version`` input accordingly.
 
+    - uses: ansys/actions/_logging@main
+      if: inputs.tomlkit-version != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``tomlkit-version`` input is deprecated and will be removed in v12.
+
     - name: "Install Git and clone project"
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
@@ -186,15 +193,9 @@ runs:
 
     - name: "Install tomlkit and docutils"
       shell: bash
-      env:
-       TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
       run: |
         python -m pip install --upgrade pip
-        if [[ "${TOMLKIT_VERSION}" == "0.14.0" ]]; then
-          python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
-        else
-          python -m pip install tomlkit==${TOMLKIT_VERSION} docutils
-        fi
+        python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Get towncrier directory"
       shell: python

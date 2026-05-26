@@ -71,18 +71,18 @@ inputs:
     default: true
     type: boolean
 
-  pre-commit-version:
+  pre-commit-version:  # TODO: Remove deprecated input in v12
     description: |
-      The version of pre-commit to install. Only used when ``use-prek`` is ``false``.
+      DEPRECATED ARGUMENT. The version of pre-commit to install. Only used when ``use-prek`` is ``false``.
     required: false
-    default: '4.6.0'
+    default: ''
     type: string
 
-  prek-version:
+  prek-version:  # TODO: Remove deprecated input in v12
     description: |
-      The version of prek to install. Only used when ``use-prek`` is ``true``.
+      DEPRECATED ARGUMENT. The version of prek to install. Only used when ``use-prek`` is ``true``.
     required: false
-    default: '0.4.1'
+    default: ''
     type: string
 
   docker-lint:
@@ -151,6 +151,14 @@ runs:
       if: ${{ inputs.checkout == 'true' }}
 
     # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: inputs.pre-commit-version != '' || inputs.prek-version != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``pre-commit-version`` and ``prek-version`` inputs are deprecated and will be
+          removed in v12.
 
     - uses: ansys/actions/_logging@main
       with:
@@ -276,36 +284,23 @@ runs:
           python -m pip install .
         fi
 
-    - name: "Install pre-commit v${{ inputs.pre-commit-version }}"
-      if: inputs.use-prek == 'false'
+    - name: "Install action dependencies"
       shell: bash
       env:
-        PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         SKIP_INSTALL: ${{ inputs.skip-install }}
       run: |
         ${ACTIVATE_VENV}
-        if [[ "${PRE_COMMIT_VERSION}" == "4.6.0" ]]; then
-          if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
-              poetry add "${line//\'/\"}" --lock
-            done
-            poetry install
-          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
-          else
-            pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
-          fi
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
+          grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
+            poetry add "${line//\'/\"}" --lock
+          done
+          poetry install
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
         else
-          if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            poetry add "pre-commit==${PRE_COMMIT_VERSION}" --lock
-            poetry install
-          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install "pre-commit==${PRE_COMMIT_VERSION}"
-          else
-            python -m pip install "pre-commit==${PRE_COMMIT_VERSION}"
-          fi
+          pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
         fi
 
     - name: "Run pre-commit"
@@ -320,38 +315,6 @@ runs:
           pre-commit run --all-files --show-diff-on-failure
         else
           pre-commit run --all-files
-        fi
-
-    - name: "Install prek v${{ inputs.prek-version }}"
-      if: inputs.use-prek == 'true'
-      shell: bash
-      env:
-        PREK_VERSION: ${{ inputs.prek-version }}
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
-        SKIP_INSTALL: ${{ inputs.skip-install }}
-      run: |
-        ${ACTIVATE_VENV}
-        if [[ "${PREK_VERSION}" == "0.4.1" ]]; then
-          if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
-              poetry add "${line//\'/\"}" --lock
-            done
-            poetry install
-          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
-          else
-            pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
-          fi
-        else
-          if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            poetry add "prek==${PREK_VERSION}" --lock
-            poetry install
-          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install "prek==${PREK_VERSION}"
-          else
-            python -m pip install "prek==${PREK_VERSION}"
-          fi
         fi
 
     - name: "Run prek"

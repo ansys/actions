@@ -115,10 +115,10 @@ inputs:
     required: false
     type: string
 
-  towncrier-version:
+  towncrier-version:  # TODO: Remove deprecated input in v12
     description: |
-      Towncrier version used for updating the CHANGELOG file.
-    default: '24.8.0'
+      DEPRECATED ARGUMENT. Towncrier version used for updating the CHANGELOG file.
+    default: ''
     required: false
     type: string
 
@@ -132,14 +132,14 @@ inputs:
   tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       Tomli version used for retrieving the towncrier directory.
-    default: '2.2.1'
+    default: ''
     required: false
     type: string
 
-  tomlkit-version:
+  tomlkit-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomlkit version used for reading and writing the towncrier configuration.
-    default: '0.14.0'
+      DEPRECATED ARGUMENT. Tomlkit version used for reading and writing the towncrier configuration.
+    default: ''
     required: false
     type: string
 
@@ -212,6 +212,14 @@ runs:
           want to use a specific version of ``tomlkit``, please set the ``tomlkit-version`` input
           accordingly.
 
+    - uses: ansys/actions/_logging@main
+      if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
+      with:
+        level: "WARNING"
+        message: >
+          The ``towncrier-version`` and ``tomlkit-version`` inputs are deprecated and will be
+          removed in v12.
+
     - name: "Install Git and clone project"
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
@@ -245,17 +253,10 @@ runs:
         fi
 
     - name: "Install towncrier, tomlkit, and the project"
-      env:
-        TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        if [[ "${TOWNCRIER_VERSION}" == "24.8.0" && "${TOMLKIT_VERSION}" == "0.14.0" ]]; then
-          python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
-        else
-          python -m pip install towncrier=="${TOWNCRIER_VERSION}" tomlkit=="${TOMLKIT_VERSION}"
-        fi
+        python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Get towncrier directory and project name"
       shell: python
