@@ -164,7 +164,7 @@ inputs:
     description: |
       Python version used for various steps of the action
     required: false
-    default: '3.13'
+    default: '3.14'
     type: string
 
   use-python-cache:
