@@ -130,3 +130,22 @@ updates:
           - dependabot/fetch-metadata
         exclude-patterns:
           - "ansys/actions*"
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 7 # semver-* options are not applicable for pre-commit
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys/pre-commit-hooks/*"
+    labels:
+      - "dependencies:pre-commit"
+    commit-message:
+      prefix: "build(pre-commit)"
+    groups:
+      pre-commit-hooks:
+        patterns:
+          - "*"
