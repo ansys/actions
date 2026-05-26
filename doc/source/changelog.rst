@@ -9,6 +9,93 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.3.2 <https://github.com/ansys/actions/releases/tag/v10.3.2>`_ - May 22, 2026
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow skipping python setup
+          - `#1310 <https://github.com/ansys/actions/pull/1310>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update input tomli-version default value to empty string
+          - `#1325 <https://github.com/ansys/actions/pull/1325>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update local usage of check vulnerabilities
+          - `#1313 <https://github.com/ansys/actions/pull/1313>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump fastcore from 1.12.44 to 1.12.45 in /hk-package-clean-except
+          - `#1315 <https://github.com/ansys/actions/pull/1315>`_
+
+        * - Bump fastcore from 1.12.44 to 1.12.45 in /hk-package-clean-untagged
+          - `#1316 <https://github.com/ansys/actions/pull/1316>`_
+
+        * - Bump fastcore from 1.12.45 to 1.12.47 in /hk-package-clean-except
+          - `#1318 <https://github.com/ansys/actions/pull/1318>`_
+
+        * - Bump fastcore from 1.12.45 to 1.12.47 in /hk-package-clean-untagged
+          - `#1319 <https://github.com/ansys/actions/pull/1319>`_
+
+        * - Bump fastcore from 1.12.47 to 1.13.0 in /hk-package-clean-except
+          - `#1322 <https://github.com/ansys/actions/pull/1322>`_
+
+        * - Bump fastcore from 1.12.47 to 1.13.0 in /hk-package-clean-untagged
+          - `#1323 <https://github.com/ansys/actions/pull/1323>`_
+
+        * - Bump the doc-related-actions group across 3 directories with 1 update
+          - `#1324 <https://github.com/ansys/actions/pull/1324>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump Syft version into v1.43.0
+          - `#1286 <https://github.com/ansys/actions/pull/1286>`_
+
+        * - Ignoring cookiecutter from vale
+          - `#1294 <https://github.com/ansys/actions/pull/1294>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Check-vulnerabilities to use sub process and avoid sys.argv manipulation
+          - `#1262 <https://github.com/ansys/actions/pull/1262>`_
+
+
 `10.3.1 <https://github.com/ansys/actions/releases/tag/v10.3.1>`_ - May 13, 2026
 ================================================================================
 
