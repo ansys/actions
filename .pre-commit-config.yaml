@@ -12,7 +12,7 @@ repos:
     args: ["--line-length", "88", "--profile", "black"]
 
 - repo: https://github.com/PyCQA/flake8
-  rev: d93590f5be797aabb60e3b09f2f52dddb02f349f  # frozen: 7.3.0
+  rev: c48217e1fc006c2dddd14df54e83b67da15de5cd  # frozen: 7.3.0
   hooks:
   - id: flake8
 
@@ -27,7 +27,7 @@ repos:
 
 # Validate our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 943377262562a12b57292fc98fabd7dbf81451fe  # frozen: 0.37.2
+  rev: f805888065fdb6162e1f800e50bb9460cbd223d6  # frozen: 0.37.2
   hooks:
     - id: check-github-workflows
 
