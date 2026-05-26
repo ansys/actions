@@ -126,6 +126,8 @@ updates:
       interval: "daily"
     cooldown:
       default-days: 7 # semver-* options are not applicable for pre-commit
+      include:
+        - "*"  # Include all dependencies in cooldown
       exclude:
         - "ansys/pre-commit-hooks/*"
     labels:
