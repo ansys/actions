@@ -27,7 +27,7 @@ updates:
     exclude-paths:
       - "**/requirements.txt"
     commit-message:
-      prefix: "build(actions-dependencies)"
+      prefix: "build(uv)"
     labels:
       - "dependencies:requirements"
 
