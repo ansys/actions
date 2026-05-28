@@ -77,7 +77,6 @@ jobs:
 
       - name: Commit and push requirements files if changed
         env:
-          REF_NAME: ${{ github.ref_name }}
           BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
           BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
         run: |
