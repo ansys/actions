@@ -402,33 +402,26 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generate the content for the announcement file. Place a copy of this
-          file in each one of outdated stable versions.
+          Update only the managed latest-stable announcement block and keep any
+          existing custom announcement content in outdated stable versions.
 
-    - name: "Generate the template content for the 'announcement.html' file"
-      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
-      shell: bash
-      run: |
-        cat > announcement.html <<'EOF'
-          <p>
-            You are not viewing the most recent version of this documentation.
-            The latest stable release is <a href="STABLE_URL">LATEST_STABLE_VERSION</a>
-          </p>
-        EOF
-
-    - name: "Render the 'announcement.html' template with the desired stable version"
+    - name: "Generate managed content for the latest-stable 'announcement.html' block"
       if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       env:
         LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
         CNAME: ${{ inputs.cname }}
       shell: bash
       run: |
-        latest_stable_version=${LATEST_STABLE_VERSION}
-        stable_url="https://${CNAME}/version/stable/"
-        sed -i "s|LATEST_STABLE_VERSION|$latest_stable_version|g" announcement.html
-        sed -i "s|STABLE_URL|$stable_url|g" announcement.html
+        cat > announcement-managed.html <<EOF
+        <!-- BEGIN ANSYS_LATEST_STABLE_ANNOUNCEMENT -->
+        <p style="background-color: #F5B0AE; width: 100%; padding: 1rem 0rem;">
+          You are not viewing the most recent version of this documentation.
+          The latest stable release is <a href="https://${CNAME}/version/stable/">${LATEST_STABLE_VERSION}</a>.
+        </p>
+        <!-- END ANSYS_LATEST_STABLE_ANNOUNCEMENT -->
+        EOF
 
-    - name: "Place the 'announcement.html' file in every public folder of all the outdated versions"
+    - name: "Update each outdated version 'announcement.html' while preserving existing custom content"
       if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       shell: bash
       env:
@@ -438,14 +431,34 @@ runs:
                           grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
                           grep -v "${LATEST_STABLE_VERSION}" | \
                           sort -r --version-sort ); do
-            find version/$version_dir -type d -not \( -path "*/_*" -type d -prune \) -exec cp announcement.html {} \;
+            find version/$version_dir -type d -not \( -path "*/_*" -type d -prune \) | while read -r public_dir; do
+              announcement_file="${public_dir}/announcement.html"
+
+              if [[ -f "$announcement_file" ]]; then
+                tmp_file=$(mktemp)
+                awk '
+                  /<!-- BEGIN ANSYS_LATEST_STABLE_ANNOUNCEMENT -->/ { skip=1; next }
+                  /<!-- END ANSYS_LATEST_STABLE_ANNOUNCEMENT -->/ { skip=0; next }
+                  skip != 1 { print }
+                ' "$announcement_file" > "$tmp_file"
+
+                {
+                  cat "$tmp_file"
+                  echo
+                  cat announcement-managed.html
+                } > "$announcement_file"
+                rm -f "$tmp_file"
+              else
+                cp announcement-managed.html "$announcement_file"
+              fi
+            done
         done
 
-    - name: "Delete the 'announcement.html' file used as template"
+    - name: "Delete the temporary managed announcement block file"
       if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       shell: bash
       run: |
-        rm -rf announcement.html
+        rm -f announcement-managed.html
 
     # ------------------------------------------------------------------------
 
