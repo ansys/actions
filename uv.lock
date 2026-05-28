@@ -45,8 +45,10 @@ check-vulnerabilities = [
     { name = "pygithub" },
     { name = "safety" },
 ]
-code-style = [
+code-style-pre-commit = [
     { name = "pre-commit" },
+]
+code-style-prek = [
     { name = "prek" },
 ]
 doc-changelog = [
@@ -107,10 +109,8 @@ check-vulnerabilities = [
     { name = "pygithub", specifier = ">=2.9,<3" },
     { name = "safety", specifier = ">=3.7,<4" },
 ]
-code-style = [
-    { name = "pre-commit", specifier = "<=4.6" },
-    { name = "prek", specifier = "<=0.5" },
-]
+code-style-pre-commit = [{ name = "pre-commit", specifier = "<=4.6" }]
+code-style-prek = [{ name = "prek", specifier = "<=0.5" }]
 doc-changelog = [
     { name = "tomlkit", specifier = "<=0.15" },
     { name = "towncrier", specifier = "<=25.8" },

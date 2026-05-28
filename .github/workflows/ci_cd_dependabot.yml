@@ -41,19 +41,38 @@ jobs:
 
       - name: "Update requirement.txt files"
         run: |
-          echo "Directories containing requirements.txt:"
-          echo "========================================"
+          echo "Directories containing requirements files:"
+          echo "==========================================="
 
+          # Process standard requirements.txt files
           find . -maxdepth 2 -type f -name "requirements.txt" -exec dirname {} \; | sort -u | while read dir; do
               # Remove leading ./
               dir_cleaned="${dir#./}"
               # Get the directory name without leading underscore for the group name
               group_name="${dir_cleaned#_}"
 
-              echo "  Processing: $dir_cleaned (group: $group_name)"
+              echo "  Processing: $dir_cleaned/requirements.txt (group: $group_name)"
 
               # Run uv export command
               uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes
+          done
+
+          # Process requirements-<suffix>.txt files (e.g., code-style/requirements-prek.txt)
+          find . -maxdepth 2 -type f -name "requirements-*.txt" | sort | while read file; do
+              # Remove leading ./
+              file_cleaned="${file#./}"
+              dir_cleaned="$(dirname "$file_cleaned")"
+              # Extract suffix from filename (e.g., "prek" from "requirements-prek.txt")
+              basename_file="$(basename "$file_cleaned")"
+              suffix="${basename_file#requirements-}"
+              suffix="${suffix%.txt}"
+              # Group name is dir (without underscore) + "-" + suffix
+              group_name="${dir_cleaned#_}-${suffix}"
+
+              echo "  Processing: $file_cleaned (group: $group_name)"
+
+              # Run uv export command
+              uv export --format requirements.txt --group "$group_name" --output-file "$file_cleaned" --no-hashes
           done
 
       - name: Commit and push requirements files if changed

@@ -4,7 +4,8 @@ updates:
     directories:
       - "/requirements"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "wednesday"
     cooldown:
       default-days: 7
       include:
@@ -19,13 +20,14 @@ updates:
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "wednesday"
     cooldown:
       default-days: 7
       include:
         - "*"  # Include all dependencies in cooldown
     exclude-paths:
-      - "**/requirements.txt"
+      - "**/requirements*.txt"
     commit-message:
       prefix: "build(uv)"
     labels:
@@ -134,7 +136,8 @@ updates:
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "wednesday"
     cooldown:
       default-days: 7 # semver-* options are not applicable for pre-commit
       include:

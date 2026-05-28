@@ -26,8 +26,10 @@ check-vulnerabilities = [
     "pygithub>=2.9,<3",
     "safety>=3.7,<4",
 ]
-code-style = [
+code-style-pre-commit = [
     "pre-commit<=4.6",
+]
+code-style-prek = [
     "prek<=0.5",
 ]
 doc-changelog = [
