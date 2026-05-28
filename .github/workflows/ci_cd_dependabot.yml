@@ -42,7 +42,7 @@ jobs:
       - name: "Update requirement.txt files"
         run: |
           echo "Directories containing requirements files:"
-          echo "==========================================="
+          echo "=========================================="
 
           # Process standard requirements.txt files
           find . -maxdepth 2 -type f -name "requirements.txt" -exec dirname {} \; | sort -u | while read dir; do
