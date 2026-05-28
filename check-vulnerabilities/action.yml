@@ -540,8 +540,20 @@ runs:
           echo "Using custom safety policy file: ${SAFETY_POLICY_FILE}"
         fi
 
-        # Run safety vulnerability checks
-        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+        # Run safety vulnerability checks and strip safety scan deprecation notes from the output
+        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt" | awk '
+        skipping && /\+==.*=+\+/ { skipping=0; next }
+        skipping { next }
+        /\+==.*=+\+/ {
+            if (buffering) { for (i=0;i<nb;i++) print buf[i] }
+            buf[0]=$0; nb=1; buffering=1; next
+        }
+        buffering && /^[[:space:]]*$/ { buf[nb++]=$0; next }
+        buffering && /DEPRECATED:.*has been DEPRECATED/ { buffering=0; skipping=1; next }
+        buffering { for (i=0;i<nb;i++) print buf[i]; buffering=0; print; next }
+        { print }
+        END { if (buffering) for (i=0;i<nb;i++) print buf[i] }
+        '
 
     - uses: ansys/actions/_logging@main
       with:
