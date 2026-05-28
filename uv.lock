@@ -26,8 +26,11 @@ version = "10.4.dev0"
 source = { virtual = "." }
 
 [package.dev-dependencies]
-build-library = [
+build-library-pip = [
     { name = "build" },
+    { name = "twine" },
+]
+build-library-uv = [
     { name = "twine" },
 ]
 build-wheelhouse = [
@@ -90,10 +93,11 @@ tests-pytest = [
 [package.metadata]
 
 [package.metadata.requires-dev]
-build-library = [
+build-library-pip = [
     { name = "build", specifier = "<=1.5" },
     { name = "twine", specifier = "<=6.2" },
 ]
+build-library-uv = [{ name = "twine", specifier = "<=6.2" }]
 build-wheelhouse = [
     { name = "build", specifier = "<=1.5" },
     { name = "wheel", specifier = "<=0.47" },

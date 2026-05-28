@@ -7,8 +7,11 @@ version = "10.4.dev0"
 requires-python = ">=3.10"
 
 [dependency-groups]
-build-library = [
+build-library-pip = [
     "build<=1.5",
+    "twine<=6.2",
+]
+build-library-uv = [
     "twine<=6.2",
 ]
 build-wheelhouse = [
