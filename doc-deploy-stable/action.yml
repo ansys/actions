@@ -413,12 +413,12 @@ runs:
       shell: bash
       run: |
         cat > announcement-managed.html <<EOF
-        <!-- BEGIN ANSYS_LATEST_STABLE_ANNOUNCEMENT -->
+        <!-- BEGIN PROJECT_LATEST_STABLE_ANNOUNCEMENT -->
         <p style="background-color: #F5B0AE; width: 100%; padding: 1rem 0rem;">
           You are not viewing the most recent version of this documentation.
           The latest stable release is <a href="https://${CNAME}/version/stable/">${LATEST_STABLE_VERSION}</a>.
         </p>
-        <!-- END ANSYS_LATEST_STABLE_ANNOUNCEMENT -->
+        <!-- END PROJECT_LATEST_STABLE_ANNOUNCEMENT -->
         EOF
 
     - name: "Update each outdated version 'announcement.html' while preserving existing custom content"
@@ -437,8 +437,8 @@ runs:
               if [[ -f "$announcement_file" ]]; then
                 tmp_file=$(mktemp)
                 awk '
-                  /<!-- BEGIN ANSYS_LATEST_STABLE_ANNOUNCEMENT -->/ { skip=1; next }
-                  /<!-- END ANSYS_LATEST_STABLE_ANNOUNCEMENT -->/ { skip=0; next }
+                  /<!-- BEGIN PROJECT_LATEST_STABLE_ANNOUNCEMENT -->/ { skip=1; next }
+                  /<!-- END PROJECT_LATEST_STABLE_ANNOUNCEMENT -->/ { skip=0; next }
                   skip != 1 { print }
                 ' "$announcement_file" > "$tmp_file"
 
