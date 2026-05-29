@@ -1,0 +1,95 @@
+# This helps in syncing dependabot updates to pyproject.toml and uv.lock files (located in the
+# project root) with the corresponding requirements.txt files.
+
+name: Update requirement.txt files
+
+on:
+  push:
+    branches:
+      - "dependabot/uv/**"
+
+env:
+  MAIN_PYTHON_VERSION: '3.14'
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  update-requirement-files:
+    name: Update requirement.txt files
+    permissions:
+      contents: write # Needed to update files on the dependabot update branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout dependabot branch"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          ref: ${{ github.ref }} # zizmor: ignore[artipacked] , credentials must be persisted in this case
+
+      - name: "Set up Python"
+        uses: ansys/actions/_setup-python@main
+        with:
+            python-version: ${{ env.MAIN_PYTHON_VERSION }}
+            use-cache: false
+            provision-uv: true
+            prune-uv-cache: false
+
+      - name: "Update requirement.txt files"
+        run: |
+          echo "Directories containing requirements files:"
+          echo "=========================================="
+
+          # Process standard requirements.txt files
+          find . -maxdepth 2 -type f -name "requirements.txt" -exec dirname {} \; | sort -u | while read dir; do
+              # Remove leading ./
+              dir_cleaned="${dir#./}"
+              # Get the directory name without leading underscore for the group name
+              group_name="${dir_cleaned#_}"
+
+              echo "  Processing: $dir_cleaned/requirements.txt (group: $group_name)"
+
+              # Run uv export command
+              uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes
+          done
+
+          # Process requirements-<suffix>.txt files (e.g., code-style/requirements-prek.txt)
+          find . -maxdepth 2 -type f -name "requirements-*.txt" | sort | while read file; do
+              # Remove leading ./
+              file_cleaned="${file#./}"
+              dir_cleaned="$(dirname "$file_cleaned")"
+              # Extract suffix from filename (e.g., "prek" from "requirements-prek.txt")
+              basename_file="$(basename "$file_cleaned")"
+              suffix="${basename_file#requirements-}"
+              suffix="${suffix%.txt}"
+              # Group name is dir (without underscore) + "-" + suffix
+              group_name="${dir_cleaned#_}-${suffix}"
+
+              echo "  Processing: $file_cleaned (group: $group_name)"
+
+              # Run uv export command
+              uv export --format requirements.txt --group "$group_name" --output-file "$file_cleaned" --no-hashes
+          done
+
+      - name: Commit and push requirements files if changed
+        env:
+          BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+        run: |
+          # Configure git username & email
+          git config user.name "${BOT_USER}"
+          git config user.email "${BOT_EMAIL}"
+
+          # Exit if there are no changes to commit
+          if git diff --quiet --exit-code; then
+            echo "No updates to requirements files detected, no changes to commit."
+            exit 0
+          else
+            echo "Requirements files update detected, preparing to commit."
+            git commit -am "fix: update requirements files [skip ci]"
+          fi
+          git push

@@ -83,11 +83,16 @@ jobs:
           working-directory: .ci/${{ env.LIBRARY_NAME }}
           attest-provenance: true
           checkout: false
+          install-build-and-wheel: true
 
   test-build-library-poetry:
-    name: "Test build-library action using ansys-actions-poetry package"
+    name: "Test build-library action (use-uv: ${{ matrix.use-uv }}) using ansys-actions-poetry package"
     runs-on: ubuntu-latest
     needs: test-build-wheelhouse-poetry
+    strategy:
+      matrix:
+        use-uv: ['true', 'false']
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -105,6 +110,7 @@ jobs:
           attest-provenance: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           working-directory: .ci/${{ env.LIBRARY_NAME }}
+          use-uv: ${{ matrix.use-uv }}
           checkout: false
 
   test-release-poetry:
@@ -142,8 +148,6 @@ jobs:
             library: pytwin
           - name: pyacp
             library: ansys-acp-core
-          - name: pygranta
-            library: pygranta
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false
@@ -174,6 +178,7 @@ jobs:
           operating-system: ${{ matrix.os }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
+          install-build-and-wheel: true
 
   test-build-library-poetry-projects:
     name: "Test build-library action for ${{ matrix.repository.name }} project"
@@ -186,8 +191,6 @@ jobs:
             library: pytwin
           - name: pyacp
             library: ansys-acp-core
-          - name: pymechanical
-            library: ansys-mechanical-core
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false
@@ -219,16 +222,15 @@ jobs:
           attest-provenance: true
 
   test-code-style-poetry-projects:
-    name: "Test code-style action for ${{ matrix.repository.name }} project"
+    name: "Test code-style action (use-prek: ${{ matrix.use-prek }}) for ${{ matrix.repository.name }} project"
     runs-on: ubuntu-latest
     needs: check-dependabot-pr-poetry
     strategy:
       matrix:
+        use-prek: ['true', 'false']
         repository:
           - name: pytwin
             library: pytwin
-          - name: pymechanical
-            library: ansys-mechanical-core
       fail-fast: false
     steps:
 
@@ -250,7 +252,9 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
+          use-prek: ${{ matrix.use-prek }}
           checkout: false
+          skip-install: false
 
   test-doc-style-poetry-projects:
     name: "Test doc-style action for ${{ matrix.repository.name }} project"
@@ -263,8 +267,6 @@ jobs:
             library: pytwin
           - name: pyacp
             library: ansys-acp-core
-          - name: pymechanical
-            library: ansys-mechanical-core
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false

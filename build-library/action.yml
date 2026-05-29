@@ -202,11 +202,12 @@ runs:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         USE_UV: ${{ inputs.use-uv }}
       run: |
-        if [ "${USE_UV}" == "true" ]; then
-          ${INSTALL_COMMAND} twine
+        if [[ "${USE_UV}" == 'true' ]]; then
+          REQUIREMENTS_FILE="${GITHUB_ACTION_PATH}/requirements-uv.txt"
         else
-          ${INSTALL_COMMAND} build twine
+          REQUIREMENTS_FILE="${GITHUB_ACTION_PATH}/requirements-pip.txt"
         fi
+        ${INSTALL_COMMAND} -r ${REQUIREMENTS_FILE}
 
     - name: "Build distribution artifacts"
       shell: bash
