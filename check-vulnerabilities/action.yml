@@ -540,8 +540,9 @@ runs:
           echo "Using custom safety policy file: ${SAFETY_POLICY_FILE}"
         fi
 
-        # Run safety vulnerability checks
-        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+        # Run safety vulnerability checks and strip safety scan deprecation notes from the output
+        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt" 2>&1 \
+        | grep -v -E '^\+==|^$|DEPRECATED:.*has been DEPRECATED|encourage switching to the new'
 
     - uses: ansys/actions/_logging@main
       with:
