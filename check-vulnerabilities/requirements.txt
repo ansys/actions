@@ -22,7 +22,7 @@ cffi==2.0.0 ; platform_python_implementation != 'PyPy'
     #   pynacl
 charset-normalizer==3.4.7
     # via requests
-click==8.4.0
+click==8.4.1
     # via
     #   nltk
     #   safety
