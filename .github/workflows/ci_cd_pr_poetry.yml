@@ -86,9 +86,13 @@ jobs:
           install-build-and-wheel: true
 
   test-build-library-poetry:
-    name: "Test build-library action using ansys-actions-poetry package"
+    name: "Test build-library action (use-uv: ${{ matrix.use-uv }}) using ansys-actions-poetry package"
     runs-on: ubuntu-latest
     needs: test-build-wheelhouse-poetry
+    strategy:
+      matrix:
+        use-uv: ['true', 'false']
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -106,6 +110,7 @@ jobs:
           attest-provenance: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           working-directory: .ci/${{ env.LIBRARY_NAME }}
+          use-uv: ${{ matrix.use-uv }}
           checkout: false
 
   test-release-poetry:
@@ -217,11 +222,12 @@ jobs:
           attest-provenance: true
 
   test-code-style-poetry-projects:
-    name: "Test code-style action for ${{ matrix.repository.name }} project"
+    name: "Test code-style action (use-prek: ${{ matrix.use-prek }}) for ${{ matrix.repository.name }} project"
     runs-on: ubuntu-latest
     needs: check-dependabot-pr-poetry
     strategy:
       matrix:
+        use-prek: ['true', 'false']
         repository:
           - name: pytwin
             library: pytwin
@@ -246,6 +252,7 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
+          use-prek: ${{ matrix.use-prek }}
           checkout: false
           skip-install: false
 

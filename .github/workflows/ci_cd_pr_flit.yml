@@ -85,9 +85,13 @@ jobs:
           checkout: false
 
   test-build-library-flit:
-    name: "Test build-library action using ansys-actions-flit package"
+    name: "Test build-library action (use-uv: ${{ matrix.use-uv }}) using ansys-actions-flit package"
     runs-on: ubuntu-latest
     needs: test-build-wheelhouse-flit
+    strategy:
+      matrix:
+        use-uv: ['true', 'false']
+      fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
@@ -105,6 +109,7 @@ jobs:
           attest-provenance: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           working-directory: .ci/${{ env.LIBRARY_NAME }}
+          use-uv: ${{ matrix.use-uv }}
           checkout: false
 
   test-release-flit:
@@ -219,11 +224,12 @@ jobs:
           attest-provenance: true
 
   test-code-style-flit-projects:
-    name: "Test code-style action for ${{ matrix.repository.name }} project"
+    name: "Test code-style action (use-prek: ${{ matrix.use-prek }}) for ${{ matrix.repository.name }} project"
     runs-on: ubuntu-latest
     needs: check-dependabot-pr-flit
     strategy:
       matrix:
+        use-prek: ['true', 'false']
         repository:
           - name: pyansys-geometry
             library: ansys-geometry-core
@@ -252,6 +258,7 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
+          use-prek: ${{ matrix.use-prek }}
           checkout: false
 
   test-doc-style-flit-projects:
