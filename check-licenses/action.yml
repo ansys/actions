@@ -206,9 +206,13 @@ runs:
       if: inputs.skip-install == 'false'
       id: build-system
       shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+        elif [[ "${USE_UV}" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
@@ -272,42 +276,33 @@ runs:
           fi
         fi
 
-    - name: "Update pip and install pip-licenses library"
+    - name: "Install project and pip-licenses"
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         SKIP_INSTALL: ${{ inputs.skip-install }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
+        TARGET: ${{ inputs.target }}
       run: |
         ${ACTIVATE_VENV}
+        INSTALL_TARGET=$( [[ "${TARGET}" == '' ]] && echo '.' || echo ".[${TARGET}]")
         if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
+          # Add pip-licenses to poetry lockfile, then install everything in one go
           grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
             poetry add "${line//\'/\"}" --lock
           done
-          poetry install
+          poetry install "$INSTALL_TARGET"
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install --no-managed-python -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
+          if [[ "${SKIP_INSTALL}" == 'false' ]]; then
+            uv pip install --no-managed-python "$INSTALL_TARGET"
+          fi
         else
-          $INSTALL_COMMAND -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
+          python -m pip install -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
+          if [[ "${SKIP_INSTALL}" == 'false' ]]; then
+            python -m pip install "$INSTALL_TARGET"
+          fi
         fi
-
-    - name: "Check if specific target is requested"
-      id: specific-target-requested
-      shell: bash
-      env:
-        TARGET: ${{ inputs.target }}
-      run: |
-        echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '.' || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
-
-    - name: "Install Python library"
-      if: inputs.skip-install == 'false'
-      shell: bash
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
-      run: |
-        ${ACTIVATE_VENV}
-        ${INSTALL_COMMAND} "$INSTALL_TARGET"
 
     - name:  "Install wget on Windows"
       if: runner.os == 'Windows'
