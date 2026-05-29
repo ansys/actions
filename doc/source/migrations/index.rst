@@ -7,6 +7,17 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v11``
+---------------
+
+**Breaking Changes:**
+
+- **Deprecation of release-pypi-public and release-pypi-test actions:** The ``release-pypi-public`` and
+  ``release-pypi-test`` actions no longer support publishing packages to PyPI using tokens. As a result, they
+  are deprecated starting with ``v11``. Projects must migrate to trusted publishing. Contact the PyAnsys Core
+  Team at pyansys.core@ansys.com for enabling trusted publishing for your project and refer to
+  :ref:`release_pypi_trusted_publisher` for setup details.
+
 Version ``v10.3``
 -----------------
 
