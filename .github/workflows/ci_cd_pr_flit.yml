@@ -179,6 +179,7 @@ jobs:
           operating-system: ${{ matrix.os }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
+          check-licenses: false
 
   test-build-library-flit-projects:
     name: "Test build-library action for ${{ matrix.repository.name }} project"
@@ -222,6 +223,43 @@ jobs:
           library-name: ${{ matrix.repository.library }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
+
+  test-check-licenses-flit-projects:
+    name: "Test check-licenses action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    needs: test-build-library-flit-projects
+    strategy:
+      matrix:
+        repository:
+          - name: pyansys-geometry
+            library: ansys-geometry-core
+          - name: pymapdl
+            library: ansys-mapdl-core
+          - name: pyfluent
+            library: ansys-fluent-core
+          - name: pymechanical
+            library: ansys-mechanical-core
+      fail-fast: false
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Check license validity for ${{ matrix.repository.name }}"
+        uses: ./actions/check-licenses
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          checkout: false
 
   test-code-style-flit-projects:
     name: "Test code-style action (use-prek: ${{ matrix.use-prek }}) for ${{ matrix.repository.name }} project"
