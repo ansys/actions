@@ -18,6 +18,10 @@ Version ``v11``
   Team at pyansys.core@ansys.com for enabling trusted publishing for your project and refer to
   :ref:`release_pypi_trusted_publisher` for setup details.
 
+- **Removal of deprecated input from release-github action:** The ``generate_release_notes`` input of the
+  ``release-github`` action was deprecated in ``v10`` and is completely removed starting with ``v11``.
+  Use the ``generate-release-notes`` parameter instead.
+
 Version ``v10.3``
 -----------------
 
