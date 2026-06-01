@@ -284,23 +284,35 @@ runs:
         SKIP_INSTALL: ${{ inputs.skip-install }}
         TARGET: ${{ inputs.target }}
       run: |
-        ${ACTIVATE_VENV}
-        INSTALL_TARGET=$( [[ "${TARGET}" == '' ]] && echo '.' || echo ".[${TARGET}]")
+        ${ACTIVATE_VENV} 
+        if [[ "${TARGET}" != '' ]]; then
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
+            extra_targets=${EXTRA_TARGETS}
+          else
+            echo "Installing extra targets with pip: ${EXTRA_TARGETS}"
+            extra_targets=[${EXTRA_TARGETS}]
+          fi
+        else
+          echo "No extra targets to install"
+          extra_targets=""
+        fi
+
         if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
           # Add pip-licenses to poetry lockfile, then install everything in one go
           grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
             poetry add "${line//\'/\"}" --lock
           done
-          poetry install ${INSTALL_TARGET}
+          poetry install --extras "${extra_targets}"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           uv pip install --no-managed-python -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
           if [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            uv pip install --no-managed-python "$INSTALL_TARGET"
+            uv pip install --no-managed-python ."${extra_targets}"
           fi
         else
           python -m pip install -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
           if [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            python -m pip install "$INSTALL_TARGET"
+            python -m pip install ."${extra_targets}"
           fi
         fi
 
