@@ -179,7 +179,6 @@ jobs:
           operating-system: ${{ matrix.os }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
-          check-licenses: false
 
   test-build-library-flit-projects:
     name: "Test build-library action for ${{ matrix.repository.name }} project"

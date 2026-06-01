@@ -289,6 +289,9 @@ runs:
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${TARGET}"
             EXTRA_TARGETS=${TARGET}
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            echo "Installing extra targets with uv: ${TARGET}"
+            EXTRA_TARGETS=[${TARGET}]
           else
             echo "Installing extra targets with pip: ${TARGET}"
             EXTRA_TARGETS=[${TARGET}]

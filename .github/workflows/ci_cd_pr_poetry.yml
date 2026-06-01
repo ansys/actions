@@ -179,7 +179,6 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
           install-build-and-wheel: true
-          check-licenses: false
 
   test-build-library-poetry-projects:
     name: "Test build-library action for ${{ matrix.repository.name }} project"
