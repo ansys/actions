@@ -284,7 +284,7 @@ runs:
         SKIP_INSTALL: ${{ inputs.skip-install }}
         TARGET: ${{ inputs.target }}
       run: |
-        ${ACTIVATE_VENV} 
+        ${ACTIVATE_VENV}
         if [[ "${TARGET}" != '' ]]; then
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
