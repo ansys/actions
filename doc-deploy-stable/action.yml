@@ -307,15 +307,9 @@ runs:
 
     - name: "Clean version content"
       shell: bash
-      id: clean-version-content
       env:
         VERSION: ${{ steps.version-number.outputs.VERSION }}
       run: |
-        if [ -d version/${VERSION} ]; then
-          echo "VERSION_EXISTS=true" >> $GITHUB_OUTPUT
-        else
-          echo "VERSION_EXISTS=false" >> $GITHUB_OUTPUT
-        fi
         rm -rf version/${VERSION} && mkdir -p version/${VERSION}
 
     - name: "Download the stable documentation artifact"
