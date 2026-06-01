@@ -22,6 +22,23 @@ Version ``v11``
   ``release-github`` action was deprecated in ``v10`` and is completely removed starting with ``v11``.
   Use the ``generate-release-notes`` parameter instead.
 
+**Migration Steps:**
+
+- **Changed default behavior of doc-build dependency inputs:** The default behavior of the
+  ``optional-dependencies-name`` and ``group-dependencies-name`` inputs of the ``doc-build`` action has changed.
+  Previously, ``optional-dependencies-name`` always defaulted to ``doc`` even when ``group-dependencies-name``
+  is not empty, which can cause failures if ``doc`` optional extra is absent from the ``pyproject.toml`` file.
+
+  The new behavior is:
+
+  - Both inputs now default to empty (``''``).
+  - If **neither** input is provided, the action defaults to ``optional-dependencies-name=doc`` (for backwards compatibility).
+  - If **only one** is provided, only that one is used.
+  - If **both** are provided, both are used (a warning is logged).
+
+  Although backwards compatibility is maintained, you are advised to set one of the inputs explicitly to avoid
+  future breaking changes.
+
 Version ``v10.3``
 -----------------
 
