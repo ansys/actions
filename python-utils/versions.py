@@ -74,7 +74,7 @@ def get_versions_list(exclude_prereleases: bool = False) -> list[Version]:
     if not version_dir.exists() or not version_dir.is_dir():
         raise FileNotFoundError(
             "Could not find the 'version/' directory in the current branch. "
-            "This directory is expected to be present in the 'gh-pages' branch and is generated "
+            "This directory is expected to be present in the branch and is generated "
             "by the 'doc-deploy-dev' action. Make sure the 'doc-deploy-dev' action has been run "
             "at least once before running the 'doc-deploy-stable' action."
         )
