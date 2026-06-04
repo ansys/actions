@@ -221,6 +221,41 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
 
+  test-check-licenses-poetry-projects:
+    name: "Test check-licenses action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    needs: test-build-library-poetry-projects
+    strategy:
+      matrix:
+        repository:
+          - name: pytwin
+            library: pytwin
+          - name: pyacp
+            library: ansys-acp-core
+          - name: pydpf-composites
+            library: ansys-dpf-composites
+      fail-fast: false
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Check license validity for ${{ matrix.repository.name }}"
+        uses: ./actions/check-licenses
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          checkout: false
+
   test-code-style-poetry-projects:
     name: "Test code-style action (use-prek: ${{ matrix.use-prek }}) for ${{ matrix.repository.name }} project"
     runs-on: ubuntu-latest
