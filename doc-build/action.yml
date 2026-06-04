@@ -189,8 +189,9 @@ inputs:
       Any valid install targets/extras defined in the ``pyproject.toml`` file, or the suffix
       of a requirement file. Multiple targets can be specified as a comma-separated
       list (space-separated for poetry-based projects). The associated dependencies are installed
-      before building the documentation. Default value is ``doc``.
-    default: 'doc'
+      before building the documentation. Default value is ``''``. If neither this nor
+      ``group-dependencies-name`` is provided, the action defaults to ``doc``.
+    default: ''
     required: false
     type: string
 
@@ -198,8 +199,9 @@ inputs:
     description: |
       Any valid dependency groups defined in the ``pyproject.toml`` file. Multiple
       targets can be specified as a comma-separated list. The associated dependencies
-      are installed before running the documentation build. Default value is ``''``
-      in which case the action will not use dependency groups.
+      are installed before running the documentation build. Default value is ``''``.
+      If neither this nor ``optional-dependencies-name`` is provided, the action
+      defaults to using ``optional-dependencies-name=doc``.
     default: ''
     required: false
     type: string
@@ -260,6 +262,31 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - name: "Resolve dependency inputs"
+      id: resolve-deps
+      shell: bash
+      env:
+        OPT_DEPS: ${{ inputs.optional-dependencies-name }}
+        GRP_DEPS: ${{ inputs.group-dependencies-name }}
+      run: |
+        if [[ -z "$OPT_DEPS" && -z "$GRP_DEPS" ]]; then
+          echo "resolved-optional=doc" >> $GITHUB_OUTPUT
+          echo "resolved-group=" >> $GITHUB_OUTPUT
+        else
+          echo "resolved-optional=$OPT_DEPS" >> $GITHUB_OUTPUT
+          echo "resolved-group=$GRP_DEPS" >> $GITHUB_OUTPUT
+        fi
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ steps.resolve-deps.outputs.resolved-optional != '' && steps.resolve-deps.outputs.resolved-group != '' }}
+      with:
+        level: "WARNING"
+        message: >
+          Both 'optional-dependencies-name' and 'group-dependencies-name' are specified.
+          Both will be used for installation.
+
+    # ------------------------------------------------------------------------
+
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
       uses: ansys/actions/_doc-build-linux@main
@@ -274,8 +301,8 @@ runs:
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
         use-uv: ${{ inputs.use-uv }}
-        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
-        group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
+        group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
         uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
 
     # ------------------------------------------------------------------------
@@ -301,6 +328,6 @@ runs:
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
         use-uv: ${{ inputs.use-uv }}
-        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
-        group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
+        group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
         uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}

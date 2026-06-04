@@ -72,7 +72,12 @@ def get_versions_list(exclude_prereleases: bool = False) -> list[Version]:
     """
     version_dir = Path("version")
     if not version_dir.exists() or not version_dir.is_dir():
-        raise FileNotFoundError("Could not find the version/ directory")
+        raise FileNotFoundError(
+            "Could not find the 'version/' directory in the current branch. "
+            "This directory is expected to be present in the branch and is generated "
+            "by the 'doc-deploy-dev' action. Make sure the 'doc-deploy-dev' action has been run "
+            "at least once before running the 'doc-deploy-stable' action."
+        )
     version_list = []
     excluded_versions = ["dev", "stable"]
     for version_folder in version_dir.glob("*/"):
