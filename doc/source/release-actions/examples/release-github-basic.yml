@@ -3,6 +3,8 @@ release-github:
   runs-on: ubuntu-latest
   needs: [build-library]
   if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+  permissions:
+    contents: write  # Required to create GitHub releases and upload release assets
   steps:
     - name: "Release to GitHub"
       uses: ansys/actions/release-github@{{ version }}
