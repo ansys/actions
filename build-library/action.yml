@@ -26,7 +26,9 @@ name: |
 description: |
   Verifies if a Python library builds properly. As a result of a successful
   building process, wheel and source distribution artifacts are generated. This
-  action is expected to be used as an independent job.
+  action is expected to be used as an independent job. When a project contains
+  a uv lock file, it is also verified during the build process to ensure it is up to
+  date with the project dependencies.
 
   .. note::
 
@@ -226,6 +228,13 @@ runs:
       if: inputs.validate-build == 'true'
       run: |
         python -m twine check dist/*
+
+    - name: "Check if the uv lock file is up to date with respect to project dependencies (if it exists)"
+      if: inputs.use-uv == 'true' && hashFiles(format('{0}/uv.lock', inputs.working-directory)) != ''
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: uv lock --check --project "${WORKING_DIRECTORY}"
 
     - name: "Upload distribution artifacts to GitHub artifacts"
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
