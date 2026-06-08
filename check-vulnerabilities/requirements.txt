@@ -16,6 +16,7 @@ certifi==2026.4.22
     #   httpcore
     #   httpx
     #   requests
+    #   safety
 cffi==2.0.0 ; platform_python_implementation != 'PyPy'
     # via
     #   cryptography
@@ -97,9 +98,7 @@ pyyaml==6.0.3
 regex==2026.5.9
     # via nltk
 requests==2.34.2
-    # via
-    #   pygithub
-    #   safety
+    # via pygithub
 rich==15.0.0
     # via
     #   bandit
@@ -108,7 +107,7 @@ ruamel-yaml==0.19.1
     # via
     #   safety
     #   safety-schemas
-safety==3.7.0
+safety==3.8.0
 safety-schemas==0.0.16
     # via safety
 shellingham==1.5.4
@@ -125,6 +124,8 @@ tomlkit==0.15.0
     # via safety
 tqdm==4.67.3
     # via nltk
+truststore==0.10.4
+    # via safety
 typer==0.25.1
     # via safety
 typing-extensions==4.15.0
