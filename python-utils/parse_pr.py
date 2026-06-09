@@ -125,7 +125,20 @@ def has_body_breaking_changes(pr_body: str) -> bool:
         return False
 
     pattern = r"(?i)^breaking[- ]changes?:"
-    return any(re.match(pattern, line.strip()) for line in pr_body.splitlines())
+    # Ignore lines that are within HTML comments in the pull request body
+    in_html_comment = False
+    for line in pr_body.splitlines():
+        stripped = line.strip()
+        if "<!--" in stripped:
+            in_html_comment = True
+        if "-->" in stripped:
+            in_html_comment = False
+            continue
+        if in_html_comment:
+            continue
+        if re.match(pattern, stripped):
+            return True
+    return False
 
 
 def get_conventional_commit_type(pr_title: str, pr_body: str):
