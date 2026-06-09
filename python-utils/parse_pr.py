@@ -99,8 +99,8 @@ def has_title_breaking_changes(pr_title: str) -> bool:
         True if the pull request title indicates a breaking change, False otherwise.
     """
     colon_count = pr_title.count(":")
-    if colon_count != 1:
-        raise ValueError(f"Expected exactly one ':', found {colon_count}")
+    if colon_count < 1:
+        raise ValueError(f"Expected at least one ':', found {colon_count}")
 
     colon_index = pr_title.index(":")
     exclam_index = pr_title.find("!")
