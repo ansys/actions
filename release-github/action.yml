@@ -107,7 +107,7 @@ inputs:
   tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       Tomli version used for retrieving the towncrier directory.
-    default: '2.2.1'
+    default: ''
     required: false
     type: string
 
