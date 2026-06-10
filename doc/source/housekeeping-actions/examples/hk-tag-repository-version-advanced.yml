@@ -3,7 +3,7 @@ hk-tag-repository-version:
   runs-on: ubuntu-latest
   if: github.event_name == 'release'
   permissions:
-    contents: write
+    contents: write  # Required to push commits, delete and create tags
   steps:
     - uses: actions/checkout@v6
       with:
