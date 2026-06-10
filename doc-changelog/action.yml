@@ -75,14 +75,14 @@ inputs:
 
   toml-version: # TODO: Remove deprecated input in v11
     description: |
-      Toml version used for retrieving the towncrier directory.
+      DEPRECATED ARGUMENT. Toml version used for retrieving the towncrier directory.
     default: ''
     required: false
     type: string
 
   tomli-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomli version used for retrieving the towncrier directory.
+      DEPRECATED ARGUMENT. Tomli version used for retrieving the towncrier directory.
     default: ''
     required: false
     type: string
@@ -114,7 +114,7 @@ inputs:
 
   use-conventional-commits: # TODO: Remove deprecated input in v12
     description: |
-      [DEPRECATED] Use pull request title to determine the changelog category based on
+      DEPRECATED ARGUMENT. Use pull request title to determine the changelog category based on
       conventional commits. If ``false``, the labels in the pull request are used
       to determine the changelog category.
     required: false
@@ -153,9 +153,7 @@ runs:
         message: >
           With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
           is no longer used because it cannot parse ``pyproject.toml`` files where groups
-          include other groups. This action now uses the ``tomli`` library instead. If you
-          want to use a specific version of ``tomli``, please set the ``tomli-version``
-          input accordingly. The ``toml-version`` input will be removed in v11.
+          include other groups. The ``toml-version`` input will be removed in v11.
 
     - uses: ansys/actions/_logging@main # Switch logging level to ERROR in v12
       if: inputs.use-conventional-commits != ''
@@ -170,17 +168,18 @@ runs:
       with:
         level: "WARNING"
         message: >
-          The ``tomli-version`` input is deprecated and will be removed in v12.
-          This action now uses the ``tomlkit`` library instead. Please use the
-          ``tomlkit-version`` input accordingly.
+          Due to lose of information during parsing, including formatting and comments, the
+          ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
+          will be removed in v12.
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
       if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
       with:
         level: "WARNING"
         message: >
-          The ``towncrier-version`` and ``tomlkit-version`` inputs are deprecated and will be
-          removed in v12.
+          Due to dependency changes breaking our actions and our need to manage which version
+          of dependencies are used in our actions, the ``towncrier-version`` and
+          ``tomlkit-version`` inputs are deprecated and will be removed in v12.
 
     - name: "Mapping to env vars"
       shell: bash
