@@ -121,6 +121,19 @@ inputs:
     required: false
     type: boolean
 
+  use-uv-lockfile:
+    description: |
+      Whether to use a uv lockfile when installing dependencies.
+
+      .. note::
+
+        This option is only applicable when ``use-uv`` is set to ``true``. If
+        ``use-uv`` is set to ``false``, this option will be ignored.
+
+    default: false
+    required: false
+    type: boolean
+
   skip-python-setup:
     description: |
       Whether to skip the Python setup step performed by
@@ -163,6 +176,16 @@ runs:
         level: "INFO"
         message: >
           Skipping Python setup to use system Python.
+
+    - name: "Install dependencies from lockfile"
+      if: ${{ inputs.use-uv == 'true' && inputs.use-uv-lockfile == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        cd ${WORKING_DIRECTORY}
+        uv export --frozen --no-emit-project --no-hashes -o /tmp/requirements-locked.txt
+        uv pip install --no-managed-python --system -r /tmp/requirements-locked.txt
 
     - name: "Install library"
       shell: bash

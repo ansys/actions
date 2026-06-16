@@ -149,6 +149,19 @@ inputs:
     required: false
     type: boolean
 
+  use-uv-lockfile:
+    description: |
+      Whether to use a uv lockfile when installing dependencies.
+
+      .. note::
+
+        This option is only applicable when ``use-uv`` is set to ``true``. If
+        ``use-uv`` is set to ``false``, this option will be ignored.
+
+    default: false
+    required: false
+    type: boolean
+
   skip-python-setup:
     description: |
       Whether to skip the Python setup step performed by
@@ -429,11 +442,16 @@ runs:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
         GITHUB_WORKSPACE: ${{ github.workspace }}
+        USE_UV: ${{ inputs.use-uv }}
+        USE_UV_LOCKFILE: ${{ inputs.use-uv-lockfile }}
       run: |
         ${ACTIVATE_VENV}
         cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
+          pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
+        elif [[ "${USE_UV}" == 'true' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
+          uv export --frozen --no-emit-project --no-hashes -o wheel_reqs.txt
           pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
         else
           python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
