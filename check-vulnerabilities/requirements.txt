@@ -107,7 +107,7 @@ ruamel-yaml==0.19.1
     # via
     #   safety
     #   safety-schemas
-safety==3.8.0
+safety==3.8.1
 safety-schemas==0.0.16
     # via safety
 shellingham==1.5.4
