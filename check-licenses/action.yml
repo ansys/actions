@@ -293,7 +293,6 @@ runs:
 
     - name: "Install project (if not skipped)"
       if: inputs.skip-install == 'false'
-      id: install-project
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
