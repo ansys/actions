@@ -33,7 +33,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   bandit
     #   click
     #   tqdm
-cryptography==48.0.0
+cryptography==49.0.0
     # via
     #   authlib
     #   joserfc
@@ -89,7 +89,7 @@ pydantic-core==2.46.4
 pygithub==2.9.1
 pygments==2.20.0
     # via rich
-pyjwt==2.12.1
+pyjwt==2.13.0
     # via pygithub
 pynacl==1.6.2
     # via pygithub
@@ -107,7 +107,7 @@ ruamel-yaml==0.19.1
     # via
     #   safety
     #   safety-schemas
-safety==3.8.0
+safety==3.8.1
 safety-schemas==0.0.16
     # via safety
 shellingham==1.5.4
