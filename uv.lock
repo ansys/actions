@@ -105,7 +105,7 @@ build-wheelhouse = [
 check-licenses = [
     { name = "pip-licenses", specifier = "<=5.6" },
     { name = "prettytable", specifier = "<=3.17" },
-    { name = "wcwidth", specifier = "<=0.8.1" },
+    { name = "wcwidth", specifier = "<=0.9" },
 ]
 check-vulnerabilities = [
     { name = "bandit", specifier = ">=1.9,<2" },
