@@ -33,7 +33,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   bandit
     #   click
     #   tqdm
-cryptography==48.0.0
+cryptography==49.0.0
     # via
     #   authlib
     #   joserfc
