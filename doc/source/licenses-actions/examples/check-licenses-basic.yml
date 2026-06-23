@@ -1,6 +1,8 @@
 check-licenses:
   name: "Check library dependencies ship with valid licenses"
   runs-on: ubuntu-latest
+  permissions:
+    contents: read  # Required to checkout repository code when the repository is not public
   steps:
     - name: "Validate third party licenses"
       uses: ansys/actions/check-licenses@{{ version }}

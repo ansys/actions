@@ -1,6 +1,9 @@
 doc-style:
   name: "Running documentation style checks"
   runs-on: ubuntu-latest
+  permissions:
+    contents: read  # Required to checkout repository code when the repository is not public
+    pull-requests: write  # Required for Vale to add review comments and suggestions on pull requests
   steps:
     - name: "Running documentation style checks"
       uses: ansys/actions/doc-style@{{ version }}
