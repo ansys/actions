@@ -1,6 +1,8 @@
 hk-package-clean-except:
   name: "Perform versions cleanup - except certain tags"
   runs-on: ubuntu-latest
+  permissions:
+    packages: delete  # Required to delete package versions from GitHub Container Registry (GHCR)
   steps:
     - name: "Perform versions cleanup - except certain tags"
       uses: ansys/actions/hk-package-clean-except@{{ version }}
