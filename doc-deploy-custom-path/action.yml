@@ -140,21 +140,21 @@ runs:
         CUSTOM_PATH: ${{ inputs.custom-path }}
       run: |
         if [[ -z "${CUSTOM_PATH}" || "${CUSTOM_PATH}" == "." ]]; then
-          echo "Error: 'custom-path' must not be empty or '.'." >&2
+          echo "Error: 'custom-path' must not be empty or '.'."
           exit 1
         fi
         if [[ "${CUSTOM_PATH}" == /* ]]; then
-          echo "Error: 'custom-path' must not be an absolute path." >&2
+          echo "Error: 'custom-path' must not be an absolute path."
           exit 1
         fi
         if [[ "${CUSTOM_PATH}" == *..* ]]; then
-          echo "Error: 'custom-path' must not contain '..'." >&2
+          echo "Error: 'custom-path' must not contain '..'."
           exit 1
         fi
         reserved=("version" "pull")
         for r in "${reserved[@]}"; do
           if [[ "${CUSTOM_PATH}" == "${r}" || "${CUSTOM_PATH}" == "${r}/"* ]]; then
-            echo "Error: 'custom-path' must not use the reserved path '${r}'." >&2
+            echo "Error: 'custom-path' must not use the reserved path '${r}'."
             exit 1
           fi
         done
