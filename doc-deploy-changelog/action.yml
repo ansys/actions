@@ -122,13 +122,6 @@ inputs:
     required: false
     type: string
 
-  toml-version: # TODO: Remove deprecated input in v11
-    description: |
-      DEPRECATED ARGUMENT. Toml version used for retrieving the towncrier directory.
-    default: ''
-    required: false
-    type: string
-
   tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       DEPRECATED ARGUMENT. Tomli version used for retrieving the towncrier directory.
@@ -198,31 +191,22 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
-      if: inputs.toml-version != ''
+    - uses: ansys/actions/_logging@main # TODO: Remove in v12
+      if: inputs.tomli-version != ''
       with:
         level: "ERROR"
         message: >
-          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
-          is no longer used because it cannot parse ``pyproject.toml`` files where groups
-          include other groups. The ``toml-version`` input will be removed in v11.
-
-    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
-      if: inputs.tomli-version != ''
-      with:
-        level: "WARNING"
-        message: >
-          Due to lose of information during parsing, including formatting and comments, the
+          Due to loss of information during parsing, including formatting and comments, the
           ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
           will be removed in v12.
 
-    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
+    - uses: ansys/actions/_logging@main
       if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
-          Due to dependency changes breaking our actions and our need to manage which version
-          of dependencies are used in our actions, the ``towncrier-version`` and
+          Due to dependency changes breaking the actions and the need to manage which version
+          of dependencies are used in the actions, the ``towncrier-version`` and
           ``tomlkit-version`` inputs are deprecated and will be removed in v12.
 
     - name: "Install Git and clone project"
