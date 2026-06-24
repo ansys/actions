@@ -219,6 +219,19 @@ inputs:
     required: false
     type: boolean
 
+  use-uv-lockfile:
+    description: |
+      Whether to use a uv lockfile when installing dependencies.
+
+      .. note::
+
+        This option is only applicable when ``use-uv`` is set to ``true``. If
+        ``use-uv`` is set to ``false``, this option will be ignored.
+
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -376,29 +389,38 @@ runs:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         EXTRA_TARGETS: ${{ inputs.extra-targets }}
+        USE_UV_LOCKFILE: ${{ inputs.use-uv-lockfile }}
       # Note: we need to use an array to store the extra targets, otherwise
       # the shell expansion messes with the quotes in the poetry case.
       run: |
         ${ACTIVATE_VENV}
-        if [[ "${EXTRA_TARGETS}" != '' ]]; then
-          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-            echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
-            extra_targets=${EXTRA_TARGETS}
+        if [[ "${USE_UV_LOCKFILE}" == 'true' && "${BUILD_BACKEND}" == 'uv' ]]; then
+          if [[ "${EXTRA_TARGETS}" != '' ]]; then
+            uv sync --frozen --extra "${EXTRA_TARGETS}" --no-dev
           else
-            echo "Installing extra targets with pip: ${EXTRA_TARGETS}"
-            extra_targets=[${EXTRA_TARGETS}]
+            uv sync --frozen --no-dev
           fi
         else
-          echo "No extra targets to install"
-          extra_targets=""
-        fi
+          if [[ "${EXTRA_TARGETS}" != '' ]]; then
+            if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+              echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
+              extra_targets=${EXTRA_TARGETS}
+            else
+              echo "Installing extra targets with pip: ${EXTRA_TARGETS}"
+              extra_targets=[${EXTRA_TARGETS}]
+            fi
+          else
+            echo "No extra targets to install"
+            extra_targets=""
+          fi
 
-        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install --extras "${extra_targets}"
-        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install ."${extra_targets}"
-        else
-          python -m pip install ."${extra_targets}"
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            poetry install --extras "${extra_targets}"
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            uv pip install ."${extra_targets}"
+          else
+            python -m pip install ."${extra_targets}"
+          fi
         fi
 
     - name: "Check if requirements.txt file exists"
