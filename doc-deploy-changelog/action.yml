@@ -122,13 +122,6 @@ inputs:
     required: false
     type: string
 
-  toml-version: # TODO: Remove deprecated input in v11
-    description: |
-      Toml version used for retrieving the towncrier directory.
-    default: ''
-    required: false
-    type: string
-
   tomli-version:  # TODO: Remove deprecated input in v12
     description: |
       Tomli version used for retrieving the towncrier directory.
@@ -198,24 +191,16 @@ runs:
   using: "composite"
   steps:
     - uses: ansys/actions/_logging@main
-      if: inputs.toml-version != '' || inputs.tomli-version != ''
+      if: inputs.tomli-version != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
-          The ``toml-version`` and ``tomli-version`` inputs are deprecated. With the adoption
-          of dependency groups in PyAnsys packages, the ``toml`` library is no longer used
-          because it cannot parse ``pyproject.toml`` files where groups include other groups.
-          While ``tomli`` supports parsing dependency groups, it can lose a lot of information
-          during parsing, including formatting and comments, which can negatively impact
-          the behavior of some of our actions. To ensure consistent read/write operations and
-          preserve this information, this action now uses the ``tomlkit`` library instead. If you
-          want to use a specific version of ``tomlkit``, please set the ``tomlkit-version`` input
-          accordingly.
+          The ``tomli-version`` input is deprecated and will be removed in v12.
 
     - uses: ansys/actions/_logging@main
       if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
           The ``towncrier-version`` and ``tomlkit-version`` inputs are deprecated and will be
           removed in v12.
