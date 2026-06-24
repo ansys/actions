@@ -73,16 +73,9 @@ inputs:
     required: false
     type: string
 
-  toml-version: # TODO: Remove deprecated input in v11
-    description: |
-      Toml version used for retrieving the towncrier directory.
-    default: ''
-    required: false
-    type: string
-
   tomli-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomli version used for retrieving the towncrier directory.
+      DEPRECATED ARGUMENT. Tomli version used for retrieving the towncrier directory.
     default: ''
     required: false
     type: string
@@ -114,7 +107,7 @@ inputs:
 
   use-conventional-commits: # TODO: Remove deprecated input in v12
     description: |
-      [DEPRECATED] Use pull request title to determine the changelog category based on
+      DEPRECATED ARGUMENT. Use pull request title to determine the changelog category based on
       conventional commits. If ``false``, the labels in the pull request are used
       to determine the changelog category.
     required: false
@@ -146,41 +139,31 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
-      if: inputs.toml-version != ''
-      with:
-        level: "ERROR"
-        message: >
-          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
-          is no longer used because it cannot parse ``pyproject.toml`` files where groups
-          include other groups. This action now uses the ``tomli`` library instead. If you
-          want to use a specific version of ``tomli``, please set the ``tomli-version``
-          input accordingly. The ``toml-version`` input will be removed in v11.
-
-    - uses: ansys/actions/_logging@main # Switch logging level to ERROR in v12
+    - uses: ansys/actions/_logging@main # TODO: Remove in v12
       if: inputs.use-conventional-commits != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
           The ``use-conventional-commits`` input is deprecated and will be removed in v12.
           Please use the ``use-pull-request-title`` input instead.
 
-    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
+    - uses: ansys/actions/_logging@main # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
-          The ``tomli-version`` input is deprecated and will be removed in v12.
-          This action now uses the ``tomlkit`` library instead. Please use the
-          ``tomlkit-version`` input accordingly.
+          Due to loss of information during parsing, including formatting and comments, the
+          ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
+          will be removed in v12.
 
     - uses: ansys/actions/_logging@main
       if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
-          The ``towncrier-version`` and ``tomlkit-version`` inputs are deprecated and will be
-          removed in v12.
+          Due to dependency changes breaking the actions and the need to manage which version
+          of dependencies are used in the actions, the ``towncrier-version`` and
+          ``tomlkit-version`` inputs are deprecated and will be removed in v12.
 
     - name: "Mapping to env vars"
       shell: bash
@@ -198,7 +181,7 @@ runs:
     - name: "Install Git and clone project"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         # Required to checkout branch from origin rather than remote
         ref: ${{ env.PR_BRANCH }}

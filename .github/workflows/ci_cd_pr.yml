@@ -24,7 +24,7 @@ jobs:
       environment: ${{ steps.block.outputs.environment }}
     steps:
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -66,7 +66,7 @@ jobs:
     steps:
 
      - name: "Checkout project"
-       uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
        with:
         persist-credentials: false
 
@@ -92,7 +92,7 @@ jobs:
       pull-requests: write # Needed to create changelog fragment PR comments
     steps:
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -114,7 +114,7 @@ jobs:
     needs: changelog-fragment
     steps:
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -130,7 +130,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -162,7 +162,7 @@ jobs:
     needs: changelog-fragment
     steps:
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -181,7 +181,7 @@ jobs:
       fail-fast: false
     steps:
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -204,10 +204,12 @@ jobs:
     strategy:
       matrix:
         os:
-          - name: windows-latest
-            container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
+          # - name: windows-latest
+          #   container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
+          #   dependencies: 'pandoc'
           - name: ubuntu-latest
             container-image-tag: ghcr.io/ansys/geometry:core-linux-latest
+            dependencies: 'pandoc texlive-xetex texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra texlive-science texlive-luatex lmodern latexmk'
       fail-fast: false
     env:
       ANSRV_GEO_IMAGE_DOCS_TAG: ${{ matrix.os.container-image-tag }}
@@ -217,7 +219,7 @@ jobs:
     steps:
 
       - name: "Install Git and clone pyansys-geometry repository"
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
           repository: ansys/pyansys-geometry
@@ -242,7 +244,7 @@ jobs:
           docker run --detach --name ${GEO_CONT_NAME} -e LICENSE_SERVER=${ANSRV_GEO_LICENSE_SERVER} -p ${ANSRV_GEO_PORT}:50051 ${ANSRV_GEO_IMAGE_DOCS_TAG} ${GEOMETRY_CONTAINER_EXEC_OPTS}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: actions
           persist-credentials: false
@@ -253,10 +255,8 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
-          dependencies: 'pandoc'
-          # sphinxopts: '-j 1 -W --color'
-          # TODO: Re-enable warnings as errors after numpydoc issues are fixed
-          sphinxopts: '-j 1'
+          dependencies: ${{ matrix.os.dependencies }}
+          sphinxopts: '-j 1 -W --color'
           checkout: false
           uploaded-artifact-name-prefix: pyansys-geometry-documentation-${{ matrix.os.name }}
           skip-dependencies-cache: true
@@ -294,7 +294,7 @@ jobs:
     steps:
 
       - name: "Install Git and clone pydpf-composites repository"
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
           repository: ansys/pydpf-composites
@@ -320,7 +320,7 @@ jobs:
           docker run -d --restart always -p 50052:50052 -e DPF_DEFAULT_GRPC_MODE=insecure -e ANSYSLMD_LICENSE_FILE=1055@${LICENSE_SERVER} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: actions
           persist-credentials: false
@@ -351,7 +351,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
     steps:
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: actions-checkout
           persist-credentials: false
@@ -372,7 +372,7 @@ jobs:
       # Hack, the peaceiris/actions-gh-pages action in _pr-doc-deployment overwrites any previous checkout,
       # causing the post step of the action to fail. Adding this checkout step ensures that the post step
       # can run successfully
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: actions-checkout
           persist-credentials: false
@@ -382,7 +382,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -399,7 +399,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
