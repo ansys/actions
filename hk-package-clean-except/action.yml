@@ -56,30 +56,10 @@ inputs:
     required: false
     default: ''
     type: string
-  python-version:  # TODO: Remove deprecated input in v11
-    description: 'DEPRECATED ARGUMENT. Desired Python version.'
-    default: ''
-    required: false
-    type: string
-  use-uv:  # TODO: Remove deprecated input in v11
-    description: |
-      DEPRECATED ARGUMENT. Whether to use uv as the default package manager instead of pip. Default value is ``''``.
-    default: ''
-    required: false
-    type: string
 
 runs:
   using: "composite"
   steps:
-
-    - uses: ansys/actions/_logging@main
-      if: inputs.python-version != '' || inputs.use-uv != ''
-      with:
-        level: "WARNING"
-        message: >
-          'The "python-version" and "use-uv" inputs are deprecated and will be
-          removed in future releases. This action uses a specific Python version set
-          up in a separate step.'
 
     - name: "Set up Python 3.14"
       uses: ansys/actions/_setup-python@main
