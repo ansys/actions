@@ -197,7 +197,9 @@ runs:
       shell: powershell
       env:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
-      run: choco install $env:NEEDED_DEPS -y
+      run: |
+        $packages = $env:NEEDED_DEPS -split '\s+'
+        choco install $packages -y
 
     - name: Install MiKTeX and update PATH with MiKTeX binaries
       shell: powershell
