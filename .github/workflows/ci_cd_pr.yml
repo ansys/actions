@@ -204,9 +204,9 @@ jobs:
     strategy:
       matrix:
         os:
-          - name: windows-latest
-            container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
-            dependencies: 'pandoc'
+          # - name: windows-latest
+          #   container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
+          #   dependencies: 'pandoc'
           - name: ubuntu-latest
             container-image-tag: ghcr.io/ansys/geometry:core-linux-latest
             dependencies: 'pandoc texlive-xetex texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra texlive-science texlive-luatex lmodern latexmk'
