@@ -202,7 +202,6 @@ runs:
       uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
       with:
         tinytex: true
-        version: 1.6.43
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}
@@ -531,7 +530,7 @@ runs:
 
     - name: Compress HTML documentation
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
-      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
+      uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}/html
         dest: documentation-html.zip
@@ -556,14 +555,14 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: "Upload HTML documentation artifact"
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: "Upload PDF documentation artifact"
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf

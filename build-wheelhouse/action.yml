@@ -34,6 +34,17 @@ description: |
       Since version 4.1, the input parameter ``library-namespace`` is no longer
       required.
 
+  .. important:: **Required GitHub Permissions**
+
+     **Base permissions:**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
+     **Conditional permissions** (only when ``attest-provenance: true``):
+
+     - **id-token**: ``write`` - Required for generating OIDC tokens for provenance attestations
+     - **attestations**: ``write`` - Required for creating artifact attestations
+
 inputs:
 
   # Required inputs
@@ -138,6 +149,23 @@ inputs:
     required: false
     type: boolean
 
+  skip-python-setup:
+    description: |
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
+
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
+    required: false
+    default: false
+    type: boolean
+
 outputs:
 
   activate-venv:
@@ -153,17 +181,25 @@ runs:
 
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
 
     - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ inputs.skip-python-setup == 'false' }}
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
 
     - name: "Identify the build system"
       id: build-system
@@ -222,16 +258,14 @@ runs:
         PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
         PIPX_HOME : ${{ runner.temp }}/pipx/home
 
+    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
+    # the installation speed "uv pip" offers is what needs to be taken advantage of,
+    # using "uv venv" in a separate step is not necessary since "uv pip" will still
+    # work with existing virtual environments.
     - name: "Create a virtual environment"
       shell: bash
-      env:
-        USE_UV: ${{ inputs.use-uv }}
       run: |
-        if [[ "$USE_UV" == 'true' ]]; then
-          uv venv .venv
-        else
-          python -m venv .venv
-        fi
+        python -m venv .venv
 
     - name: "Set up virtual environment activation command"
       id: virtual-environment-activation-command
@@ -315,16 +349,26 @@ runs:
 
     - name: Run smoke test for the library
       env:
-        ACTION_PATH: ${{ github.action_path }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         LIBRARY_NAME: ${{ inputs.library-name }}
       shell: bash
       run: |
         ${ACTIVATE_VENV}
-        python ${ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
+        python ${GITHUB_ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
+
+    - name: "Sanitize library name"
+      id: sanitize
+      shell: bash
+      env:
+        LIBRARY_NAME: "${{ inputs.library-name }}"
+      run: |
+        # Replace all hyphens with underscores
+        SANITIZED_NAME="${LIBRARY_NAME//-/_}"
+        echo "sanitized_library_name=${SANITIZED_NAME}" >> "${GITHUB_OUTPUT}"
 
     - name: "Create Software Bill of Materials (SBOM) using Syft"
       env:
+        SANITIZED_LIBRARY_NAME: ${{ steps.sanitize.outputs.sanitized_library_name }}
         LIBRARY_NAME: ${{ inputs.library-name }}
         LIBRARY_VERSION: ${{ steps.library-version.outputs.library_version }}
         WHEELHOUSE_TARGET: ${{ steps.specific-target-requested.outputs.wheelhouse_target }}
@@ -333,9 +377,9 @@ runs:
       shell: bash
       run: |
         if ! command -v syft > /dev/null; then
-          echo "Syft not found, installation of v1.26.0 in progress..."
+          echo "Syft not found, installation of v1.43.0 in progress..."
           mkdir -p ~/.local/bin
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/ac883f52edb8ca1f5a0a61d12c288d4b34ea3897/install.sh | sh -s -- -b ~/.local/bin v1.26.0
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/ac883f52edb8ca1f5a0a61d12c288d4b34ea3897/install.sh | sh -s -- -b ~/.local/bin v1.43.0
         else
           echo "Syft installation found"
         fi
@@ -344,30 +388,38 @@ runs:
         ~/.local/bin/syft .venv --source-name "${LIBRARY_NAME}" --source-version "${LIBRARY_VERSION}" -o spdx > sbom.spdx
 
         echo "Renaming SBOM file..."
-        mv sbom.spdx "${LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
+        mv sbom.spdx "${SANITIZED_LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
 
     - name: "Upload the SBOM file"
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
-        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+        name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
+        path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: ${{ inputs.attest-provenance == 'true' }}
-      uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
       with:
-        subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
+        subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
 
     - name: "Optionally install build and wheel"
       if: ${{ inputs.install-build-and-wheel == 'true' }}
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
-        $INSTALL_COMMAND build wheel
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
+            poetry add "${line//\'/\"}" --lock
+          done
+          poetry install
+        else
+          $INSTALL_COMMAND -r ${GITHUB_ACTION_PATH}/requirements.txt
+        fi
 
     - name: "Generate the wheelhouse"
       shell: bash
@@ -388,23 +440,23 @@ runs:
         fi
 
     - name: "Compress the wheelhouse"
-      uses: vimtor/action-zip@1379ea20d4c5705669ba81fd626dd01b1c738f26 # v1.2
+      uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: wheelhouse
-        dest: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        dest: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: "Upload the compressed wheelhouse"
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
-        path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
+        path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
         retention-days: 7
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
       with:
-        subject-path: ${{ inputs.library-name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
+        subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
       uses: ansys/actions/check-licenses@main

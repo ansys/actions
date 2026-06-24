@@ -1,13 +1,21 @@
 Ansys
 ansys
 automerge
+caio
+Chocolatey
+CA
 CI
+clr_loader
+[Cc]ookiecutter
 cooldown
 dependabot
 dev
 dependabot
+fastcore
 ghapi
 GitHub
+MiKTeX
+prek
 pypa
 pytest
 PyPI
@@ -15,6 +23,8 @@ pyyaml
 SBOM
 Syft
 toctree
+toml
+tomlkit
 towncrier
 TXT
 PyAnsys Dashboard
@@ -23,3 +33,4 @@ rulesets
 rst
 uv
 zizmor
+wcwidth

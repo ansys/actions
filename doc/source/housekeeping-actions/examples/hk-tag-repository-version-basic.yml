@@ -1,0 +1,16 @@
+hk-tag-repository-version:
+  name: "Tag repository version"
+  runs-on: ubuntu-latest
+  if: github.event_name == 'release'
+  permissions:
+    contents: write  # Required to push commits, delete and create tags
+  steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+    - name: "Update latest vX and vX.Y tag"
+      uses: ansys/actions/hk-tag-repository-version@{{ version }}
+      with:
+        gh-token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
+        release-version: ${{ '{{ github.event.release.tag_name }}' }}

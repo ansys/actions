@@ -173,7 +173,7 @@ runs:
         level: "INFO"
         message: >
           Install system dependencies. Even if no dependencies are provided,
-          Miktex is installed to build the documentation.
+          MiKTeX is installed at user level to build the documentation.
 
     - name: Collect system dependencies
       id: collect-system-dependencies
@@ -185,7 +185,7 @@ runs:
 
     - name: Cache Chocolatey packages
       id: cache
-      uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
@@ -197,13 +197,43 @@ runs:
       shell: powershell
       env:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
-      run: choco install $env:NEEDED_DEPS -y
+      run: |
+        $packages = $env:NEEDED_DEPS -split '\s+'
+        choco install $packages -y
 
-    - name: Install Miktex and update PATH with Miktex binaries
+    - name: Install MiKTeX and update PATH with MiKTeX binaries
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install miktex -y
-        echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        # NOTE: Declared at script scope so it can be accessed inside function
+        $script:userMiKTeX = "$env:LocalAppData\Programs\MiKTeX\miktex\bin\x64"
+
+        function Invoke-MiKTeXCheck {
+          param(
+            [string]$InstallPath,
+            [string]$Level
+          )
+          Write-Host "MiKTeX already installed at $Level level, using existing installation."
+          $miktexVersion = & "$InstallPath\miktex.exe" --version
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Existing MiKTeX installation at $Level level is not working properly, reinstalling it at user level..."
+            choco install miktex --params '"/Set:basic /ThisUser"' -y --force
+            echo "$script:userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          } else {
+            Write-Host "Existing MiKTeX installation at $Level level is working properly (version: $miktexVersion)."
+            echo "$InstallPath" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          }
+        }
+
+        $systemMiKTeX = "C:\Program Files\MiKTeX\miktex\bin\x64"
+        if (Test-Path "$script:userMiKTeX\miktex.exe") {
+          Invoke-MiKTeXCheck -InstallPath $script:userMiKTeX -Level "user"
+        } elseif (Test-Path "$systemMiKTeX\miktex.exe") {
+          Invoke-MiKTeXCheck -InstallPath $systemMiKTeX -Level "system"
+        } else {
+          Write-Host "MiKTeX is not installed, installing it at user level..."
+          choco install miktex --params '"/Set:basic /ThisUser"' -y
+          echo "$script:userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        }
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
@@ -216,7 +246,7 @@ runs:
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install quarto --version=1.6.43 -y
+        choco install quarto -y
         echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
     # ------------------------------------------------------------------------
@@ -225,12 +255,18 @@ runs:
       with:
         level: "INFO"
         message: >
-          Set up Miktex to allow downloading missing packages when building documentation.
+          Set up MiKTeX to allow downloading missing packages when building documentation.
 
-    - name: Set up Miktex to automatically install packages
+    - name: Set up MiKTeX to automatically install packages
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
+
+    - name: Install additional packages for MiKTeX (known to be required for Quarto cheatsheet)
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: powershell
+      run: |
+        mpm --install lm-math
 
     # ------------------------------------------------------------------------
 
@@ -598,14 +634,14 @@ runs:
           Upload HTML and PDF
 
     - name: Upload HTML documentation artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: Upload PDF documentation artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf

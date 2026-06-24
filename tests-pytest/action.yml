@@ -26,6 +26,10 @@ name: |
 description: |
   Run a test suite using `pytest <https://docs.pytest.org/en/stable/>`_.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
 inputs:
 
   # Optional inputs
@@ -128,12 +132,29 @@ inputs:
     required: false
     type: boolean
 
+  skip-python-setup:
+    description: |
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
+
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
@@ -174,13 +195,21 @@ runs:
         message: >
           Set up python to test.
 
-    - name: "Set up Python"
+    - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ inputs.skip-python-setup == 'false' }}
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
 
     # NOTE: Installation of poetry in a separate environment to the project to
     # avoid situations in which both poetry and the project have shared
@@ -352,11 +381,19 @@ runs:
     - name: "Randomize the order of the tests"
       shell: bash
       if: inputs.randomize == 'true'
+      env:
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        SKIP_INSTALL: ${{ inputs.skip-install }}
       run: |
-        if [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install pytest-randomly
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
+          grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
+            poetry add "${line//\'/\"}" --lock
+          done
+          poetry install
+        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+          uv pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
         else
-          python -m pip install pytest-randomly
+          python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
         fi
 
     - name: "Executing test suite"

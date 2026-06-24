@@ -62,15 +62,12 @@ inputs:
     required: true
     type: string
 
-  # Optional inputs
-
   doc-artifact-name:
     description: |
         Name of the HTML documentation artifact. This artifact is expected to
         contain all the HTML and static files. If it contains a compressed file,
         make sure you enable the ``decompress-artifact`` option.
-    required: false
-    default: 'documentation-html'
+    required: true
     type: string
 
   decompress-artifact:
@@ -78,51 +75,49 @@ inputs:
       Whether to decompress the ``doc-artifact-name`` file using `ouch
       <https://github.com/ouch-org/ouch>`_ as decompression tool. Default value
       is ``false``.
-    required: false
-    default: false
+    required: true
     type: string
 
   repository:
     description: |
       Repository name in the form of ``username/repository`` to be used for
       deploying the documentation. The current repository is assumed by default.
-    required: false
-    default: 'current'
+    required: true
     type: string
 
   branch:
     description: |
       Branch name for deploying the documentation. The ``gh-pages`` branch is
       used by default.
-    required: false
-    default: 'gh-pages'
+    required: true
     type: string
 
   commit-message:
     description: |
       Commit message used when deploying the documentation.
-    required: false
-    default: 'DOC: update pull request documentation'
-    type: string
-
-  force-orphan:
-    description: |
-      Whether to force the deployment branch to be orphan or not. Default value
-      is ``true``.
-    required: false
-    default: true
+    required: true
     type: string
 
   maximum-pr-doc-deployments:
     description: |
       The maximum number of pull requests documentation allowed to be deployed.
-    required: false
-    default: 5
+    required: true
     type: number
 
 runs:
   using: "composite"
   steps:
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Starting with v10.3, doc-deploy-pr action doesn't force the deployment branch to be an orphan with
+          only the latest commit (as opposed doc-deploy-dev and doc-deploy-stable which force the deployment
+          branch to be an orphan with only the latest commit by default). This helps to prevent race conditions in very active
+          repositories (see https://github.com/ansys/actions/issues/1103 for more information). This means PR documentation are
+          added to the deployment branch as separate commits. The branch history is only rewritten into a single commit when
+          doc-deploy-dev or doc-deploy-stable is run with ``force-orphan: true`` (which is the default value).
 
     - uses: ansys/actions/_logging@main
       with:
@@ -144,7 +139,7 @@ runs:
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials must be persisted in this case
@@ -248,6 +243,7 @@ runs:
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
       uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
+        token: ${{ inputs.token }}
         issue-number: ${{ github.event.pull_request.number }}
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
         edit-mode: replace
@@ -257,7 +253,7 @@ runs:
 
     - name: "Download the pr documentation artifact"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: pull/${{ github.event.pull_request.number }}
@@ -274,14 +270,20 @@ runs:
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        sudo apt-get install -y cargo && cargo install ouch
+        sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd pull/${PR_NUMBER} && compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact
-        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
-        mv $decompressed_artifact/* .
-        rm -rf $compressed_artifact $decompressed_artifact
+        cd pull/${PR_NUMBER}
+        compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
+        mkdir _decomp
+        ouch decompress "$compressed_artifact" --dir _decomp --yes
+        content=(_decomp/*)
+        if [ "${#content[@]}" -eq 1 ] && [ -d "${content[0]}" ]; then
+          mv "${content[0]}"/* .
+        else
+          mv _decomp/* .
+        fi
+        rm -rf "$compressed_artifact" _decomp
 
     - name: "Display structure of pull/${{ github.event.pull_request.number }}"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
@@ -320,31 +322,34 @@ runs:
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
       if: ${{ inputs.repository == 'current' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
       with:
-        publish_dir: .
+        publish_dir: pull/${{ github.event.pull_request.number }}
+        destination_dir: pull/${{ github.event.pull_request.number }}
         publish_branch: ${{ inputs.branch }}
         github_token: ${{ inputs.token }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
-        force_orphan: ${{ inputs.force-orphan }}
+        force_orphan: false
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
       if: ${{ inputs.repository != 'current' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
       with:
-        publish_dir: .
+        publish_dir: pull/${{ github.event.pull_request.number }}
+        destination_dir: pull/${{ github.event.pull_request.number }}
         publish_branch: ${{ inputs.branch }}
         personal_token: ${{ inputs.token }}
         external_repository: ${{ inputs.repository }}
         commit_message: ${{ inputs.commit-message }}
         keep_files: true
-        force_orphan: ${{ inputs.force-orphan }}
+        force_orphan: false
 
     - name: "Make a PR comment the first time a PR documentation is deployed"
       if: ${{ steps.create-pull-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
       with:
+        token: ${{ inputs.token }}
         issue-number: ${{ github.event.pull_request.number }}
         body: >
           The documentation for this pull request will be available at

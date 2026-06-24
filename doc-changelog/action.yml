@@ -29,6 +29,11 @@ description: |
 
   This action will only work on Linux/macOS runners.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to commit and push changelog fragments
+     - **pull-requests**: ``write`` - Required to add comments on pull requests
+
 inputs:
   # Required inputs
 
@@ -61,24 +66,24 @@ inputs:
     required: false
     type: string
 
-  towncrier-version:
+  towncrier-version:  # TODO: Remove deprecated input in v12
     description: |
-      Towncrier version used for creating fragment files.
-    default: '24.8.0'
-    required: false
-    type: string
-
-  toml-version: # TODO: Remove deprecated input in v11
-    description: |
-      Toml version used for retrieving the towncrier directory.
+      DEPRECATED ARGUMENT. Towncrier version used for creating fragment files.
     default: ''
     required: false
     type: string
 
-  tomli-version:
+  tomli-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomli version used for retrieving the towncrier directory.
-    default: '2.2.1'
+      DEPRECATED ARGUMENT. Tomli version used for retrieving the towncrier directory.
+    default: ''
+    required: false
+    type: string
+
+  tomlkit-version:  # TODO: Remove deprecated input in v12
+    description: |
+      DEPRECATED ARGUMENT. Tomlkit version used for reading and writing the towncrier configuration.
+    default: ''
     required: false
     type: string
 
@@ -102,7 +107,7 @@ inputs:
 
   use-conventional-commits: # TODO: Remove deprecated input in v12
     description: |
-      [DEPRECATED] Use pull request title to determine the changelog category based on
+      DEPRECATED ARGUMENT. Use pull request title to determine the changelog category based on
       conventional commits. If ``false``, the labels in the pull request are used
       to determine the changelog category.
     required: false
@@ -134,24 +139,31 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
-      if: inputs.toml-version != ''
+    - uses: ansys/actions/_logging@main # TODO: Remove in v12
+      if: inputs.use-conventional-commits != ''
       with:
         level: "ERROR"
         message: >
-          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
-          is no longer used because it cannot parse ``pyproject.toml`` files where groups
-          include other groups. This action now uses the ``tomli`` library instead. If you
-          want to use a specific version of ``tomli``, please set the ``tomli-version``
-          input accordingly. The ``toml-version`` input will be removed in v11.
-
-    - uses: ansys/actions/_logging@main # Switch logging level to ERROR in v12
-      if: inputs.use-conventional-commits != ''
-      with:
-        level: "WARNING"
-        message: >
           The ``use-conventional-commits`` input is deprecated and will be removed in v12.
           Please use the ``use-pull-request-title`` input instead.
+
+    - uses: ansys/actions/_logging@main # TODO: Remove in v12
+      if: inputs.tomli-version != ''
+      with:
+        level: "ERROR"
+        message: >
+          Due to loss of information during parsing, including formatting and comments, the
+          ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
+          will be removed in v12.
+
+    - uses: ansys/actions/_logging@main
+      if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
+      with:
+        level: "ERROR"
+        message: >
+          Due to dependency changes breaking the actions and the need to manage which version
+          of dependencies are used in the actions, the ``towncrier-version`` and
+          ``tomlkit-version`` inputs are deprecated and will be removed in v12.
 
     - name: "Mapping to env vars"
       shell: bash
@@ -169,7 +181,7 @@ runs:
     - name: "Install Git and clone project"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         # Required to checkout branch from origin rather than remote
         ref: ${{ env.PR_BRANCH }}
@@ -183,14 +195,13 @@ runs:
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: "Install towncrier and tomli"
+    - name: "Install towncrier and tomlkit"
       shell: bash
       env:
-        TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOMLI_VERSION: ${{ inputs.tomli-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomli==${TOMLI_VERSION}
+        ${INSTALL_COMMAND} --upgrade pip
+        ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Get first letter of conventional commit type"
       if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
@@ -329,7 +340,7 @@ runs:
       run: |
         import pathlib
         import os
-        import tomli
+        import tomlkit
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -342,7 +353,7 @@ runs:
 
         # Load pyproject.toml
         with open(towncrier_config, 'rb') as f:
-            config = tomli.load(f)
+            config = tomlkit.load(f)
             template = config["tool"]["towncrier"]["template"]
             filename = config["tool"]["towncrier"]["filename"]
 

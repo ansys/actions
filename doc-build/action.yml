@@ -41,6 +41,10 @@ description: |
   ``make.bat json``) command can also be executed to generate JSON
   documentation.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
 inputs:
 
   # Optional inputs
@@ -185,8 +189,9 @@ inputs:
       Any valid install targets/extras defined in the ``pyproject.toml`` file, or the suffix
       of a requirement file. Multiple targets can be specified as a comma-separated
       list (space-separated for poetry-based projects). The associated dependencies are installed
-      before building the documentation. Default value is ``doc``.
-    default: 'doc'
+      before building the documentation. Default value is ``''``. If neither this nor
+      ``group-dependencies-name`` is provided, the action defaults to ``doc``.
+    default: ''
     required: false
     type: string
 
@@ -194,8 +199,9 @@ inputs:
     description: |
       Any valid dependency groups defined in the ``pyproject.toml`` file. Multiple
       targets can be specified as a comma-separated list. The associated dependencies
-      are installed before running the documentation build. Default value is ``''``
-      in which case the action will not use dependency groups.
+      are installed before running the documentation build. Default value is ``''``.
+      If neither this nor ``optional-dependencies-name`` is provided, the action
+      defaults to using ``optional-dependencies-name=doc``.
     default: ''
     required: false
     type: string
@@ -209,6 +215,23 @@ inputs:
     required: false
     type: string
 
+  skip-python-setup:
+    description: |
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
+
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -216,18 +239,51 @@ runs:
     # --------------- Common to linux and windows doc-build ----------------
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
 
-    - name: "Set up Python"
+    - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ inputs.skip-python-setup == 'false' }}
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
+
+    # ------------------------------------------------------------------------
+
+    - name: "Resolve dependency inputs"
+      id: resolve-deps
+      shell: bash
+      env:
+        OPT_DEPS: ${{ inputs.optional-dependencies-name }}
+        GRP_DEPS: ${{ inputs.group-dependencies-name }}
+      run: |
+        if [[ -z "$OPT_DEPS" && -z "$GRP_DEPS" ]]; then
+          echo "resolved-optional=doc" >> $GITHUB_OUTPUT
+          echo "resolved-group=" >> $GITHUB_OUTPUT
+        else
+          echo "resolved-optional=$OPT_DEPS" >> $GITHUB_OUTPUT
+          echo "resolved-group=$GRP_DEPS" >> $GITHUB_OUTPUT
+        fi
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ steps.resolve-deps.outputs.resolved-optional != '' && steps.resolve-deps.outputs.resolved-group != '' }}
+      with:
+        level: "WARNING"
+        message: >
+          Both 'optional-dependencies-name' and 'group-dependencies-name' are specified.
+          Both will be used for installation.
 
     # ------------------------------------------------------------------------
 
@@ -245,8 +301,8 @@ runs:
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
         use-uv: ${{ inputs.use-uv }}
-        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
-        group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
+        group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
         uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
 
     # ------------------------------------------------------------------------
@@ -272,6 +328,6 @@ runs:
         add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
         needs-quarto: ${{ inputs.needs-quarto }}
         use-uv: ${{ inputs.use-uv }}
-        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
-        group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
+        group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
         uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}

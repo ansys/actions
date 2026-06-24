@@ -30,12 +30,27 @@ description: |
   file is expected to contain a wheel file and a source distribution file for
   the desired library.
 
+  .. error::
+
+      This action is deprecated starting with ``ansys/action@v11`` because publishing
+      to PyPI using tokens is no longer supported. Please contact the PyAnsys Core Team
+      at pyansys.core@ansys.com for enabling trusted publishing for your project and also
+      refer to :ref:`release_pypi_trusted_publisher`.
+
   .. attention::
 
       Starting with version ``ansys-actions@v9``, the ``use-trusted-publisher``
       input parameter is deprecated. Refer to the
       :ref:`release_pypi_trusted_publisher` if you wish to use this security
       feature.
+
+  .. important:: **Required GitHub Permissions**
+
+     **Conditional permissions** (only when using PyPI trusted publishers):
+
+     - **id-token**: ``write`` - Required for OIDC authentication with PyPI trusted publishers
+
+     When using API tokens, no GitHub permissions are required.
 
 inputs:
 
@@ -110,25 +125,13 @@ runs:
   using: "composite"
   steps:
 
-    # TODO: ansys/actions@v11 will enforce the use of trusted publishers
-    - name: "Warn user if not using trusted publishers"
-      if: ${{ inputs.use-trusted-publisher == 'false' }}
+    # TODO: The action file should be removed in ansys/actions@v12
+    - name: "Fail the action"
       uses: ansys/actions/_logging@main
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
-          Ansys Actions v11 will remove support for releases using PyPI tokens.
-          Please contact the PyAnsys Core Team at pyansys.core@ansys.com for
-          enabling trusted publishers releases in your project.
-
-    - name: "Release to test PyPI index"
-      uses: ansys/actions/_release-pypi@main
-      with:
-        library-name: ${{ inputs.library-name }}
-        index-name: "https://test.pypi.org/legacy/"
-        twine-username: ${{ inputs.twine-username }}
-        twine-token: ${{ inputs.twine-token }}
-        python-version: ${{ inputs.python-version }}
-        dry-run: ${{ inputs.dry-run }}
-        skip-existing: ${{ inputs.skip-existing }}
-        use-trusted-publisher: ${{ inputs.use-trusted-publisher }}
+          This action is deprecated starting with ``ansys/action@v11`` because publishing
+          to test PyPI using tokens is no longer supported. Please contact the PyAnsys Core Team
+          at pyansys.core@ansys.com for enabling trusted publishing for your project and also
+          refer to :ref:`release_pypi_trusted_publisher`.

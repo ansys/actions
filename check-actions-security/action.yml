@@ -29,6 +29,10 @@ description: |
   `zizmor <https://docs.zizmor.sh/>`_. Consult `zizmor audit rules <https://docs.zizmor.sh/audits/>`_
   for more information about detected issues and how to remediate them.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
 inputs:
 
   # Optional inputs
@@ -78,17 +82,17 @@ runs:
   steps:
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
 
     - name: "Install uv"
-      uses: astral-sh/setup-uv@61cb8a9741eeb8a550a1b8544337180c0fc8476b # v7.2.0
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
 
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.16.0
+        uv tool install zizmor==1.25.2
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -118,6 +122,12 @@ runs:
       run: |
         cat << _EOF_ > zizmor.yml
         rules:
+          secrets-outside-env:
+            disable: true
+
+          superfluous-actions:
+            disable: true
+
           unpinned-uses:
             config:
               policies:

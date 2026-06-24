@@ -3,11 +3,9 @@ updates:
   - package-ecosystem: "pip"
     directories:
       - "/requirements"
-      - "/check-vulnerabilities"
-      - "/hk-package-clean-except"
-      - "/hk-package-clean-untagged"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "wednesday"
     cooldown:
       default-days: 7
       include:
@@ -19,9 +17,26 @@ updates:
     labels:
       - "dependencies:requirements"
 
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    cooldown:
+      default-days: 7
+      include:
+        - "*"  # Include all dependencies in cooldown
+    exclude-paths:
+      - "**/requirements*.txt"
+    commit-message:
+      prefix: "build(uv)"
+    labels:
+      - "dependencies:requirements"
+
   - package-ecosystem: "github-actions"
     directories:
       - ".github/workflows"
+      - "_check-environment-approval"
       - "_doc-build-linux"
       - "_doc-build-windows"
       - "_doc-gen-canonical"
@@ -37,7 +52,6 @@ updates:
       - "build-library"
       - "build-wheelhouse"
       - "check-actions-security"
-      - "check-environment-approval"
       - "check-licenses"
       - "check-pr-title"
       - "check-vulnerabilities"
@@ -86,7 +100,7 @@ updates:
       # Group dedicated to vale due to the use of a release branch (reviewdog20)
       vale-action:
         patterns:
-          - "errata-ai/vale-action"
+          - "vale-cli/vale-action"
       # Actions associated to our documentation composite actions
       doc-related-actions:
         patterns:
@@ -118,3 +132,23 @@ updates:
           - dependabot/fetch-metadata
         exclude-patterns:
           - "ansys/actions*"
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    cooldown:
+      default-days: 7 # semver-* options are not applicable for pre-commit
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys/pre-commit-hooks/*"
+    labels:
+      - "dependencies:pre-commit"
+    commit-message:
+      prefix: "build(pre-commit)"
+    groups:
+      pre-commit-hooks:
+        patterns:
+          - "*"

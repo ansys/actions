@@ -6,6 +6,7 @@
 
 ## Individual Contributors
 
+* [Acohen-work](https://github.com/Acohen-work)
 * [Alex Fernandez](https://github.com/AlejandroFernandezLuces)
 * [Alex Kaszynski](https://github.com/akaszynski)
 * [Andy Grigg](https://github.com/Andy-Grigg)
@@ -16,6 +17,7 @@
 * [Edouard Coussoux](https://github.com/ecoussoux-ansys)
 * [German](https://github.com/germa89)
 * [Guillem Barroso](https://github.com/GuillemBarroso)
+* [Jeff Moody](https://github.com/ansjmoody)
 * [Kathy Pippert](https://github.com/PipKat)
 * [Kerry McAdams](https://github.com/klmcadams)
 * [Ludovic Steinbach](https://github.com/ludovicsteinbach)

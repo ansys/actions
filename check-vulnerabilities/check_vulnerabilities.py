@@ -37,6 +37,11 @@ from typing import Any, Dict
 
 import click
 import github
+from github.AdvisoryVulnerability import (
+    SimpleAdvisoryVulnerability,
+    SimpleAdvisoryVulnerabilityPackage,
+)
+from requests.exceptions import SSLError
 
 TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
 PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
@@ -46,6 +51,13 @@ ERROR_IF_NEW_ADVISORY = (
     True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 )
 CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
+
+_SSL_CORPORATE_NETWORK_HINT = (
+    "On corporate networks, an SSL inspection proxy may intercept HTTPS connections "
+    "and present its own certificate, which the requests library does not trust by default "
+    "(it uses certifi's CA bundle). To fix this, set REQUESTS_CA_BUNDLE to a combined CA "
+    "bundle that includes both the corporate root CA and the standard certifi bundle."
+)
 
 
 def dict_hash(dictionary: Dict[str, Any]) -> str:
@@ -110,7 +122,16 @@ def check_vulnerabilities():
     g = github.Github(auth=github.Auth.Token(TOKEN))
 
     # Get the repository
-    repo = g.get_repo(REPOSITORY)
+    try:
+        repo = g.get_repo(REPOSITORY)
+    except SSLError as e:
+        raise RuntimeError(
+            "SSL error occurred while trying to access the GitHub API. "
+            + _SSL_CORPORATE_NETWORK_HINT
+            + " Setting it to the corporate CA alone is not sufficient: it replaces "
+            + "certifi entirely, causing connections to domains not intercepted by "
+            + "the proxy to fail as well."
+        ) from e
 
     # Get the available security advisories
     existing_advisories = {}
@@ -143,12 +164,15 @@ def check_vulnerabilities():
 
         # Advisory info
         summary = f"Safety vulnerability {v_id} for package '{v_package}'"
-        vuln_adv = {
-            "package": {"name": f"{v_package}", "ecosystem": "pip"},
-            "vulnerable_version_range": f"{v_affected_versions}",
-            "patched_versions": f"{v_fixed_versions}",
-            "vulnerable_functions": [],
-        }
+
+        vuln_adv = SimpleAdvisoryVulnerability(
+            package=SimpleAdvisoryVulnerabilityPackage(
+                name=f"{v_package}", ecosystem="pip"
+            ),
+            vulnerable_version_range=f"{v_affected_versions}",
+            patched_versions=f"{v_fixed_versions}",
+            vulnerable_functions=[],
+        )
         desc = f"""
 {v_desc}
 
@@ -234,12 +258,14 @@ once it has been verified (since it has been created in draft mode).
 
         # Advisory info
         summary = f"Bandit [{v_test_id}:{v_test_name}] on {v_filename} - Hash: {v_hash}"
-        vuln_adv = {
-            "package": {"name": f"{v_package}", "ecosystem": "pip"},
-            "vulnerable_functions": [],
-            "vulnerable_version_range": None,
-            "patched_versions": None,
-        }
+        vuln_adv = SimpleAdvisoryVulnerability(
+            package=SimpleAdvisoryVulnerabilityPackage(
+                name=f"{v_package}", ecosystem="pip"
+            ),
+            vulnerable_functions=[],
+            vulnerable_version_range=None,
+            patched_versions=None,
+        )
         desc = f"""
 {v_desc}
 
@@ -331,36 +357,73 @@ def generate_advisory_files():
     -----
     This function should ONLY be used for local purposes.
     """
-    import bandit.cli.main as bandit
-    import safety.cli as safety
+    import shutil
+    import subprocess
 
     # Delete previous advisory files
     if os.path.exists("info_safety.json"):
         os.remove("info_safety.json")
     if os.path.exists("info_bandit.json"):
         os.remove("info_bandit.json")
+    safety_exe = shutil.which("safety")
+    if safety_exe is None:
+        raise FileNotFoundError("safety executable not found")
+    bandit_exe = shutil.which("bandit")
+    if bandit_exe is None:
+        raise FileNotFoundError("bandit executable not found")
 
-    # Safety check
-    try:
-        safety.cli.main(
-            ["check", "-o", "bare", "--save-json", "info_safety.json"],
-            standalone_mode=False,
+    if not os.path.exists("requirements-for-safety.txt"):
+        raise FileNotFoundError(
+            "Expected requirements-for-safety.txt not found. "
+            "This file is required for running the safety vulnerability check and should "
+            "contain the list of dependencies to scan."
         )
-    except:  # noqa: E722
-        print("Safety check performed.")
-        pass
 
-    # Bandit check
+    # Safety check - invoke the safety executable directly to avoid Safety reading
+    # the parent process argv (a Safety 3.x bug when called via `python -m safety`)
     try:
-        sys.argv.pop()
-        sys.argv.extend(["-r", "./src", "-o", "info_bandit.json", "-f", "json"])
-        bandit.main()
-    except:  # noqa: E722
-        pass
+        result = subprocess.run(
+            [
+                safety_exe,
+                "check",
+                "--output",
+                "json",
+                "--save-json",
+                "info_safety.json",
+                "--policy-file",
+                ".safety-ignore.yml",
+                "-r",
+                "requirements-for-safety.txt",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if any(
+            "unable to reach the server" in msg
+            for msg in [result.stdout, result.stderr]
+        ):
+            raise RuntimeError(
+                "Safety could not reach the vulnerability database (pyup.io). "
+                + _SSL_CORPORATE_NETWORK_HINT
+            )
+    except RuntimeError:
+        raise
+    except Exception as e:
+        print(f"Safety check warning: {e}")
+    finally:
+        print("Safety check performed.")
+
+    # Bandit check - invoke the bandit executable directly
+    try:
+        subprocess.run(
+            [bandit_exe, "-r", "./src", "-o", "info_bandit.json", "-f", "json"],
+            check=False,
+        )
+    except Exception as e:
+        print(f"Bandit check warning: {e}")
     finally:
         print("Bandit check performed.")
-        sys.argv = sys.argv[: len(sys.argv) - 5]
-        sys.argv.append("--run-local")
 
     print("Advisory files generated successfully.")
 

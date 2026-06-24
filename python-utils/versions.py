@@ -25,10 +25,13 @@ import os
 import re
 import shutil
 from pathlib import Path
+from typing import Literal, cast
 
 from packaging.version import Version
 
 KEYS = ("name", "version", "url")
+# Values that github.ref_type can take, see https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
+REF_TYPES = Literal["tag", "branch"]
 
 
 def make_entry(values: tuple[str, str, str]) -> dict:
@@ -36,7 +39,7 @@ def make_entry(values: tuple[str, str, str]) -> dict:
     return dict(zip(KEYS, values))
 
 
-def get_version_and_ref_type() -> tuple[str, str]:
+def get_version_and_ref_type() -> tuple[str, REF_TYPES]:
     """Get the version and reference type from environment variables.
 
     Returns
@@ -44,8 +47,8 @@ def get_version_and_ref_type() -> tuple[str, str]:
     tuple[str, str]
         A tuple containing the version and reference type.
     """
-    ref_type = os.getenv("REF_TYPE")
-    ref_name = os.getenv("REF_NAME")
+    ref_name = os.environ["REF_NAME"]
+    ref_type: REF_TYPES = cast(REF_TYPES, os.environ["REF_TYPE"])
     match ref_type:
         case "tag":
             version = ref_name.split("v")[1]
@@ -69,7 +72,12 @@ def get_versions_list(exclude_prereleases: bool = False) -> list[Version]:
     """
     version_dir = Path("version")
     if not version_dir.exists() or not version_dir.is_dir():
-        raise FileNotFoundError("Could not find the version/ directory")
+        raise FileNotFoundError(
+            "Could not find the 'version/' directory in the current branch. "
+            "This directory is expected to be present in the branch and is generated "
+            "by the 'doc-deploy-dev' action. Make sure the 'doc-deploy-dev' action has been run "
+            "at least once before running the 'doc-deploy-stable' action."
+        )
     version_list = []
     excluded_versions = ["dev", "stable"]
     for version_folder in version_dir.glob("*/"):
@@ -96,10 +104,10 @@ def export_to_github_output(var_name: str, var_value: str) -> None:
         The value of the environment variable.
     """
     # Get the GITHUB_OUTPUT variable
-    github_output = os.getenv("GITHUB_OUTPUT")
+    github_output = os.environ["GITHUB_OUTPUT"]
 
     # Save environment variable with its value
-    with open(github_output, "a") as file:
+    with open(github_output, mode="a") as file:
         if "\n" in var_value or "\r" in var_value:
             file.write(f"{var_name}<<EOF\n")
             file.write(var_value)
@@ -108,15 +116,18 @@ def export_to_github_output(var_name: str, var_value: str) -> None:
             file.write(f"{var_name}={var_value}\n")
 
 
-def find_stable_release() -> str:
+def find_stable_release() -> str | None:
     """Find the latest stable release version.
 
     Returns
     -------
-    str
-        The latest stable release version as a string.
+    str | None
+        The latest stable release version as a string, or ``None`` if no
+        stable (non-pre-release) version exists yet.
     """
     versions_list = get_versions_list(exclude_prereleases=True)
+    if not versions_list:
+        return None
     stable_release = max(versions_list)
     return str(stable_release)
 
@@ -127,10 +138,11 @@ def write_versions_file() -> None:
 
     Also exports the latest stable version to the GITHUB_OUTPUT file.
     """
-    cname = os.getenv("CNAME")
-    render_last = int(os.getenv("RENDER_LAST"))
+    cname = os.environ["CNAME"]
+    render_last = int(os.environ["RENDER_LAST"])
     stable_release = find_stable_release()
-    url_stable = f"https://{cname}/version/stable/"
+    if stable_release is not None:
+        url_stable = f"https://{cname}/version/stable/"
     content = []
 
     # version dev
@@ -140,7 +152,7 @@ def write_versions_file() -> None:
     # Other versions (including stable)
     full_list = sorted(get_versions_list(), reverse=True)
     for version in full_list[:render_last]:
-        if version == Version(stable_release):
+        if stable_release is not None and version == Version(stable_release):
             content.append(
                 make_entry((f"{stable_release} (stable)", stable_release, url_stable))
             )
@@ -155,7 +167,9 @@ def write_versions_file() -> None:
     with open("versions.json", "w", encoding="utf-8") as file:
         json.dump(content, file, indent=2)
 
-    export_to_github_output("LATEST_STABLE_VERSION", stable_release)
+    export_to_github_output(
+        "LATEST_STABLE_VERSION", stable_release if stable_release else ""
+    )
 
 
 def set_version_variable() -> None:
@@ -195,7 +209,7 @@ def set_version_variable() -> None:
         match = tag_pattern.match(version)
     elif ref_type == "branch":
         match = branch_pattern.match(version)
-    if match.group():
+    if match and match.group():
         assert version == match.group()  # Verify that version is the same as the match
         versions_list = get_versions_list()
         current_version = Version(version)
@@ -208,12 +222,14 @@ def set_version_variable() -> None:
         ]
         if current_version.is_prerelease:
 
-            latest_stable_version = Version(find_stable_release())
-            if latest_stable_version > current_version:  # This is not allowable
-                print(
-                    f"Stable release version higher than the pre-release version found: {latest_stable_version}"
-                )
-                exit(1)
+            latest_stable_str = find_stable_release()
+            if latest_stable_str is not None:
+                latest_stable_version = Version(latest_stable_str)
+                if latest_stable_version > current_version:  # This is not allowable
+                    print(
+                        f"Stable release version higher than the pre-release version found: {latest_stable_version}"
+                    )
+                    exit(1)
 
             # Ensure highest hierarchy of current pre-release
             valid_prerelease = all(

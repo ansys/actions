@@ -34,6 +34,17 @@ description: |
       <https://actions.docs.ansys.com/version/stable/build-actions/index.html#build-ci-wheels-action>`_
       if your library is a pure Python project with no source code to be compiled.
 
+  .. important:: **Required GitHub Permissions**
+
+     **Base permissions:**
+
+     - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+
+     **Conditional permissions** (only when ``attest-provenance: true``):
+
+     - **id-token**: ``write`` - Required for generating OIDC tokens for provenance attestations
+     - **attestations**: ``write`` - Required for creating artifact attestations
+
 inputs:
 
   # Required inputs
@@ -110,16 +121,19 @@ inputs:
     required: false
     type: boolean
 
-  checkout-fetch-depth:
+  skip-python-setup:
     description: |
-      Set fetch-depth option for actions/checkout. Default value is ``1``.
-    required: false
-    default: '1'
-    type: string
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
 
-  checkout-fetch-tags:
-    description: |
-      Set fetch-tags option for actions/checkout. Default value is ``false``.
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
     required: false
     default: false
     type: boolean
@@ -130,19 +144,25 @@ runs:
 
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
-        fetch-depth: ${{ inputs.checkout-fetch-depth }}
-        fetch-tags:  ${{ inputs.checkout-fetch-tags }}
 
-    - name: "Set up Python"
+    - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ inputs.skip-python-setup == 'false' }}
       uses: ansys/actions/_setup-python@main
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
 
     - name: "Install library"
       shell: bash
@@ -180,15 +200,26 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        ${INSTALL_COMMAND} build twine
+        if [[ "${USE_UV}" == 'true' ]]; then
+          REQUIREMENTS_FILE="${GITHUB_ACTION_PATH}/requirements-uv.txt"
+        else
+          REQUIREMENTS_FILE="${GITHUB_ACTION_PATH}/requirements-pip.txt"
+        fi
+        ${INSTALL_COMMAND} -r ${REQUIREMENTS_FILE}
 
     - name: "Build distribution artifacts"
       shell: bash
       env:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        python -m build --outdir dist "${WORKING_DIRECTORY}"
+        if [ "${USE_UV}" == "true" ]; then
+          uv build --out-dir dist "${WORKING_DIRECTORY}"
+        else
+          python -m build --outdir dist "${WORKING_DIRECTORY}"
+        fi
 
     - name: "Check build health"
       shell: bash
@@ -197,7 +228,7 @@ runs:
         python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.library-name }}-artifacts
         path: dist/
@@ -205,6 +236,6 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
       with:
         subject-path: dist/

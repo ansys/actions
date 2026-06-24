@@ -28,6 +28,11 @@ description: |
   development version of a library to the specified branch of a repository. By
   default, the ``gh-pages`` branch of the current repository is assumed.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push documentation to the gh-pages branch
+     - **pull-requests**: ``write`` - Required to add comments on pull requests about documentation deployment
+
 inputs:
 
   # Required inputs
@@ -152,7 +157,7 @@ runs:
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials need to be persisted in this case
@@ -210,7 +215,7 @@ runs:
         rm -rf version/dev && mkdir -p version/dev
 
     - name: "Download the development documentation artifact"
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/dev
@@ -224,14 +229,20 @@ runs:
       shell: bash
       if: inputs.decompress-artifact == 'true'
       run: |
-        sudo apt-get install -y cargo && cargo install ouch
+        sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd version/dev && compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact
-        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
-        mv $decompressed_artifact/* .
-        rm -rf $compressed_artifact $decompressed_artifact
+        cd version/dev
+        compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
+        mkdir _decomp
+        ouch decompress "$compressed_artifact" --dir _decomp --yes
+        content=(_decomp/*)
+        if [ "${#content[@]}" -eq 1 ] && [ -d "${content[0]}" ]; then
+          mv "${content[0]}"/* .
+        else
+          mv _decomp/* .
+        fi
+        rm -rf "$compressed_artifact" _decomp
 
     - name: "Display structure of version/dev"
       shell: bash
@@ -427,7 +438,7 @@ runs:
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
       if: inputs.repository == 'current'
-      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
       with:
         publish_dir: .
         publish_branch: ${{ inputs.branch }}
@@ -438,7 +449,7 @@ runs:
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
       if: inputs.repository != 'current'
-      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
       with:
         publish_dir: .
         publish_branch: ${{ inputs.branch }}

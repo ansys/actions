@@ -4,7 +4,7 @@ on:
     types: [opened, reopened, synchronize, edited, labeled]
 
 env:
-  MAIN_PYTHON_VERSION: '3.13'
+  MAIN_PYTHON_VERSION: '3.14'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
 
@@ -24,13 +24,16 @@ jobs:
       environment: ${{ steps.block.outputs.environment }}
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
       - name: Decide which environment should be used
         id: block
-        uses: ./check-environment-approval
+        uses: ./_check-environment-approval
+        with:
+          manual-check-environment: 'dependabot'
+          skip-manual-check-environment: ''
 
   # NOTE: We do not allow dependabot to trigger the CI/CD pipeline automatically.
   # This is to mitigate supply chain attacks, where a malicious dependency update
@@ -63,7 +66,7 @@ jobs:
     steps:
 
      - name: "Checkout project"
-       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
        with:
         persist-credentials: false
 
@@ -75,7 +78,7 @@ jobs:
      - name: "Label pull-request"
        # HACK: skip if contributor does not have write permissions (forks)
        if: github.event.pull_request.head.repo.full_name == github.repository
-       uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
+       uses: actions/labeler@f27b608878404679385c85cfa523b85ccb86e213 # v6.1.0
        with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -89,7 +92,7 @@ jobs:
       pull-requests: write # Needed to create changelog fragment PR comments
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -111,7 +114,7 @@ jobs:
     needs: changelog-fragment
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -122,13 +125,44 @@ jobs:
           use-python-cache: false
           checkout: false
 
+  type-check:
+    name: Type check with Ty
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: "Set up Python"
+        uses: ansys/actions/_setup-python@main
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-cache: false
+          provision-uv: true
+          prune-uv-cache: true
+
+      - name: Create virtual environment
+        run: uv venv .venv
+
+      # TODO: Once depency update logic has been defined, the handling of ty should align
+      - name: Install dependencies
+        run: |
+          source .venv/bin/activate
+          uv pip install ty==0.0.29
+
+      - name: Run ty
+        run: |
+          source .venv/bin/activate
+          ty check --ignore unresolved-import **/*.py
+
   doc-style:
     name: "Doc style"
     runs-on: ubuntu-latest
     needs: changelog-fragment
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -144,9 +178,10 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+      fail-fast: false
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -169,10 +204,13 @@ jobs:
     strategy:
       matrix:
         os:
-          - name: windows-latest
-            container-image-tag: ghcr.io/ansys/geometry:core-windows-25.2
+          # - name: windows-latest
+          #   container-image-tag: ghcr.io/ansys/geometry:core-windows-latest
+          #   dependencies: 'pandoc'
           - name: ubuntu-latest
-            container-image-tag: ghcr.io/ansys/geometry:core-linux-25.2
+            container-image-tag: ghcr.io/ansys/geometry:core-linux-latest
+            dependencies: 'pandoc texlive-xetex texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra texlive-science texlive-luatex lmodern latexmk'
+      fail-fast: false
     env:
       ANSRV_GEO_IMAGE_DOCS_TAG: ${{ matrix.os.container-image-tag }}
       ANSRV_GEO_PORT: 700
@@ -181,17 +219,17 @@ jobs:
     steps:
 
       - name: "Install Git and clone pyansys-geometry repository"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
           repository: ansys/pyansys-geometry
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up headless display
-        uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -206,7 +244,7 @@ jobs:
           docker run --detach --name ${GEO_CONT_NAME} -e LICENSE_SERVER=${ANSRV_GEO_LICENSE_SERVER} -p ${ANSRV_GEO_PORT}:50051 ${ANSRV_GEO_IMAGE_DOCS_TAG} ${GEOMETRY_CONTAINER_EXEC_OPTS}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: actions
           persist-credentials: false
@@ -217,10 +255,8 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
-          dependencies: 'pandoc'
-          # sphinxopts: '-j 1 -W --color'
-          # TODO: Re-enable warnings as errors after numpydoc issues are fixed
-          sphinxopts: '-j 1'
+          dependencies: ${{ matrix.os.dependencies }}
+          sphinxopts: '-j 1 -W --color'
           checkout: false
           uploaded-artifact-name-prefix: pyansys-geometry-documentation-${{ matrix.os.name }}
           skip-dependencies-cache: true
@@ -250,6 +286,7 @@ jobs:
 #            container-image-tag:
           - name: ubuntu-latest
             container-image-tag: 2025r2
+      fail-fast: false
     env:
       PACKAGE_NAME: 'ansys-dpf-composites'
       PYDPF_COMPOSITES_DOCKER_CONTAINER_PORT: "50052"
@@ -257,21 +294,21 @@ jobs:
     steps:
 
       - name: "Install Git and clone pydpf-composites repository"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
           repository: ansys/pydpf-composites
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Login in Github Container registry"
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up headless display
-        uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
 
       - name: "Pull and start dpf container"
         env:
@@ -283,7 +320,7 @@ jobs:
           docker run -d --restart always -p 50052:50052 -e DPF_DEFAULT_GRPC_MODE=insecure -e ANSYSLMD_LICENSE_FILE=1055@${LICENSE_SERVER} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
 
       - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: actions
           persist-credentials: false
@@ -291,7 +328,7 @@ jobs:
       - name: Run Ansys documentation building action
         uses: ./actions/doc-build
         with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          python-version: '3.13' # TODO: Update to env.MAIN_PYTHON_VERSION once this library supports 3.14
           add-pdf-html-docs-as-assets: true
           needs-quarto: true
           dependencies: 'pandoc'
@@ -314,7 +351,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: actions-checkout
           persist-credentials: false
@@ -335,7 +372,7 @@ jobs:
       # Hack, the peaceiris/actions-gh-pages action in _pr-doc-deployment overwrites any previous checkout,
       # causing the post step of the action to fail. Adding this checkout step ensures that the post step
       # can run successfully
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: actions-checkout
           persist-credentials: false
@@ -345,7 +382,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -362,7 +399,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 

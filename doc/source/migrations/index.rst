@@ -7,6 +7,91 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v11``
+---------------
+
+**Breaking Changes:**
+
+- **Deprecation of release-pypi-public and release-pypi-test actions:** The ``release-pypi-public`` and
+  ``release-pypi-test`` actions no longer support publishing packages to PyPI using tokens. As a result, they
+  are deprecated starting with ``v11``. Projects must migrate to trusted publishing. Contact the PyAnsys Core
+  Team at pyansys.core@ansys.com for enabling trusted publishing for your project and refer to
+  :ref:`release_pypi_trusted_publisher` for setup details.
+
+- **Removal of deprecated input from release-github action:** The ``generate_release_notes`` input of the
+  ``release-github`` action was deprecated in ``v10`` and is completely removed starting with ``v11``.
+  Use the ``generate-release-notes`` parameter instead.
+
+**Migration Steps:**
+
+- **Changed default behavior of doc-build dependency inputs:** The default behavior of the
+  ``optional-dependencies-name`` and ``group-dependencies-name`` inputs of the ``doc-build`` action has changed.
+  Previously, ``optional-dependencies-name`` always defaulted to ``doc`` even when ``group-dependencies-name``
+  is not empty, which can cause failures if ``doc`` optional extra is absent from the ``pyproject.toml`` file.
+
+  The new behavior is:
+
+  - Both inputs now default to empty (``''``).
+  - If **neither** input is provided, the action defaults to ``optional-dependencies-name=doc`` (for backwards compatibility).
+  - If **only one** is provided, only that one is used.
+  - If **both** are provided, both are used (a warning is logged).
+
+  Although backwards compatibility is maintained, you are advised to set one of the inputs explicitly to avoid
+  future breaking changes.
+
+Version ``v10.3``
+-----------------
+
+**New actions:**
+
+- **Migrate fork pull requests:** The ``hk-migrate-fork-pr`` action migrates pull requests from forks to
+  branches within the main repository, enabling workflows that require repository secrets to run. It handles
+  team membership verification and automated PR creation during migration. Subsequent triggers sync the migration
+  branch. See :ref:`hk-migrate-fork-pr-setup` for setup details.
+
+- **Tag repository version:** The ``hk-tag-repository-version`` action creates and updates ``vX`` and ``vX.Y``
+  tags pointing to the latest released version. It also pushes a ``release/vX.Y.Z`` branch for hot fixes
+  and optionally creates a ``latest`` branch. This action is intended to be used in a workflow triggered by a
+  release event. The action is mostly useful for projects that only want to release code and do not need to
+  follow the usual release process of the PyAnsys ecosystem. See :doc:`../housekeeping-actions/index` for usage details.
+
+**New features:**
+
+- **Prek for code style:** The ``code-style`` action now uses `prek <https://prek.j178.dev/>`_ as a
+  drop-in replacement for ``pre-commit`` to make execution faster. To revert to ``pre-commit``, set the
+  new ``use-prek`` input to ``false`` (default: ``true``).
+
+- **Minimum permissions documented:** All action descriptions now document the minimum GitHub permissions
+  required to run each action. Check the documentation for each action for details.
+
+- **Changelog improvements:** The changelog (``doc-changelog`` and ``doc-deploy-changelog``) actions include two new changes:
+
+  - A new ``breaking`` fragment type has been added for tracking breaking changes in the changelog.
+  - Changelog tabs are now ordered by importance in the deployed changelog, with the following order:
+    Breaking > Added > Fixed > Documentation > Dependencies > Maintenance > Miscellaneous > Test.
+
+- **Filtering GitHub releases:** The ``release-github`` action now includes a ``dist-filter``
+  input (default: ``''``) that accepts a comma-separated list of glob patterns for filtering the ``dist/``
+  directory. Files that do not match any of the provided patterns are removed before the
+  GitHub release is created. This is useful for projects with large build matrices where only a subset of
+  artifacts should appear on the release page.
+
+- **Safety policy file:** The ``check-vulnerabilities`` action now supports custom safety policy files, which
+  can be used for specifying vulnerabilities to ignore among other things.
+
+- **UV build in build-library:** When ``use-uv`` is set to ``true`` (the default), the ``build-library``
+  action now uses ``uv build`` instead of ``python -m build``, avoiding the need to install the ``build``
+  package as a separate dependency and speeding up builds.
+
+- **Optional token for check-pr-title:** The ``check-pr-title`` action no longer requires a ``token`` input.
+  It is now optional and defaults to the ``GITHUB_TOKEN``.
+
+- **Unified artifact names:** The artifacts generated by the build actions (``build-library`` and ``build-wheelhouse``)
+  now have consistent names that make use of underscores instead of hyphens for the library name.
+
+- **Version validation in release actions:** The ``release-github`` and ``release-pypi-*`` actions now ensure that
+  the tag that triggered a release matches the version specified in the ``pyproject.toml`` file.
+
 Version ``v10.2``
 -----------------
 
@@ -23,9 +108,17 @@ Version ``v10.2``
 - **Changelog Action Changes:** The ``doc-changelog`` action input ``use-conventional-commits`` has been renamed to ``use-pull-request-title`` for clarity.
   If you use the old input, a deprecation warning appears.
 
+- **Check-Vulnerabilities Changes:** The ``check-vulnerabilities`` action now includes a ``safety-configfile`` input (default: ``""``) that allows users to
+  specify a custom configuration file to use with ``safety``. This is useful for users who want to customize the behavior of ``safety`` or provide additional
+  configuration options.
+
 - **PR Documentation Deployment:** The ``doc-deploy-pr`` action is now easier to use. Starting with
   version ``v10.2``, you no longer need to include the ``closed`` pull request event in your workflows because
   deployed documentation is cleaned up asynchronously. For more details, see :ref:`docs-deploy-pr-setup`.
+
+- **Release-Github Changes:** The ``release-github`` action now includes a ``upload-documentation`` (default: ``true``) input. This input allows users
+  to control whether documentation artifacts are included in the GitHub release. Setting this to ``false`` skips the upload of documentation artifacts,
+  which can be useful for releases without documentation artifacts.
 
 Version ``v10.1``
 -----------------
@@ -160,7 +253,7 @@ Version ``v10``
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - name: Build wheelhouse
         id: build-wheelhouse
@@ -213,7 +306,7 @@ Version ``v9.0``
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - name: Build wheelhouse and perform smoke test
         uses: ansys/actions/build-wheelhouse@v9
@@ -402,7 +495,7 @@ Version ``v6``
   - Inclusion of `canonical` link tags in all HTML files for SEO purposes
 
 - Extend ``ansys/actions/doc-build`` to be able to run in Windows runners.
-  To buid the documentation in a Windows runner, we install ``Chocolatey`` and ``Miktex``.
+  To build the documentation in a Windows runner, we install ``Chocolatey`` and ``MiKTeX``.
 
 - Allow ``ansys/actions/commit-style`` to work with upper case in the type field of a commit.
   Expected types are upper cases of  `conventional commit types
@@ -477,3 +570,4 @@ Version ``v4``
    docs-style-vale-version-update
    docs-deploy-pr-setup
    release-pypi-trusted-publisher
+   docs-migrate-fork-pr-setup

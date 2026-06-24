@@ -1,0 +1,599 @@
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  Migrate fork PR to main repository
+
+description: |
+  Migrates pull requests from forks to branches within the main repository,
+  enabling workflows that require repository secrets to run. This action
+  handles team membership verification and automated PR creation during migration.
+  After migration, triggering the action subsequently will sync the migration branch
+  with the latest changes from the fork branch.
+
+  When syncing, the migration branch is kept as a mirror of the fork branch.
+  This means than any changes pushed to the fork branch will be reflected in the
+  migration branch after a sync, and any changes made directly to the migration
+  branch (e.g., by maintainers) will be overwritten on the next sync.
+
+  .. note::
+      This action is designed to be called from workflows triggered by issue
+      comments.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push migration branches to the main repository
+     - **pull-requests**: ``write`` - Required to create pull requests, add comments, and manage reactions
+
+     Additionally, the provided ``github-token`` must have ``read:org`` scope
+     to check team membership for authorization.
+
+inputs:
+
+  # Required inputs
+
+  pr-number:
+    description: |
+      The pull request number to migrate. This should be the PR number from
+      the fork that needs to be migrated to the main repository.
+    required: true
+    type: string
+
+  comment-id:
+    description: |
+      The comment ID that triggered the migration. Used for adding reactions
+      to indicate success or failure.
+    required: true
+    type: string
+
+  user-triggering:
+    description: |
+      The GitHub username of the user triggering the migration. This user
+      will be verified for team membership before proceeding.
+    required: true
+    type: string
+
+  github-token:
+    description: |
+      GitHub token with permissions to create branches, push code, create
+      pull requests, manage comments/reactions, and check team membership.
+      Typically a bot token with ``contents: write``, ``pull-requests: write``,
+      and ``read:org`` permissions.
+    required: true
+    type: string
+
+  bot-username:
+    description: |
+      The username of the bot that will be used for git commits during the
+      migration process.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      The email address of the bot that will be used for git commits during
+      the migration process.
+    required: true
+    type: string
+
+  team-slug:
+    description: |
+      The slug of the GitHub team that has permission to trigger migrations.
+      For example, ``pymapdl-maintainers`` or ``pyansys-core``.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  organization:
+    description: |
+      The GitHub organization name. Defaults to ``ansys``.
+    required: false
+    type: string
+    default: 'ansys'
+
+  repository:
+    description: |
+      The repository name (without organization). If not provided, it will be
+      inferred from the GitHub context.
+    required: false
+    type: string
+    default: ''
+
+outputs:
+
+  migration-successful:
+    description: |
+      Boolean indicating whether the migration completed successfully.
+    value: ${{ steps.finalize.outputs.migration-successful }}
+
+  new-pr-number:
+    description: |
+      The pull request number of the newly created PR in the main repository.
+      Empty if migration was skipped or failed.
+    value: ${{ steps.create-pr.outputs.new-pr-number }}
+
+  migration-branch:
+    description: |
+      The name of the migration branch created in the main repository.
+    value: ${{ steps.pr-details.outputs.migration-branch }}
+
+  skip-migration:
+    description: |
+      Boolean indicating whether the migration was skipped (e.g., user not
+      authorized, PR already in main repo).
+    value: ${{ steps.finalize.outputs.skip-migration }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Log start of migration"
+      uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: |
+          Starting fork PR migration for PR #${{ inputs.pr-number }}
+          Triggered by: ${{ inputs.user-triggering }}
+
+    - name: "Setup configuration"
+      id: setup
+      shell: bash
+      env:
+        REPOSITORY: ${{ inputs.repository }}
+      run: |
+        # Set repository name
+        if [ -z "${REPOSITORY}" ]; then
+          # Extract from GITHUB_REPOSITORY (format: org/repo)
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+        else
+          REPO_NAME="${REPOSITORY}"
+        fi
+        echo "repository=${REPO_NAME}" >> "$GITHUB_OUTPUT"
+
+    - name: "Check team membership"
+      id: check-membership
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        TEAM_SLUG: ${{ inputs.team-slug }}
+        ORGANIZATION: ${{ inputs.organization }}
+        USER_TRIGGERING: ${{ inputs.user-triggering }}
+      run: |
+        # Check if user is a member of the required team
+        set +e
+        MEMBERSHIP=$(gh api \
+          "orgs/${ORGANIZATION}/teams/${TEAM_SLUG}/memberships/${USER_TRIGGERING}" \
+          --jq '{state: .state, role: .role}' 2>&1)
+        API_EXIT=$?
+        set -e
+
+        if [ $API_EXIT -ne 0 ]; then
+          echo "::error::Error fetching team membership: ${MEMBERSHIP}"
+          echo "continue=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        STATE=$(echo "${MEMBERSHIP}" | jq -r '.state')
+        ROLE=$(echo "${MEMBERSHIP}" | jq -r '.role')
+
+        if [ "${STATE}" = "active" ] && { [ "${ROLE}" = "member" ] || [ "${ROLE}" = "maintainer" ]; }; then
+          echo "User ${USER_TRIGGERING} is a ${ROLE} of team ${TEAM_SLUG}"
+          echo "continue=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "::warning::User ${USER_TRIGGERING} is not an active member of team ${TEAM_SLUG}"
+          echo "continue=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: "Delete previous reactions"
+      if: always()
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        BOT_USERNAME: ${{ inputs.bot-username }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+      run: |
+        # List all reactions on the triggering comment
+        set +e
+        REACTIONS=$(gh api \
+          "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+          --jq '.[] | select(.user.login == env.BOT_USERNAME) | {id: .id, content: .content}' 2>&1)
+        API_EXIT=$?
+        set -e
+
+        if [ $API_EXIT -ne 0 ]; then
+          echo "::warning::Error listing reactions: ${REACTIONS}"
+          exit 0
+        fi
+
+        if [ -z "${REACTIONS}" ]; then
+          echo "No bot reactions found for comment ${COMMENT_ID}"
+          exit 0
+        fi
+
+        # Delete each bot reaction
+        echo "${REACTIONS}" | jq -c '.' | while IFS= read -r reaction; do
+          REACTION_ID=$(echo "${reaction}" | jq -r '.id')
+          CONTENT=$(echo "${reaction}" | jq -r '.content')
+          set +e
+          gh api -X DELETE \
+            "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions/${REACTION_ID}" 2>&1
+          set -e
+          echo "Deleted reaction ${CONTENT} (id: ${REACTION_ID}) from ${BOT_USERNAME}"
+        done
+
+    - name: "React to comment based on authorization"
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        TEAM_SLUG: ${{ inputs.team-slug }}
+        CONTINUE: ${{ steps.check-membership.outputs.continue }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+      run: |
+        if [ "${CONTINUE}" = "true" ]; then
+          echo "User is authorized. Adding positive reaction."
+          gh api -X POST \
+            "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+            -f content='+1' > /dev/null
+        else
+          echo "::warning::User is NOT authorized to migrate PRs!"
+
+          # React negatively
+          gh api -X POST \
+            "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+            -f content='-1' > /dev/null
+
+          # Create a comment to notify the user
+          BODY=$(cat <<EOF
+        **:stop_sign: Insufficient Permissions! :stop_sign:**
+
+        You are not a member of the \`${ORGANIZATION}/${TEAM_SLUG}\` team. Please contact a team member to migrate this PR.
+        EOF
+          )
+          gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${BODY}"
+        fi
+
+    - name: "Get pull request details"
+      if: steps.check-membership.outputs.continue == 'true'
+      id: pr-details
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+      run: |
+        # Fetch PR details
+        PR_DATA=$(gh pr view "${PR_NUMBER}" \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --json headRefName,headRepository,headRepositoryOwner,baseRefName,title,body,author,isCrossRepository)
+
+        if [ -z "${PR_DATA}" ]; then
+          echo "::error::Pull request data is incomplete"
+          exit 1
+        fi
+
+        IS_CROSS_REPO=$(echo "${PR_DATA}" | jq -r '.isCrossRepository')
+        HEAD_REF=$(echo "${PR_DATA}" | jq -r '.headRefName')
+        HEAD_REPO_NAME=$(echo "${PR_DATA}" | jq -r '.headRepository.name')
+        HEAD_REPO_OWNER=$(echo "${PR_DATA}" | jq -r '.headRepositoryOwner.login')
+        HEAD_REPO_FULL="${HEAD_REPO_OWNER}/${HEAD_REPO_NAME}"
+        BASE_REF=$(echo "${PR_DATA}" | jq -r '.baseRefName')
+        TITLE=$(echo "${PR_DATA}" | jq -r '.title')
+        BODY=$(echo "${PR_DATA}" | jq -r '.body // ""')
+        AUTHOR=$(echo "${PR_DATA}" | jq -r '.author.login')
+
+        # Check if PR is already in the main repository (not cross-repo)
+        if [ "${IS_CROSS_REPO}" = "false" ]; then
+          echo "::warning::The PR is already in the main repository. No migration needed. Exiting..."
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+
+          # React with confused emoji
+          gh api -X POST \
+            "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+            -f content='confused' > /dev/null
+
+          # Notify user
+          NOTIFY_BODY=$(cat <<EOF
+        **:question: Wrong Command? :confused:**
+
+        You are trying to migrate a PR that is already in the main repository. No migration needed.
+        EOF
+          )
+          gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${NOTIFY_BODY}"
+          exit 0
+        fi
+
+        # Set PR information as step outputs
+        {
+          echo "pr-head-branch=${HEAD_REF}"
+          echo "pr-head-repo=${HEAD_REPO_FULL}"
+          echo "pr-base-branch=migration/pr-${PR_NUMBER}"
+          echo "pr-author=${AUTHOR}"
+          echo "migration-branch=migration/pr-${PR_NUMBER}"
+        } >> "$GITHUB_OUTPUT"
+
+        # Use delimiter for multiline values (title and body may contain special chars)
+        {
+          echo "pr-title<<GHEOF"
+          echo "${TITLE}"
+          echo "GHEOF"
+        } >> "$GITHUB_OUTPUT"
+
+        {
+          echo "pr-body<<GHEOF"
+          echo "${BODY}"
+          echo "GHEOF"
+        } >> "$GITHUB_OUTPUT"
+
+        echo "PR Head: ${HEAD_REPO_FULL}/${HEAD_REF}"
+        echo "PR Base: ${ORGANIZATION}/${REPOSITORY}/${BASE_REF}"
+        echo "Migration branch: migration/pr-${PR_NUMBER}"
+
+    - name: "Checkout repository"
+      if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        ref: main
+        token: ${{ inputs.github-token }}
+        fetch-depth: 0
+        persist-credentials: true # zizmor: ignore[artipacked]
+
+    - name: "Mirror fork branch to migration branch"
+      if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        BOT_USERNAME: ${{ inputs.bot-username }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        PR_HEAD_REPO: ${{ steps.pr-details.outputs.pr-head-repo }}
+        PR_HEAD_BRANCH: ${{ steps.pr-details.outputs.pr-head-branch }}
+        PR_BASE_BRANCH: ${{ steps.pr-details.outputs.pr-base-branch }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+      run: |
+        # Configure git
+        git config user.name "${BOT_USERNAME}"
+        git config user.email "${BOT_EMAIL}"
+
+        # Add fork as remote and fetch its branch
+        echo "Adding fork as remote: ${PR_HEAD_REPO}"
+        git remote add head_repo https://x-access-token:${GITHUB_TOKEN}@github.com/${PR_HEAD_REPO}.git
+
+        echo "Fetching '${PR_HEAD_BRANCH}' from '${PR_HEAD_REPO}'"
+        git fetch head_repo ${PR_HEAD_BRANCH}
+
+        # Fetch the migration branch from origin if it already exists
+        git fetch origin ${PR_BASE_BRANCH} || true
+
+        # Divergence guard: if main has been merged into the migration branch
+        # but not into the fork branch, a mirror sync would lose those commits.
+        # Block and ask the contributor to merge main into their fork branch first.
+        if git rev-parse --verify origin/${PR_BASE_BRANCH} > /dev/null 2>&1; then
+          MAIN_IN_MIGRATION=false
+          MAIN_IN_FORK=false
+
+          git merge-base --is-ancestor origin/main origin/${PR_BASE_BRANCH} && MAIN_IN_MIGRATION=true || true
+          git merge-base --is-ancestor origin/main head_repo/${PR_HEAD_BRANCH} && MAIN_IN_FORK=true || true
+
+          echo "main in migration branch: ${MAIN_IN_MIGRATION}"
+          echo "main in fork branch: ${MAIN_IN_FORK}"
+
+          if [ "${MAIN_IN_MIGRATION}" = "true" ] && [ "${MAIN_IN_FORK}" = "false" ]; then
+            echo "::error::Divergence detected: main has been merged into the migration branch but not into the fork branch."
+
+            BLOCK_BODY=$(cat <<EOF
+        **:warning: Sync Blocked: Fork Branch Is Behind**
+
+        The migration branch \`${PR_BASE_BRANCH}\` has had \`main\` merged into it, but your fork branch \`${PR_HEAD_BRANCH}\` does not include those changes.
+
+        A sync at this point would overwrite the migration branch and discard those commits.
+
+        Please merge \`main\` into your fork branch first, then trigger the sync again.
+        EOF
+            )
+            gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${BLOCK_BODY}"
+            echo "MIGRATION_BLOCKED=true" >> "$GITHUB_ENV"
+            exit 1
+          fi
+        fi
+
+        # Mirror the fork branch onto the migration branch
+        echo "Checking out '${PR_BASE_BRANCH}' from 'head_repo/${PR_HEAD_BRANCH}'"
+        git checkout -b ${PR_BASE_BRANCH} head_repo/${PR_HEAD_BRANCH}
+
+        echo "Pushing mirror to '${ORGANIZATION}/${REPOSITORY}'"
+        git push origin ${PR_BASE_BRANCH} --force-with-lease || \
+          (git fetch --all && git push origin ${PR_BASE_BRANCH} --force-with-lease) || \
+          { echo "::error::Push failed. Aborting."; exit 1; }
+
+    - name: "Create pull request"
+      if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
+      id: create-pr
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        PR_HEAD_BRANCH: ${{ steps.pr-details.outputs.pr-head-branch }}
+        PR_BASE_BRANCH: ${{ steps.pr-details.outputs.pr-base-branch }}
+        PR_TITLE: ${{ steps.pr-details.outputs.pr-title }}
+        PR_BODY: ${{ steps.pr-details.outputs.pr-body }}
+        PR_AUTHOR: ${{ steps.pr-details.outputs.pr-author }}
+        USER_TRIGGERING: ${{ inputs.user-triggering }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+      run: |
+        PR_BASE="${PR_BASE_BRANCH}"
+
+        echo "Checking for existing PRs with head branch ${PR_BASE}..."
+
+        # Check if PR already exists
+        EXISTING_PR=$(gh pr list \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --head "${PR_BASE}" \
+          --state open \
+          --json number \
+          --jq '.[0].number // empty')
+
+        if [ -n "${EXISTING_PR}" ]; then
+          echo "PR already exists for branch ${PR_BASE}: #${EXISTING_PR}. Skipping creation."
+          echo "new-pr-number=${EXISTING_PR}" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        # Build the new PR body
+        NEW_PR_BODY=$(cat <<EOF
+        This PR is a migrated pull request created from [#${PR_NUMBER}](https://github.com/${ORGANIZATION}/${REPOSITORY}/pull/${PR_NUMBER}) to allow the code to access repository secrets for CI/CD.
+
+        Check the [original PR](https://github.com/${ORGANIZATION}/${REPOSITORY}/pull/${PR_NUMBER}) made by @${PR_AUTHOR} for more details.
+
+        If further collaboration is anticipated with the original author before this PR can be merged, maintainers should contribute directly to the forked PR and sync changes from there. That will ensure the following:
+          1. The original author can continue to contribute to their fork branch as they normally would, they normally wouldn't be able to push to the migration branch.
+          2. The original PR remains the source of truth for the contribution
+          3. The migration branch can be kept in sync with the fork branch without worrying about merge conflicts or overwriting commits.
+
+        > [!NOTE]
+        > If maintainers are unable to add commits to the fork branch, they should ask the contributor to check the "Allow edits by maintainers" option on the fork PR.
+
+        ## Original Pull Request
+
+        ### ${PR_TITLE}
+
+        ${PR_BODY}
+        EOF
+        )
+
+        # Create new PR
+        echo "Creating new PR for branch ${PR_BASE}..."
+        NEW_PR_URL=$(gh pr create \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --head "${PR_BASE}" \
+          --base main \
+          --title "migrated (PR ${PR_NUMBER}): ${PR_TITLE}" \
+          --body "${NEW_PR_BODY}")
+
+        # Extract new PR number from URL
+        NEW_PR_NUM=$(echo "${NEW_PR_URL}" | grep -oP '\d+$')
+        echo "New PR created: #${NEW_PR_NUM} (${NEW_PR_URL})"
+        echo "new-pr-number=${NEW_PR_NUM}" >> "$GITHUB_OUTPUT"
+
+        # Assign PR to triggering user and original author
+        echo "Assigning PR to: ${USER_TRIGGERING} and ${PR_AUTHOR}"
+        set +e
+        gh pr edit "${NEW_PR_NUM}" \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --add-assignee "${USER_TRIGGERING},${PR_AUTHOR}" 2>&1 || \
+          echo "::warning::Failed to assign PR"
+        set -e
+
+        # React with rocket to the triggering comment
+        gh api -X POST \
+          "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+          -f content='rocket' > /dev/null
+
+        # Create success comment
+        SUCCESS_BODY=$(cat <<EOF
+        ## :rocket: Migration Completed!
+
+        The pull request [#${NEW_PR_NUM}](${NEW_PR_URL}) has been created successfully.
+
+        Thank you @${PR_AUTHOR} for your contribution! Your PR has been migrated to the main repository to enable successful run of CI/CD workflows
+        that require repository secrets.
+
+        **What this means for you:**
+        - Keep pushing commits to your fork branch \`${PR_HEAD_BRANCH}\` as you normally would.
+        - Whenever you want your latest changes reflected in the migration PR, ping a maintainer of this repository and ask them to trigger a sync.
+        - A team member can sync the migration branch at any time by commenting \`@pyansys-ci-bot sync\` on this PR.
+
+        This PR will be closed by the maintainers once your contribution is merged.
+        EOF
+        )
+
+        gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${SUCCESS_BODY}"
+
+    - name: "Handle failure"
+      if: failure() && steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true' && env.MIGRATION_BLOCKED != 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        TEAM_SLUG: ${{ inputs.team-slug }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+        COMMENT_ID: ${{ inputs.comment-id }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+      run: |
+        # React negatively to the comment
+        gh api -X POST \
+          "repos/${ORGANIZATION}/${REPOSITORY}/issues/comments/${COMMENT_ID}/reactions" \
+          -f content='-1' > /dev/null
+
+        # Create error comment
+        RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+        ERROR_BODY=$(cat <<EOF
+        **:x: Migration Failed :x:**
+
+        An error occurred while migrating or syncing the PR. Pinging @${ORGANIZATION}/${TEAM_SLUG} for assistance.
+
+        Please check the [workflow run](${RUN_URL}) for details.
+        EOF
+        )
+
+        gh pr comment "${PR_NUMBER}" --repo "${ORGANIZATION}/${REPOSITORY}" --body "${ERROR_BODY}"
+
+    - name: "Finalize and set outputs"
+      if: always()
+      id: finalize
+      shell: bash
+      env:
+        CONTINUE: ${{ steps.check-membership.outputs.continue }}
+        SKIP: ${{ steps.pr-details.outputs.skip }}
+        NEW_PR_NUMBER: ${{ steps.create-pr.outputs.new-pr-number }}
+      run: |
+        if [ "${CONTINUE}" == "true" ] && [ "${SKIP}" != "true" ] && [ -n "${NEW_PR_NUMBER}" ]; then
+          echo "migration-successful=true" >> $GITHUB_OUTPUT
+          echo "skip-migration=false" >> $GITHUB_OUTPUT
+        elif [ "${CONTINUE}" == "false" ] || [ "${SKIP}" == "true" ]; then
+          echo "migration-successful=false" >> $GITHUB_OUTPUT
+          echo "skip-migration=true" >> $GITHUB_OUTPUT
+        else
+          echo "migration-successful=false" >> $GITHUB_OUTPUT
+          echo "skip-migration=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Log completion"
+      if: always()
+      uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: |
+          Migration process completed for PR #${{ inputs.pr-number }}
+          Status: ${{ steps.finalize.outputs.migration-successful == 'true' && 'Success' || 'Failed or Skipped' }}
