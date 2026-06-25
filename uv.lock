@@ -574,11 +574,11 @@ wheels = [
 
 [[package]]
 name = "fastcore"
-version = "1.13.3"
+version = "1.13.5"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c6/71/f19a2d6c8108342e0f68d81981f435d2e750f9fe319dbf5f5eb35fd084ed/fastcore-1.13.3.tar.gz", hash = "sha256:5639fd05ba7e6f0f2fbaad2e31a6277f0e5aa6a1f3fee99203b325b167e67826", size = 100556, upload-time = "2026-06-09T03:39:07.468Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6e/06/fc098e6f366d7b4f7ed8301daff4b13d4a8691f5f5c64acc5aaae5aec000/fastcore-1.13.5.tar.gz", hash = "sha256:ba9e9bf6f47ddf9b0556d3d5ad62d532270ae90a143f7eab8edca1d795ea3728", size = 100758, upload-time = "2026-06-16T04:44:43.648Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8b/5d/0ce80c2e5d4f49095321e75af691144cd480e6e70cb1d53b1f99fabc8c7b/fastcore-1.13.3-py3-none-any.whl", hash = "sha256:f5e17cae486f8432720b2e71d5ed9ad99867e68c17973347d1bb3bc8415e760a", size = 105559, upload-time = "2026-06-09T03:39:05.592Z" },
+    { url = "https://files.pythonhosted.org/packages/69/5d/e8aa0aaca47848ccdcb90789fd4c08f66a7a0a0d591a4aa839e781978e75/fastcore-1.13.5-py3-none-any.whl", hash = "sha256:b8fb3c51bf4aac066108a98b80d6a8b80e3e8c83bbbe2afa981675455bdab9ab", size = 105788, upload-time = "2026-06-16T04:44:41.571Z" },
 ]
 
 [[package]]
