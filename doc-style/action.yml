@@ -69,7 +69,7 @@ inputs:
 
   tomli-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomli version used for retrieving the towncrier directory.
+      DEPRECATED ARGUMENT. Tomli version used for retrieving the towncrier directory.
     default: ''
     required: false
     type: string
@@ -114,17 +114,21 @@ runs:
       with:
         level: "ERROR"
         message: >
-          The ``tomli-version`` input is deprecated and will be removed in v12.
+          Due to loss of information during parsing, including formatting and comments, the
+          ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
+          will be removed in v12.
 
     - uses: ansys/actions/_logging@main
       if: inputs.tomlkit-version != ''
       with:
         level: "ERROR"
         message: >
-          The ``tomlkit-version`` input is deprecated and will be removed in v12.
+          Due to dependency changes breaking the actions and the need to manage which version
+          of dependencies are used in the actions, the ``tomlkit-version`` input is deprecated
+          and will be removed in v12.
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
       if: inputs.checkout == 'true'
