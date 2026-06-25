@@ -1,6 +1,8 @@
 code-style:
   name: "Running code style checks"
   runs-on: ubuntu-latest
+  permissions:
+    contents: read  # Required to checkout repository code when the repository is not public
   steps:
     - name: "Run PyAnsys code style checks"
       uses: ansys/actions/code-style@{{ version }}
