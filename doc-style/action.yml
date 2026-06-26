@@ -236,7 +236,7 @@ runs:
     # dependabot, we need to update the reviewdog20 branch with the new release changes.
     # Once performed, we can manually update the commit hash below.
     - name: "Run Vale"
-      uses: vale-cli/vale-action@d89dee975228ae261d22c15adcd03578634d429c # zizmor: ignore[stale-action-refs] , Read warning above
+      uses: moe-ad/vale-action@reviewdog20 # zizmor: ignore[stale-action-refs] , Read warning above
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
