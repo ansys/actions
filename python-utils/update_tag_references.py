@@ -31,16 +31,17 @@ Usage:
     python update_version.py <new_version>
     python update_version.py <new_version> --dry-run
 
-Examples:
+Examples
+--------
     python update_version.py 10.2.6
     python update_version.py 10.2.6 --dry-run
 """
 
 from __future__ import annotations
 
+from pathlib import Path
 import re
 import sys
-from pathlib import Path
 
 import click
 
@@ -93,9 +94,7 @@ def is_semver(version: str) -> bool:
     return bool(re.match(pattern, version))
 
 
-def update_version_file(
-    version_file_path: Path, new_version: str, dry_run: bool = False
-) -> None:
+def update_version_file(version_file_path: Path, new_version: str, dry_run: bool = False) -> None:
     """Update the VERSION file with the new version.
 
     Parameters
@@ -165,9 +164,7 @@ def update_pyproject(
     except OSError as e:
         raise FileUpdateError(f"Failed to read {pyproject_path}", pyproject_path) from e
     except tomllib.TOMLDecodeError as e:
-        raise FileUpdateError(
-            f"Invalid TOML in {pyproject_path}", pyproject_path
-        ) from e
+        raise FileUpdateError(f"Invalid TOML in {pyproject_path}", pyproject_path) from e
 
     # Navigate to the parent of the version key
     try:
@@ -178,9 +175,7 @@ def update_pyproject(
         version_key = version_keys[-1]
         current = current_dict[version_key]
     except KeyError as e:
-        raise FileUpdateError(
-            f"Missing version key in {pyproject_path}", pyproject_path
-        ) from e
+        raise FileUpdateError(f"Missing version key in {pyproject_path}", pyproject_path) from e
 
     if current != old_version:
         raise VersionMismatchError(pyproject_path, old_version, current)
@@ -188,9 +183,7 @@ def update_pyproject(
     current_dict[version_key] = new_version
 
     if dry_run:
-        click.echo(
-            f"  [DRY RUN] Would update {pyproject_path}: version = {new_version}"
-        )
+        click.echo(f"  [DRY RUN] Would update {pyproject_path}: version = {new_version}")
         return
 
     try:
@@ -198,9 +191,7 @@ def update_pyproject(
         pyproject_path.write_text(output, encoding="utf-8")
         click.echo(f"  Updated {pyproject_path}")
     except OSError as e:
-        raise FileUpdateError(
-            f"Failed to write {pyproject_path}", pyproject_path
-        ) from e
+        raise FileUpdateError(f"Failed to write {pyproject_path}", pyproject_path) from e
 
 
 def find_action_and_workflow_files(project_root: Path) -> list[Path]:
@@ -274,17 +265,13 @@ def replace_action_refs_in_yaml_file(
 
     if count > 0:
         if dry_run:
-            click.echo(
-                f"  [DRY RUN] Would update {yaml_file_path}: {count} reference(s)"
-            )
+            click.echo(f"  [DRY RUN] Would update {yaml_file_path}: {count} reference(s)")
         else:
             try:
                 yaml_file_path.write_text(new_content, encoding="utf-8")
                 click.echo(f"  Updated {yaml_file_path}: {count} reference(s)")
             except OSError as e:
-                raise FileUpdateError(
-                    f"Failed to write {yaml_file_path}", yaml_file_path
-                ) from e
+                raise FileUpdateError(f"Failed to write {yaml_file_path}", yaml_file_path) from e
     else:
         if dry_run:
             click.echo(f"  [DRY RUN] No references to update in {yaml_file_path}")
@@ -302,7 +289,7 @@ def replace_action_refs_in_yaml_file(
     help="Show what would be changed without making actual changes.",
 )
 def main(new_version: str, dry_run: bool) -> None:
-    """Update version references across the ansys/actions repository.
+    r"""Update version references across the ansys/actions repository.
 
     NEW_VERSION is the new version to set (e.g., 10.2.6).
 
@@ -341,9 +328,7 @@ def main(new_version: str, dry_run: bool) -> None:
     click.echo("\n2. Updating .ci/ansys-actions-flit/pyproject.toml...")
     flit_path = PROJECT_ROOT / ".ci" / "ansys-actions-flit" / "pyproject.toml"
     try:
-        update_pyproject(
-            flit_path, ["project", "version"], old_version, new_version, dry_run
-        )
+        update_pyproject(flit_path, ["project", "version"], old_version, new_version, dry_run)
     except FileUpdateError as e:
         errors.append(e)
 
@@ -367,9 +352,7 @@ def main(new_version: str, dry_run: bool) -> None:
 
     for yaml_file in yaml_files:
         try:
-            count = replace_action_refs_in_yaml_file(
-                yaml_file, old_version, new_version, dry_run
-            )
+            count = replace_action_refs_in_yaml_file(yaml_file, old_version, new_version, dry_run)
             if count > 0:
                 files_updated += 1
                 total_refs += count
@@ -383,9 +366,7 @@ def main(new_version: str, dry_run: bool) -> None:
     click.echo("\n" + "=" * 60)
 
     if errors:
-        click.secho(
-            f"\nCompleted with {len(errors)} error(s):\n", fg="yellow", bold=True
-        )
+        click.secho(f"\nCompleted with {len(errors)} error(s):\n", fg="yellow", bold=True)
         for i, error in enumerate(errors, 1):
             click.secho(f"{i}. {error.message}", fg="red")
             if error.file_path:

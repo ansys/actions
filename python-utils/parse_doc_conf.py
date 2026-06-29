@@ -30,9 +30,9 @@ the PDF generated after building the documentation.
 """
 
 import os
+from pathlib import Path
 import re
 import warnings
-from pathlib import Path
 
 CONF_PATH = Path("doc", "source", "conf.py")
 
@@ -40,7 +40,7 @@ CONF_PATH = Path("doc", "source", "conf.py")
 def get_project_name(conf_path):
     """Parse file to retrieve documentation's project name."""
     res = None
-    with open(conf_path, "r") as conf_file:
+    with Path(conf_path).open("r") as conf_file:
         for line in conf_file:
             if line.strip().startswith(("project =", "project=")):
                 match = re.search(r'project\s*=\s*[\'"](.+)[\'"]', line)
@@ -69,7 +69,7 @@ if project_name:
     github_env = os.environ["GITHUB_ENV"]
 
     # Append PDF_FILENAME with its value to GITHUB_ENV
-    with open(github_env, "a") as f:
+    with Path(github_env).open("a") as f:
         f.write(f"PDF_FILENAME={pdf_file_name}")
 else:
     warnings.warn(

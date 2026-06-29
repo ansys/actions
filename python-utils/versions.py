@@ -19,12 +19,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Utilities for managing versioned documentation entries."""
 
 import json
 import os
+from pathlib import Path
 import re
 import shutil
-from pathlib import Path
 from typing import Literal, cast
 
 from packaging.version import Version
@@ -35,7 +36,7 @@ REF_TYPES = Literal["tag", "branch"]
 
 
 def make_entry(values: tuple[str, str, str]) -> dict:
-    """Helper to create a version entry dictionary with fixed keys."""
+    """Create a version entry dictionary with fixed keys."""
     return dict(zip(KEYS, values))
 
 
@@ -44,7 +45,7 @@ def get_version_and_ref_type() -> tuple[str, REF_TYPES]:
 
     Returns
     -------
-    tuple[str, str]
+    tuple[str, REF_TYPES]
         A tuple containing the version and reference type.
     """
     ref_name = os.environ["REF_NAME"]
@@ -107,7 +108,7 @@ def export_to_github_output(var_name: str, var_value: str) -> None:
     github_output = os.environ["GITHUB_OUTPUT"]
 
     # Save environment variable with its value
-    with open(github_output, mode="a") as file:
+    with Path(github_output).open("a", encoding="utf-8") as file:
         if "\n" in var_value or "\r" in var_value:
             file.write(f"{var_name}<<EOF\n")
             file.write(var_value)
@@ -153,9 +154,7 @@ def write_versions_file() -> None:
     full_list = sorted(get_versions_list(), reverse=True)
     for version in full_list[:render_last]:
         if stable_release is not None and version == Version(stable_release):
-            content.append(
-                make_entry((f"{stable_release} (stable)", stable_release, url_stable))
-            )
+            content.append(make_entry((f"{stable_release} (stable)", stable_release, url_stable)))
             continue
         url_version = f"https://{cname}/version/{version}/"
         content.append(make_entry((str(version), str(version), url_version)))
@@ -164,12 +163,10 @@ def write_versions_file() -> None:
         url_older_version = f"https://{cname}/version/"
         content.append(make_entry(("Older version", "N/A", url_older_version)))
 
-    with open("versions.json", "w", encoding="utf-8") as file:
+    with Path("versions.json").open("w", encoding="utf-8") as file:
         json.dump(content, file, indent=2)
 
-    export_to_github_output(
-        "LATEST_STABLE_VERSION", stable_release if stable_release else ""
-    )
+    export_to_github_output("LATEST_STABLE_VERSION", stable_release if stable_release else "")
 
 
 def set_version_variable() -> None:
@@ -177,14 +174,15 @@ def set_version_variable() -> None:
 
     This function checks the current tag or branch name, validates it against a pattern,
     and sets the VERSION and PRE_RELEASE variables accordingly (i.e. exports them to GITHUB_OUTPUT
-    for use in subsequent action steps). It also ensures that only the latest pre-release versions are kept.
+    for use in subsequent action steps). It also ensures that only the latest pre-release versions
+    are kept.
 
     If the tag or branch name does not match the expected pattern, an error message is printed
     and the script exits with a non-zero status.
 
-    If it is a normal release, it removes all existing pre-releases for that major.minor.patch version.
+    If it is a normal release, it removes all existing pre-releases for that major.minor.patch
+    version.
     """
-
     independent_patch_release = (
         True if os.getenv("INDEPENDENT_PATCH_RELEASE_DOCS") == "true" else False
     )
@@ -217,24 +215,21 @@ def set_version_variable() -> None:
             version
             for version in versions_list
             if version.is_prerelease
-            and version.release
-            == current_version.release  # MAJOR.MINOR.PATCH should match
+            and version.release == current_version.release  # MAJOR.MINOR.PATCH should match
         ]
         if current_version.is_prerelease:
-
             latest_stable_str = find_stable_release()
             if latest_stable_str is not None:
                 latest_stable_version = Version(latest_stable_str)
                 if latest_stable_version > current_version:  # This is not allowable
                     print(
-                        f"Stable release version higher than the pre-release version found: {latest_stable_version}"
+                        "Stable release version higher than the pre-release version found:"
+                        f" {latest_stable_version}"
                     )
                     exit(1)
 
             # Ensure highest hierarchy of current pre-release
-            valid_prerelease = all(
-                current_version > prerel for prerel in existing_prereleases
-            )
+            valid_prerelease = all(current_version > prerel for prerel in existing_prereleases)
             if valid_prerelease:
                 # Keep a maximum of 3 pre-releases
                 pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[2:]
@@ -245,7 +240,8 @@ def set_version_variable() -> None:
                 export_to_github_output("PRE_RELEASE", "true")
             else:
                 print(
-                    f"ERROR: An higher or equal pre-release version already exist: {existing_prereleases}"
+                    "ERROR: An higher or equal pre-release version already exist:"
+                    f" {existing_prereleases}"
                 )
                 exit(1)
         else:
@@ -258,9 +254,7 @@ def set_version_variable() -> None:
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
             else:
-                current_version = str(current_version).rsplit(".", 1)[
-                    0
-                ]  # Remove the patch number
+                current_version = str(current_version).rsplit(".", 1)[0]  # Remove the patch number
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "false")
     else:
