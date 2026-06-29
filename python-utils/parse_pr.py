@@ -635,7 +635,7 @@ def rewrite_template(template_path: str | None = None, file_name: str | None = N
         if not default_template_path.is_file():
             print(
                 f"Default template file not found at {default_template_path}. "
-                f"Cannot rewrite template."
+                "Cannot rewrite template."
             )
             return False
 
