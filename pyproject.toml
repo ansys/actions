@@ -64,6 +64,9 @@ release-github = [
     "pypandoc-binary<=1.17",
     "tomlkit<=0.15",
 ]
+check-actions-security = [
+    "zizmor<=1.27",
+]
 release-pypi = [
     "twine<=6.2",
 ]
