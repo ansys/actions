@@ -307,6 +307,7 @@ runs:
       uses: ansys/actions/_doc-gen-robots@main
       with:
         cname: ${{ inputs.cname }}
+        custom-path: ''
 
     # ------------------------------------------------------------------------
 
