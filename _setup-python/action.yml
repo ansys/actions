@@ -102,3 +102,4 @@ runs:
       with:
         enable-cache: ${{ inputs.use-cache }}
         prune-cache: ${{ inputs.prune-uv-cache }}
+        cache-local-path: ${{ runner.temp }}/.uv-cache
