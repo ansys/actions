@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.3.3 <https://github.com/ansys/actions/releases/tag/v10.3.3>`_ - June 29, 2026
+=================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Uv build rejecting builds when cache dir is enclosed
+          - `#1387 <https://github.com/ansys/actions/pull/1387>`_
+
+
 `10.3.2 <https://github.com/ansys/actions/releases/tag/v10.3.2>`_ - May 22, 2026
 ================================================================================
 
