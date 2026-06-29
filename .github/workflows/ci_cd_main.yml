@@ -20,7 +20,7 @@ jobs:
     name: "Doc build"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/doc-build@v10.3.2
+      - uses: ansys/actions/doc-build@v10.3.3
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -35,7 +35,7 @@ jobs:
       contents: write # Needed to update files on the gh-pages branch
       pull-requests: write # Needed to add comments to the PR when cleaning pull directory
     steps:
-      - uses: ansys/actions/doc-deploy-dev@v10.3.2
+      - uses: ansys/actions/doc-deploy-dev@v10.3.3
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -116,7 +116,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v10.3.2
+    - uses: ansys/actions/_logging@v10.3.3
       if: inputs.toml-version != ''
       with:
         level: "ERROR"
@@ -127,7 +127,7 @@ runs:
           want to use a specific version of ``tomli``, please set the ``tomli-version``
           input accordingly. The ``toml-version`` input will be removed in v11.
 
-    - uses: ansys/actions/_logging@v10.3.2 # TODO: Switch logging level to ERROR in v11, remove in v12
+    - uses: ansys/actions/_logging@v10.3.3 # TODO: Switch logging level to ERROR in v11, remove in v12
       if: inputs.tomli-version != ''
       with:
         level: "WARNING"
@@ -142,7 +142,7 @@ runs:
         persist-credentials: false
       if: inputs.checkout == 'true'
 
-    - uses: ansys/actions/_logging@v10.3.2
+    - uses: ansys/actions/_logging@v10.3.3
       with:
         level: "INFO"
         message: >

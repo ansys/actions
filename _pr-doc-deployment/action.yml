@@ -108,7 +108,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v10.3.2
+    - uses: ansys/actions/_logging@v10.3.3
       with:
         level: "INFO"
         message: >
@@ -119,7 +119,7 @@ runs:
           added to the deployment branch as separate commits. The branch history is only rewritten into a single commit when
           doc-deploy-dev or doc-deploy-stable is run with ``force-orphan: true`` (which is the default value).
 
-    - uses: ansys/actions/_logging@v10.3.2
+    - uses: ansys/actions/_logging@v10.3.3
       with:
         level: "INFO"
         message: >
@@ -182,7 +182,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.2
+    - uses: ansys/actions/_logging@v10.3.3
       with:
         level: "INFO"
         message: >
@@ -295,7 +295,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.2
+    - uses: ansys/actions/_logging@v10.3.3
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       with:
         level: "INFO"
@@ -304,13 +304,13 @@ runs:
 
     - name: "Generate 'robots.txt' file"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: ansys/actions/_doc-gen-robots@v10.3.2
+      uses: ansys/actions/_doc-gen-robots@v10.3.3
       with:
         cname: ${{ inputs.cname }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.2
+    - uses: ansys/actions/_logging@v10.3.3
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       with:
         level: "INFO"

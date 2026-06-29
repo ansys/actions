@@ -122,7 +122,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_pr-doc-deployment@v10.3.2
+    - uses: ansys/actions/_pr-doc-deployment@v10.3.3
       if: github.event.pull_request.state == 'open'
       with:
         cname: ${{ inputs.cname }}
@@ -138,7 +138,7 @@ runs:
 
     - name: "Closed event trigger no longer needed for documentation cleanup"
       if: github.event.pull_request.state == 'closed'
-      uses: ansys/actions/_logging@v10.3.2
+      uses: ansys/actions/_logging@v10.3.3
       with:
         level: "WARNING"
         message: >
