@@ -239,7 +239,7 @@ runs:
     # and after each job. This way poetry is kinda "installed at system level"
     # making it available in the following call and installed in a different
     # environment from the project.
-    - name: "Install poetry and create a virtual environment"
+    - name: "Install poetry"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry' && inputs.skip-install == 'false'
       shell: bash
       run: |
@@ -267,16 +267,32 @@ runs:
         ACTIVATE_VENV: ${{ inputs.activate-venv }}
       run: |
         if [[ -n ${ACTIVATE_VENV} ]]; then
+          ${ACTIVATE_VENV}
           echo "ACTIVATE_VENV=${ACTIVATE_VENV}" >> $GITHUB_OUTPUT
+          echo "PYTHON_VENV=$(which python)" >> $GITHUB_OUTPUT
         else
           if [[ ${RUNNER_OS} == 'Windows' ]]; then
             echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+            echo "PYTHON_VENV=$(echo '.venv/Scripts/python.exe')" >> $GITHUB_OUTPUT
           else
             echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+            echo "PYTHON_VENV=$(echo '.venv/bin/python')" >> $GITHUB_OUTPUT
           fi
         fi
 
-    - name: "Install project and pip-licenses"
+    - name: Create a virtual environment for pip-licenses
+      id: virtual-environment-activation-command-pip-licenses
+      shell: bash
+      run: |
+        python -m venv .venv-pip-licenses
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV_PIP_LICENSES=$(echo 'source .venv-pip-licenses/scripts/activate')" >> $GITHUB_OUTPUT
+        else
+          echo "ACTIVATE_VENV_PIP_LICENSES=$(echo 'source .venv-pip-licenses/bin/activate')" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Install project (if not skipped)"
+      if: inputs.skip-install == 'false'
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
@@ -288,39 +304,39 @@ runs:
         if [[ "${TARGET}" != '' ]]; then
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${TARGET}"
-            EXTRA_TARGETS=${TARGET}
+            poetry install --extras "${TARGET}"
           elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             echo "Installing extra targets with uv: ${TARGET}"
-            EXTRA_TARGETS=[${TARGET}]
+            uv pip install --no-managed-python .[${TARGET}]
           else
             echo "Installing extra targets with pip: ${TARGET}"
-            EXTRA_TARGETS=[${TARGET}]
+            python -m pip install .[${TARGET}]
           fi
         else
           echo "No extra targets to install"
-          EXTRA_TARGETS=""
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            poetry install
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            uv pip install --no-managed-python .
+          else
+            python -m pip install .
+          fi
         fi
 
-        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          # Add pip-licenses to poetry lockfile, then install everything in one go
-          grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
-            poetry add "${line//\'/\"}" --lock
-          done
-          if [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            poetry install --extras "${EXTRA_TARGETS}"
-          else
-            poetry install --no-root --extras "${EXTRA_TARGETS}"
-          fi
-        elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+    - name: "Install pip-licenses in its own virtual environment"
+      shell: bash
+      env:
+        ACTIVATE_VENV_PIP_LICENSES: ${{ steps.virtual-environment-activation-command-pip-licenses.outputs.ACTIVATE_VENV_PIP_LICENSES }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        SKIP_INSTALL: ${{ inputs.skip-install }}
+        TARGET: ${{ inputs.target }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        ${ACTIVATE_VENV_PIP_LICENSES}
+        if [[ "${USE_UV}" == 'true' ]]; then
           uv pip install --no-managed-python -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
-          if [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            uv pip install --no-managed-python ."${EXTRA_TARGETS}"
-          fi
         else
           python -m pip install -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
-          if [[ "${SKIP_INSTALL}" == 'false' ]]; then
-            python -m pip install ."${EXTRA_TARGETS}"
-          fi
         fi
 
     - name:  "Install wget on Windows"
@@ -391,12 +407,13 @@ runs:
 
           ${{ steps.log-licenses-and-packages.outputs.LOG_IGNORED_PACKAGES }}
 
-    - name: "Check licences of packages"
+    - name: "Check licenses of packages"
       shell: bash
       env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        ACTIVATE_VENV_PIP_LICENSES: ${{ steps.virtual-environment-activation-command-pip-licenses.outputs.ACTIVATE_VENV_PIP_LICENSES }}
+        PYTHON_VENV: ${{ steps.virtual-environment-activation-command.outputs.PYTHON_VENV }}
       run: |
-        ${ACTIVATE_VENV}
+        ${ACTIVATE_VENV_PIP_LICENSES}
 
         # Load accepted licenses
         mapfile licenses_from_txt < accepted-licenses.txt
@@ -411,13 +428,13 @@ runs:
         ignored_packages_from_txt=${ignored_packages_from_txt::-1}
 
         # Verify if the Python environment contains invalid licenses
-        if [[ -z $(pip-licenses --ignore-packages $ignored_packages | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses) ]]; then
+        if [[ -z $(pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses) ]]; then
           echo "All licenses are valid."
         else
           echo -e "\nInvalid licenses found:\n"
-          pip-licenses --ignore-packages $ignored_packages | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses | awk '{ for (i=3; i<=NF; i++) license = license $i (i==NF ? "" : " "); print $1 " " $2 " has " license; license="" }'
+          pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses | awk '{ for (i=3; i<=NF; i++) license = license $i (i==NF ? "" : " "); print $1 " " $2 " has " license; license="" }'
           # print all packages
           echo -e "\n\n"
-          pip-licenses --ignore-packages $ignored_packages
+          pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV
           exit 1
         fi
