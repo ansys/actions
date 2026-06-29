@@ -39,6 +39,13 @@ inputs:
     required: true
     type: string
 
+  custom-path:
+    description: |
+      An additional subdirectory path to disallow for web crawlers. Pass an
+      empty string when no extra disallow rule is needed.
+    required: true
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -72,6 +79,14 @@ runs:
             echo "Disallow: /version/${version}" >> robots.txt
         done
         echo "Disallow: /pull/" >> robots.txt
+
+    - name: "Disallow crawling of the custom path"
+      if: inputs.custom-path != ''
+      shell: bash
+      env:
+        CUSTOM_PATH: ${{ inputs.custom-path }}
+      run: |
+        echo "Disallow: /${CUSTOM_PATH}/" >> robots.txt
 
     - name: "Include the location of the sitemap.xml file"
       shell: bash
