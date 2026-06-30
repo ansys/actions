@@ -416,7 +416,10 @@ runs:
               # Remove pr directory if it is closed
               if [[ ${closed} == "true" ]]; then
                 message="This PR has been closed. Documentation for this pull request will shortly be removed from its [former deployment address](https://${CNAME}/pull/${pr_number})."
-                gh pr comment "${pr_number}" --body "${message}"
+                if ! gh pr comment "${pr_number}" --body "${message}"; then
+                  echo "::error::Failed to comment on PR #${pr_number}. This step requires workflow/job permission 'pull-requests: write'. Please add it and then rerun the workflow."
+                  exit 1
+                fi
                 echo "Removing directory ${pr_number}..."
                 rm -rf "pull/${pr_number}"
               fi
