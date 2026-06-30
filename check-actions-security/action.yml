@@ -82,7 +82,7 @@ runs:
   steps:
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
 
@@ -92,7 +92,9 @@ runs:
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.25.2
+        uv venv .venv
+        source .venv/bin/activate
+        uv pip install --no-managed-python -r ${GITHUB_ACTION_PATH}/requirements.txt
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -141,6 +143,7 @@ runs:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
+        source .venv/bin/activate
         zizmor ${HIGH_AUDIT_LEVEL} ${STRICT_AUDIT_LEVEL} .
 
     - name: "Output a summary of detected vulnerabilities"
@@ -150,4 +153,5 @@ runs:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
+        source .venv/bin/activate
         python ${GITHUB_ACTION_PATH}/../python-utils/zizmor-summary.py
