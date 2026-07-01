@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -84,7 +84,7 @@ runs:
     # This is related to our use of uv to install packages, see https://github.com/ansys/actions/pull/811
     - name: "Set up Python using cache"
       if: ${{ inputs.use-cache == 'true' && inputs.provision-uv == 'false'}}
-      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: ${{ inputs.python-version }}
         cache: 'pip'
@@ -92,7 +92,7 @@ runs:
 
     - name: "Set up Python without using cache"
       if: ${{ inputs.use-cache == 'false' || (inputs.use-cache == 'true' && inputs.provision-uv == 'true') }}
-      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: ${{ inputs.python-version }}
 
