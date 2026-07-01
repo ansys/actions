@@ -596,14 +596,14 @@ wheels = [
 
 [[package]]
 name = "ghapi"
-version = "1.0.13"
+version = "1.0.14"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastcore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/62/09/1b88f97e8599cda096d42dac830bb2e28ddf202d71843f61bda52bbe99ce/ghapi-1.0.13.tar.gz", hash = "sha256:fb46f5e101efa33bd12a0ae7694de761eec5be1de90f48847699f1e00128f928", size = 72914, upload-time = "2026-02-28T02:21:01.892Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/79/e3/133eb1edbbf07e1ef65cbfdd37d1d64078d406d713bb2a77213c95f92960/ghapi-1.0.14.tar.gz", hash = "sha256:5752ff78a48b965522b9f3d41a8953efc469c9535b9fd0ac8be15000b6c99aa9", size = 76904, upload-time = "2026-06-22T03:57:43.514Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/ac/e1960ec21cfd5a0fd9b329822c04d0b5f91abb688c3b1acd7e8ff3390432/ghapi-1.0.13-py3-none-any.whl", hash = "sha256:49d7e336e5664e4d4f92b1d442dfe80f31ecccbee4370bd1d271bd63a1ccf18e", size = 71409, upload-time = "2026-02-28T02:21:00.457Z" },
+    { url = "https://files.pythonhosted.org/packages/54/36/3475841d207b73f45fddfac827201919a8cbf7d75fcdf79ff1d9c1216375/ghapi-1.0.14-py3-none-any.whl", hash = "sha256:b92e4187d7a85f73a667c7ce6bda7a4c421e64306af6b9fb112cc58bbbd92b5e", size = 75381, upload-time = "2026-06-22T03:57:41.999Z" },
 ]
 
 [[package]]
