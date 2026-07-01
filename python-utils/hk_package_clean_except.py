@@ -22,9 +22,9 @@
 
 """Script to clean up GitHub Packages container images except given tags or number of days."""
 
+from datetime import datetime, timedelta
 import os
 import re
-from datetime import datetime, timedelta
 
 from ghapi.all import GhApi
 from ghapi.core import print_summary
@@ -88,6 +88,4 @@ for page in paged_packages:
                 package_version_id=package["id"],
             )
         else:
-            print(
-                f"Keeping package {package['name']} with tags {package_tags} - {match}"
-            )
+            print(f"Keeping package {package['name']} with tags {package_tags} - {match}")

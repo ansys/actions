@@ -123,7 +123,7 @@ Include the release notes in your documentation
   .. code:: python
 
       from ansys_sphinx_theme import get_version_match
-      from ansys.<product>.<library> import __version__
+      from ansys.product.library import __version__
 
       release = version = __version__
       switcher_version = get_version_match(version)

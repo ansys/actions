@@ -1,16 +1,16 @@
 """Sphinx documentation configuration file."""
 
-import os
-import pathlib
 from datetime import datetime
+import os
+from pathlib import Path
 
-import jinja2
-import yaml
 from ansys_sphinx_theme import ansys_favicon, get_version_match
-from tabulate import tabulate as Table
+import jinja2
+from tabulate import tabulate
+import yaml
 
 # Constants used for generating documentation
-DOC_SOURCE_DIR = pathlib.Path(__file__).parent.parent
+DOC_SOURCE_DIR = Path(__file__).parent.parent
 DOC_DIR = DOC_SOURCE_DIR.parent
 BASE_DIR = DOC_SOURCE_DIR.parent
 ACTIONS_PREFIXES = ("build-", "check-", "doc-", "hk-", "release-", "tests-")
@@ -27,19 +27,15 @@ author = "ANSYS, Inc."
 cname = os.getenv("DOCUMENTATION_CNAME", "actions.docs.ansys.com")
 
 # Read version from VERSION file in base root directory
-source_dir = pathlib.Path(__file__).parent.resolve().absolute()
+source_dir = Path(__file__).parent.resolve().absolute()
 version_file = source_dir / "../../VERSION"
-with open(str(version_file), "r") as file:
+with version_file.open("r") as file:
     __version__ = file.read().splitlines()[0]
 release = version = __version__
 branch_name = (
-    "main"
-    if __version__.endswith("dev0")
-    else f"release/{get_version_match(__version__)}"
+    "main" if __version__.endswith("dev0") else f"release/{get_version_match(__version__)}"
 )
-actions_version = (
-    "main" if __version__.endswith("dev0") else f"v{get_version_match(__version__)}"
-)
+actions_version = "main" if __version__.endswith("dev0") else f"v{get_version_match(__version__)}"
 switcher_version = get_version_match(__version__)
 
 html_theme = "ansys_sphinx_theme"
@@ -120,7 +116,7 @@ def is_valid_action_dir(path):
 
     Parameters
     ----------
-    path : ~pathlib.Path
+    path : Path
         The ``Path`` instance to verify if contains an ``action.yml`` and has a valid pattern.
 
     Returns
@@ -149,7 +145,7 @@ def generate_description_from_action_file(action_file):
 
     Parameters
     ----------
-    action_file : ~pathlib.Path
+    action_file : Path
         A ``Path`` object representing the action file.
 
     Returns
@@ -158,14 +154,14 @@ def generate_description_from_action_file(action_file):
         String representing description of the action.
 
     """
-    with open(action_file, "r") as yaml_file:
+    with action_file.open("r") as yaml_file:
         file_content = yaml.safe_load(yaml_file)
         description = file_content["description"]
-        source_code_link = f"{html_theme_options['github_url']}/blob/{branch_name}/{action_file.parent.name}/action.yml"
-        return (
-            description
-            + f"\n`Source code for this action <{source_code_link}>`__ :fab:`github`"
+        source_code_link = (
+            f"{html_theme_options['github_url']}/blob/{branch_name}/"
+            f"{action_file.parent.name}/action.yml"
         )
+        return description + f"\n`Source code for this action <{source_code_link}>`__ :fab:`github`"
 
 
 def generate_inputs_table_from_action_file(action_file):
@@ -173,7 +169,7 @@ def generate_inputs_table_from_action_file(action_file):
 
     Parameters
     ----------
-    action_file : ~pathlib.Path
+    action_file : Path
         A ``Path`` object representing the action file.
 
     Returns
@@ -186,20 +182,18 @@ def generate_inputs_table_from_action_file(action_file):
     headers = [field.capitalize() for field in field_names]
     table_content = []
 
-    with open(action_file, "r") as yaml_file:
+    with action_file.open("r") as yaml_file:
         file_content: dict = yaml.safe_load(yaml_file)
         inputs = file_content.get("inputs", None)
         if inputs:
             for input_name, values in inputs.items():
                 if input_name == "toml-version":  # Remove this check in v11 (See #794)
                     continue
-                values = [
-                    values.get(field, None) for field in field_names if field != "input"
-                ]
+                values = [values.get(field, None) for field in field_names if field != "input"]
                 table_row = [input_name]
                 table_row.extend(values)
                 table_content.append(table_row)
-        return str(Table(table_content, headers=headers, tablefmt="grid"))
+        return str(tabulate(table_content, headers=headers, tablefmt="grid"))
 
 
 # Collect all public actions directories and files
@@ -219,38 +213,34 @@ jinja_contexts = {
 }
 
 
-def render_example_template_with_actions_version(
-    example_template_file, actions_version
-):
-    """Renders a example template with desired branch name.
+def render_example_template_with_actions_version(example_template_file, actions_version):
+    """Render an example template with the desired branch name.
 
     Parameters
     ----------
-    example_template_file : ~pathlib.Path
+    example_template_file : Path
         The ``Path`` for the example template file.
     actions_version : str
         A string representing the actions version.
 
     Returns
     -------
-    example_rendered_file : ~pathlib.Path
+    example_rendered_file : Path
         The ``Path`` for the rendered example file.
 
     """
-    env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(example_template_file.parent)
-    )
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(example_template_file.parent))
     example_template = env.get_template(example_template_file.name)
     content = example_template.render(version=actions_version)
     output_file_name = example_template_file.name[:-4] + "-rendered-example.yml"
     example_rendered_file = example_template_file.parent / output_file_name
-    with open(example_rendered_file, "w") as file:
+    with example_rendered_file.open("w") as file:
         file.write(content)
     return example_rendered_file
 
 
 def collect_examples_from_action_name(action_name):
-    """Returns a list of example files in the form of ``Path`` instances.
+    """Return a list of example files in the form of ``Path`` instances.
 
     Parameters
     ----------
@@ -259,7 +249,7 @@ def collect_examples_from_action_name(action_name):
 
     Returns
     -------
-    list[~pathlib.Path]
+    list[Path]
         A list of example files in the form of ``Path`` instances.
 
     """
@@ -273,11 +263,11 @@ def collect_examples_from_action_name(action_name):
 
 
 def get_example_file_title(example_file):
-    """Returns the title from a YML example file.
+    """Return the title from a YML example file.
 
     Parameters
     ----------
-    example_file : ~pathlib.Path
+    example_file : Path
         The ``Path`` for the example file.
 
     Returns
@@ -293,7 +283,7 @@ def get_example_file_title(example_file):
     then to retrieve the value of the 'title' key.
 
     """
-    with open(example_file, "r") as yaml_file:
+    with example_file.open("r") as yaml_file:
         file_content = yaml.safe_load(yaml_file)
         first_key = next(iter(file_content))
         return file_content[first_key]["name"]
@@ -312,12 +302,12 @@ for action_dir in public_actions:
     ]
 
 
-def load_safety_ignore_vulnerabilities(file_path: pathlib.Path):
-    """Loads the vulnerability IDs from the safety ignore YAML file.
+def load_safety_ignore_vulnerabilities(file_path: Path):
+    """Load the vulnerability IDs from the safety ignore YAML file.
 
     Parameters
     ----------
-    file_path : ~pathlib.Path
+    file_path : Path
         The ``Path`` instance representing the YAML file location.
 
     Returns
@@ -332,12 +322,12 @@ def load_safety_ignore_vulnerabilities(file_path: pathlib.Path):
         return list(vulnerabilities.keys()) if vulnerabilities else []
 
 
-def load_file_lines_as_list(file_path: pathlib.Path):
-    """Loads the lines of a file in the form of a Python list.
+def load_file_lines_as_list(file_path: Path):
+    """Load the lines of a file in the form of a Python list.
 
     Parameters
     ----------
-    file_path : ~pathlib.Path
+    file_path : Path
         The ``Path`` instance representing the file location.
 
     Returns
@@ -361,8 +351,8 @@ for var, file in zip(
     jinja_contexts["check-licenses"][var] = load_file_lines_as_list(file)
 
 # Check vulnerabilities
-jinja_contexts["check-vulnerabilities"]["ignored_safety"] = (
-    load_safety_ignore_vulnerabilities(IGNORED_SAFETY)
+jinja_contexts["check-vulnerabilities"]["ignored_safety"] = load_safety_ignore_vulnerabilities(
+    IGNORED_SAFETY
 )
 
 
@@ -371,7 +361,7 @@ def get_example_content_for_cheatsheet(example_file):
 
     Parameters
     ----------
-    example_file : ~pathlib.Path
+    example_file : Path
         The ``Path`` for the example file.
 
     Returns
@@ -379,7 +369,7 @@ def get_example_content_for_cheatsheet(example_file):
     str
         A string representing the content of the example file.
     """
-    with open(example_file, "r") as yaml_file:
+    with example_file.open("r") as yaml_file:
         file_content = yaml.safe_load(yaml_file)
         first_key = next(iter(file_content))
         file_content = file_content[first_key]["steps"]
@@ -410,9 +400,7 @@ actions_cheatsheet_jinja_contexts = {
 jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(source_dir))
 template = jinja2_env.get_template("cheat_sheet.jinja")
 
-content = template.render(
-    version=actions_version, actions=actions_cheatsheet_jinja_contexts
-)
-with open("cheat_sheet.qmd", "w") as cheat_sheet_file_rendered:
+content = template.render(version=actions_version, actions=actions_cheatsheet_jinja_contexts)
+with Path("cheat_sheet.qmd").open("w") as cheat_sheet_file_rendered:
     cheat_sheet_file_rendered.write(content)
     cheat_sheet_file_rendered.close()
