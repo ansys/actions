@@ -32,6 +32,9 @@ updates:
       prefix: "build(uv)"
     labels:
       - "dependencies:requirements"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
 
   - package-ecosystem: "github-actions"
     directories:
