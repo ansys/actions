@@ -240,7 +240,7 @@ def set_version_variable() -> None:
                 export_to_github_output("PRE_RELEASE", "true")
             else:
                 print(
-                    "ERROR: An higher or equal pre-release version already exist:"
+                    "ERROR: An equal or higher pre-release version already exists:"
                     f" {existing_prereleases}"
                 )
                 exit(1)
