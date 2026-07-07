@@ -264,7 +264,21 @@ BASE_DATA = deepcopy(BASE_PRERELEASE_DATA) + deepcopy(BASE_NORMAL_RELEASE_DATA)
 
 # helper function for some tests
 def expected_github_output(ref_name: str, with_patch_string: bool = False) -> str:
-    """Build the expected GITHUB_OUTPUT content string for a given ref name."""
+    """Build the expected GITHUB_OUTPUT content string for a given ref name.
+
+    Parameters
+    ----------
+    ref_name : str
+        The reference name to extract the version from.
+    with_patch_string : bool, optional
+        Whether to include the patch string in the version output.
+        Default value is ```False```.
+
+    Returns
+    -------
+    str
+        The expected content of GITHUB_OUTPUT.
+    """
     ref_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
     ref_version = Version(ref_number)
 
