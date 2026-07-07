@@ -580,7 +580,8 @@ def test_write_versions_file_no_stable(test_environment_setup):
 
     # Verify versions.json has no "(stable)" entry
 versions_file = Path("versions.json")
-content = json.loads(versions_file.read_text(encoding="utf-8"))
+    versions_file = Path("versions.json")
+    content = json.loads(versions_file.read_text(encoding="utf-8"))
 
     for entry in content:
         assert "(stable)" not in entry["name"]
