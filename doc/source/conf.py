@@ -401,6 +401,5 @@ jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(source_dir))
 template = jinja2_env.get_template("cheat_sheet.jinja")
 
 content = template.render(version=actions_version, actions=actions_cheatsheet_jinja_contexts)
-with Path("cheat_sheet.qmd").open("w") as cheat_sheet_file_rendered:
-    cheat_sheet_file_rendered.write(content)
-    cheat_sheet_file_rendered.close()
+cheat_sheet_file_rendered = Path("cheat_sheet.qmd")
+cheat_sheet_file_rendered.write_text(content)
