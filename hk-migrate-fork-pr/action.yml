@@ -170,8 +170,23 @@ runs:
         fi
         echo "repository=${REPO_NAME}" >> "$GITHUB_OUTPUT"
 
+    - name: "Check if triggered by the bot"
+      id: bot-check
+      shell: bash
+      env:
+        USER_TRIGGERING: ${{ inputs.user-triggering }}
+        BOT_USERNAME: ${{ inputs.bot-username }}
+      run: |
+        if [ "${USER_TRIGGERING}" = "${BOT_USERNAME}" ]; then
+          echo "Triggered by bot (${BOT_USERNAME}). Skipping action."
+          echo "is-bot-triggered=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "is-bot-triggered=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: "Check team membership"
       id: check-membership
+      if: steps.bot-check.outputs.is-bot-triggered != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -205,7 +220,7 @@ runs:
         fi
 
     - name: "Delete previous reactions"
-      if: always()
+      if: steps.bot-check.outputs.is-bot-triggered != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -244,6 +259,7 @@ runs:
         done
 
     - name: "React to comment based on authorization"
+      if: steps.bot-check.outputs.is-bot-triggered != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -333,9 +349,9 @@ runs:
         {
           echo "pr-head-branch=${HEAD_REF}"
           echo "pr-head-repo=${HEAD_REPO_FULL}"
-          echo "pr-base-branch=migration/pr-${PR_NUMBER}"
+          echo "pr-base-branch=chore/migrate-fork-pr-${PR_NUMBER}"
           echo "pr-author=${AUTHOR}"
-          echo "migration-branch=migration/pr-${PR_NUMBER}"
+          echo "migration-branch=chore/migrate-fork-pr-${PR_NUMBER}"
         } >> "$GITHUB_OUTPUT"
 
         # Use delimiter for multiline values (title and body may contain special chars)
@@ -353,7 +369,7 @@ runs:
 
         echo "PR Head: ${HEAD_REPO_FULL}/${HEAD_REF}"
         echo "PR Base: ${ORGANIZATION}/${REPOSITORY}/${BASE_REF}"
-        echo "Migration branch: migration/pr-${PR_NUMBER}"
+        echo "Migration branch: chore/migrate-fork-pr-${PR_NUMBER}"
 
     - name: "Checkout repository"
       if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
@@ -363,6 +379,62 @@ runs:
         token: ${{ inputs.github-token }}
         fetch-depth: 0
         persist-credentials: true # zizmor: ignore[artipacked]
+
+    - name: "Migrate legacy naming to conventional commits"
+      # TODO: Remove this step once all legacy migration/pr-N branches have been renamed.
+      # Safe to drop when no repos are expected to still have migration/pr-{N} branches open.
+      if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        ORGANIZATION: ${{ inputs.organization }}
+        REPOSITORY: ${{ steps.setup.outputs.repository }}
+      run: |
+        OLD_BRANCH="migration/pr-${PR_NUMBER}"
+        NEW_BRANCH="chore/migrate-fork-pr-${PR_NUMBER}"
+
+        # Check if old-format branch exists
+        if ! gh api "repos/${ORGANIZATION}/${REPOSITORY}/git/ref/heads/${OLD_BRANCH}" --silent 2>/dev/null; then
+          echo "No legacy branch found at ${OLD_BRANCH}. Skipping rename."
+          exit 0
+        fi
+
+        echo "Legacy branch ${OLD_BRANCH} found. Renaming to ${NEW_BRANCH}..."
+
+        # Rename the branch — GitHub automatically updates any open PRs with this head
+        gh api -X POST \
+          "repos/${ORGANIZATION}/${REPOSITORY}/branches/${OLD_BRANCH}/rename" \
+          -f new_name="${NEW_BRANCH}"
+
+        echo "Branch renamed to ${NEW_BRANCH}."
+
+        # Find the open PR with the new head branch (automatically updated by GitHub after rename)
+        EXISTING_PR=$(gh pr list \
+          --repo "${ORGANIZATION}/${REPOSITORY}" \
+          --head "${NEW_BRANCH}" \
+          --state open \
+          --json number,title \
+          --jq '.[0] // empty')
+
+        if [ -z "${EXISTING_PR}" ]; then
+          echo "No open PR found for branch ${NEW_BRANCH}. Skipping title update."
+          exit 0
+        fi
+
+        EXISTING_PR_NUM=$(echo "${EXISTING_PR}" | jq -r '.number')
+        EXISTING_PR_TITLE=$(echo "${EXISTING_PR}" | jq -r '.title')
+
+        # Only update the title if it still uses the legacy format
+        if [[ "${EXISTING_PR_TITLE}" == "migrated (PR"* ]]; then
+          NEW_TITLE="chore: migrate fork PR #${PR_NUMBER}"
+          echo "Updating PR #${EXISTING_PR_NUM} title to: ${NEW_TITLE}"
+          gh pr edit "${EXISTING_PR_NUM}" \
+            --repo "${ORGANIZATION}/${REPOSITORY}" \
+            --title "${NEW_TITLE}"
+        else
+          echo "PR #${EXISTING_PR_NUM} title does not use legacy format. Skipping title update."
+        fi
 
     - name: "Mirror fork branch to migration branch"
       if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
@@ -497,7 +569,7 @@ runs:
           --repo "${ORGANIZATION}/${REPOSITORY}" \
           --head "${PR_BASE}" \
           --base main \
-          --title "migrated (PR ${PR_NUMBER}): ${PR_TITLE}" \
+          --title "chore: migrate fork PR #${PR_NUMBER}" \
           --body "${NEW_PR_BODY}")
 
         # Extract new PR number from URL
