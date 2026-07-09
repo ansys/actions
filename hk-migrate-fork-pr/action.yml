@@ -170,8 +170,23 @@ runs:
         fi
         echo "repository=${REPO_NAME}" >> "$GITHUB_OUTPUT"
 
+    - name: "Check if triggered by the bot"
+      id: bot-check
+      shell: bash
+      env:
+        USER_TRIGGERING: ${{ inputs.user-triggering }}
+        BOT_USERNAME: ${{ inputs.bot-username }}
+      run: |
+        if [ "${USER_TRIGGERING}" = "${BOT_USERNAME}" ]; then
+          echo "Triggered by bot (${BOT_USERNAME}). Skipping action."
+          echo "is-bot-triggered=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "is-bot-triggered=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: "Check team membership"
       id: check-membership
+      if: steps.bot-check.outputs.is-bot-triggered != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -205,7 +220,7 @@ runs:
         fi
 
     - name: "Delete previous reactions"
-      if: always()
+      if: steps.bot-check.outputs.is-bot-triggered != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -244,6 +259,7 @@ runs:
         done
 
     - name: "React to comment based on authorization"
+      if: steps.bot-check.outputs.is-bot-triggered != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -333,9 +349,9 @@ runs:
         {
           echo "pr-head-branch=${HEAD_REF}"
           echo "pr-head-repo=${HEAD_REPO_FULL}"
-          echo "pr-base-branch=migration/pr-${PR_NUMBER}"
+          echo "pr-base-branch=chore/migrate-fork-pr-${PR_NUMBER}"
           echo "pr-author=${AUTHOR}"
-          echo "migration-branch=migration/pr-${PR_NUMBER}"
+          echo "migration-branch=chore/migrate-fork-pr-${PR_NUMBER}"
         } >> "$GITHUB_OUTPUT"
 
         # Use delimiter for multiline values (title and body may contain special chars)
@@ -353,7 +369,7 @@ runs:
 
         echo "PR Head: ${HEAD_REPO_FULL}/${HEAD_REF}"
         echo "PR Base: ${ORGANIZATION}/${REPOSITORY}/${BASE_REF}"
-        echo "Migration branch: migration/pr-${PR_NUMBER}"
+        echo "Migration branch: chore/migrate-fork-pr-${PR_NUMBER}"
 
     - name: "Checkout repository"
       if: steps.check-membership.outputs.continue == 'true' && steps.pr-details.outputs.skip != 'true'
@@ -497,7 +513,7 @@ runs:
           --repo "${ORGANIZATION}/${REPOSITORY}" \
           --head "${PR_BASE}" \
           --base main \
-          --title "migrated (PR ${PR_NUMBER}): ${PR_TITLE}" \
+          --title "chore: migrate fork PR #${PR_NUMBER}" \
           --body "${NEW_PR_BODY}")
 
         # Extract new PR number from URL
