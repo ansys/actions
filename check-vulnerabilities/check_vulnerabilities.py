@@ -34,7 +34,7 @@ import json
 import os
 from pathlib import Path
 import sys
-from typing import Any, Dict
+from typing import Any
 
 import click
 import github
@@ -59,7 +59,7 @@ _SSL_CORPORATE_NETWORK_HINT = (
 )
 
 
-def dict_hash(dictionary: Dict[str, Any]) -> str:
+def dict_hash(dictionary: dict[str, Any]) -> str:
     """MD5 hash of a dictionary.
 
     Parameters
