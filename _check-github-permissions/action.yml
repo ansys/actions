@@ -1,0 +1,126 @@
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: |
+  Check GitHub permissions action
+
+description: |
+  Verifies that the ``GITHUB_TOKEN`` has the required permissions to run an
+  action. Emits a ``::warning::`` for each missing permission without stopping
+  the job.
+
+  Supported permission scopes: ``contents``, ``pull-requests``, ``issues``,
+  ``actions``, ``packages``, ``pages``, ``id-token``, and ``attestations``.
+
+  .. note::
+
+    Write-level permissions (e.g. ``contents: write``) are verified with a
+    read probe. If the probe succeeds, read access is confirmed but write
+    access cannot be guaranteed without a side-effecting call.
+
+  .. important::
+
+    The ``id-token`` and ``attestations`` scopes are verified by checking for
+    the ``ACTIONS_ID_TOKEN_REQUEST_URL`` environment variable rather than an
+    API call.
+
+inputs:
+
+  # Required inputs
+
+  permissions:
+    description: |
+      Comma-separated list of required GitHub token permissions in
+      ``scope: level`` format. For example:
+      ``"contents: read, pull-requests: write"``.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  token:
+    description: |
+      GitHub token to use for permission verification.
+    required: false
+    default: ${{ github.token }}
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Check GitHub permissions"
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        PERMISSIONS: ${{ inputs.permissions }}
+        REPO: ${{ github.repository }}
+      run: |
+        probe() {
+          local endpoint="$1"
+          local err
+          if ! err=$(gh api "${endpoint}" 2>&1 >/dev/null); then
+            echo "${err}" | grep -qiE "HTTP 403|403|forbidden|not accessible by integration|insufficient permission" && return 1
+          fi
+          return 0
+        }
+
+        IFS=',' read -ra PERMS <<< "${PERMISSIONS}"
+        for perm in "${PERMS[@]}"; do
+          perm=$(echo "${perm}" | xargs)
+          scope=$(echo "${perm}" | cut -d: -f1 | xargs)
+
+          case "${scope}" in
+            contents)
+              probe "repos/${REPO}/git/commits?per_page=1" || \
+                echo "::warning::Missing permission '${perm}'. Add 'contents: read' (or higher) to your workflow's permissions block."
+              ;;
+            pull-requests)
+              probe "repos/${REPO}/pulls?per_page=1" || \
+                echo "::warning::Missing permission '${perm}'. Add 'pull-requests: read' (or higher) to your workflow's permissions block."
+              ;;
+            issues)
+              probe "repos/${REPO}/issues?per_page=1" || \
+                echo "::warning::Missing permission '${perm}'. Add 'issues: read' (or higher) to your workflow's permissions block."
+              ;;
+            actions)
+              probe "repos/${REPO}/actions/runs?per_page=1" || \
+                echo "::warning::Missing permission '${perm}'. Add 'actions: read' (or higher) to your workflow's permissions block."
+              ;;
+            packages)
+              probe "repos/${REPO}/packages?package_type=container" || \
+                echo "::warning::Missing permission '${perm}'. Add 'packages: read' (or higher) to your workflow's permissions block."
+              ;;
+            pages)
+              probe "repos/${REPO}/pages" || \
+                echo "::warning::Missing permission '${perm}'. Add 'pages: read' (or higher) to your workflow's permissions block."
+              ;;
+            id-token | attestations)
+              if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+                echo "::warning::Missing permission '${perm}'. Add 'id-token: write' to your workflow's permissions block."
+              fi
+              ;;
+            *)
+              echo "::notice::Unknown permission scope '${scope}' — skipping verification."
+              ;;
+          esac
+        done
