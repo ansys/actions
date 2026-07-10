@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.3.4 <https://github.com/ansys/actions/releases/tag/v10.3.4>`_ - July 10, 2026
+=================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improvements to hk-migrate-fork-pr
+          - `#1402 <https://github.com/ansys/actions/pull/1402>`_
+
+
 `10.3.3 <https://github.com/ansys/actions/releases/tag/v10.3.3>`_ - June 29, 2026
 =================================================================================
 
