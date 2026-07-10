@@ -120,15 +120,13 @@ Include the release notes in your documentation
 
   This assumes the following code already exists in the ``doc/source/conf.py`` file:
 
-  .. code:: python
+  .. code::
 
       from ansys_sphinx_theme import get_version_match
-      from ansys.PRODUCT.LIBRARY import __version__
+      from ansys.<product>.<library>
 
       release = version = __version__
       switcher_version = get_version_match(version)
-
-  Replace ``PRODUCT`` and ``LIBRARY`` with the name of your product and library respectively (e.g., ``geometry.core``).
 
 5. Add the following lines to the ``pyproject.toml`` file, replacing ``{org-name}`` and ``{repo-name}`` with the name of the organization and repository respectively.
 Also, replace ``ansys.<product>.<library>`` with the name under ``tool.flit.module``. For example, ``ansys.geometry.core``.
