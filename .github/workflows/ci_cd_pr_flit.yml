@@ -142,7 +142,7 @@ jobs:
         TWINE_PASSWORD: devpipass
         TWINE_REPOSITORY_URL: http://localhost:3141/root/public/
       run: | # zizmor: ignore[use-trusted-publishing]
-        pip install twine
+        pip install twine packaging
         twine upload dist/*
 
     - name: "Verify package is installable from devpi"
