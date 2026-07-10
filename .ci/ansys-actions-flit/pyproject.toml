@@ -10,7 +10,7 @@ description = "A demo library for testing Ansys actions (uses flit as the build 
 readme = "README.rst"
 requires-python = ">=3.12"
 license = "MIT"
-license-files = [ "LICENSE"]
+license-files = [ "LICENSE" ]
 authors = [{ name = "ANSYS, Inc.", email = "pyansys.core@ansys.com" }]
 maintainers = [
     { name = "PyAnsys developers", email = "pyansys.core@ansys.com" },
