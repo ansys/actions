@@ -150,14 +150,14 @@ runs:
 
     - name: "Set up Python ${{ inputs.python-version }}"
       if: ${{ inputs.skip-python-setup == 'false' }}
-      uses: ansys/actions/_setup-python@v10.3.3
+      uses: ansys/actions/_setup-python@v10.3.4
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - uses: ansys/actions/_logging@v10.3.3
+    - uses: ansys/actions/_logging@v10.3.4
       if: ${{ inputs.skip-python-setup == 'true' }}
       with:
         level: "INFO"

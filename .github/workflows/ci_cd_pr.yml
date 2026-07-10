@@ -135,7 +135,7 @@ jobs:
           persist-credentials: false
 
       - name: "Set up Python"
-        uses: ansys/actions/_setup-python@v10.3.3
+        uses: ansys/actions/_setup-python@v10.3.4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-cache: false

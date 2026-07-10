@@ -197,7 +197,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: ansys/actions/_logging@v10.3.3
+    - uses: ansys/actions/_logging@v10.3.4
       if: inputs.toml-version != '' || inputs.tomli-version != ''
       with:
         level: "WARNING"
@@ -219,7 +219,7 @@ runs:
         fetch-depth: 0 # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@v10.3.3
+      uses: ansys/actions/_setup-python@v10.3.4
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
