@@ -8,7 +8,7 @@ name = "ansys-actions-poetry"
 version = "10.4.dev0"
 description = "A demo library for testing Ansys actions (uses poetry as the build backend)"
 readme = "README.rst"
-license = { text = "MIT" }
+license = "MIT"
 authors = ["ANSYS, Inc. <pyansys.core@ansys.com>"]
 maintainers = ["PyAnsys developers <pyansys.core@ansys.com>"]
 
