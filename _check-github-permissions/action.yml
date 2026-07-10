@@ -91,7 +91,7 @@ runs:
 
           case "${scope}" in
             contents)
-              probe "repos/${REPO}/git/commits?per_page=1" || \
+              probe "repos/${REPO}/contents/" || \
                 echo "::warning::Missing permission '${perm}'. Add 'contents: read' (or higher) to your workflow's permissions block."
               ;;
             pull-requests)
