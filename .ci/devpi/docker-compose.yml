@@ -1,0 +1,7 @@
+services:
+  devpi:
+    build: .
+    ports:
+      - "3141:3141"
+    environment:
+      DEVPI_PASSWORD: devpipass
