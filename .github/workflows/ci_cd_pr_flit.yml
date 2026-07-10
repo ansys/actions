@@ -141,12 +141,14 @@ jobs:
         TWINE_USERNAME: root
         TWINE_PASSWORD: devpipass
         TWINE_REPOSITORY_URL: http://localhost:3141/root/public/
-      run: |
+      run: | # zizmor: ignore[use-trusted-publishing]
         pip install twine
         twine upload dist/*
 
     - name: "Verify package is installable from devpi"
-      run: pip install --index-url http://localhost:3141/root/public/+simple/ --no-deps ${{ env.LIBRARY_NAME }}
+      env:
+        LIBRARY: ${{ env.LIBRARY_NAME }}
+      run: pip install --index-url http://localhost:3141/root/public/+simple/ --no-deps "${LIBRARY}"
 
   test-build-wheelhouse-flit-projects:
     name: "Test build-wheelhouse action for ${{ matrix.repository.name }} project on ${{ matrix.os }}"
