@@ -9,6 +9,7 @@ version = "10.4.dev0"
 description = "A demo library for testing Ansys actions (uses poetry as the build backend)"
 readme = "README.rst"
 license = "MIT"
+license-files = [ "LICENSE" ]
 authors = ["ANSYS, Inc. <pyansys.core@ansys.com>"]
 maintainers = ["PyAnsys developers <pyansys.core@ansys.com>"]
 
@@ -21,7 +22,7 @@ classifiers = [
 packages = [{include = "ansys", from = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = ">=3.12"
 importlib-metadata = ">=4.0"
 
 [[tool.poetry.source]]
