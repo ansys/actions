@@ -114,9 +114,14 @@ runs:
               probe "repos/${REPO}/pages" || \
                 echo "::warning::Missing permission '${perm}'. Add 'pages: read' (or higher) to your workflow's permissions block."
               ;;
-            id-token | attestations)
+            id-token)
               if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
                 echo "::warning::Missing permission '${perm}'. Add 'id-token: write' to your workflow's permissions block."
+              fi
+              ;;
+            attestations)
+              if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+                echo "::warning::Missing permission '${perm}'. Add 'attestations: write' and 'id-token: write' to your workflow's permissions block."
               fi
               ;;
             *)
