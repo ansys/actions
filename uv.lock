@@ -108,7 +108,7 @@ build-wheelhouse = [
 check-actions-security = [{ name = "zizmor", specifier = "<=1.27" }]
 check-licenses = [
     { name = "pip-licenses", specifier = "<=5.6" },
-    { name = "prettytable", specifier = "<=3.18.0" },
+    { name = "prettytable", specifier = "<=3.18" },
     { name = "wcwidth", specifier = "<=0.9" },
 ]
 check-vulnerabilities = [
@@ -133,12 +133,12 @@ doc-style = [
     { name = "tomlkit", specifier = "<=0.15" },
 ]
 hk-package-clean-except = [
-    { name = "fastcore", specifier = "<=1.14" },
+    { name = "fastcore", specifier = "<=1.14.5" },
     { name = "ghapi", specifier = "<=1.1" },
     { name = "packaging", specifier = "<=26.2" },
 ]
 hk-package-clean-untagged = [
-    { name = "fastcore", specifier = "<=1.14" },
+    { name = "fastcore", specifier = "<=1.14.5" },
     { name = "ghapi", specifier = "<=1.1" },
     { name = "packaging", specifier = "<=26.2" },
 ]
@@ -578,11 +578,11 @@ wheels = [
 
 [[package]]
 name = "fastcore"
-version = "1.13.6"
+version = "1.14.5"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/1d/80/8547a93161e6e1d868e1c6d0e6bd9b472486cdfaf8209727a42884b53a7d/fastcore-1.13.6.tar.gz", hash = "sha256:702fe22ff191c005e6909891125e5f7dbdd31bb8f444574e082030a31b960ead", size = 100742, upload-time = "2026-06-18T06:49:07.971Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a1/82/6dd84e0498a51f08bb788d8f996bedc39e1c0536261c11e635ffaa2e56ee/fastcore-1.14.5.tar.gz", hash = "sha256:d6f1b4220913642964da6236047fe1e9474ecaeaf38737e144b296c31eb53a3a", size = 102968, upload-time = "2026-07-08T07:16:04.806Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/11/867a59ae2d233ce81da373513cabaca2abf03f0180b28e85cf3ae2d5f7f6/fastcore-1.13.6-py3-none-any.whl", hash = "sha256:59264df5bf003fcf44602b7418c6178b37d3c31ae87d8ac106139f716e73711f", size = 105794, upload-time = "2026-06-18T06:49:06.499Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/c3/e2869af29faf757baeb0197fadc635b2e88fe103a8b1ab04722e74dbf07f/fastcore-1.14.5-py3-none-any.whl", hash = "sha256:4b870ee8dc7882b6c280e008ae4d0a355dc2ab4ae1c729a5301413c7f020cc11", size = 108052, upload-time = "2026-07-08T07:16:03.169Z" },
 ]
 
 [[package]]
