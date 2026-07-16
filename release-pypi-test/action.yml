@@ -121,7 +121,7 @@ runs:
     # TODO: ansys/actions@v11 will enforce the use of trusted publishers
     - name: "Warn user if not using trusted publishers"
       if: ${{ inputs.use-trusted-publisher == 'false' }}
-      uses: ansys/actions/_logging@v10.3.4
+      uses: ansys/actions/_logging@v10.3.5
       with:
         level: "WARNING"
         message: >
@@ -130,7 +130,7 @@ runs:
           enabling trusted publishers releases in your project.
 
     - name: "Release to test PyPI index"
-      uses: ansys/actions/_release-pypi@v10.3.4
+      uses: ansys/actions/_release-pypi@v10.3.5
       with:
         library-name: ${{ inputs.library-name }}
         index-name: "https://test.pypi.org/legacy/"

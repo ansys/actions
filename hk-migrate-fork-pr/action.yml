@@ -148,7 +148,7 @@ runs:
   steps:
 
     - name: "Log start of migration"
-      uses: ansys/actions/_logging@v10.3.4
+      uses: ansys/actions/_logging@v10.3.5
       with:
         level: "INFO"
         message: |
@@ -607,7 +607,7 @@ runs:
 
     - name: "Log completion"
       if: always()
-      uses: ansys/actions/_logging@v10.3.4
+      uses: ansys/actions/_logging@v10.3.5
       with:
         level: "INFO"
         message: |

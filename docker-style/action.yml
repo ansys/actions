@@ -97,7 +97,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.4
+    - uses: ansys/actions/_logging@v10.3.5
       with:
         level: "INFO"
         message: >
@@ -116,7 +116,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.4
+    - uses: ansys/actions/_logging@v10.3.5
       if: steps.check-docker-directory-exists.outputs.HAS_DOCKER_DIR == 'false'
       with:
         level: "WARNING"
@@ -127,7 +127,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.4
+    - uses: ansys/actions/_logging@v10.3.5
       with:
         level: "INFO"
         message: >
@@ -157,7 +157,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.4
+    - uses: ansys/actions/_logging@v10.3.5
       if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}
       with:
         level: "INFO"
@@ -193,14 +193,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v10.3.4
+    - uses: ansys/actions/_logging@v10.3.5
       if: ${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS != '' && contains(steps.filter-input-directory.outputs.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
         message: >
           Non existing directories: '${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS }}'
 
-    - uses: ansys/actions/_logging@v10.3.4
+    - uses: ansys/actions/_logging@v10.3.5
       if: ${{ steps.filter-input-directory.outputs.NON_EXISTING_DIRS != '' && !contains(steps.filter-input-directory.outputs.NON_EXISTING_DIRS, ' ') }}
       with:
         level: "WARNING"
