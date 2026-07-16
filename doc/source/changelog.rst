@@ -9,6 +9,25 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.3.5 <https://github.com/ansys/actions/releases/tag/v10.3.5>`_ - July 16, 2026
+=================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Avoid breaking change fragment due to HTML comments
+          - `#1356 <https://github.com/ansys/actions/pull/1356>`_
+
+        * - Allow multi colon in pr title
+          - `#1358 <https://github.com/ansys/actions/pull/1358>`_
+
+
 `10.3.4 <https://github.com/ansys/actions/releases/tag/v10.3.4>`_ - July 10, 2026
 =================================================================================
 
