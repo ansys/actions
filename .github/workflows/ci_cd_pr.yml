@@ -78,7 +78,7 @@ jobs:
      - name: "Label pull-request"
        # HACK: skip if contributor does not have write permissions (forks)
        if: github.event.pull_request.head.repo.full_name == github.repository
-       uses: actions/labeler@f27b608878404679385c85cfa523b85ccb86e213 # v6.1.0
+       uses: actions/labeler@b8dd2d9be0f68b860e7dae5dae7d772984eacd6d # v6.2.0
        with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -229,7 +229,7 @@ jobs:
         uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -301,7 +301,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Login in Github Container registry"
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
