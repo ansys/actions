@@ -4,6 +4,7 @@ automerge
 caio
 Chocolatey
 CA
+certifi's
 CI
 clr_loader
 [Cc]ookiecutter
