@@ -133,12 +133,12 @@ doc-style = [
     { name = "tomlkit", specifier = "<=0.15" },
 ]
 hk-package-clean-except = [
-    { name = "fastcore", specifier = "<=1.14.5" },
+    { name = "fastcore", specifier = "<=2.1.0" },
     { name = "ghapi", specifier = "<=1.1" },
     { name = "packaging", specifier = "<=26.2" },
 ]
 hk-package-clean-untagged = [
-    { name = "fastcore", specifier = "<=1.14.5" },
+    { name = "fastcore", specifier = "<=2.1.0" },
     { name = "ghapi", specifier = "<=1.1" },
     { name = "packaging", specifier = "<=26.2" },
 ]
@@ -578,11 +578,11 @@ wheels = [
 
 [[package]]
 name = "fastcore"
-version = "1.14.5"
+version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a1/82/6dd84e0498a51f08bb788d8f996bedc39e1c0536261c11e635ffaa2e56ee/fastcore-1.14.5.tar.gz", hash = "sha256:d6f1b4220913642964da6236047fe1e9474ecaeaf38737e144b296c31eb53a3a", size = 102968, upload-time = "2026-07-08T07:16:04.806Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5f/dd/78710b6e002eb8d97ed07aa2873c47f6846fae033d301f26d682b508c4d2/fastcore-2.1.0.tar.gz", hash = "sha256:560464dec617b5b916e35e9c9f7866b96b0a604868e9911f22e7a1c561cfba1b", size = 103360, upload-time = "2026-07-14T22:48:51.371Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8b/c3/e2869af29faf757baeb0197fadc635b2e88fe103a8b1ab04722e74dbf07f/fastcore-1.14.5-py3-none-any.whl", hash = "sha256:4b870ee8dc7882b6c280e008ae4d0a355dc2ab4ae1c729a5301413c7f020cc11", size = 108052, upload-time = "2026-07-08T07:16:03.169Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/0e/bca0244226798f88deac956f7559f2bc460601d3e74afb7db565c91c7c57/fastcore-2.1.0-py3-none-any.whl", hash = "sha256:4b9b1971040d2e6eb47973472206d8a38d0f5053f0cfeda73044311baeae27b9", size = 108208, upload-time = "2026-07-14T22:48:49.814Z" },
 ]
 
 [[package]]
