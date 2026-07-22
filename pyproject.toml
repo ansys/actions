@@ -51,12 +51,12 @@ doc-style = [
     "tomlkit<=0.15",
 ]
 hk-package-clean-except = [
-    "fastcore<=1.14.5",
+    "fastcore<=2.1.0",
     "ghapi<=1.1",
     "packaging<=26.2",
 ]
 hk-package-clean-untagged = [
-    "fastcore<=1.14.5",
+    "fastcore<=2.1.0",
     "ghapi<=1.1",
     "packaging<=26.2",
 ]
