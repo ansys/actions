@@ -27,7 +27,7 @@ from datetime import datetime, timedelta
 
 from ghapi.all import GhApi
 from ghapi.core import print_summary
-from ghapi.page import paged
+from ghapi.page import sync_paged
 
 PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 org_str = os.environ.get("PACKAGE_ORG")
@@ -43,9 +43,9 @@ if not input_token:
     raise ValueError(
         "No token provided. Please set the 'PACKAGE_DELETION_TOKEN' environment variable or 'INPUT_TOKEN'."
     )
-api = GhApi(debug=print_summary, token=input_token)
+api = GhApi(sync=True, debug=print_summary, token=input_token)
 
-paged_packages = paged(
+paged_packages = sync_paged(
     api.packages.get_all_package_versions_for_package_owned_by_org,
     org=org_str,
     package_name=pck_str,

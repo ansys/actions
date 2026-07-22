@@ -134,12 +134,12 @@ doc-style = [
 ]
 hk-package-clean-except = [
     { name = "fastcore", specifier = "<=1.14.5" },
-    { name = "ghapi", specifier = "<=1.1" },
+    { name = "ghapi", specifier = "<=2.0.1" },
     { name = "packaging", specifier = "<=26.2" },
 ]
 hk-package-clean-untagged = [
     { name = "fastcore", specifier = "<=1.14.5" },
-    { name = "ghapi", specifier = "<=1.1" },
+    { name = "ghapi", specifier = "<=2.0.1" },
     { name = "packaging", specifier = "<=26.2" },
 ]
 release-github = [
@@ -586,6 +586,19 @@ wheels = [
 ]
 
 [[package]]
+name = "fastspec"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fastcore" },
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/aa/aa/e902620ee18e400802d1488a9caca9ba3af68d3d2ebf2fa250fb4673421c/fastspec-0.1.0.tar.gz", hash = "sha256:b81a01ecdf1f8995eb6c25eb32a3f8dabbd37c9a238432c907b88449590b269d", size = 27268, upload-time = "2026-07-08T01:07:16.698Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/7b/5c88b14a72608a4c259c7d6cfa63fe7124fc3129c74cecf107c7797b157d/fastspec-0.1.0-py3-none-any.whl", hash = "sha256:354e96acf7b6eafae9ef284aa7b3a4c08742d545068544eac16b7d177fe02d7a", size = 25969, upload-time = "2026-07-08T01:07:15.59Z" },
+]
+
+[[package]]
 name = "filelock"
 version = "3.29.0"
 source = { registry = "https://pypi.org/simple" }
@@ -596,14 +609,15 @@ wheels = [
 
 [[package]]
 name = "ghapi"
-version = "1.0.14"
+version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastcore" },
+    { name = "fastspec" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/79/e3/133eb1edbbf07e1ef65cbfdd37d1d64078d406d713bb2a77213c95f92960/ghapi-1.0.14.tar.gz", hash = "sha256:5752ff78a48b965522b9f3d41a8953efc469c9535b9fd0ac8be15000b6c99aa9", size = 76904, upload-time = "2026-06-22T03:57:43.514Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/80/c7/1c1f2a042f9ad88f4effd9b84198d7be01e7f283ffa86a2d801d2cd58180/ghapi-2.0.1.tar.gz", hash = "sha256:f371e2794fffae53e2d891758c2696a21ba4a44c843e9142006077bd62a88641", size = 173467, upload-time = "2026-07-11T04:31:49.355Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/54/36/3475841d207b73f45fddfac827201919a8cbf7d75fcdf79ff1d9c1216375/ghapi-1.0.14-py3-none-any.whl", hash = "sha256:b92e4187d7a85f73a667c7ce6bda7a4c421e64306af6b9fb112cc58bbbd92b5e", size = 75381, upload-time = "2026-06-22T03:57:41.999Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/dd/c43af3b2426dee9245acef314bf8a55d18d5d7c443394a663e822daf9341/ghapi-2.0.1-py3-none-any.whl", hash = "sha256:d82cd571826835780166995bd5217a2df339aab85ca7491ffcb1eedbf7950863", size = 172531, upload-time = "2026-07-11T04:31:47.668Z" },
 ]
 
 [[package]]
