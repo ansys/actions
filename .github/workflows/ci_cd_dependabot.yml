@@ -137,9 +137,9 @@ jobs:
           > [!WARNING]
           > If this dependabot update includes any changes to the `pyproject.toml`, ensure the version specifiers in the `pyproject.toml` are reverted to a valid `major.minor` range by taking the following steps:
           >   - Clone the branch locally.
-          >   - Update the pinned versions in the `pyproject.toml` as needed. For example, say dependabot proposes a change from "wcwidth<=0.7" to "wcwidth<=0.8.1", this must be updated to "wcwidth<=0.9". Another example is a change from "safety>=3.7,<4" to "safety>=3.8.0,<4", this must be updated to "safety>=3.8,<4". No changes should be made to the `requirement.txt` files.
+          >   - Update any pinned versions modified by Dependabot in `pyproject.toml` to the appropriate `major.minor` version range. For example, if Dependabot changes `wcwidth<=0.7` to `wcwidth<=0.8.1`, it should be updated to `wcwidth<=0.9`. Likewise, if Dependabot changes `safety>=3.7,<4` to `safety>=3.8.0,<4`, it should be updated to `safety>=3.8,<4`. Do **not** modify any `requirement.txt` files.
           >   - Run `uv lock` to update the lock file.
-          >   - Commit your changes to the PR and proceed to merge.
+          >   - Commit the changes to this PR and proceed to merge.
           EOF
             printf '%s\n' "<!-- /ansys-actions:pyproject-note -->"
           } > "${NEW_BODY_FILE}"
