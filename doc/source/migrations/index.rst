@@ -16,11 +16,33 @@ Version ``v11``
   ``release-pypi-test`` actions no longer support publishing packages to PyPI using tokens. As a result, they
   are deprecated starting with ``v11``. Projects must migrate to trusted publishing. Contact the PyAnsys Core
   Team at pyansys.core@ansys.com for enabling trusted publishing for your project and refer to
-  :ref:`release_pypi_trusted_publisher` for setup details.
+  :ref:`release_pypi_trusted_publisher` for setup details. Note that ``release-pypi-private`` is not affected
+  and still supports token-based publishing due to the limitations of the private index.
 
 - **Removal of deprecated input from release-github action:** The ``generate_release_notes`` input of the
   ``release-github`` action was deprecated in ``v10`` and is completely removed starting with ``v11``.
   Use the ``generate-release-notes`` parameter instead.
+
+- **Removal of deprecated inputs from multiple actions:** Several inputs that were previously deprecated
+  have been completely removed:
+
+  - ``toml-version`` removed from ``doc-changelog``, ``doc-deploy-changelog``, ``doc-style``, and
+    ``release-github``.
+  - ``python-version`` and ``use-uv`` removed from ``hk-package-clean-except`` and
+    ``hk-package-clean-untagged``. These actions now use an internally managed Python setup.
+
+**New Features:**
+
+- **New action doc-deploy-custom-path:** A new ``doc-deploy-custom-path`` action has been added. It 
+  deploys HTML documentation to a user-specified subdirectory of the deployment branch (``gh-pages`` by
+  default). The rendered documentation is available at ``https://<cname>/<custom-path>/``. The action
+  validates the ``custom-path`` input to prevent conflicts with reserved paths used by the other
+  ``doc-deploy-*`` actions (such as ``version`` and ``pull``). See :doc:`../doc-actions/index` for usage details.
+
+- **Poetry-native install in check-licenses:** For Poetry-based projects, the ``check-licenses`` action
+  now installs the project and its dependency targets through Poetry, aligning with the installation
+  behavior of the other actions. This improves reliability of license checks for Poetry projects. No
+  user-facing input change is required.
 
 **Migration Steps:**
 
@@ -38,6 +60,43 @@ Version ``v11``
 
   Although backwards compatibility is maintained, you are advised to set one of the inputs explicitly to avoid
   future breaking changes.
+
+- **Remove references to removed inputs from your workflows:** Search your workflows for references to
+  the inputs listed in the Breaking Changes above (``toml-version`` on the ``doc-*`` and ``release-github``
+  actions, and ``python-version`` / ``use-uv`` on the ``hk-package-clean-*`` actions) and drop them. For
+  example, for ``hk-package-clean-untagged``:
+
+  .. tab-set::
+
+    .. tab-item:: Before
+
+      .. code:: yaml
+
+        - name: "Clean untagged packages"
+          uses: ansys/actions/hk-package-clean-untagged@v10
+          with:
+            package-name: my-package
+            python-version: '3.12'
+            use-uv: true
+
+    .. tab-item:: After
+
+      .. code:: yaml
+
+        - name: "Clean untagged packages"
+          uses: ansys/actions/hk-package-clean-untagged@v11
+          with:
+            package-name: my-package
+
+- **Review usage of still-deprecated inputs:** The following inputs still exist but now emit an
+  ``ERROR``-level deprecation notice (previously ``WARNING``) and are scheduled for removal in ``v12``.
+  Migrate away from them now to avoid disruption in the next major release:
+
+  - ``use-conventional-commits`` (``doc-changelog``): use ``use-pull-request-title`` instead.
+  - ``tomli-version`` (``doc-changelog``, ``doc-deploy-changelog``, ``doc-style``, ``release-github``).
+  - ``towncrier-version`` and ``tomlkit-version`` (``doc-changelog``, ``doc-deploy-changelog``,
+    ``release-github``). ``tomlkit-version`` is also affected in ``doc-style``.
+  - ``pypandoc-binary-version`` (``release-github``).
 
 Version ``v10.3``
 -----------------
