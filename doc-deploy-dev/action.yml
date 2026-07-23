@@ -137,6 +137,12 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: ansys/actions/_check-github-permissions@main
+      with:
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.token }}
+
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"
@@ -161,6 +167,7 @@ runs:
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials need to be persisted in this case
+
 
     - name: "Ensure that the desired branch exists"
       shell: bash
