@@ -20,10 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Script to clean up GitHub Packages container images that are untagged and older than a specified number of days."""
+"""Script to clean up GitHub Packages container images.
 
-import os
+The cleanup is performed for images that are untagged and older than a specified number of days.
+"""
+
 from datetime import datetime, timedelta
+import os
 
 from ghapi.all import GhApi
 from ghapi.core import print_summary
@@ -41,7 +44,8 @@ if last_days:
 input_token = os.getenv("PACKAGE_DELETION_TOKEN") or os.getenv("INPUT_TOKEN")
 if not input_token:
     raise ValueError(
-        "No token provided. Please set the 'PACKAGE_DELETION_TOKEN' environment variable or 'INPUT_TOKEN'."
+        "No token provided. Please set the 'PACKAGE_DELETION_TOKEN' environment "
+        "variable or 'INPUT_TOKEN'."
     )
 api = GhApi(sync=True, debug=print_summary, token=input_token)
 

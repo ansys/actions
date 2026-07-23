@@ -32,8 +32,9 @@ associated security vulnerability advisories.
 import hashlib
 import json
 import os
+from pathlib import Path
 import sys
-from typing import Any, Dict
+from typing import Any
 
 import click
 import github
@@ -47,9 +48,7 @@ TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
 PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
 REPOSITORY = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
 DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
-ERROR_IF_NEW_ADVISORY = (
-    True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
-)
+ERROR_IF_NEW_ADVISORY = True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
 
 _SSL_CORPORATE_NETWORK_HINT = (
@@ -60,7 +59,7 @@ _SSL_CORPORATE_NETWORK_HINT = (
 )
 
 
-def dict_hash(dictionary: Dict[str, Any]) -> str:
+def dict_hash(dictionary: dict[str, Any]) -> str:
     """MD5 hash of a dictionary.
 
     Parameters
@@ -86,9 +85,7 @@ def check_vulnerabilities():
     new_advisory_detected = False
     # Check that the needed environment variables are provided
     if not TOKEN:
-        raise RuntimeError(
-            "Required environment variable 'DEPENDENCY_CHECK_TOKEN' is not defined."
-        )
+        raise RuntimeError("Required environment variable 'DEPENDENCY_CHECK_TOKEN' is not defined.")
 
     if not REPOSITORY:
         raise RuntimeError(
@@ -107,7 +104,7 @@ def check_vulnerabilities():
 
     # Load the security checks
     safety_results = {}
-    with open("info_safety.json", "r") as json_file:
+    with Path("info_safety.json").open("r") as json_file:
         safety_results = json.loads(json_file.read())
 
     # If the security checks have not been loaded... problem ahead!
@@ -166,9 +163,7 @@ def check_vulnerabilities():
         summary = f"Safety vulnerability {v_id} for package '{v_package}'"
 
         vuln_adv = SimpleAdvisoryVulnerability(
-            package=SimpleAdvisoryVulnerabilityPackage(
-                name=f"{v_package}", ecosystem="pip"
-            ),
+            package=SimpleAdvisoryVulnerabilityPackage(name=f"{v_package}", ecosystem="pip"),
             vulnerable_version_range=f"{v_affected_versions}",
             patched_versions=f"{v_fixed_versions}",
             vulnerable_functions=[],
@@ -229,7 +224,7 @@ once it has been verified (since it has been created in draft mode).
 
     # Load the bandit checks
     bandit_results = {}
-    with open("info_bandit.json", "r") as json_file:
+    with Path("info_bandit.json").open("r") as json_file:
         bandit_results = json.loads(json_file.read())
 
     # If the bandit results have not been loaded... problem ahead!
@@ -259,9 +254,7 @@ once it has been verified (since it has been created in draft mode).
         # Advisory info
         summary = f"Bandit [{v_test_id}:{v_test_name}] on {v_filename} - Hash: {v_hash}"
         vuln_adv = SimpleAdvisoryVulnerability(
-            package=SimpleAdvisoryVulnerabilityPackage(
-                name=f"{v_package}", ecosystem="pip"
-            ),
+            package=SimpleAdvisoryVulnerabilityPackage(name=f"{v_package}", ecosystem="pip"),
             vulnerable_functions=[],
             vulnerable_version_range=None,
             patched_versions=None,
@@ -337,9 +330,7 @@ once it has been verified (since it has been created in draft mode).
     print(f"Total 'bandit' advisories reported: {bandit_results_reported}")
     print("*******************************************")
     print(f"Total advisories detected: {safety_entries + bandit_entries}")
-    print(
-        f"Total advisories reported: {safety_results_reported + bandit_results_reported}"
-    )
+    print(f"Total advisories reported: {safety_results_reported + bandit_results_reported}")
     print("*******************************************")
 
     # Return whether new advisories have been created or not
@@ -361,10 +352,10 @@ def generate_advisory_files():
     import subprocess
 
     # Delete previous advisory files
-    if os.path.exists("info_safety.json"):
-        os.remove("info_safety.json")
-    if os.path.exists("info_bandit.json"):
-        os.remove("info_bandit.json")
+    if Path("info_safety.json").exists():
+        Path("info_safety.json").unlink()
+    if Path("info_bandit.json").exists():
+        Path("info_bandit.json").unlink()
     safety_exe = shutil.which("safety")
     if safety_exe is None:
         raise FileNotFoundError("safety executable not found")
@@ -372,7 +363,7 @@ def generate_advisory_files():
     if bandit_exe is None:
         raise FileNotFoundError("bandit executable not found")
 
-    if not os.path.exists("requirements-for-safety.txt"):
+    if not Path("requirements-for-safety.txt").exists():
         raise FileNotFoundError(
             "Expected requirements-for-safety.txt not found. "
             "This file is required for running the safety vulnerability check and should "
@@ -399,10 +390,7 @@ def generate_advisory_files():
             capture_output=True,
             text=True,
         )
-        if any(
-            "unable to reach the server" in msg
-            for msg in [result.stdout, result.stderr]
-        ):
+        if any("unable to reach the server" in msg for msg in [result.stdout, result.stderr]):
             raise RuntimeError(
                 "Safety could not reach the vulnerability database (pyup.io). "
                 + _SSL_CORPORATE_NETWORK_HINT
@@ -436,7 +424,7 @@ def generate_advisory_files():
     help="Simulate the behavior of the synchronization without performing it.",
 )
 def main(run_local: bool):
-    """Main function."""
+    """Run the main function."""
     if run_local:
         generate_advisory_files()
         global DRY_RUN

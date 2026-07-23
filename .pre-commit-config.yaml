@@ -1,20 +1,16 @@
 repos:
 
-- repo: https://github.com/psf/black
-  rev: 87928e6d6761a4a6d22250e1fee5601b3998086e  # frozen: 26.5.1
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: 77039ccbba72c8aede339c5f8ae29b42aced0a2e  # frozen: v0.15.18
   hooks:
-  - id: black
+    - id: ruff-check
+    - id: ruff-format
 
-- repo: https://github.com/pycqa/isort
-  rev: a333737ed43df02b18e6c95477ea1b285b3de15a  # frozen: 8.0.1
+- repo: https://github.com/adamchainz/blacken-docs
+  rev: fda77690955e9b63c6687d8806bafd56a526e45f  # frozen: 1.20.0
   hooks:
-  - id: isort
-    args: ["--line-length", "88", "--profile", "black"]
-
-- repo: https://github.com/PyCQA/flake8
-  rev: c48217e1fc006c2dddd14df54e83b67da15de5cd  # frozen: 7.3.0
-  hooks:
-  - id: flake8
+    - id: blacken-docs
+      additional_dependencies: [black==26.5.1]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0

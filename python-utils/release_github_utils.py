@@ -19,16 +19,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Utilities for generating GitHub release notes from a changelog."""
 
 import fnmatch
-import re
 from pathlib import Path
+import re
 
-import pypandoc
 from parse_pr import get_towncrier_config_value, save_env_variable
+import pypandoc
 
-"""Semantic version regex as found on semver.org:
-https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string"""
+# Semantic version regex as found on semver.org:
+# https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 SEMVER_REGEX = (
     r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
     r"(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)"
@@ -143,7 +144,7 @@ def get_tag_section(changelog_file: Path, body: str) -> str:
 
 
 def get_release_notes(pyproject_path: Path):
-    """Main function to create release notes from the changelog file.
+    """Create release notes from the changelog file.
 
     Parameters
     ----------

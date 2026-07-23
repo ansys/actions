@@ -19,15 +19,16 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Tests for the versions module."""
 
+from copy import deepcopy
 import json
 import os
-import shutil
-from copy import deepcopy
 from pathlib import Path
+import shutil
 
-import pytest
 from packaging.version import Version
+import pytest
 from versions import (
     find_stable_release,
     get_version_and_ref_type,
@@ -41,12 +42,14 @@ from versions import (
 # to allow using monkeypatch at module level
 @pytest.fixture(scope="module")
 def monkeymodule():
+    """Provide a module-scoped MonkeyPatch context."""
     with pytest.MonkeyPatch.context() as mp:
         yield mp
 
 
 @pytest.fixture(scope="module", autouse=True)
 def general_environment_setup(monkeymodule, tmp_path_factory, request):
+    """Set module-level environment variables and change the working directory to a temp path."""
     # Set general environment variables
     monkeymodule.setenv("CNAME", "docs.pyansys.com")
     monkeymodule.setenv("RENDER_LAST", "3")
@@ -57,6 +60,8 @@ def general_environment_setup(monkeymodule, tmp_path_factory, request):
 
 @pytest.fixture(scope="function")
 def test_environment_setup(request, tmp_path_factory, monkeypatch):
+    """Set up a per-test environment with optional information."""
+
     def _create_versions_directories(versions: list[str]):
         # Setup
         version_path = tmp_path_factory.mktemp("version", numbered=False)
@@ -103,7 +108,7 @@ def test_environment_setup(request, tmp_path_factory, monkeypatch):
             }
         )
         versions_json_path = tmp_path_factory.getbasetemp() / "versions.json"
-        with open(versions_json_path, "w") as versions_json_file:
+        with Path(versions_json_path).open("w", encoding="utf-8") as versions_json_file:
             json.dump(data, versions_json_file, indent=2)
 
         return versions_json_path
@@ -114,9 +119,7 @@ def test_environment_setup(request, tmp_path_factory, monkeypatch):
         if not release_version.is_prerelease:
             release_number = f"{release_version.major}.{release_version.minor}"
 
-        release_version_path = (
-            tmp_path_factory.getbasetemp() / "version" / release_number
-        )
+        release_version_path = tmp_path_factory.getbasetemp() / "version" / release_number
 
         if not release_version.is_prerelease:
             # The folder may already exist e.g. releasing 0.69.5 ==> 0.69 will be present already
@@ -142,15 +145,9 @@ def test_environment_setup(request, tmp_path_factory, monkeypatch):
     monkeypatch.setenv("INDEPENDENT_PATCH_RELEASE_DOCS", independent_patch_release)
 
     # Setups that need to be requested by the running test
-    create_versions_directories = (
-        True if test_data.get("create_versions_directories") else False
-    )
-    create_github_output_file = (
-        True if test_data.get("create_github_output_file") else False
-    )
-    create_versions_json_file = (
-        True if test_data.get("create_versions_json_file") else False
-    )
+    create_versions_directories = True if test_data.get("create_versions_directories") else False
+    create_github_output_file = True if test_data.get("create_github_output_file") else False
+    create_versions_json_file = True if test_data.get("create_versions_json_file") else False
     create_release_folder = True if test_data.get("create_release_folder") else False
 
     if create_versions_directories:
@@ -163,9 +160,7 @@ def test_environment_setup(request, tmp_path_factory, monkeypatch):
         versions_json_path = _create_versions_json_file(versions_list)
 
     if create_release_folder:
-        version_number = (
-            ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
-        )
+        version_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
         release_version_path = _create_release_folder(version_number)
 
     yield request.param
@@ -269,6 +264,21 @@ BASE_DATA = deepcopy(BASE_PRERELEASE_DATA) + deepcopy(BASE_NORMAL_RELEASE_DATA)
 
 # helper function for some tests
 def expected_github_output(ref_name: str, with_patch_string: bool = False) -> str:
+    """Build the expected GITHUB_OUTPUT content string for a given ref name.
+
+    Parameters
+    ----------
+    ref_name : str
+        The reference name to extract the version from.
+    with_patch_string : bool, optional
+        Whether to include the patch string in the version output.
+        Default value is ```False```.
+
+    Returns
+    -------
+    str
+        The expected content of GITHUB_OUTPUT.
+    """
     ref_number = ref_name.split("v")[1] if "v" in ref_name else ref_name.split("/")[1]
     ref_version = Version(ref_number)
 
@@ -276,9 +286,7 @@ def expected_github_output(ref_name: str, with_patch_string: bool = False) -> st
         if with_patch_string:
             version_string = f"{ref_version}"  # Normal independent patch release
         else:
-            version_string = (
-                f"{ref_version.major}.{ref_version.minor}"  # Normal release
-            )
+            version_string = f"{ref_version.major}.{ref_version.minor}"  # Normal release
     else:
         version_string = f"{ref_version}"  # Pre-release
     prerelease = "true" if ref_version.is_prerelease else "false"
@@ -288,6 +296,7 @@ def expected_github_output(ref_name: str, with_patch_string: bool = False) -> st
 
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA, indirect=True)
 def test_get_version_and_ref_type(test_environment_setup):
+    """Test that get_version_and_ref_type returns the correct version and ref type."""
     version, ref_type = get_version_and_ref_type()
 
     test_data = test_environment_setup
@@ -308,6 +317,7 @@ for data in BASE_DATA_ONE:
 
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA_ONE, indirect=True)
 def test_get_versions_list_default(test_environment_setup):
+    """Test that get_versions_list returns all versions including pre-releases by default."""
     versions_list = get_versions_list()
 
     test_data = test_environment_setup
@@ -329,6 +339,7 @@ for data in BASE_DATA_TWO:
 
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA_TWO, indirect=True)
 def test_get_versions_list_exclude_prereleases(test_environment_setup):
+    """Test that get_versions_list correctly excludes pre-release versions when requested."""
     versions_list = get_versions_list(exclude_prereleases=True)
 
     test_data = test_environment_setup
@@ -351,6 +362,7 @@ for data in BASE_DATA_THREE:
 
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA_THREE, indirect=True)
 def test_set_versions_variable(test_environment_setup):
+    """Test set_version_variable when there is no prior stable release (only pre-releases)."""
     set_version_variable()
     gh_output_path = os.environ["GITHUB_OUTPUT"]
     gh_output_content = Path(gh_output_path).read_text()
@@ -370,6 +382,7 @@ for data in BASE_DATA_FOUR:
 
 @pytest.mark.parametrize("test_environment_setup", BASE_DATA_FOUR, indirect=True)
 def test_find_stable_release(test_environment_setup):
+    """Test find_stable_release returns the latest stable release."""
     stable_release = find_stable_release()
 
     test_data = test_environment_setup
@@ -403,6 +416,7 @@ SPECIAL_TEST_DATA_ONE = [
 
 @pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_ONE, indirect=True)
 def test_set_versions_variable_on_independent_patch_release(test_environment_setup):
+    """Test set_version_variable on an independent patch release."""
     set_version_variable()
     gh_output_path = os.environ["GITHUB_OUTPUT"]
     gh_output_content = Path(gh_output_path).read_text()
@@ -428,6 +442,7 @@ SPECIAL_TEST_DATA_TWO = [
 
 @pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_TWO, indirect=True)
 def test_prerelease_versions_clear_during_normal_release(test_environment_setup):
+    """Test that pre-release versions are cleared during a normal release."""
     set_version_variable()
     remaining_versions = get_versions_list()
 
@@ -454,10 +469,9 @@ SPECIAL_TEST_DATA_THREE = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_environment_setup", SPECIAL_TEST_DATA_THREE, indirect=True
-)
+@pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_THREE, indirect=True)
 def test_prerelease_versions_persist_during_older_release_patch(test_environment_setup):
+    """Test that pre-release versions persist during an older release patch."""
     set_version_variable()
     remaining_versions = get_versions_list()
 
@@ -482,16 +496,13 @@ SPECIAL_TEST_DATA_FOUR = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_environment_setup", SPECIAL_TEST_DATA_FOUR, indirect=True
-)
+@pytest.mark.parametrize("test_environment_setup", SPECIAL_TEST_DATA_FOUR, indirect=True)
 def test_maximum_three_prerelease(test_environment_setup):
+    """Test that a maximum of three pre-release versions are kept."""
     set_version_variable()
 
     remaining_versions = get_versions_list()
-    prerelease_versions = [
-        version for version in remaining_versions if version.is_prerelease
-    ]
+    prerelease_versions = [version for version in remaining_versions if version.is_prerelease]
 
     assert len(prerelease_versions) == 2
 
@@ -519,10 +530,9 @@ FIRST_PRERELEASE_FIND_STABLE_DATA = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_environment_setup", FIRST_PRERELEASE_FIND_STABLE_DATA, indirect=True
-)
+@pytest.mark.parametrize("test_environment_setup", FIRST_PRERELEASE_FIND_STABLE_DATA, indirect=True)
 def test_find_stable_release_no_stable_versions(test_environment_setup):
+    """Test find_stable_release returns None when only pre-releases exist."""
     stable_release = find_stable_release()
     assert stable_release is None
 
@@ -548,10 +558,9 @@ FIRST_PRERELEASE_SET_VERSION_DATA = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_environment_setup", FIRST_PRERELEASE_SET_VERSION_DATA, indirect=True
-)
+@pytest.mark.parametrize("test_environment_setup", FIRST_PRERELEASE_SET_VERSION_DATA, indirect=True)
 def test_set_version_variable_first_prerelease(test_environment_setup):
+    """Test set_version_variable when there is no prior stable release (only pre-releases)."""
     set_version_variable()
     gh_output_path = os.environ["GITHUB_OUTPUT"]
     gh_output_content = Path(gh_output_path).read_text()
@@ -580,11 +589,12 @@ FIRST_PRERELEASE_WRITE_VERSIONS_DATA = [
     "test_environment_setup", FIRST_PRERELEASE_WRITE_VERSIONS_DATA, indirect=True
 )
 def test_write_versions_file_no_stable(test_environment_setup):
+    """Test write_versions_file where there is no stable release (only pre-releases)."""
     write_versions_file()
 
     # Verify versions.json has no "(stable)" entry
-    with open("versions.json", "r") as f:
-        content = json.load(f)
+    versions_file = Path("versions.json")
+    content = json.loads(versions_file.read_text(encoding="utf-8"))
 
     for entry in content:
         assert "(stable)" not in entry["name"]
