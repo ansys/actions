@@ -28,7 +28,7 @@ import re
 
 from ghapi.all import GhApi
 from ghapi.core import print_summary
-from ghapi.page import paged
+from ghapi.page import sync_paged
 
 PACKAGE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -40,12 +40,12 @@ valid_tags_str = os.environ.get("VALID_TAGS_STR", "")
 last_days = int(last_days_str) if last_days_str else None
 valid_tags = [x.strip() for x in valid_tags_str.split(",")]
 
-api = GhApi(debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
+api = GhApi(sync=True, debug=print_summary, token=os.getenv("PACKAGE_DELETION_TOKEN"))
 
 if last_days:
     delete_before_date = datetime.now() - timedelta(days=last_days)
 
-paged_packages = paged(
+paged_packages = sync_paged(
     api.packages.get_all_package_versions_for_package_owned_by_org,
     org=org_str,
     package_name=pck_str,
