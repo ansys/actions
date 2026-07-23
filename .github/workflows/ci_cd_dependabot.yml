@@ -93,3 +93,58 @@ jobs:
             git commit -am "fix: update requirements files [skip ci]"
           fi
           git push
+
+  append-pr-note:
+    name: Append pyproject.toml note to dependabot PR
+    permissions:
+      contents: read
+      pull-requests: write # Needed to edit the dependabot PR body
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Append warning note to the dependabot PR body"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          # Resolve the PR number associated with the pushed dependabot branch.
+          PR_NUMBER="$(gh pr list --head "${BRANCH}" --state open --json number -q '.[0].number' || true)"
+          if [ -z "${PR_NUMBER}" ]; then
+            echo "::warning::No open PR found for branch '${BRANCH}' yet; skipping PR body update."
+            exit 0
+          fi
+          echo "Found PR #${PR_NUMBER} for branch '${BRANCH}'."
+
+          # Hidden marker to prevent duplicate appends.
+          MARKER="<!-- ansys-actions:pyproject-note -->"
+
+          # Fetch the current PR body.
+          CURRENT_BODY="$(gh pr view "${PR_NUMBER}" --json body -q .body)"
+
+          if printf '%s' "${CURRENT_BODY}" | grep -qF "${MARKER}"; then
+            echo "Marker already present in PR #${PR_NUMBER} body; nothing to do."
+            exit 0
+          fi
+
+          # Build the new body: existing body + blank line + marked note block.
+          NEW_BODY_FILE="$(mktemp)"
+          {
+            printf '%s\n\n' "${CURRENT_BODY}"
+            printf '%s\n' "${MARKER}"
+            cat <<'EOF'
+          > [!WARNING]
+          > If this dependabot update includes any changes to the `pyproject.toml`, ensure the version specifiers in the `pyproject.toml` are reverted to a valid `major.minor` range by taking the following steps:
+          >   - Clone the branch locally.
+          >   - Update the pinned versions in the `pyproject.toml` as needed. For example, say dependabot proposes a change from "wcwidth<=0.7" to "wcwidth<=0.8.1", this must be updated to "wcwidth<=0.9". Another example is a change from "safety>=3.7,<4" to "safety>=3.8.0,<4", this must be updated to "safety>=3.8,<4". No changes should be made to the `requirement.txt` files.
+          >   - Run `uv lock` to update the lock file.
+          >   - Commit your changes to the PR and proceed to merge.
+          EOF
+            printf '%s\n' "<!-- /ansys-actions:pyproject-note -->"
+          } > "${NEW_BODY_FILE}"
+
+          # Update the PR body using --body-file to avoid shell escaping issues
+          # with backticks, angle brackets, and quoted version specifiers.
+          gh pr edit "${PR_NUMBER}" --body-file "${NEW_BODY_FILE}"
+          echo "Appended pyproject.toml warning note to PR #${PR_NUMBER}."
