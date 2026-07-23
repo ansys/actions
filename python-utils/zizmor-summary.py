@@ -19,12 +19,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Run zizmor static analysis on GitHub Actions workflows and summarize findings."""
 
+from collections import Counter
 import os
 import re
 import shlex
 import subprocess
-from collections import Counter
 from subprocess import DEVNULL, PIPE
 
 FORMAT = "{:<50}{:<20}"
@@ -36,19 +37,23 @@ PATH_RE = re.compile(
 
 
 def main():
+    """Run zizmor and summarize the number of issues per file."""
     high = os.getenv("HIGH_AUDIT_LEVEL", "")
     strict = os.getenv("STRICT_AUDIT_LEVEL", "")
     if high not in ["--persona=pedantic", ""]:
         raise ValueError(
-            f'The value of HIGH_AUDIT_LEVEL environment variable should be "--persona=pedantic", not "{high}".'
+            'The value of HIGH_AUDIT_LEVEL environment variable should be "--persona=pedantic"'
+            f', not "{high}".'
         )
     if strict not in ["--persona=auditor", ""]:
         raise ValueError(
-            f'The value of STRICT_AUDIT_LEVEL environment variable should be "--persona=auditor", not "{strict}".'
+            'The value of STRICT_AUDIT_LEVEL environment variable should be "--persona=auditor"'
+            f', not "{strict}".'
         )
     if high and strict:  # high and strict have both been set
         raise ValueError(
-            "One of HIGH_AUDIT_LEVEL, STRICT_AUDIT_LEVEL environment variables should be set, not both."
+            "One of HIGH_AUDIT_LEVEL, STRICT_AUDIT_LEVEL environment variables should be set"
+            ", not both."
         )
 
     cmd = ["zizmor", *shlex.split(high), *shlex.split(strict), "."]
