@@ -21,6 +21,7 @@ Version ``v11``
 
 - **Removal of deprecated inputs from multiple actions:** Several inputs that were previously deprecated
   have been completely removed:
+
   - ``generate_release_notes`` removed from ``release-github``. Use ``generate-release-notes`` instead.
   - ``toml-version`` removed from ``doc-changelog``, ``doc-deploy-changelog``, ``doc-style``, and
     ``release-github``.
