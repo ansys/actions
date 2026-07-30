@@ -105,7 +105,7 @@ build-wheelhouse = [
     { name = "build", specifier = "<=1.5" },
     { name = "wheel", specifier = "<=0.47" },
 ]
-check-actions-security = [{ name = "zizmor", specifier = "<=1.28.0" }]
+check-actions-security = [{ name = "zizmor", specifier = "<=1.29" }]
 check-licenses = [
     { name = "pip-licenses", specifier = "<=5.6" },
     { name = "prettytable", specifier = "<=3.18" },

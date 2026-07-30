@@ -65,7 +65,7 @@ release-github = [
     "tomlkit<=0.15",
 ]
 check-actions-security = [
-    "zizmor<=1.28.0",
+    "zizmor<=1.29",
 ]
 release-pypi = [
     "twine<=6.2",
