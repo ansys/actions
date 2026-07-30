@@ -19,15 +19,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Smoke test utility for verifying installed Python package distributions."""
 
 import importlib
 from importlib.metadata import PackageNotFoundError, distribution
 
 
 def find_module_from_dist(pkg_name: str, attr: str):
-    """
-    Find a module in a package distribution's top-level __init__.py file
-    and retrieve an attribute from it.
+    """Find a module in a package distribution's top-level ``__init__.py`` file.
+
+    Find a module in a package distribution's top-level __init__.py file and retrieve
+    an attribute from it.
 
     Parameters
     ----------
@@ -68,7 +70,7 @@ def find_module_from_dist(pkg_name: str, attr: str):
         if pth_file:
             source_code_folder = None
             # Read the .pth file to find the source code path
-            with open(pth_file, "r") as file:
+            with Path(pth_file).open("r") as file:
                 for line in file:
                     # Check if the path is a valid directory
                     path = Path(line.strip())
@@ -81,9 +83,7 @@ def find_module_from_dist(pkg_name: str, attr: str):
                 candidate_paths = list(source_code_folder.rglob("__init__.py"))
                 # From all paths, let's remove the "source_code_folder" itself
                 # to make sure we only keep the last part of the path
-                candidate_paths = [
-                    path.relative_to(source_code_folder) for path in candidate_paths
-                ]
+                candidate_paths = [path.relative_to(source_code_folder) for path in candidate_paths]
 
     if not candidate_paths:
         raise ImportError(f"No __init__.py found in package '{pkg_name}'")
@@ -93,9 +93,7 @@ def find_module_from_dist(pkg_name: str, attr: str):
 
     # Drop the paths that are longer than the shortest one
     shortest_length = len(candidate_paths[0].parts)
-    candidate_paths = [
-        path for path in candidate_paths if len(path.parts) == shortest_length
-    ]
+    candidate_paths = [path for path in candidate_paths if len(path.parts) == shortest_length]
 
     # Try to import each parent package and check for the desired attribute
     for path in candidate_paths:
@@ -106,14 +104,10 @@ def find_module_from_dist(pkg_name: str, attr: str):
             if hasattr(mod, attr):
                 return import_path, getattr(mod, attr)
         except Exception as e:
-            raise ImportError(
-                f"Smoke test failed for package '{pkg_name}' with error: {e}"
-            ) from e
+            raise ImportError(f"Smoke test failed for package '{pkg_name}' with error: {e}") from e
 
     # No module with the specified attribute was found in the package
-    raise ImportError(
-        f"Could not find a module in '{pkg_name}' with attribute '{attr}'"
-    )
+    raise ImportError(f"Could not find a module in '{pkg_name}' with attribute '{attr}'")
 
 
 ###########################################################################################

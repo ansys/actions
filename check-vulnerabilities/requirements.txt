@@ -120,7 +120,7 @@ tomli==2.4.1 ; python_full_version < '3.11'
     # via
     #   dparse
     #   safety
-tomlkit==0.15.0
+tomlkit==0.15.1
     # via safety
 tqdm==4.67.3
     # via nltk
