@@ -120,17 +120,17 @@ check-vulnerabilities = [
 code-style-pre-commit = [{ name = "pre-commit", specifier = "<=4.6" }]
 code-style-prek = [{ name = "prek", specifier = "<=0.5" }]
 doc-changelog = [
-    { name = "tomlkit", specifier = "<=0.15.1" },
+    { name = "tomlkit", specifier = "<=0.16" },
     { name = "towncrier", specifier = "<=25.8" },
 ]
 doc-deploy-changelog = [
-    { name = "tomlkit", specifier = "<=0.15.1" },
+    { name = "tomlkit", specifier = "<=0.16" },
     { name = "towncrier", specifier = "<=25.8" },
 ]
 doc-deploy-stable = [{ name = "packaging", specifier = "<=26.2" }]
 doc-style = [
     { name = "docutils", specifier = "<=0.23" },
-    { name = "tomlkit", specifier = "<=0.15.1" },
+    { name = "tomlkit", specifier = "<=0.16" },
 ]
 hk-package-clean-except = [
     { name = "fastcore", specifier = "<=1.15" },
@@ -144,7 +144,7 @@ hk-package-clean-untagged = [
 ]
 release-github = [
     { name = "pypandoc-binary", specifier = "<=1.17" },
-    { name = "tomlkit", specifier = "<=0.15.1" },
+    { name = "tomlkit", specifier = "<=0.16" },
 ]
 release-pypi = [{ name = "twine", specifier = "<=6.2" }]
 tests-pytest = [{ name = "pytest-randomly", specifier = "<=4.1" }]
