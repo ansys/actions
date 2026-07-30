@@ -14,7 +14,7 @@ fastcore==1.14.5
     #   ghapi
 fastspec==0.1.0
     # via ghapi
-ghapi==2.0.1
+ghapi==2.0.3
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
