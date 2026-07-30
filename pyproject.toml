@@ -36,11 +36,11 @@ code-style-prek = [
     "prek<=0.5",
 ]
 doc-changelog = [
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
     "towncrier<=25.8",
 ]
 doc-deploy-changelog = [
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
     "towncrier<=25.8",
 ]
 doc-deploy-stable = [
@@ -48,7 +48,7 @@ doc-deploy-stable = [
 ]
 doc-style = [
     "docutils<=0.23",
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
 ]
 hk-package-clean-except = [
     "fastcore<=1.15",
@@ -62,7 +62,7 @@ hk-package-clean-untagged = [
 ]
 release-github = [
     "pypandoc-binary<=1.17",
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
 ]
 check-actions-security = [
     "zizmor<=1.29",
