@@ -25,9 +25,9 @@ check-licenses = [
 ]
 check-vulnerabilities = [
     "bandit>=1.9,<2",
-    "click>=8.4.1,<9",
+    "click>=8.4,<9",
     "pygithub>=2.9,<3",
-    "safety>=3.8.1,<4",
+    "safety>=3.8,<4",
 ]
 code-style-pre-commit = [
     "pre-commit<=4.6",
@@ -51,13 +51,13 @@ doc-style = [
     "tomlkit<=0.15",
 ]
 hk-package-clean-except = [
-    "fastcore<=1.14.5",
-    "ghapi<=2.0.1",
+    "fastcore<=1.15",
+    "ghapi<=2.1",
     "packaging<=26.2",
 ]
 hk-package-clean-untagged = [
-    "fastcore<=1.14.5",
-    "ghapi<=2.0.1",
+    "fastcore<=1.15",
+    "ghapi<=2.1",
     "packaging<=26.2",
 ]
 release-github = [
