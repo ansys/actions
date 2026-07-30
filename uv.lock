@@ -113,9 +113,9 @@ check-licenses = [
 ]
 check-vulnerabilities = [
     { name = "bandit", specifier = ">=1.9,<2" },
-    { name = "click", specifier = ">=8.4.1,<9" },
+    { name = "click", specifier = ">=8.4,<9" },
     { name = "pygithub", specifier = ">=2.9,<3" },
-    { name = "safety", specifier = ">=3.8.1,<4" },
+    { name = "safety", specifier = ">=3.8,<4" },
 ]
 code-style-pre-commit = [{ name = "pre-commit", specifier = "<=4.6" }]
 code-style-prek = [{ name = "prek", specifier = "<=0.5" }]
@@ -133,13 +133,13 @@ doc-style = [
     { name = "tomlkit", specifier = "<=0.15" },
 ]
 hk-package-clean-except = [
-    { name = "fastcore", specifier = "<=1.14.5" },
-    { name = "ghapi", specifier = "<=2.0.1" },
+    { name = "fastcore", specifier = "<=1.15" },
+    { name = "ghapi", specifier = "<=2.1" },
     { name = "packaging", specifier = "<=26.2" },
 ]
 hk-package-clean-untagged = [
-    { name = "fastcore", specifier = "<=1.14.5" },
-    { name = "ghapi", specifier = "<=2.0.1" },
+    { name = "fastcore", specifier = "<=1.15" },
+    { name = "ghapi", specifier = "<=2.1" },
     { name = "packaging", specifier = "<=26.2" },
 ]
 release-github = [
