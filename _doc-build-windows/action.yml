@@ -350,6 +350,19 @@ runs:
       shell: powershell
       run: python -m venv .venv
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
@@ -365,12 +378,23 @@ runs:
         }
 
     - name: "Check if requirements.txt file exists"
+      if: ${{ inputs.skip-install == 'true' }}
       id: check-requirements-file-exists
       shell: powershell
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path "$env:REQUIREMENTS_FILE") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.skip-install == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          A uv.lock file was detected, but ``skip-install`` is also enabled and
+          a requirements file exists. Please, either use the lock file or the requirements
+          file, but not both. If you want to use the lock file, remove the requirements file
+          from the repository. If you want to use the requirements file, remove uv.lock.
 
     - name: Install documentation dependencies from requirements file
       shell: powershell
@@ -391,12 +415,17 @@ runs:
       if: ${{ inputs.skip-install == 'false' }}
       env:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
           poetry install
         } elseif ($env:BUILD_BACKEND -eq "uv") {
-          uv pip install .
+          if ($env:USE_UV_LOCKFILE -eq "true") {
+            uv sync --frozen --no-dev
+          } else {
+            uv pip install .
+          }
         } else {
           python -m pip install .
         }
@@ -414,34 +443,46 @@ runs:
           $arguments = @("install")
 
           if ($env:GROUP_DEPENDENCIES_NAME) {
-              $arguments += @("--with", "$env:GROUP_DEPENDENCIES_NAME")
+            $arguments += @("--with", "$env:GROUP_DEPENDENCIES_NAME")
           }
           if ($env:OPTIONAL_DEPENDENCIES_NAME) {
-              $arguments += @("--extras", "$env:OPTIONAL_DEPENDENCIES_NAME")
+            $arguments += @("--extras", "$env:OPTIONAL_DEPENDENCIES_NAME")
           }
 
           poetry @arguments
         }
         else {
           # Optional dependencies
-          $optional_dependencies_flag = ""
+          $optional_dependencies_flag = @()
           if ($env:OPTIONAL_DEPENDENCIES_NAME) {
-              $optional_dependencies_flag = "[{0}]" -f $env:OPTIONAL_DEPENDENCIES_NAME
+            if ($env:BUILD_BACKEND -eq "uv" -and $env:USE_UV_LOCKFILE -eq "true") {
+              $extras = $env:GROUP_DEPENDENCIES_NAME -split ','
+              foreach ($extra in $extras) {
+                $optional_dependencies_flag += "--extra"
+                $optional_dependencies_flag += $extra
+              }
+            } else {
+              $optional_dependencies_flag += "[{0}]" -f $env:OPTIONAL_DEPENDENCIES_NAME
+            }
           }
           # Group dependencies
           $group_dependencies_flag = @()
           if ($env:GROUP_DEPENDENCIES_NAME) {
-              $groups = $env:GROUP_DEPENDENCIES_NAME -split ','
-              foreach ($group in $groups) {
-                  $group_dependencies_flag += "--group"
-                  $group_dependencies_flag += $group
-              }
+            $groups = $env:GROUP_DEPENDENCIES_NAME -split ','
+            foreach ($group in $groups) {
+              $group_dependencies_flag += "--group"
+              $group_dependencies_flag += $group
+            }
           }
           # Install dependencies (potentially mix of optional and group)
           if ($env:BUILD_BACKEND -eq "uv") {
-              uv pip install @group_dependencies_flag ".${optional_dependencies_flag}"
+            if ($env:USE_UV_LOCKFILE -eq "true") {
+              uv sync --frozen --no-dev @group_dependencies_flag @optional_dependencies_flag
+            } else {
+              uv pip install @group_dependencies_flag @optional_dependencies_flag
+            }
           } else {
-              python -m pip install @group_dependencies_flag ".${optional_dependencies_flag}"
+            python -m pip install @group_dependencies_flag ".${optional_dependencies_flag}"
           }
         }
 
