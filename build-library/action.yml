@@ -164,7 +164,38 @@ runs:
         message: >
           Skipping Python setup to use system Python.
 
+    # ------------------------------------------------------------------------
+    # Install package by leveraging uv lockfile if requested and available
+    # ------------------------------------------------------------------------
+
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Install dependencies from uv lockfile"
+      if: ${{ inputs.use-uv == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        cd ${WORKING_DIRECTORY}
+        uv sync --frozen --no-managed-python
+
+    # ------------------------------------------------------------------------
+    # Install package without leveraging uv lockfile
+    # ------------------------------------------------------------------------
+
     - name: "Install library"
+      if: ${{ inputs.use-uv != 'true' || steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE != 'true' }}
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
