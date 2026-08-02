@@ -326,6 +326,48 @@ jobs:
           docker logs ${GEO_CONT_NAME}
           docker rm ${GEO_CONT_NAME}
 
+  test-doc-build-pyaedt:
+    name: "Test doc-build action for PyAEDT on ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    needs: doc-style
+    permissions:
+      contents: read
+      packages: read # Needed to pull geometry container image
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+      fail-fast: false
+    steps:
+
+      - name: "Install Git and clone pyaedt repository"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: ansys/pyaedt
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: actions
+          persist-credentials: false
+
+      - name: Run Ansys documentation building action
+        uses: ./actions/doc-build
+        with:
+          dependencies: "graphviz texlive-latex-extra latexmk texlive-xetex texlive-fonts-extra"
+          skip-install: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+          sphinxopts: '-j auto --color -w build_errors.txt'
+          check-links: false
+          needs-quarto: false
+          optional-dependencies-name: 'all'
+          group-dependencies-name: 'doc'
+
   test-check-licenses-on-projects:
     name: "Test check-licenses action for ${{ matrix.repository.name }} project"
     runs-on: ubuntu-latest
