@@ -291,7 +291,7 @@ runs:
         echo "Output was found $EXISTS_TESTS_REQUIREMENTS"
 
     - uses: ansys/actions/_logging@main
-      if: ${{ inputs.skip-install == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true' }}
+      if: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true' }}
       with:
         level: "ERROR"
         message: >
