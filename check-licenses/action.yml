@@ -333,7 +333,11 @@ runs:
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             poetry install
           elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install --no-managed-python .
+            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              uv sync --frozen --no-dev --no-managed-python
+            else
+              uv pip install --no-managed-python .
+            fi
           else
             python -m pip install .
           fi
