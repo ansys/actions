@@ -354,10 +354,14 @@ runs:
       if: ${{ inputs.use-uv == 'true' }}
       shell: bash
       run: |
+        echo "temporary print"
+        ls
         if [[ -f "uv.lock" ]]; then
           echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+          echo "uv.lock file detected. Using uv.lock file to install dependencies."
         else
           echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+          echo "No uv.lock file detected. Using requirements file or pyproject.toml to install dependencies."
         fi
 
     # ------------------------------------------------------------------------
