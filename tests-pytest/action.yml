@@ -373,7 +373,7 @@ runs:
           # Optional dependencies
           optional_dependencies_flag=""
           if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
-            if [[ ${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
+            if [[ "${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
               if [[ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]]; then
                 IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
                 for extra in "${extras_list[@]}"; do
