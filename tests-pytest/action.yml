@@ -262,6 +262,42 @@ runs:
           echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
         fi
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Check if requirements.txt file exists"
+      id: check-exists-requirements-file
+      shell: bash
+      env:
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+      run: |
+        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+
+    - name: "Print previous output"
+      shell: bash
+      env:
+        EXISTS_TESTS_REQUIREMENTS: ${{ steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS }}
+      run:
+        echo "Output was found $EXISTS_TESTS_REQUIREMENTS"
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.skip-install == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          A uv.lock file was detected and a requirements file exists. Please, either use the
+          lock file or the requirements file, but not both.
+
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
@@ -281,14 +317,19 @@ runs:
       if: inputs.skip-install == 'false'
       shell: bash
       env:
-        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         $ACTIVATE_VENV
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           poetry install
         elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install .
+          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+            uv sync --frozen --no-dev
+          else
+            uv pip install .
+          fi
         else
           python -m pip install .
         fi
@@ -299,21 +340,6 @@ runs:
       run: |
         sudo apt-get update
         sudo apt-get install -y xvfb
-
-    - name: "Check if requirements.txt file exists"
-      id: check-exists-requirements-file
-      shell: bash
-      env:
-        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
-      run: |
-        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
-
-    - name: "Print previous output"
-      shell: bash
-      env:
-        EXISTS_TESTS_REQUIREMENTS: ${{ steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS }}
-      run:
-        echo "Output was found $EXISTS_TESTS_REQUIREMENTS"
 
     - name: "Install test dependencies from the requirements file"
       shell: bash
@@ -336,8 +362,9 @@ runs:
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
-        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
         GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         $ACTIVATE_VENV
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
@@ -346,7 +373,19 @@ runs:
           # Optional dependencies
           optional_dependencies_flag=""
           if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
-            optional_dependencies_flag="[${OPTIONAL_DEPENDENCIES_NAME}]"
+            if [[ ${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              if [[ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]]; then
+                IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
+                for extra in "${extras_list[@]}"; do
+                  trimmed_extra="$(echo "${extra}" | xargs)"
+                  if [[ -n "${trimmed_extra}" ]]; then
+                    optional_dependencies_flag="$optional_dependencies_flag --extra ${trimmed_extra}"
+                  fi
+                done
+              fi
+            else
+              optional_dependencies_flag="[${OPTIONAL_DEPENDENCIES_NAME}]"
+            fi
           fi
           # Group dependencies
           group_dependencies_flag=""
@@ -358,7 +397,11 @@ runs:
           fi
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install $group_dependencies_flag .$optional_dependencies_flag
+            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              uv sync --frozen --no-dev $group_dependencies_flag $optional_dependencies_flag
+            else
+              uv pip install $group_dependencies_flag .$optional_dependencies_flag
+            fi
           else
             python -m pip install $group_dependencies_flag .$optional_dependencies_flag
           fi
