@@ -473,10 +473,10 @@ runs:
             if ($env:USE_UV_LOCKFILE -eq "true") {
               uv sync --frozen --no-dev @group_dependencies_flag @optional_dependencies_flag
             } else {
-              uv pip install @group_dependencies_flag @optional_dependencies_flag
+              uv pip install @group_dependencies_flag .@optional_dependencies_flag
             }
           } else {
-            python -m pip install @group_dependencies_flag ".${optional_dependencies_flag}"
+            python -m pip install @group_dependencies_flag .@optional_dependencies_flag
           }
         }
 
