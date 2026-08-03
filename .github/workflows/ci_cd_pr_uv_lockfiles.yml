@@ -327,15 +327,19 @@ jobs:
           docker rm ${GEO_CONT_NAME}
 
   test-doc-build-pyaedt:
-    name: "Test doc-build action for PyAEDT on ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
+    name: "Test doc-build action for PyAEDT on ${{ matrix.os.name }}"
+    runs-on: ${{ matrix.os.name }}
     needs: doc-build
     permissions:
       contents: read
       packages: read # Needed to pull geometry container image
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os:
+          - name: windows-latest
+            dependencies: ''
+          - name: ubuntu-latest
+            dependencies: 'graphviz texlive-latex-extra latexmk texlive-xetex texlive-fonts-extra'
       fail-fast: false
     steps:
 
@@ -358,7 +362,8 @@ jobs:
       - name: Run Ansys documentation building action
         uses: ./actions/doc-build
         with:
-          dependencies: "graphviz texlive-latex-extra latexmk texlive-xetex texlive-fonts-extra"
+          checkout: false
+          dependencies: ${{ matrix.os.dependencies }}
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
