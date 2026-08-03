@@ -343,6 +343,7 @@ jobs:
       fail-fast: false
     env:
       ON_CI: True
+      PYAEDT_DOC_BUILD_CHEATSHEET: False
     steps:
 
       - name: "Install Git and clone pyaedt repository"
@@ -371,7 +372,7 @@ jobs:
           use-python-cache: false
           sphinxopts: '-j auto --color -w build_errors.txt'
           check-links: false
-          needs-quarto: true
+          needs-quarto: false
           optional-dependencies-name: 'all'
           group-dependencies-name: 'doc'
 
