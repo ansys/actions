@@ -27,6 +27,4 @@ idna==3.15
     #   httpx
 packaging==26.2
 typing-extensions==4.15.0 ; python_full_version < '3.13'
-    # via
-    #   anyio
-    #   exceptiongroup
+    # via anyio

@@ -3,7 +3,5 @@
 pip-licenses==5.5.5
 prettytable==3.18.0
     # via pip-licenses
-tomli==2.4.1 ; python_full_version < '3.11'
-    # via pip-licenses
 wcwidth==0.8.2
     # via prettytable
