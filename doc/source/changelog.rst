@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`10.3.6 <https://github.com/ansys/actions/releases/tag/v10.3.6>`_ - August 03, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pin the nltk version being installed
+          - `#1442 <https://github.com/ansys/actions/pull/1442>`_
+
+
 `10.3.5 <https://github.com/ansys/actions/releases/tag/v10.3.5>`_ - July 16, 2026
 =================================================================================
 
