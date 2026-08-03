@@ -26,9 +26,8 @@ name: |
 description: |
   Build library documentation using `Sphinx
   <https://www.sphinx-doc.org/en/master/>`_. The action installs documentation
-  dependencies provided either in a requirement file, e.g.
-  ``requirements/requirements_doc.txt``, or in the ``[doc]`` section of the
-  additional dependencies in the ``pyproject.toml`` file. Assuming that
+  dependencies defined in a requirement file, e.g. ``requirements/requirements_doc.txt``,
+  in a lockfile, or as extra/group dependencies in the ``pyproject.toml`` file. Assuming that
   `sphinx-build
   <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ is available
   after installing the documentation dependencies, the action uses it
@@ -324,8 +323,7 @@ runs:
         fi
 
     - name: "Check if requirements.txt file exists"
-      if: ${{ inputs.skip-install == 'true' }}
-      id: check-requirements-file-exists
+      id: check-exists-requirements-file
       shell: bash
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
@@ -337,10 +335,8 @@ runs:
       with:
         level: "ERROR"
         message: >
-          A uv.lock file was detected, but ``skip-install`` is also enabled and
-          a requirements file exists. Please, either use the lock file or the requirements
-          file, but not both. If you want to use the lock file, remove the requirements file
-          from the repository. If you want to use the requirements file, remove uv.lock.
+          A uv.lock file was detected and a requirements file exists. Please, either use the
+          lock file or the requirements file, but not both.
 
     - name: "Install documentation dependencies from requirements file"
       if: steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true'

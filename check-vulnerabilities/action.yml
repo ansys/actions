@@ -276,10 +276,8 @@ runs:
       with:
         level: "ERROR"
         message: >
-          A uv.lock file was detected, but ``skip-install`` is also enabled and
-          a requirements file exists. Please, either use the lock file or the requirements
-          file, but not both. If you want to use the lock file, remove the requirements file
-          from the repository. If you want to use the requirements file, remove uv.lock.
+          A uv.lock file was detected and a requirements file exists. Please, either use the
+          lock file or the requirements file, but not both.
 
     # ------------------------------------------------------------------------
 
