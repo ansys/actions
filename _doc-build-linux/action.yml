@@ -387,24 +387,23 @@ runs:
             poetry install --extras "${OPTIONAL_DEPENDENCIES_NAME}"
           fi
         else
-          # Optional dependencies
-          optional_dependencies_flag=""
+          # Optional dependencies handling
+          extra_dependencies_flags=""
+          project_spec="."
           if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
             if [[ "${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              if [[ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]]; then
-                IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
-                for extra in "${extras_list[@]}"; do
-                  trimmed_extra="$(echo "${extra}" | xargs)"
-                  if [[ -n "${trimmed_extra}" ]]; then
-                    optional_dependencies_flag="$optional_dependencies_flag --extra ${trimmed_extra}"
-                  fi
-                done
-              fi
+              IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
+              for extra in "${extras_list[@]}"; do
+                trimmed_extra="$(echo "${extra}" | xargs)"
+                if [[ -n "${trimmed_extra}" ]]; then
+                  extra_dependencies_flags="$extra_dependencies_flags --extra ${trimmed_extra}"
+                fi
+              done
             else
-              optional_dependencies_flag="[${OPTIONAL_DEPENDENCIES_NAME}]"
+              project_spec=".[${OPTIONAL_DEPENDENCIES_NAME}]"
             fi
           fi
-          # Group dependencies
+          # Group dependencies handling
           group_dependencies_flag=""
           if [ -n "${GROUP_DEPENDENCIES_NAME}" ]; then
             IFS=',' read -ra group_list <<< "${GROUP_DEPENDENCIES_NAME}"
@@ -415,12 +414,12 @@ runs:
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --no-dev $group_dependencies_flag $optional_dependencies_flag
+              uv sync --frozen --no-dev $group_dependencies_flag $extra_dependencies_flags
             else
-              uv pip install $group_dependencies_flag .$optional_dependencies_flag
+              uv pip install $group_dependencies_flag $project_spec
             fi
           else
-            python -m pip install $group_dependencies_flag .$optional_dependencies_flag
+            python -m pip install $project_spec
           fi
         fi
 
