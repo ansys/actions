@@ -329,7 +329,7 @@ runs:
         echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f "${REQUIREMENTS_FILE}" ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
 
     - uses: ansys/actions/_logging@main
-      if: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true' }}
+      if: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
       with:
         level: "ERROR"
         message: >
