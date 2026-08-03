@@ -25,7 +25,7 @@ the repository setup) needs to implemented:
 
 1. Update ``Vocab/ANSYS`` path
 
-   In order to comply with the requirements of Vale ``v3``, it is necessary to update the vocabularies
+   To comply with the requirements of Vale ``v3``, it is necessary to update the vocabularies
    path under the ``doc/styles`` directory. Specifically, the default vocabularies path should be modified from
    ``Vocab/ANSYS`` to ``config/vocabularies/ANSYS``. This adjustment ensures that Vale can locate the required vocabulary files.
 

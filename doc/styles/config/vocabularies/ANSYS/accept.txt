@@ -3,6 +3,7 @@ ansys
 automerge
 Chocolatey
 CA
+CAs
 CI
 clr_loader
 [Cc]ookiecutter
@@ -14,6 +15,7 @@ fastcore
 ghapi
 GitHub
 MiKTeX
+nltk
 prek
 pypa
 pytest
