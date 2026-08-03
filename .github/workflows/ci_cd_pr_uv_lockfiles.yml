@@ -405,3 +405,32 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           checkout: false
+
+  test-tests-pytest-on-pyaedt:
+    name: "Test tests-pytest action on PyAEDT"
+    runs-on: ubuntu-latest
+    needs: test-build-library-on-projects
+    steps:
+
+      - name: "Install Git and clone PyAEDT repository"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: ansys/pyaedt
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Run tests with pytest for PyAEDT"
+        uses: ./actions/tests-pytest
+        with:
+          checkout: false
+          group-dependencies-name: tests
+          optional-dependencies-name: all
+          pytest-postargs: 'tests/unit/test_utils.py -vvv'
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          requires-xvfb: true
