@@ -242,12 +242,13 @@ jobs:
 
       - uses: ./doc-build
         with:
-          skip-install: true
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-python-cache: false
-          needs-quarto: true
-          uploaded-artifact-name-prefix: documentation-${{ matrix.os }}
           checkout: false
+          group-dependencies-name: 'doc'
+          needs-quarto: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          skip-install: true
+          uploaded-artifact-name-prefix: documentation-${{ matrix.os }}
+          use-python-cache: false
 
   test-doc-build-pyansys-geometry:
     name: "Test doc-build action for PyAnsys Geometry on ${{ matrix.os.name }}"
