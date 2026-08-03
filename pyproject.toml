@@ -1,10 +1,10 @@
 # This project file exists solely for two reasons: managing the python package dependencies for each action; and
-# specifying the towncrier configuration
+# specifying the towncrier configuration and documentation requirements.
 
 [project]
 name = "ansys-actions-ci-dependencies"
 version = "10.4.dev0"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 [dependency-groups]
 build-library-pip = [
@@ -34,6 +34,17 @@ code-style-pre-commit = [
 ]
 code-style-prek = [
     "prek<=0.5",
+]
+# This group is defined to test doc-build on this artificial project
+doc = [
+    "ansys-sphinx-theme>=1.9",
+    "jupyter>=1.1",
+    "pyyaml>=6.0",
+    "Sphinx>=9.1",
+    "sphinx-copybutton>=0.5",
+    "sphinx-jinja>=2.0",
+    "sphinx_design==0.7.0",
+    "tabulate==0.10.0"
 ]
 doc-changelog = [
     "tomlkit<=0.16",
