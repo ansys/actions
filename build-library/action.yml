@@ -164,9 +164,9 @@ runs:
         message: >
           Skipping Python setup to use system Python.
 
-    # ------------------------------------------------------------------------
-    # Install package by leveraging uv lockfile if requested and available
-    # ------------------------------------------------------------------------
+    # --------------------------------------------------------
+    # Install package by leveraging uv lockfile if detected
+    # --------------------------------------------------------
 
     - name: "Auto-detect uv lockfile"
       id: auto-detect-uv-lockfile
