@@ -289,7 +289,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@main
+      uses: ansys/actions/_doc-build-linux@feat/use-uv-lock-file
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -317,7 +317,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@main
+      uses: ansys/actions/_doc-build-windows@feat/use-uv-lock-file
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
