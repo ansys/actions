@@ -266,10 +266,8 @@ runs:
       id: auto-detect-uv-lockfile
       if: ${{ inputs.use-uv == 'true' }}
       shell: bash
-      env:
-        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
+        if [[ -f "uv.lock" ]]; then
           echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
         else
           echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
