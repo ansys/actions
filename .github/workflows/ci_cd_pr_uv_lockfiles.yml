@@ -337,8 +337,9 @@ jobs:
     strategy:
       matrix:
         os:
-          - name: windows-latest
-            dependencies: ''
+          # NOTE: Commented out because windows takes too long to build the documentation.
+          # - name: windows-latest
+          #   dependencies: ''
           - name: ubuntu-latest
             dependencies: 'graphviz texlive-latex-extra latexmk texlive-xetex texlive-fonts-extra'
       fail-fast: false
