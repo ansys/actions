@@ -226,20 +226,9 @@ runs:
     # reviewdog20 branch with the new release changes, see next step.
     - name: "Dummy step to track vale-action changes"
       if: false
-      uses: vale-cli/vale-action@85f9f7f2c5f449ac0ae5b66662961bae3f77ca6a # v2.1.2
+      uses: vale-cli/vale-action@518a9136acc6e6668ce7c00d367051e0941e87ff # v3.0.0
       with:
-        reporter: github-pr-check
-        filter_mode: nofilter
-
-    # WARNING: Do not accept dependabot updates as the hash below is associated
-    # to the reviewdog20 branch and not to a release tag !!! If a PR is opened by
-    # dependabot, we need to update the reviewdog20 branch with the new release changes.
-    # Once performed, we can manually update the commit hash below.
-    - name: "Run Vale"
-      uses: moe-ad/vale-action@reviewdog20 # zizmor: ignore[stale-action-refs] , Read warning above
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
-      with:
+        reviewdog_version: 0.21.0
         files: ${{ inputs.files }}
         reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
         fail_level: ${{ inputs.fail-level }}
