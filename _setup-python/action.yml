@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -84,7 +84,7 @@ runs:
     # This is related to our use of uv to install packages, see https://github.com/ansys/actions/pull/811
     - name: "Set up Python using cache"
       if: ${{ inputs.use-cache == 'true' && inputs.provision-uv == 'false'}}
-      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: ${{ inputs.python-version }}
         cache: 'pip'
@@ -92,13 +92,14 @@ runs:
 
     - name: "Set up Python without using cache"
       if: ${{ inputs.use-cache == 'false' || (inputs.use-cache == 'true' && inputs.provision-uv == 'true') }}
-      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: ${{ inputs.python-version }}
 
     - name: "Set up uv"
       if: ${{ inputs.provision-uv == 'true' }}
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
       with:
         enable-cache: ${{ inputs.use-cache }}
         prune-cache: ${{ inputs.prune-uv-cache }}
+        cache-local-path: ${{ runner.temp }}/.uv-cache

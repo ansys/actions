@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -82,17 +82,19 @@ runs:
   steps:
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
     - name: "Install uv"
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
 
     - name: "Install zizmor and verify installation"
       shell: bash
       run: |
-        uv tool install zizmor==1.25.2
+        uv venv .venv
+        source .venv/bin/activate
+        uv pip install --no-managed-python -r ${GITHUB_ACTION_PATH}/requirements.txt
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -141,6 +143,7 @@ runs:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
+        source .venv/bin/activate
         zizmor ${HIGH_AUDIT_LEVEL} ${STRICT_AUDIT_LEVEL} .
 
     - name: "Output a summary of detected vulnerabilities"
@@ -150,4 +153,5 @@ runs:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
+        source .venv/bin/activate
         python ${GITHUB_ACTION_PATH}/../python-utils/zizmor-summary.py

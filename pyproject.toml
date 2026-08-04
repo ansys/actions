@@ -20,14 +20,14 @@ build-wheelhouse = [
 ]
 check-licenses = [
     "pip-licenses<=5.6",
-    "prettytable<=3.17",
+    "prettytable<=3.18",
     "wcwidth<=0.9",
 ]
 check-vulnerabilities = [
     "bandit>=1.9,<2",
-    "click>=8.4.1,<9",
+    "click>=8.4,<9",
     "pygithub>=2.9,<3",
-    "safety>=3.8.1,<4",
+    "safety>=3.8,<4",
 ]
 code-style-pre-commit = [
     "pre-commit<=4.6",
@@ -36,11 +36,11 @@ code-style-prek = [
     "prek<=0.5",
 ]
 doc-changelog = [
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
     "towncrier<=25.8",
 ]
 doc-deploy-changelog = [
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
     "towncrier<=25.8",
 ]
 doc-deploy-stable = [
@@ -48,21 +48,24 @@ doc-deploy-stable = [
 ]
 doc-style = [
     "docutils<=0.23",
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
 ]
 hk-package-clean-except = [
-    "fastcore<=1.14",
-    "ghapi<=1.1",
+    "fastcore<=1.15",
+    "ghapi<=2.1",
     "packaging<=26.2",
 ]
 hk-package-clean-untagged = [
-    "fastcore<=1.14",
-    "ghapi<=1.1",
+    "fastcore<=1.15",
+    "ghapi<=2.1",
     "packaging<=26.2",
 ]
 release-github = [
     "pypandoc-binary<=1.17",
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
+]
+check-actions-security = [
+    "zizmor<=1.29",
 ]
 release-pypi = [
     "twine<=6.2",
@@ -120,3 +123,22 @@ showcontent = true
 directory = "test"
 name = "Test"
 showcontent = true
+
+[tool.ruff]
+line-length = 100
+fix = true
+target-version = "py314"
+lint.select = [
+  "D",   # pydocstyle, see https://docs.astral.sh/ruff/rules/#pydocstyle-d
+  "E",   # pycodestyle, see https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+  "F",   # pyflakes, see https://docs.astral.sh/ruff/rules/#pyflakes-f
+  "I",   # isort, see https://docs.astral.sh/ruff/rules/#isort-i
+  "N",   # pep8-naming, see https://docs.astral.sh/ruff/rules/#pep8-naming-n
+  "PTH", # flake8-use-pathlib, https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
+  "TD",  # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
+  "UP",  # pyupgrade, https://docs.astral.sh/ruff/rules/#pyupgrade-up
+]
+lint.ignore = []
+lint.pydocstyle.convention = "numpy"
+lint.isort.combine-as-imports = true
+lint.isort.force-sort-within-sections = true
