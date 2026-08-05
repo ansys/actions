@@ -30,7 +30,7 @@ check-vulnerabilities = [
     "safety>=3.8,<4",
 ]
 code-style-pre-commit = [
-    "pre-commit<=4.6",
+    "pre-commit<=4.6.1",
 ]
 code-style-prek = [
     "prek<=0.5",
