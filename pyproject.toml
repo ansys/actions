@@ -9,10 +9,10 @@ requires-python = ">=3.10"
 [dependency-groups]
 build-library-pip = [
     "build<=1.5",
-    "twine<=7.0.0",
+    "twine<=7.1",
 ]
 build-library-uv = [
-    "twine<=7.0.0",
+    "twine<=7.1",
 ]
 build-wheelhouse = [
     "build<=1.5",
@@ -68,7 +68,7 @@ check-actions-security = [
     "zizmor<=1.29",
 ]
 release-pypi = [
-    "twine<=7.0.0",
+    "twine<=7.1",
 ]
 tests-pytest = [
     "pytest-randomly<=4.1",
