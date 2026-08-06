@@ -125,6 +125,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             .ci/ansys-actions-uv
+            check-vulnerabilities/*
           sparse-checkout-cone-mode: false
 
       - name: Flatten ansys-actions-uv to workspace root
