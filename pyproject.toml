@@ -9,10 +9,10 @@ requires-python = ">=3.10"
 [dependency-groups]
 build-library-pip = [
     "build<=1.5",
-    "twine<=6.2",
+    "twine<=7.1",
 ]
 build-library-uv = [
-    "twine<=6.2",
+    "twine<=7.1",
 ]
 build-wheelhouse = [
     "build<=1.5",
@@ -30,7 +30,7 @@ check-vulnerabilities = [
     "safety>=3.8,<4",
 ]
 code-style-pre-commit = [
-    "pre-commit<=4.6",
+    "pre-commit<=4.7",
 ]
 code-style-prek = [
     "prek<=0.5",
@@ -51,12 +51,12 @@ doc-style = [
     "tomlkit<=0.16",
 ]
 hk-package-clean-except = [
-    "fastcore<=1.15",
+    "fastcore<=2.2",
     "ghapi<=2.1",
     "packaging<=26.2",
 ]
 hk-package-clean-untagged = [
-    "fastcore<=1.15",
+    "fastcore<=2.2",
     "ghapi<=2.1",
     "packaging<=26.2",
 ]
@@ -68,7 +68,7 @@ check-actions-security = [
     "zizmor<=1.29",
 ]
 release-pypi = [
-    "twine<=6.2",
+    "twine<=7.1",
 ]
 tests-pytest = [
     "pytest-randomly<=4.1",

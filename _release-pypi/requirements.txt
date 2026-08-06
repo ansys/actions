@@ -64,7 +64,7 @@ rich==15.0.0
     # via twine
 secretstorage==3.5.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x' and sys_platform == 'linux'
     # via keyring
-twine==6.2.0
+twine==7.0.0
 typing-extensions==4.15.0 ; python_full_version < '3.11' and platform_machine != 'ppc64le' and platform_machine != 's390x' and sys_platform == 'linux'
     # via cryptography
 urllib3==2.7.0
