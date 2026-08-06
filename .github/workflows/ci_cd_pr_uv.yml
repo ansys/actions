@@ -140,7 +140,7 @@ jobs:
           checkout: false
           dev-mode: ${{ github.ref != 'refs/heads/main' }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          python-package-name: ${{ env.PACKAGE_NAME }}
+          python-package-name: ${{ env.LIBRARY_NAME }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-uv: true
 
