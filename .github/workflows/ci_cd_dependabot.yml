@@ -54,7 +54,7 @@ jobs:
               echo "  Processing: $dir_cleaned/requirements.txt (group: $group_name)"
 
               # Run uv export command
-              uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes
+              uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes --no-dev
           done
 
           # Process requirements-<suffix>.txt files (e.g., code-style/requirements-prek.txt)
