@@ -372,14 +372,13 @@ runs:
           optional_dependencies_flag=""
           if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
             if [[ "${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
-                IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
-                for extra in "${extras_list[@]}"; do
-                  trimmed_extra="$(echo "${extra}" | xargs)"
-                  if [[ -n "${trimmed_extra}" ]]; then
-                    optional_dependencies_flag="$optional_dependencies_flag --extra ${trimmed_extra}"
-                  fi
-                done
-              fi
+              IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
+              for extra in "${extras_list[@]}"; do
+                trimmed_extra="$(echo "${extra}" | xargs)"
+                if [[ -n "${trimmed_extra}" ]]; then
+                  optional_dependencies_flag="$optional_dependencies_flag --extra ${trimmed_extra}"
+                fi
+              done
             else
               optional_dependencies_flag="[${OPTIONAL_DEPENDENCIES_NAME}]"
             fi
