@@ -30,6 +30,12 @@ description: |
   version. The action uses the `cibuildwheel
   <https://github.com/pypa/cibuildwheel>`_ behind the scenes.
 
+  .. warning::
+
+      This action is deprecated starting with ``ansys/actions@v11``. Please use
+      `pypa/cibuildwheel <https://github.com/pypa/cibuildwheel>`_ directly in
+      your workflow. This action will be removed in ``ansys/actions@v12``.
+
   .. note::
 
       This actions should only be used by libraries including source code that
@@ -91,6 +97,16 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    # TODO: The action file should be removed in ansys/actions@v12
+    - name: "Deprecation warning"
+      uses: ansys/actions/_logging@main
+      with:
+        level: "WARNING"
+        message: >
+          The ``build-ci-wheels`` action is deprecated starting with ``ansys/actions@v11``.
+          Please use ``pypa/cibuildwheel`` directly in your workflow. This action will be
+          removed in ``ansys/actions@v12``.
 
     - name: "Install Git and clone project"
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
