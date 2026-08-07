@@ -174,7 +174,8 @@ jobs:
             library: ansys-geometry-core
           - name: pyacp
             library: ansys-acp-core
-            install-build-and-wheel: 'true'
+          - name: pyaedt
+            library: pyaedt
       fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
@@ -204,7 +205,6 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           attest-provenance: true
           use-uv: true
-          install-build-and-wheel: ${{ matrix.repository.install-build-and-wheel || 'false' }}
 
   test-build-library-uv-projects:
     name: "Test build-library action for ${{ matrix.repository.name }} project"
@@ -217,6 +217,8 @@ jobs:
             library: ansys-geometry-core
           - name: pyacp
             library: ansys-acp-core
+          - name: pyaedt
+            library: pyaedt
       fail-fast: false
     permissions:
       id-token: write # Needed for provenance attestation
@@ -257,6 +259,8 @@ jobs:
             library: ansys-geometry-core
           - name: pyacp
             library: ansys-acp-core
+          - name: pyaedt
+            library: pyaedt
       fail-fast: false
     steps:
 
@@ -289,6 +293,8 @@ jobs:
         repository:
           - name: pyansys-geometry
             library: ansys-geometry-core
+          - name: pyaedt
+            library: pyaedt
       fail-fast: false
     steps:
 
