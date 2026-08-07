@@ -84,7 +84,7 @@ dev = [
 ]
 quality = [
   "prek<=0.5",
-  "ruff<=0.16",
+  "ruff<=0.16.1",
   # NOTE: This one is particular and only contains patch releases atm
   "ty<=0.0.61",
 ]
