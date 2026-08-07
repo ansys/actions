@@ -290,10 +290,26 @@ runs:
           python -m pip install -U pip
         fi
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
     - name: "Install the library with the desired targets"
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+        TARGET: ${{ inputs.target }}
+        USE_UV: ${{ inputs.use-uv }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
@@ -303,6 +319,15 @@ runs:
         cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install ${INSTALL_TARGET}
+        elif [[ "${USE_UV}" == 'true' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
+          SYNC_OPTIONS="--no-dev"
+          SYNC_OPTIONS+=$( [[ "${TARGET}" != '' ]] && echo " --extra ${TARGET}" || echo "" )
+          # NOTE: --active is only needed when the working directory is not the root of the repository.
+          # This is because uv sync works with the project environment path and since the virtual
+          # environment is created in the root of the repository, uv sync needs to be told to use the
+          # active environment when the working directory is not the root.
+          SYNC_OPTIONS+=$( [[ "${WORKING_DIRECTORY}" != '.' ]] && echo " --active" || echo "" )
+          uv sync --frozen $SYNC_OPTIONS
         else
            ${INSTALL_COMMAND} "${INSTALL_TARGET}"
         fi

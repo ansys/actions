@@ -255,6 +255,17 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f "uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
     - name: "Update pip"
       shell: bash
       env:
@@ -274,12 +285,17 @@ runs:
       env:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install .
+          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+            uv sync --frozen --no-dev
+          else
+            uv pip install .
+          fi
         else
           python -m pip install .
         fi

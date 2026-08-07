@@ -249,6 +249,36 @@ runs:
         repository: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
         persist-credentials: false
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f "uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - name: "Check if requirements.txt file exists"
+      id: check-exists-requirements-file
+      shell: bash
+      if: ${{ inputs.skip-install == 'true' }}
+      env:
+        EXTRA_TARGETS: ${{ inputs.extra-targets }}
+      run: |
+        echo "EXISTS_REQUIREMENTS=$(if [ -f requirements/requirements_${EXTRA_TARGETS}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.skip-install == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          A uv.lock file was detected and a requirements file exists. Please, either use the
+          lock file or the requirements file, but not both.
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
@@ -376,10 +406,12 @@ runs:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         EXTRA_TARGETS: ${{ inputs.extra-targets }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       # Note: we need to use an array to store the extra targets, otherwise
       # the shell expansion messes with the quotes in the poetry case.
       run: |
         ${ACTIVATE_VENV}
+        # 1. Define the extra targets to be installed based on the build backend and the provided input
         if [[ "${EXTRA_TARGETS}" != '' ]]; then
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
@@ -392,23 +424,22 @@ runs:
           echo "No extra targets to install"
           extra_targets=""
         fi
-
+        # 2. Trigger the installation command based on the build backend
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --extras "${extra_targets}"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install ."${extra_targets}"
+          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+            if [[ "${EXTRA_TARGETS}" != '' ]]; then
+              uv sync --frozen --extra "${EXTRA_TARGETS}" --no-dev
+            else
+              uv sync --frozen --no-dev
+            fi
+          else
+            uv pip install ."${extra_targets}"
+          fi
         else
           python -m pip install ."${extra_targets}"
         fi
-
-    - name: "Check if requirements.txt file exists"
-      id: check-exists-requirements-file
-      shell: bash
-      if: ${{ inputs.skip-install == 'true' }}
-      env:
-        EXTRA_TARGETS: ${{ inputs.extra-targets }}
-      run: |
-        echo "EXISTS_REQUIREMENTS=$(if [ -f requirements/requirements_${EXTRA_TARGETS}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
 
     - name: "Install dependencies from the requirements file"
       shell: bash
