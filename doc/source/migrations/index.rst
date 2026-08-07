@@ -132,7 +132,7 @@ Version ``v11``
 - **Review usage of still-deprecated inputs:** The following inputs still exist but now emit an
   ``ERROR``-level deprecation notice (previously ``WARNING``) and are scheduled for removal in ``v12``.
   In ``v11`` the inputs are no longer used because the corresponding tools are now installed from the action's
-  pinned requirements (see the *Pinned action dependencies* new feature above). Migrate away
+  pinned requirements (see *Pinned action dependencies* in the new feature section). Migrate away
   from them now to avoid disruption in the next major release:
 
   - ``use-conventional-commits`` on the ``doc-changelog`` action: use ``use-pull-request-title`` instead.
