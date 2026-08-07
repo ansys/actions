@@ -193,6 +193,7 @@ jobs:
           needs-quarto: true
           uploaded-artifact-name-prefix: documentation-${{ matrix.os }}
           checkout: false
+          group-dependencies-name: 'doc'
 
   test-doc-build-pyansys-geometry:
     name: "Test doc-build action for PyAnsys Geometry on ${{ matrix.os.name }}"

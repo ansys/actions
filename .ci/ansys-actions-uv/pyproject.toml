@@ -1,0 +1,30 @@
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "ansys-actions-uv"
+version = "10.4.dev0"
+description = "A demo library for testing Ansys actions (uses uv as the build backend)"
+readme = "README.rst"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = [ "LICENSE" ]
+authors = [{ name = "ANSYS, Inc.", email = "pyansys.core@ansys.com" }]
+maintainers = [
+    { name = "PyAnsys developers", email = "pyansys.core@ansys.com" },
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = ["importlib-metadata >=4.0"]
+
+[tool.uv.build-backend]
+module-name = "ansys.actions.uv"
+
+[project.urls]
+Source = "https://github.com/ansys/actions"
+Documentation = "https://actions.docs.ansys.com"

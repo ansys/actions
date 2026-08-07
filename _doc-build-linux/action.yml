@@ -26,9 +26,8 @@ name: |
 description: |
   Build library documentation using `Sphinx
   <https://www.sphinx-doc.org/en/master/>`_. The action installs documentation
-  dependencies provided either in a requirement file, e.g.
-  ``requirements/requirements_doc.txt``, or in the ``[doc]`` section of the
-  additional dependencies in the ``pyproject.toml`` file. Assuming that
+  dependencies defined in a requirement file, e.g. ``requirements/requirements_doc.txt``,
+  in a lockfile, or as extra/group dependencies in the ``pyproject.toml`` file. Assuming that
   `sphinx-build
   <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ is available
   after installing the documentation dependencies, the action uses it
@@ -296,6 +295,17 @@ runs:
       run: |
         python -m venv .venv
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f "uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
@@ -311,15 +321,23 @@ runs:
         fi
 
     - name: "Check if requirements.txt file exists"
-      id: check-requirements-file-exists
+      id: check-exists-requirements-file
       shell: bash
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f "${REQUIREMENTS_FILE}" ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
 
+    - uses: ansys/actions/_logging@main
+      if: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          A uv.lock file was detected and a requirements file exists. Please, either use the
+          lock file or the requirements file, but not both.
+
     - name: "Install documentation dependencies from requirements file"
-      if: steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
+      if: steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
       shell: bash
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
@@ -337,23 +355,29 @@ runs:
       if: inputs.skip-install == 'false'
       env:
         BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install
         elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          uv pip install .
+          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+            uv sync --frozen --no-dev
+          else
+            uv pip install .
+          fi
         else
           python -m pip install .
         fi
 
     - name: "Install documentation dependencies from pyproject.toml"
       shell: bash
-      if: steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false'
+      if: steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'false'
       env:
         BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
         GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
         OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         source .venv/bin/activate
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
@@ -363,12 +387,23 @@ runs:
             poetry install --extras "${OPTIONAL_DEPENDENCIES_NAME}"
           fi
         else
-          # Optional dependencies
-          optional_dependencies_flag=""
+          # Optional dependencies handling
+          extra_dependencies_flags=""
+          project_spec="."
           if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
-            optional_dependencies_flag="[${OPTIONAL_DEPENDENCIES_NAME}]"
+            if [[ "${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
+              for extra in "${extras_list[@]}"; do
+                trimmed_extra="$(echo "${extra}" | xargs)"
+                if [[ -n "${trimmed_extra}" ]]; then
+                  extra_dependencies_flags="$extra_dependencies_flags --extra ${trimmed_extra}"
+                fi
+              done
+            else
+              project_spec=".[${OPTIONAL_DEPENDENCIES_NAME}]"
+            fi
           fi
-          # Group dependencies
+          # Group dependencies handling
           group_dependencies_flag=""
           if [ -n "${GROUP_DEPENDENCIES_NAME}" ]; then
             IFS=',' read -ra group_list <<< "${GROUP_DEPENDENCIES_NAME}"
@@ -378,9 +413,13 @@ runs:
           fi
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install $group_dependencies_flag .$optional_dependencies_flag
+            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              uv sync --frozen --no-dev $group_dependencies_flag $extra_dependencies_flags
+            else
+              uv pip install $group_dependencies_flag $project_spec
+            fi
           else
-            python -m pip install $group_dependencies_flag .$optional_dependencies_flag
+            python -m pip install $project_spec
           fi
         fi
 

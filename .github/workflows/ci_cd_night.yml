@@ -24,10 +24,11 @@ jobs:
     steps:
       - uses: ansys/actions/doc-build@main
         with:
-          skip-install: true
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-python-cache: false
+          group-dependencies-name: 'doc'
           needs-quarto: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          skip-install: true
+          use-python-cache: false
 
   doc-deploy-dev:
     name: "Deploy development documentation"

@@ -70,7 +70,7 @@ def find_module_from_dist(pkg_name: str, attr: str):
         if pth_file:
             source_code_folder = None
             # Read the .pth file to find the source code path
-            with Path(pth_file).open("r") as file:
+            with Path(str(dist.locate_file(pth_file))).open("r") as file:
                 for line in file:
                     # Check if the path is a valid directory
                     path = Path(line.strip())
