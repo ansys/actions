@@ -15,6 +15,7 @@ dependabot
 fastcore
 ghapi
 GitHub
+lockfile
 MiKTeX
 prek
 pypa
