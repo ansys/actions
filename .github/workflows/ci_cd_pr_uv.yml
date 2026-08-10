@@ -19,14 +19,14 @@ concurrency:
 
 jobs:
 
-  check-environment-approval:
+  check-environment-approval-uv:
     name: Check environment approval uv lockfile
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.block.outputs.environment }}
     steps:
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -42,25 +42,25 @@ jobs:
   # could execute arbitrary code in our build environment.
   # Dependabot PRs must be reviewed carefully and approved manually before
   # running the CI.
-  check-dependabot:
+  check-dependabot-pr-uv:
     name: Manual approval (on dependabot PRs) uv lockfile
     runs-on: ubuntu-latest
-    needs: [check-environment-approval]
-    environment: ${{ needs.check-environment-approval.outputs.environment }}
+    needs: [check-environment-approval-uv]
+    environment: ${{ needs.check-environment-approval-uv.outputs.environment }}
     steps:
       - name: Proceed after approval
-        if: ${{ needs.check-environment-approval.outputs.environment == 'dependabot'}}
+        if: ${{ needs.check-environment-approval-uv.outputs.environment == 'dependabot'}}
         run: |
           echo "::notice::Workflow approved."
       - name: Approval skipped
-        if: ${{ needs.check-environment-approval.outputs.environment == ''}}
+        if: ${{ needs.check-environment-approval-uv.outputs.environment == ''}}
         run: |
           echo "::notice::Workflow approval skipped."
 
-  test-build-wheelhouse:
+  test-build-wheelhouse-uv:
     name: "Test build-wheelhouse action using ansys-actions-uv package"
     runs-on: ${{ matrix.os }}
-    needs: check-dependabot
+    needs: check-dependabot-pr-uv
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
@@ -71,7 +71,7 @@ jobs:
       attestations: write # Needed for provenance attestation
     steps:
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -86,17 +86,17 @@ jobs:
           checkout: false
           use-uv: true
 
-  test-build-library:
+  test-build-library-uv:
     name: "Test build-library action using ansys-actions-uv package"
     runs-on: ubuntu-latest
-    needs: test-build-wheelhouse
+    needs: test-build-wheelhouse-uv
     permissions:
       id-token: write # Needed for provenance attestation
       contents: read
       attestations: write  # Needed for provenance attestation
     steps:
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -110,8 +110,26 @@ jobs:
           use-uv: true
           checkout: false
 
-  test-check-vulnerabilities:
+  test-release-uv:
+    name: "Test releasing ansys-actions-uv package to local devpi server"
+    runs-on: ubuntu-latest
+    needs: test-build-library-uv
+    permissions:
+      contents: read
+    steps:
+
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: "Test release to devpi"
+      uses: ./_release-devpi
+      with:
+        library-name: ${{ env.LIBRARY_NAME }}
+
+  test-check-vulnerabilities-uv:
     name: "Test check-vulnerabilities action using ansys-actions-uv package"
+    needs: check-dependabot-pr-uv
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Needed for provenance attestation
@@ -119,7 +137,7 @@ jobs:
       attestations: write  # Needed for provenance attestation
     steps:
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: |
@@ -143,4 +161,194 @@ jobs:
           python-package-name: ${{ env.LIBRARY_NAME }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-uv: true
+
+  test-build-wheelhouse-uv-projects:
+    name: "Test build-wheelhouse action for ${{ matrix.repository.name }} project on ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    needs: check-dependabot-pr-uv
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        repository:
+          - name: pyansys-geometry
+            library: ansys-geometry-core
+          - name: pyacp
+            library: ansys-acp-core
+          - name: pyaedt
+            library: pyaedt
+      fail-fast: false
+    permissions:
+      id-token: write # Needed for provenance attestation
+      contents: read
+      attestations: write # Needed for provenance attestation
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Build wheelhouse and perform smoke test for ${{ matrix.repository.name }}"
+        uses: ./actions/build-wheelhouse
+        with:
+          checkout: false
+          library-name: ${{ matrix.repository.library }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          attest-provenance: true
+          use-uv: true
+
+  test-build-library-uv-projects:
+    name: "Test build-library action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    needs: test-build-wheelhouse-uv-projects
+    strategy:
+      matrix:
+        repository:
+          - name: pyansys-geometry
+            library: ansys-geometry-core
+          - name: pyacp
+            library: ansys-acp-core
+          - name: pyaedt
+            library: pyaedt
+      fail-fast: false
+    permissions:
+      id-token: write # Needed for provenance attestation
+      contents: read
+      attestations: write # Needed for provenance attestation
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Build library for ${{ matrix.repository.name }}"
+        uses: ./actions/build-library
+        with:
+          checkout: false
+          library-name: ${{ matrix.repository.library }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          attest-provenance: true
+          use-uv: true
+
+  test-check-licenses-uv-projects:
+    name: "Test check-licenses action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    needs: test-build-library-uv-projects
+    strategy:
+      matrix:
+        repository:
+          - name: pyansys-geometry
+            library: ansys-geometry-core
+          - name: pyacp
+            library: ansys-acp-core
+          - name: pyaedt
+            library: pyaedt
+      fail-fast: false
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Check license validity for ${{ matrix.repository.name }}"
+        uses: ./actions/check-licenses
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          checkout: false
+
+  test-code-style-uv-projects:
+    name: "Test code-style action (use-prek: ${{ matrix.use-prek }}) for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    needs: check-dependabot-pr-uv
+    strategy:
+      matrix:
+        use-prek: ['true', 'false']
+        repository:
+          - name: pyansys-geometry
+            library: ansys-geometry-core
+          - name: pyaedt
+            library: pyaedt
+      fail-fast: false
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Run code style checks for ${{ matrix.repository.name }}"
+        uses: ./actions/code-style
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+          use-prek: ${{ matrix.use-prek }}
+          checkout: false
+
+  test-doc-style-uv-projects:
+    name: "Test doc-style action for ${{ matrix.repository.name }} project"
+    runs-on: ubuntu-latest
+    needs: check-dependabot-pr-uv
+    strategy:
+      matrix:
+        repository:
+          - name: pyansys-geometry
+            library: ansys-geometry-core
+          - name: pyacp
+            library: ansys-acp-core
+      fail-fast: false
+    steps:
+
+      - name: "Install Git and clone ${{ matrix.repository.name }} repository"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          repository: ansys/${{ matrix.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          path: actions
+
+      - name: "Run doc style checks for ${{ matrix.repository.name }}"
+        uses: ./actions/doc-style
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkout: false
 
