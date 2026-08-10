@@ -28,6 +28,16 @@ Version ``v11``
   - ``python-version`` and ``use-uv`` removed from ``hk-package-clean-except`` and
     ``hk-package-clean-untagged``. These actions now use an internally managed Python setup.
 
+  Note that the removal of ``use-uv`` from the ``hk-package-clean-*`` actions is unrelated to the
+  new ``use-uv`` semantics described in the *Automatic install from uv.lock* new feature below.
+
+- **Conflict between uv.lock and legacy requirement files now errors:** Starting with ``v11``, the
+  ``doc-build``, ``tests-pytest``, and ``check-vulnerabilities`` (when ``skip-install: true``)
+  actions fail with an error when both a ``uv.lock`` file and a ``requirements/requirements_<name>.txt``
+  file are present in the working directory. Previously, one of the two was silently ignored.
+  Delete whichever file is no longer authoritative for your project (usually the legacy requirements file)
+  to unblock the actions.
+
 **New actions:**
 
 - **Deploy documentation to a custom path:** A new ``doc-deploy-custom-path`` action has been added. It
@@ -37,6 +47,29 @@ Version ``v11``
   ``doc-deploy-*`` actions (such as ``version`` and ``pull``). See :doc:`../doc-actions/index` for usage details.
 
 **New Features:**
+
+- **Pinned action dependencies:** All actions that install Python tooling at runtime
+  now install their dependencies from pinned requirements. Every direct
+  and transitive dependency is version-locked, which makes action runs reproducible, mitigates
+  supply chain risks, and prevents breakage of actions behaviour when a transitive dependency
+  releases a new version. As a consequence, several ``*-version`` inputs that used to
+  control tool versions no longer have any effect and are now scheduled for removal in ``v12`` (see
+  the *Review usage of still-deprecated inputs* migration step).
+
+- **Automatic install from uv.lock:** The semantics of the ``use-uv`` input now goes beyond
+  simply controlling whether the ``uv`` package manager should be used to install project dependencies.
+  When ``use-uv`` is ``true`` (the default) and a ``uv.lock`` file is present in the working directory,
+  the actions now install project dependencies from the lock file.
+
+  Practical implications:
+
+  - The dependency versions installed at runtime come from ``uv.lock``, not from a fresh resolution
+    of ``pyproject.toml``. Keep the lockfile up to date so that the actions install what you intend.
+  - The ``dev`` dependency group is intentionally excluded (``--no-dev``). If your tests, docs, or
+    style checks rely on dev-only dependencies, move them to a dedicated group or extras target
+    (depending on the action) and reference it via the relevant action input.
+  - Projects that do not commit a ``uv.lock`` are unaffected; behavior falls back to using ``uv`` to
+    install project dependencies.
 
 - **Poetry-native install in check-licenses:** For Poetry-based projects, the ``check-licenses`` action
   now installs the project and its dependency targets through Poetry, aligning with the installation
@@ -90,9 +123,17 @@ Version ``v11``
           with:
             package-name: my-package
 
+- **Adoption of uv.lock installs:** If your project commits a ``uv.lock`` file, verify that
+  the lockfile is up to date and includes every extra and group your workflows pass to the actions
+  through relevant inputs. If you also maintain a legacy ``requirements/requirements_<name>.txt`` for
+  ``doc-build``, ``tests-pytest``, or ``check-vulnerabilities`` actions, remove one of the two to
+  avoid the new error described in the breaking changes section.
+
 - **Review usage of still-deprecated inputs:** The following inputs still exist but now emit an
   ``ERROR``-level deprecation notice (previously ``WARNING``) and are scheduled for removal in ``v12``.
-  Migrate away from them now to avoid disruption in the next major release:
+  In ``v11`` the inputs are no longer used because the corresponding tools are now installed from the action's
+  pinned requirements (see *Pinned action dependencies* in the new feature section). Migrate away
+  from them now to avoid disruption in the next major release:
 
   - ``use-conventional-commits`` on the ``doc-changelog`` action: use ``use-pull-request-title`` instead.
   - ``tomli-version`` on the ``doc-changelog``, ``doc-deploy-changelog``, ``doc-style``, and ``release-github`` actions.
