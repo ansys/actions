@@ -208,7 +208,7 @@ inputs:
   python-version:
     description: |
       Desired Python version.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
