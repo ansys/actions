@@ -191,7 +191,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main # TODO: Remove in v12
+    - uses: ansys/actions/_logging@v11.0.0 # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
         level: "ERROR"
@@ -200,7 +200,7 @@ runs:
           ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
           will be removed in v12.
 
-    - uses: ansys/actions/_logging@main
+    - uses: ansys/actions/_logging@v11.0.0
       if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
       with:
         level: "ERROR"
@@ -216,7 +216,7 @@ runs:
         fetch-depth: 0 # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: ansys/actions/_setup-python@v11.0.0
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
