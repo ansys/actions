@@ -74,4 +74,4 @@ runs:
       shell: bash
       env:
         LIBRARY: ${{ inputs.library-name }}
-      run: pip install --index-url http://localhost:3141/root/public/+simple/ --no-deps "${LIBRARY}"
+      run: pip install --index-url http://localhost:3141/root/public/+simple/ "${LIBRARY}"
