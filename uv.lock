@@ -745,11 +745,11 @@ wheels = [
 
 [[package]]
 name = "fastcore"
-version = "2.1.0"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5f/dd/78710b6e002eb8d97ed07aa2873c47f6846fae033d301f26d682b508c4d2/fastcore-2.1.0.tar.gz", hash = "sha256:560464dec617b5b916e35e9c9f7866b96b0a604868e9911f22e7a1c561cfba1b", size = 103360, upload-time = "2026-07-14T22:48:51.371Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/22/a003f1980f67a88d4749bd807e009ebd1a9c3efaef3eb94d91317727423b/fastcore-2.2.0.tar.gz", hash = "sha256:53bcd48f8e85d753333bfd97d99fbc31fa6eae034fffea31caddb1e5fabf88e9", size = 138783, upload-time = "2026-08-06T06:16:49.937Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/0e/bca0244226798f88deac956f7559f2bc460601d3e74afb7db565c91c7c57/fastcore-2.1.0-py3-none-any.whl", hash = "sha256:4b9b1971040d2e6eb47973472206d8a38d0f5053f0cfeda73044311baeae27b9", size = 108208, upload-time = "2026-07-14T22:48:49.814Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/43/b5a6620428c2627d852b80a7001c8a15698c1948ad74a324e0f7cd89505e/fastcore-2.2.0-py3-none-any.whl", hash = "sha256:a601c3ffa91d027ff2b32d59a7ee2f962564434e5705bf372211ff115deca0b2", size = 145526, upload-time = "2026-08-06T06:16:48.214Z" },
 ]
 
 [[package]]
@@ -763,15 +763,15 @@ wheels = [
 
 [[package]]
 name = "fastspec"
-version = "0.1.0"
+version = "0.1.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastcore" },
     { name = "httpx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/aa/aa/e902620ee18e400802d1488a9caca9ba3af68d3d2ebf2fa250fb4673421c/fastspec-0.1.0.tar.gz", hash = "sha256:b81a01ecdf1f8995eb6c25eb32a3f8dabbd37c9a238432c907b88449590b269d", size = 27268, upload-time = "2026-07-08T01:07:16.698Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d1/5c/7120d9dc79c9ad7155509f30424d95e36375a20bf3348b51818ea18d37bc/fastspec-0.1.5.tar.gz", hash = "sha256:e5d7655a0e2ca3535531f919bffa5e3b41494c26a3cefc5131a86489e8a4ba4f", size = 25594, upload-time = "2026-08-06T11:26:59.632Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d8/7b/5c88b14a72608a4c259c7d6cfa63fe7124fc3129c74cecf107c7797b157d/fastspec-0.1.0-py3-none-any.whl", hash = "sha256:354e96acf7b6eafae9ef284aa7b3a4c08742d545068544eac16b7d177fe02d7a", size = 25969, upload-time = "2026-07-08T01:07:15.59Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/b8/9bd6c6be86695978ecc2c2bdfbd6b9f4b80fd8e0ed5b38b2f64daa88ed00/fastspec-0.1.5-py3-none-any.whl", hash = "sha256:2311143c7ffadef92bd0bee7372bb27d031414e09799a351597c2aaaae64dab6", size = 24319, upload-time = "2026-08-06T11:26:58.56Z" },
 ]
 
 [[package]]
@@ -794,15 +794,15 @@ wheels = [
 
 [[package]]
 name = "ghapi"
-version = "2.0.3"
+version = "2.0.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastcore" },
     { name = "fastspec" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/69/2e/fbda7213ba22aecc2b281f215f6fa68b9a0d4f07328e7454a7efb45765f9/ghapi-2.0.3.tar.gz", hash = "sha256:88cae2b02e6a493a3bd4370ea519be5c30c23bbc5818f010788750757ff9b660", size = 174544, upload-time = "2026-07-22T05:50:13.86Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/e8/6fecb7a39285f86849e444a57272e0ae154e6a4fc2d50f168315e188f729/ghapi-2.0.5.tar.gz", hash = "sha256:51fe5c4f51f68de322755948823ce8f3b7218363bd9f54f726e6cd56b12444c0", size = 175527, upload-time = "2026-07-31T02:48:44.843Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/17/2390f043d404c2e1b20a93a8572b1722ea8262f56ca1507d6a57bf390178/ghapi-2.0.3-py3-none-any.whl", hash = "sha256:6176a9c1943d611711f6f5f284cfacf925904d099c8368f4cd5382c9900386cc", size = 173670, upload-time = "2026-07-22T05:50:12.192Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/18/97fdf3ce5f86e4d6b711404fd9e0616250cbe4a6b4ab1d7039920f1c1bdc/ghapi-2.0.5-py3-none-any.whl", hash = "sha256:25a0e06d4f0097321d463e5da46f1032ac199742c4f47173a6765be7da0079f9", size = 174728, upload-time = "2026-07-31T02:48:43.232Z" },
 ]
 
 [[package]]
