@@ -96,6 +96,14 @@ Version ``v11``
   Although backwards compatibility is maintained, you are advised to set one of the inputs explicitly to avoid
   future breaking changes.
 
+- **Changed default behavior of tests-pytest dependency inputs:** The ``tests-pytest`` action now mirrors the
+  ``doc-build`` behavior described above for the ``optional-dependencies-name`` and ``group-dependencies-name``
+  inputs. The important differences are:
+
+  - The action defaults to ``optional-dependencies-name=tests`` (for backwards compatibility).
+  - The requirements-file lookup remains driven by ``optional-dependencies-name``: the action still installs from
+    ``requirements/requirements_<optional-dependencies-name>.txt`` when that file exists.
+
 - **Remove references to removed inputs from your workflows:** Search your workflows for references to
   the inputs listed in the preceding breaking changes section (``generate_release_notes`` on the ``release-github`` action,
   ``toml-version`` on the ``doc-*`` and ``release-github`` actions, and ``python-version`` / ``use-uv`` on the
