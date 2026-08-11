@@ -102,7 +102,7 @@ Version ``v11``
 
   - The action defaults to ``optional-dependencies-name=tests`` (for backwards compatibility).
   - The requirements-file lookup remains driven by ``optional-dependencies-name``: the action still installs from
-  ``requirements/requirements_<optional-dependencies-name>.txt`` when that file exists.
+    ``requirements/requirements_<optional-dependencies-name>.txt`` when that file exists.
 
 - **Remove references to removed inputs from your workflows:** Search your workflows for references to
   the inputs listed in the preceding breaking changes section (``generate_release_notes`` on the ``release-github`` action,
