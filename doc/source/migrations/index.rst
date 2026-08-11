@@ -96,6 +96,25 @@ Version ``v11``
   Although backwards compatibility is maintained, you are advised to set one of the inputs explicitly to avoid
   future breaking changes.
 
+- **Changed default behavior of tests-pytest dependency inputs:** The ``tests-pytest`` action now mirrors the
+  ``doc-build`` behavior described above for the ``optional-dependencies-name`` and ``group-dependencies-name``
+  inputs. Previously, ``optional-dependencies-name`` defaulted to ``tests``, which caused failures for projects
+  that do not define a ``tests`` extra in ``pyproject.toml``.
+
+  The new behavior is:
+
+  - Both inputs now default to empty (``''``).
+  - If **neither** input is provided, the action defaults to ``optional-dependencies-name=tests`` (for backwards compatibility).
+  - If **only one** is provided, only that one is used.
+  - If **both** are provided, both are used (a warning is logged).
+
+  The requirements-file lookup remains driven by ``optional-dependencies-name``: the action still installs from
+  ``requirements/requirements_<optional-dependencies-name>.txt`` when that file exists.
+
+  For Poetry-based projects, ``optional-dependencies-name`` is now correctly forwarded as ``--extras`` and
+  ``group-dependencies-name`` as ``--with`` (previously ``optional-dependencies-name`` was misrouted through
+  ``--with`` and ``group-dependencies-name`` was ignored).
+
 - **Remove references to removed inputs from your workflows:** Search your workflows for references to
   the inputs listed in the preceding breaking changes section (``generate_release_notes`` on the ``release-github`` action,
   ``toml-version`` on the ``doc-*`` and ``release-github`` actions, and ``python-version`` / ``use-uv`` on the
