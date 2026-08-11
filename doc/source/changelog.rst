@@ -9,6 +9,45 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.0.1 <https://github.com/ansys/actions/releases/tag/v11.0.1>`_ - August 11, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update handling of \`optional-dependencies-name\` and \`group-dependencies-name\` in tests-pytest action
+          - `#1476 <https://github.com/ansys/actions/pull/1476>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump ghapi from 2.0.3 to 2.0.5
+          - `#1463 <https://github.com/ansys/actions/pull/1463>`_
+
+        * - Bump actions/checkout from 7.0.0 to 7.0.1 in /.github/workflows in the github-actions group across 1 directory
+          - `#1465 <https://github.com/ansys/actions/pull/1465>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Deprecate the build-ci-wheels action
+          - `#1459 <https://github.com/ansys/actions/pull/1459>`_
+
+
 `11.0.0 <https://github.com/ansys/actions/releases/tag/v11.0.0>`_ - August 10, 2026
 ===================================================================================
 
