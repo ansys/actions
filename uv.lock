@@ -179,7 +179,7 @@ dev = [
     { name = "jupyter", specifier = ">=1.1" },
     { name = "prek", specifier = "<=0.5" },
     { name = "pyyaml", specifier = ">=6.0" },
-    { name = "ruff", specifier = "<=0.16.1" },
+    { name = "ruff", specifier = "<=0.17" },
     { name = "sphinx", specifier = ">=9.1" },
     { name = "sphinx-copybutton", specifier = ">=0.5" },
     { name = "sphinx-design", specifier = "==0.7.0" },
@@ -224,7 +224,7 @@ hk-package-clean-untagged = [
 ]
 quality = [
     { name = "prek", specifier = "<=0.5" },
-    { name = "ruff", specifier = "<=0.16.1" },
+    { name = "ruff", specifier = "<=0.17" },
     { name = "ty", specifier = "<=0.0.61" },
 ]
 release-github = [
