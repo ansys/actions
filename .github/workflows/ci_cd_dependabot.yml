@@ -72,7 +72,7 @@ jobs:
               echo "  Processing: $file_cleaned (group: $group_name)"
 
               # Run uv export command
-              uv export --format requirements.txt --group "$group_name" --output-file "$file_cleaned" --no-hashes
+              uv export --format requirements.txt --group "$group_name" --output-file "$file_cleaned" --no-hashes --no-dev
           done
 
       - name: Commit and push requirements files if changed

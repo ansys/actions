@@ -137,8 +137,6 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         repository:
-          - name: pyansys-geometry
-            library: ansys-geometry-core
           - name: pymapdl
             library: ansys-mapdl-core
           - name: pyfluent
@@ -181,8 +179,6 @@ jobs:
     strategy:
       matrix:
         repository:
-          - name: pyansys-geometry
-            library: ansys-geometry-core
           - name: pymapdl
             library: ansys-mapdl-core
           - name: pyfluent
@@ -224,8 +220,6 @@ jobs:
     strategy:
       matrix:
         repository:
-          - name: pyansys-geometry
-            library: ansys-geometry-core
           - name: pymapdl
             library: ansys-mapdl-core
           - name: pyfluent
@@ -262,8 +256,6 @@ jobs:
       matrix:
         use-prek: ['true', 'false']
         repository:
-          - name: pyansys-geometry
-            library: ansys-geometry-core
           - name: pyfluent
             library: ansys-fluent-core
           - name: pymechanical
@@ -299,8 +291,6 @@ jobs:
     strategy:
       matrix:
         repository:
-          - name: pyansys-geometry
-            library: ansys-geometry-core
           - name: pymapdl
             library: ansys-mapdl-core
           - name: pyfluent
