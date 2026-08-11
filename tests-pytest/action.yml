@@ -36,7 +36,7 @@ inputs:
   python-version:
     description: |
       Python version used for installing and running ``pytest``.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
@@ -64,7 +64,7 @@ inputs:
       Set of additional ``pytest`` arguments in the form of a string.
     default: ''
     required: false
-
+    type: string
   pytest-postargs:
     description: |
       Directory of the test suite and the level of verbosity.

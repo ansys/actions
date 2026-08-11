@@ -340,6 +340,57 @@ jobs:
           checkout: false
           uploaded-artifact-name-prefix: pydpf-composites-documentation-${{ matrix.os.name }}
 
+  test-doc-build-pyaedt:
+    name: "Test doc-build action for PyAEDT on ${{ matrix.os.name }}"
+    runs-on: ${{ matrix.os.name }}
+    needs: doc-build
+    permissions:
+      contents: read
+      packages: read # Needed to pull geometry container image
+    strategy:
+      matrix:
+        os:
+          # NOTE: Commented out because windows takes too long to build the documentation.
+          # - name: windows-latest
+          #   dependencies: ''
+          - name: ubuntu-latest
+            dependencies: 'graphviz texlive-latex-extra latexmk texlive-xetex texlive-fonts-extra'
+      fail-fast: false
+    env:
+      ON_CI: True
+      PYAEDT_DOC_BUILD_CHEATSHEET: False
+    steps:
+
+      - name: "Install Git and clone pyaedt repository"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: ansys/pyaedt
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
+
+      - name: "Clone ansys/actions into a different path"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: actions
+          persist-credentials: false
+
+      - name: Run Ansys documentation building action
+        uses: ./actions/doc-build
+        with:
+          checkout: false
+          dependencies: ${{ matrix.os.dependencies }}
+          skip-install: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          use-python-cache: false
+          sphinxopts: '-j auto --color -w build_errors.txt'
+          check-links: false
+          needs-quarto: false
+          optional-dependencies-name: 'all'
+          group-dependencies-name: 'doc'
+
   doc-deploy-pr:
     name: "Deploy PR documentation"
     runs-on: ubuntu-latest

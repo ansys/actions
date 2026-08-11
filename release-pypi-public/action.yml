@@ -118,7 +118,7 @@ inputs:
       Python version for installing and using `twine
       <https://twine.readthedocs.io/en/stable/>`_.
     required: false
-    default: '3.11'
+    default: '3.12'
     type: string
 
 runs:
