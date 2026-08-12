@@ -89,7 +89,7 @@ quality = [
   "ty<=0.0.65",
 ]
 doc = [
-    "ansys-sphinx-theme>=1.9",
+    "ansys-sphinx-theme>=1.10.0",
     "jupyter>=1.1",
     "pyyaml>=6.0",
     "Sphinx>=9.1",
