@@ -36,7 +36,7 @@ more-itertools==11.0.2 ; platform_machine != 'ppc64le' and platform_machine != '
     #   jaraco-functools
 nh3==0.3.5
     # via readme-renderer
-packaging==26.2
+packaging==26.3
     # via twine
 pycparser==3.0 ; implementation_name != 'PyPy' and platform_machine != 'ppc64le' and platform_machine != 's390x' and platform_python_implementation != 'PyPy' and sys_platform == 'linux'
     # via cffi
