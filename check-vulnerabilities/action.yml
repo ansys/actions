@@ -378,6 +378,15 @@ runs:
           echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/bin/activate')" >> ${GITHUB_OUTPUT}
         fi
 
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ -f ".python-version" ]]; then
+          echo "UV_PYTHON=$(which python)" >> $GITHUB_ENV
+        fi
+
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main

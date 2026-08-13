@@ -352,13 +352,22 @@ runs:
     - name: "Auto-detect uv lockfile"
       id: auto-detect-uv-lockfile
       if: ${{ inputs.use-uv == 'true' }}
-      shell: bash
+      shell: powershell
       run: |
-        if [[ -f "uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
-        else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
-        fi
+        if (Test-Path "uv.lock") {
+          "USE_UV_LOCKFILE=true" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        } else {
+          "USE_UV_LOCKFILE=false" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        }
+
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: powershell
+      run: |  # zizmor: ignore[github-env]
+        .venv\Scripts\Activate.ps1
+        if (Test-Path ".python-version") {
+          "UV_PYTHON=$((Get-Command python).Source)" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+        }
 
     # ------------------------------------------------------------------------
 

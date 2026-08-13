@@ -181,6 +181,16 @@ runs:
           echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
         fi
 
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/.python-version" ]]; then
+          echo "UV_PYTHON=$(which python)" >> $GITHUB_ENV
+        fi
+
     - name: "Install dependencies from uv lockfile"
       if: ${{ inputs.use-uv == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' }}
       shell: bash

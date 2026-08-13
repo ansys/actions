@@ -266,6 +266,15 @@ runs:
           echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
         fi
 
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        ${ACTIVATE_VENV}
+        if [[ -f ".python-version" ]]; then
+          echo "UV_PYTHON=$(which python)" >> $GITHUB_ENV
+        fi
+
     - name: "Update pip"
       shell: bash
       env:

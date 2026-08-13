@@ -306,6 +306,15 @@ runs:
           echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
         fi
 
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |  # zizmor: ignore[github-env]
+        source .venv/bin/activate
+        if [[ -f ".python-version" ]]; then
+          echo "UV_PYTHON=$(which python)" >> $GITHUB_ENV
+        fi
+
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
