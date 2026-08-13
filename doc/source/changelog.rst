@@ -9,6 +9,44 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.0.2 <https://github.com/ansys/actions/releases/tag/v11.0.2>`_ - August 13, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Ignore .python-version file when detected
+          - `#1485 <https://github.com/ansys/actions/pull/1485>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump prek from 0.4.11 to 0.4.12
+          - `#1478 <https://github.com/ansys/actions/pull/1478>`_
+
+        * - Bump packaging from 26.2 to 26.3
+          - `#1479 <https://github.com/ansys/actions/pull/1479>`_
+
+        * - Bump zizmor from 1.28.0 to 1.29.0
+          - `#1482 <https://github.com/ansys/actions/pull/1482>`_
+
+        * - Bump the github-actions group across 2 directories with 1 update
+          - `#1483 <https://github.com/ansys/actions/pull/1483>`_
+
+        * - Bump pypa/cibuildwheel from 4.1.1 to 4.2.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1484 <https://github.com/ansys/actions/pull/1484>`_
+
+
 `11.0.1 <https://github.com/ansys/actions/releases/tag/v11.0.1>`_ - August 11, 2026
 ===================================================================================
 
