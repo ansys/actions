@@ -365,7 +365,10 @@ runs:
       shell: powershell
       run: |
         if (Test-Path ".python-version") {
+          Write-Host ".python-version file detected. Removing it to prevent uv from overriding the Python version."
           Remove-Item ".python-version"
+        } else {
+          Write-Host ".python-version file not detected. No action required."
         }
 
     # ------------------------------------------------------------------------

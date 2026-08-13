@@ -310,7 +310,10 @@ runs:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
         if [[ -f "${WORKING_DIRECTORY}/.python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
           rm "${WORKING_DIRECTORY}/.python-version"
+        else
+          echo ".python-version file not detected. No action required."
         fi
 
     - name: "Install the library with the desired targets"

@@ -296,7 +296,10 @@ runs:
       shell: bash
       run: |
         if [[ -f ".python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
           rm .python-version
+        else
+          echo ".python-version file not detected. No action required."
         fi
 
     - name: Create a virtual environment for pip-licenses
