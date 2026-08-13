@@ -4,7 +4,7 @@ requires-python = ">=3.12"
 
 [[package]]
 name = "ansys-actions-uv"
-version = "11.0.1"
+version = "11.0.2"
 source = { editable = "." }
 dependencies = [
     { name = "importlib-metadata" },
