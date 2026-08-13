@@ -186,7 +186,7 @@ runs:
       shell: bash
       env:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
-      run: |
+      run: |  # zizmor: ignore[github-env]
         if [[ -f "${WORKING_DIRECTORY}/.python-version" ]]; then
           echo "UV_PYTHON=$(which python)" >> $GITHUB_ENV
         fi

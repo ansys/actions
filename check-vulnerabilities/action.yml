@@ -381,7 +381,7 @@ runs:
     - name: "Suppress .python-version file for uv"
       if: ${{ inputs.use-uv == 'true' }}
       shell: bash
-      run: |
+      run: |  # zizmor: ignore[github-env]
         ${ACTIVATE_VENV}
         if [[ -f ".python-version" ]]; then
           echo "UV_PYTHON=$(which python)" >> $GITHUB_ENV
