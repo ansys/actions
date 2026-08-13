@@ -363,10 +363,9 @@ runs:
     - name: "Suppress .python-version file for uv"
       if: ${{ inputs.use-uv == 'true' }}
       shell: powershell
-      run: |  # zizmor: ignore[github-env]
-        .venv\Scripts\Activate.ps1
+      run: |
         if (Test-Path ".python-version") {
-          "UV_PYTHON=$((Get-Command python).Source)" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+          Remove-Item ".python-version"
         }
 
     # ------------------------------------------------------------------------

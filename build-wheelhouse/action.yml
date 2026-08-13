@@ -308,10 +308,9 @@ runs:
       shell: bash
       env:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
-      run: |  # zizmor: ignore[github-env]
-        ${ACTIVATE_VENV}
+      run: |
         if [[ -f "${WORKING_DIRECTORY}/.python-version" ]]; then
-          echo "UV_PYTHON=$(which python)" >> $GITHUB_ENV
+          rm "${WORKING_DIRECTORY}/.python-version"
         fi
 
     - name: "Install the library with the desired targets"
