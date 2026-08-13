@@ -39,7 +39,7 @@ more-itertools==11.0.2 ; platform_machine != 'ppc64le' and platform_machine != '
     #   jaraco-functools
 nh3==0.3.5
     # via readme-renderer
-packaging==26.2
+packaging==26.3
     # via
     #   build
     #   twine
