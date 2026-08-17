@@ -114,11 +114,13 @@ runs:
             probe "${endpoints[$scope]}" || \
               echo "::warning::Missing permission '${perm}'. Add it to your workflow's permissions block. See ${DOC_URL} for details."
           elif [[ "${scope}" == "id-token" ]]; then
-            [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && \
+            if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
               echo "::warning::Missing permission '${perm}'. Add it to your workflow's permissions block. See ${DOC_URL} for details."
+            fi
           elif [[ "${scope}" == "attestations" ]]; then
-            [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && \
+            if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
               echo "::warning::Missing permission '${perm}'. Add it (and 'id-token: write') to your workflow's permissions block. See ${DOC_URL} for details."
+            fi
           else
             echo "::notice::Unknown permission scope '${scope}' — skipping verification."
           fi
