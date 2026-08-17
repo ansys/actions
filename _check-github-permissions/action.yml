@@ -84,48 +84,40 @@ runs:
           return 0
         }
 
+        # Define the endpoints and suggested permissions as associative arrays
+        declare -A endpoints=(
+          [contents]="repos/${REPO}/contents/"
+          [pull-requests]="repos/${REPO}/pulls?per_page=1"
+          [issues]="repos/${REPO}/issues?per_page=1"
+          [actions]="repos/${REPO}/actions/runs?per_page=1"
+          [packages]="repos/${REPO}/packages?package_type=container"
+          [pages]="repos/${REPO}/pages"
+        )
+
+        declare -A suggestions=(
+          [contents]="contents: read"
+          [pull-requests]="pull-requests: read"
+          [issues]="issues: read"
+          [actions]="actions: read"
+          [packages]="packages: read"
+          [pages]="pages: read"
+        )
+
         IFS=',' read -ra PERMS <<< "${PERMISSIONS}"
         for perm in "${PERMS[@]}"; do
           perm=$(echo "${perm}" | xargs)
           scope=$(echo "${perm}" | cut -d: -f1 | xargs)
 
-          case "${scope}" in
-            contents)
-              probe "repos/${REPO}/contents/" || \
-                echo "::warning::Missing permission '${perm}'. Add 'contents: read' (or higher) to your workflow's permissions block."
-              ;;
-            pull-requests)
-              probe "repos/${REPO}/pulls?per_page=1" || \
-                echo "::warning::Missing permission '${perm}'. Add 'pull-requests: read' (or higher) to your workflow's permissions block."
-              ;;
-            issues)
-              probe "repos/${REPO}/issues?per_page=1" || \
-                echo "::warning::Missing permission '${perm}'. Add 'issues: read' (or higher) to your workflow's permissions block."
-              ;;
-            actions)
-              probe "repos/${REPO}/actions/runs?per_page=1" || \
-                echo "::warning::Missing permission '${perm}'. Add 'actions: read' (or higher) to your workflow's permissions block."
-              ;;
-            packages)
-              probe "repos/${REPO}/packages?package_type=container" || \
-                echo "::warning::Missing permission '${perm}'. Add 'packages: read' (or higher) to your workflow's permissions block."
-              ;;
-            pages)
-              probe "repos/${REPO}/pages" || \
-                echo "::warning::Missing permission '${perm}'. Add 'pages: read' (or higher) to your workflow's permissions block."
-              ;;
-            id-token)
-              if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
-                echo "::warning::Missing permission '${perm}'. Add 'id-token: write' to your workflow's permissions block."
-              fi
-              ;;
-            attestations)
-              if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
-                echo "::warning::Missing permission '${perm}'. Add 'attestations: write' and 'id-token: write' to your workflow's permissions block."
-              fi
-              ;;
-            *)
-              echo "::notice::Unknown permission scope '${scope}' — skipping verification."
-              ;;
-          esac
+          if [[ -n "${endpoints[$scope]:-}" ]]; then
+            probe "${endpoints[$scope]}" || \
+              echo "::warning::Missing permission '${perm}'. Add '${suggestions[$scope]}' (or higher) to your workflow's permissions block."
+          elif [[ "${scope}" == "id-token" ]]; then
+            [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && \
+              echo "::warning::Missing permission '${perm}'. Add 'id-token: write' to your workflow's permissions block."
+          elif [[ "${scope}" == "attestations" ]]; then
+            [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && \
+              echo "::warning::Missing permission '${perm}'. Add 'attestations: write' and 'id-token: write' to your workflow's permissions block."
+          else
+            echo "::notice::Unknown permission scope '${scope}' — skipping verification."
+          fi
         done
