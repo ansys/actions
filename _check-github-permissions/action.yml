@@ -64,6 +64,16 @@ inputs:
     default: ${{ github.token }}
     type: string
 
+  doc-url:
+    description: |
+      Link to the documentation page describing the calling action, included
+      in warning messages so users know where to find its required
+      permissions. Defaults to the GitHub documentation on ``GITHUB_TOKEN``
+      permissions when not provided.
+    required: false
+    default: "https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#permissions-for-the-github_token"
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -74,6 +84,7 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
         PERMISSIONS: ${{ inputs.permissions }}
         REPO: ${{ github.repository }}
+        DOC_URL: ${{ inputs.doc-url }}
       run: |
         probe() {
           local endpoint="$1"
@@ -84,7 +95,7 @@ runs:
           return 0
         }
 
-        # Define the endpoints and suggested permissions as associative arrays
+        # Define the probe endpoint for each permission scope
         declare -A endpoints=(
           [contents]="repos/${REPO}/contents/"
           [pull-requests]="repos/${REPO}/pulls?per_page=1"
@@ -94,15 +105,6 @@ runs:
           [pages]="repos/${REPO}/pages"
         )
 
-        declare -A suggestions=(
-          [contents]="contents: read"
-          [pull-requests]="pull-requests: read"
-          [issues]="issues: read"
-          [actions]="actions: read"
-          [packages]="packages: read"
-          [pages]="pages: read"
-        )
-
         IFS=',' read -ra PERMS <<< "${PERMISSIONS}"
         for perm in "${PERMS[@]}"; do
           perm=$(echo "${perm}" | xargs)
@@ -110,13 +112,13 @@ runs:
 
           if [[ -n "${endpoints[$scope]:-}" ]]; then
             probe "${endpoints[$scope]}" || \
-              echo "::warning::Missing permission '${perm}'. Add '${suggestions[$scope]}' (or higher) to your workflow's permissions block."
+              echo "::warning::Missing permission '${perm}'. Add it to your workflow's permissions block. See ${DOC_URL} for details."
           elif [[ "${scope}" == "id-token" ]]; then
             [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && \
-              echo "::warning::Missing permission '${perm}'. Add 'id-token: write' to your workflow's permissions block."
+              echo "::warning::Missing permission '${perm}'. Add it to your workflow's permissions block. See ${DOC_URL} for details."
           elif [[ "${scope}" == "attestations" ]]; then
             [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && \
-              echo "::warning::Missing permission '${perm}'. Add 'attestations: write' and 'id-token: write' to your workflow's permissions block."
+              echo "::warning::Missing permission '${perm}'. Add it (and 'id-token: write') to your workflow's permissions block. See ${DOC_URL} for details."
           else
             echo "::notice::Unknown permission scope '${scope}' — skipping verification."
           fi
