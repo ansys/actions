@@ -143,6 +143,7 @@ runs:
       with:
         permissions: "contents: write, pull-requests: write"
         token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-dev-action"
 
     - uses: $/_logging
       with:
