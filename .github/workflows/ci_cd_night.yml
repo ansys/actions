@@ -24,10 +24,11 @@ jobs:
     steps:
       - uses: ansys/actions/doc-build@main
         with:
-          skip-install: true
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-python-cache: false
+          group-dependencies-name: 'doc'
           needs-quarto: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          skip-install: true
+          use-python-cache: false
 
   doc-deploy-dev:
     name: "Deploy development documentation"
@@ -100,7 +101,7 @@ jobs:
         path: dist
 
     - name: "Upload artifacts to test PyPI using trusted publisher"
-      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
+      uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
       with:
         repository-url: "https://test.pypi.org/legacy/"
         print-hash: true
@@ -115,7 +116,7 @@ jobs:
       pull-requests: write # Needed to create PR for when dependabot.yml gets updated
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           fetch-depth: 0 # zizmor: ignore[artipacked] , credentials must be persisted in this case

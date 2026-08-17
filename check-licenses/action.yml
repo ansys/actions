@@ -75,7 +75,7 @@ inputs:
   python-version:
     description: |
       Python version used for installing and executing licence check.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
@@ -188,7 +188,7 @@ runs:
           Therefore, the check-licenses action has been updated to use the original pip-licenses package.
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
@@ -280,6 +280,28 @@ runs:
           fi
         fi
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f "uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f ".python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          rm .python-version
+        else
+          echo ".python-version file not detected. No action required."
+        fi
+
     - name: Create a virtual environment for pip-licenses
       id: virtual-environment-activation-command-pip-licenses
       shell: bash
@@ -299,6 +321,7 @@ runs:
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         SKIP_INSTALL: ${{ inputs.skip-install }}
         TARGET: ${{ inputs.target }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         ${ACTIVATE_VENV}
         if [[ "${TARGET}" != '' ]]; then
@@ -307,7 +330,11 @@ runs:
             poetry install --extras "${TARGET}"
           elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             echo "Installing extra targets with uv: ${TARGET}"
-            uv pip install --no-managed-python .[${TARGET}]
+            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              uv sync --frozen --extra "${TARGET}" --no-dev --no-managed-python
+            else
+              uv pip install --no-managed-python .[${TARGET}]
+            fi
           else
             echo "Installing extra targets with pip: ${TARGET}"
             python -m pip install .[${TARGET}]
@@ -317,7 +344,11 @@ runs:
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             poetry install
           elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            uv pip install --no-managed-python .
+            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              uv sync --frozen --no-dev --no-managed-python
+            else
+              uv pip install --no-managed-python .
+            fi
           else
             python -m pip install .
           fi

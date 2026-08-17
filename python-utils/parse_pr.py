@@ -19,10 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Utilities for parsing pull request metadata and towncrier configuration."""
 
 import os
-import re
 from pathlib import Path
+import re
 
 import tomlkit
 from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
@@ -42,7 +43,7 @@ def save_env_variable(env_var_name: str, env_var_value: str):
     github_env = os.environ["GITHUB_ENV"]
 
     # Save environment variable with its value
-    with open(github_env, "a") as file:
+    with Path(github_env).open("a") as file:
         if "\n" in env_var_value or "\r" in env_var_value:
             file.write(f"{env_var_name}<<EOF\n")
             file.write(env_var_value)
@@ -216,7 +217,8 @@ def changelog_categorize_based_on_labels(labels: str):
     """
     # Make sure the labels string is not surrounded by quotes and remove extra whitespace
     # and finally split the labels into a list.
-    # For example, '"enhancement maintenance"' -> "enhancement maintenance" -> ["enhancement", "maintenance"]
+    # For example, '"enhancement maintenance"' -> "enhancement maintenance" ->
+    # ["enhancement", "maintenance"]
     existing_labels = labels.strip('"').strip().split()
 
     # Dictionary with the key as a label from .github/workflows/label.yml and
@@ -233,9 +235,7 @@ def changelog_categorize_based_on_labels(labels: str):
     }
 
     # Save the changelog section to the CHANGELOG_SECTION environment variable
-    save_env_variable(
-        "CHANGELOG_SECTION", get_changelog_section(pr_labels, existing_labels)
-    )
+    save_env_variable("CHANGELOG_SECTION", get_changelog_section(pr_labels, existing_labels))
 
 
 def get_changelog_section(pr_labels: dict, existing_labels: list) -> str:
@@ -350,8 +350,10 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
             "repo": "<!-- towncrier release notes start -->\n",
         },
         "title_format": {
-            "web": f"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}",
-            "repo": f"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}",
+            "web": f"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/"
+            f"v{{version}}>`_ - {{project_date}}",
+            "repo": f"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/"
+            f"v{{version}}) - {{project_date}}",
         },
         "issue_format": {
             "web": f"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_",
@@ -473,9 +475,7 @@ def write_missing_types(config: dict, changelog_sections: list):
             # Parse a formatted string so the inline table has consistent
             # spacing (e.g. "{ key = val }") matching existing parsed entries.
             entry = tomlkit.value(
-                f'{{ directory = "{section}",'
-                f' name = "{section.title()}",'
-                f" showcontent = true }}"
+                f'{{ directory = "{section}", name = "{section.title()}", showcontent = true }}'
             )
         elif isinstance(types, AoT):
             entry = tomlkit.table()
@@ -561,9 +561,7 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
         # Restore trailing closer (e.g. the "\n]" line)
         for trailing in trailing_items:
             new_types._value.append(
-                _ArrayItemGroup(
-                    value=Null(), indent=trailing.indent, comma=None, comment=None
-                )
+                _ArrayItemGroup(value=Null(), indent=trailing.indent, comma=None, comment=None)
             )
     else:
         new_types = tomlkit.aot()
@@ -573,13 +571,11 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
     towncrier_section["type"] = new_types
 
 
-def get_towncrier_config_value(
-    category: str, pyproject_path: str | Path = "pyproject.toml"
-):
+def get_towncrier_config_value(category: str, pyproject_path: str | Path = "pyproject.toml"):
     """Get the value of a category within the [tool.towncrier] section of the pyproject.toml file.
 
     Parameters
-    -----------
+    ----------
     category: str
         The category name within the [tool.towncrier] section you want to obtain information about.
         For example, "filename" or "directory".
@@ -614,9 +610,7 @@ def get_towncrier_config_value(
     return category_value
 
 
-def rewrite_template(
-    template_path: str | None = None, file_name: str | None = None
-) -> bool:
+def rewrite_template(template_path: str | None = None, file_name: str | None = None) -> bool:
     """Rewrite the template.jinja file with the default template.
 
     Parameters
@@ -640,7 +634,8 @@ def rewrite_template(
 
         if not default_template_path.is_file():
             print(
-                f"Default template file not found at {default_template_path}. Cannot rewrite template."
+                f"Default template file not found at {default_template_path}. "
+                "Cannot rewrite template."
             )
             return False
 

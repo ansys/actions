@@ -1,22 +1,5 @@
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directories:
-      - "/requirements"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-    cooldown:
-      default-days: 7
-      include:
-        - "*"  # Include all dependencies in cooldown
-      exclude:
-        - "ansys-sphinx-theme"
-    commit-message:
-      prefix: "build(pip)"
-    labels:
-      - "dependencies:requirements"
-
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
@@ -32,9 +15,6 @@ updates:
       prefix: "build(uv)"
     labels:
       - "dependencies:requirements"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
 
   - package-ecosystem: "github-actions"
     directories:

@@ -62,7 +62,7 @@ inputs:
   python-version:
     description: |
       Python version used for installing and execution of the build process.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
@@ -144,7 +144,7 @@ runs:
 
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
@@ -164,7 +164,51 @@ runs:
         message: >
           Skipping Python setup to use system Python.
 
+    # --------------------------------------------------------
+    # Install package by leveraging uv lockfile if detected
+    # --------------------------------------------------------
+
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/.python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          rm "${WORKING_DIRECTORY}/.python-version"
+        else
+          echo ".python-version file not detected. No action required."
+        fi
+
+    - name: "Install dependencies from uv lockfile"
+      if: ${{ inputs.use-uv == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        cd ${WORKING_DIRECTORY}
+        uv sync --frozen --no-managed-python --no-dev
+
+    # ------------------------------------------------------------------------
+    # Install package without leveraging uv lockfile
+    # ------------------------------------------------------------------------
+
     - name: "Install library"
+      if: ${{ inputs.use-uv != 'true' || steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE != 'true' }}
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
@@ -236,6 +280,6 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
       with:
         subject-path: dist/

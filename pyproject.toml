@@ -1,18 +1,18 @@
 # This project file exists solely for two reasons: managing the python package dependencies for each action; and
-# specifying the towncrier configuration
+# specifying the towncrier configuration and documentation requirements.
 
 [project]
 name = "ansys-actions-ci-dependencies"
-version = "10.4.dev0"
-requires-python = ">=3.10"
+version = "11.1.dev0"
+requires-python = ">=3.12"
 
 [dependency-groups]
 build-library-pip = [
     "build<=1.5",
-    "twine<=6.2",
+    "twine<=7.1",
 ]
 build-library-uv = [
-    "twine<=6.2",
+    "twine<=7.1",
 ]
 build-wheelhouse = [
     "build<=1.5",
@@ -25,53 +25,78 @@ check-licenses = [
 ]
 check-vulnerabilities = [
     "bandit>=1.9,<2",
-    "click>=8.4.1,<9",
+    "click>=8.4,<9",
     "pygithub>=2.9,<3",
-    "safety>=3.8.1,<4",
+    "safety>=3.8,<4",
 ]
 code-style-pre-commit = [
-    "pre-commit<=4.6",
+    "pre-commit<=4.7",
 ]
 code-style-prek = [
     "prek<=0.5",
 ]
 doc-changelog = [
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
     "towncrier<=25.8",
 ]
 doc-deploy-changelog = [
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
     "towncrier<=25.8",
 ]
 doc-deploy-stable = [
-    "packaging<=26.2",
+    "packaging<=26.3",
 ]
 doc-style = [
     "docutils<=0.23",
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
 ]
 hk-package-clean-except = [
-    "fastcore<=1.14",
-    "ghapi<=1.1",
-    "packaging<=26.2",
+    "fastcore<=2.2",
+    "ghapi<=2.1",
+    "packaging<=26.3",
 ]
 hk-package-clean-untagged = [
-    "fastcore<=1.14",
-    "ghapi<=1.1",
-    "packaging<=26.2",
+    "fastcore<=2.2",
+    "ghapi<=2.1",
+    "packaging<=26.3",
 ]
 release-github = [
     "pypandoc-binary<=1.17",
-    "tomlkit<=0.15",
+    "tomlkit<=0.16",
 ]
 check-actions-security = [
-    "zizmor<=1.27",
+    "zizmor<=1.29",
 ]
 release-pypi = [
-    "twine<=6.2",
+    "twine<=7.1",
 ]
 tests-pytest = [
     "pytest-randomly<=4.1",
+]
+# ######################################################################## #
+# These groups are defined to develop and maintain this artificial project #
+# ######################################################################## #
+dev = [
+    "tox>=4.57",
+    "tox-uv>=1.36",
+    { include-group = "doc" },
+    { include-group = "quality" },
+]
+quality = [
+  "prek<=0.5",
+  "ruff<=0.17",
+  # NOTE: This one is particular and only contains patch releases atm
+  "ty<=0.0.65",
+]
+doc = [
+    "ansys-sphinx-theme>=1.9",
+    "jupyter>=1.1",
+    "pyyaml>=6.0",
+    "Sphinx>=9.1",
+    "sphinx-copybutton>=0.5",
+    "sphinx-jinja>=2.0",
+    "sphinx_design==0.7.0",
+    "tabulate==0.10.0"
 ]
 
 [tool.towncrier]
@@ -123,3 +148,22 @@ showcontent = true
 directory = "test"
 name = "Test"
 showcontent = true
+
+[tool.ruff]
+line-length = 100
+fix = true
+target-version = "py314"
+lint.select = [
+  "D",   # pydocstyle, see https://docs.astral.sh/ruff/rules/#pydocstyle-d
+  "E",   # pycodestyle, see https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+  "F",   # pyflakes, see https://docs.astral.sh/ruff/rules/#pyflakes-f
+  "I",   # isort, see https://docs.astral.sh/ruff/rules/#isort-i
+  "N",   # pep8-naming, see https://docs.astral.sh/ruff/rules/#pep8-naming-n
+  "PTH", # flake8-use-pathlib, https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
+  "TD",  # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
+  "UP",  # pyupgrade, https://docs.astral.sh/ruff/rules/#pyupgrade-up
+]
+lint.ignore = []
+lint.pydocstyle.convention = "numpy"
+lint.isort.combine-as-imports = true
+lint.isort.force-sort-within-sections = true
