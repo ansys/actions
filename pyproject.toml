@@ -44,7 +44,7 @@ doc-deploy-changelog = [
     "towncrier<=25.8",
 ]
 doc-deploy-stable = [
-    "packaging<=26.2",
+    "packaging<=26.3",
 ]
 doc-style = [
     "docutils<=0.23",
@@ -53,12 +53,12 @@ doc-style = [
 hk-package-clean-except = [
     "fastcore<=2.2",
     "ghapi<=2.1",
-    "packaging<=26.2",
+    "packaging<=26.3",
 ]
 hk-package-clean-untagged = [
     "fastcore<=2.2",
     "ghapi<=2.1",
-    "packaging<=26.2",
+    "packaging<=26.3",
 ]
 release-github = [
     "pypandoc-binary<=1.17",
