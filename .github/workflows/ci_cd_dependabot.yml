@@ -32,7 +32,7 @@ jobs:
           ref: ${{ github.ref }} # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
       - name: "Set up Python"
-        uses: ansys/actions/_setup-python@v11.0.2
+        uses: ansys/actions/_setup-python@v11.0.3
         with:
             python-version: ${{ env.MAIN_PYTHON_VERSION }}
             use-cache: false

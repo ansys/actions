@@ -246,14 +246,14 @@ runs:
 
     - name: "Set up Python ${{ inputs.python-version }}"
       if: ${{ inputs.skip-python-setup == 'false' }}
-      uses: ansys/actions/_setup-python@v11.0.2
+      uses: ansys/actions/_setup-python@v11.0.3
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - uses: ansys/actions/_logging@v11.0.2
+    - uses: ansys/actions/_logging@v11.0.3
       if: ${{ inputs.skip-python-setup == 'true' }}
       with:
         level: "INFO"
@@ -277,7 +277,7 @@ runs:
           echo "resolved-group=$GRP_DEPS" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ansys/actions/_logging@v11.0.2
+    - uses: ansys/actions/_logging@v11.0.3
       if: ${{ steps.resolve-deps.outputs.resolved-optional != '' && steps.resolve-deps.outputs.resolved-group != '' }}
       with:
         level: "WARNING"
@@ -289,7 +289,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ansys/actions/_doc-build-linux@v11.0.2
+      uses: ansys/actions/_doc-build-linux@v11.0.3
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -309,7 +309,7 @@ runs:
 
     - name: Check input (Windows)
       if: ${{ (runner.os == 'Windows') && (inputs.requires-xvfb == 'true') }}
-      uses: ansys/actions/_logging@v11.0.2
+      uses: ansys/actions/_logging@v11.0.3
       with:
         level: "WARNING"
         message: >
@@ -317,7 +317,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ansys/actions/_doc-build-windows@v11.0.2
+      uses: ansys/actions/_doc-build-windows@v11.0.3
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}

@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "ansys-actions-uv"
-version = "11.0.2"
+version = "11.0.3"
 description = "A demo library for testing Ansys actions (uses uv as the build backend)"
 readme = "README.rst"
 requires-python = ">=3.12"
