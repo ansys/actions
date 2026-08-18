@@ -99,6 +99,8 @@ jobs:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
         MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
+        git tag -d v${MAJOR}.${MINOR} 2>/dev/null || true
+        git tag -d v${MAJOR} 2>/dev/null || true
         git tag v${MAJOR}.${MINOR}
         git tag v${MAJOR}
         git push origin v${MAJOR}.${MINOR}
