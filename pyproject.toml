@@ -16,7 +16,7 @@ build-library-uv = [
 ]
 build-wheelhouse = [
     "build<=1.5",
-    "wheel<=0.47",
+    "wheel<=0.49",
 ]
 check-licenses = [
     "pip-licenses<=5.6",
