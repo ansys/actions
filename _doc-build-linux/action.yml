@@ -155,6 +155,13 @@ inputs:
     required: true
     type: string
 
+  skip-latex-install:
+    description: |
+      Whether to skip the installation of LaTeX. Default value is ``false``.
+    required: false
+    type: boolean
+    default: false
+
 runs:
   using: "composite"
   steps:
@@ -192,6 +199,7 @@ runs:
         sudo apt-get install -y $NEEDED_DEPS
 
     - name: "Install LaTeX"
+      if: ${{ inputs.skip-latex-install == 'false' }}
       shell: bash
       run: |
         sudo apt-get install -y texlive-latex-extra latexmk
