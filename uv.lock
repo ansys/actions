@@ -158,7 +158,7 @@ build-library-pip = [
 build-library-uv = [{ name = "twine", specifier = "<=7.1" }]
 build-wheelhouse = [
     { name = "build", specifier = "<=1.5" },
-    { name = "wheel", specifier = "<=0.48.0" },
+    { name = "wheel", specifier = "<=0.49" },
 ]
 check-actions-security = [{ name = "zizmor", specifier = "<=1.29" }]
 check-licenses = [
