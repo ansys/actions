@@ -14,7 +14,7 @@ nodeenv==1.10.0
     # via pre-commit
 platformdirs==4.9.6
     # via virtualenv
-pre-commit==4.6.1
+pre-commit==4.6.2
 python-discovery==1.5.1
     # via virtualenv
 pyyaml==6.0.3
