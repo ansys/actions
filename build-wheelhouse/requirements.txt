@@ -9,4 +9,4 @@ packaging==26.3
     #   wheel
 pyproject-hooks==1.2.0
     # via build
-wheel==0.47.0
+wheel==0.48.0
