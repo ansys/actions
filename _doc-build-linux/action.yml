@@ -157,7 +157,7 @@ inputs:
 
   skip-latex-install:
     description: |
-      Whether to skip the installation of LaTeX. Default value is ``false``.
+      Whether to skip the installation of LaTeX.
     required: true
     type: boolean
 
