@@ -147,6 +147,12 @@ inputs:
     required: true
     type: string
 
+  skip-latex-install:
+    description: |
+      Whether to skip the installation of LaTeX.
+    required: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -201,6 +207,7 @@ runs:
         choco install $packages -y
 
     - name: Install MiKTeX and update PATH with MiKTeX binaries
+      if: ${{ inputs.skip-latex-install == 'false' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
         # NOTE: Declared at script scope so it can be accessed inside function
