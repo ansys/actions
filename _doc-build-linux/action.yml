@@ -160,7 +160,6 @@ inputs:
       Whether to skip the installation of LaTeX. Default value is ``false``.
     required: true
     type: boolean
-    default: false
 
 runs:
   using: "composite"
