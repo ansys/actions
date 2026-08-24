@@ -128,8 +128,8 @@ def check_vulnerabilities():
         else:
             uv_audit_output = uv_audit_log_path.read_text(encoding="utf-8", errors="replace")
             summary_match = re.search(
-                r"Found\s+(?:(?P<known_no>no)|(?P<known>\d+))\s+known vulnerabilities\s+and\s+"
-                r"(?:(?P<adverse_no>no)|(?P<adverse>\d+))\s+adverse project statuses?\s+in\s+"
+                r"Found\s+(?:(?P<known_no>no)|(?P<known>\d+))\s+known\s+vulnerabilit(?:y|ies)\s+and\s+"
+                r"(?:(?P<adverse_no>no)|(?P<adverse>\d+))\s+adverse\s+project\s+status(?:es)?\s+in\s+"
                 r"(?P<packages>\d+)\s+packages",
                 uv_audit_output,
                 flags=re.IGNORECASE,
