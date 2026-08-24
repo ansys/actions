@@ -127,6 +127,7 @@ def check_vulnerabilities():
             raise FileNotFoundError("Uv audit was enabled but 'info_uv_audit.log' is missing.")
         else:
             uv_audit_output = uv_audit_log_path.read_text(encoding="utf-8", errors="replace")
+            print(uv_audit_output)
             summary_match = re.search(
                 r"Found\s+(?:(?P<known_no>no)|(?P<known>\d+))\s+known\s+vulnerabilit(?:y|ies)\s+and\s+"
                 r"(?:(?P<adverse_no>no)|(?P<adverse>\d+))\s+adverse\s+project\s+status(?:es)?\s+in\s+"
