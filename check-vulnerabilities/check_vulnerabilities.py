@@ -85,6 +85,7 @@ def dict_hash(dictionary: dict[str, Any]) -> str:
 def check_vulnerabilities():
     """Check library and third-party vulnerabilities."""
     new_advisory_detected = False
+    uv_audit_vulnerability_details = ""
     # Check that the needed environment variables are provided
     if not TOKEN:
         raise RuntimeError("Required environment variable 'DEPENDENCY_CHECK_TOKEN' is not defined.")
@@ -127,7 +128,14 @@ def check_vulnerabilities():
             raise FileNotFoundError("Uv audit was enabled but 'info_uv_audit.log' is missing.")
         else:
             uv_audit_output = uv_audit_log_path.read_text(encoding="utf-8", errors="replace")
-            print(uv_audit_output)
+
+            vulnerabilities_marker = "Vulnerabilities:"
+            marker_index = uv_audit_output.find(vulnerabilities_marker)
+            if marker_index != -1:
+                uv_audit_vulnerability_details = uv_audit_output[
+                    marker_index + len(vulnerabilities_marker) :
+                ].strip()
+
             summary_match = re.search(
                 r"Found\s+(?:(?P<known_no>no)|(?P<known>\d+))\s+known\s+vulnerabilit(?:y|ies)\s+and\s+"
                 r"(?:(?P<adverse_no>no)|(?P<adverse>\d+))\s+adverse\s+project\s+status(?:es)?\s+in\s+"
@@ -372,10 +380,9 @@ once it has been verified (since it has been created in draft mode).
         print(f"Total 'uv audit' adverse project statuses: {uv_audit_adverse_project_statuses}")
         print("Note: 'uv audit' advisories may contain duplicates of 'safety' advisories.")
         print("*****************************************************************************")
-        uv_audit_log_path = Path("info_uv_audit.log")
-        uv_audit_output = uv_audit_log_path.read_text(encoding="utf-8", errors="replace")
-        print("Uv audit output:\n")
-        print(uv_audit_output)
+        if uv_audit_vulnerability_details:
+            print("Uv audit vulnerabilities:\n")
+            print(uv_audit_vulnerability_details)
 
     # Return whether new advisories have been created or not
     return new_advisory_detected
