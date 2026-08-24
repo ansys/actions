@@ -664,14 +664,13 @@ runs:
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         HAS_AUDIT_MALWARE_CHECK: ${{ steps.detect-uv-audit-malware-check.outputs.HAS_AUDIT_MALWARE_CHECK }}
-        UV_MALWARE_CHECK: ${{ env.UV_MALWARE_CHECK }}
       run: |
         ${ACTIVATE_VENV}
 
         UV_AUDIT_LOG_PATH="info_uv_audit.log"
         # If malware-check is not configured in pyproject.toml and no explicit env var
         # was provided by the workflow, fallback to UV_MALWARE_CHECK=1 for this run.
-        if [[ "${HAS_AUDIT_MALWARE_CHECK}" != 'true' && "${UV_MALWARE_CHECK}" == '' ]]; then
+        if [[ "${HAS_AUDIT_MALWARE_CHECK}" != 'true' && -z "${UV_MALWARE_CHECK}" ]]; then
           export UV_MALWARE_CHECK=1
         fi
 
