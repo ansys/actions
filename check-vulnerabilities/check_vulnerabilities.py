@@ -355,21 +355,26 @@ once it has been verified (since it has been created in draft mode).
     # Print out information
     safety_entries = len(safety_results["vulnerabilities"])
     bandit_entries = len(bandit_results["results"])
-    print("\n*******************************************")
+    print("*****************************************************************************")
     print(f"Total 'safety' advisories detected: {safety_entries}")
     print(f"Total 'safety' advisories reported: {safety_results_reported}")
     print(f"Total 'bandit' advisories detected: {bandit_entries}")
     print(f"Total 'bandit' advisories reported: {bandit_results_reported}")
-    print("*******************************************")
+    print("*****************************************************************************")
     print(f"Total advisories detected: {safety_entries + bandit_entries}")
     print(f"Total advisories reported: {safety_results_reported + bandit_results_reported}")
-    print("*******************************************")
+    print("*****************************************************************************")
 
     # Additional advisory checks for uv-audit
     if UV_AUDIT_ENABLED:
         print(f"Total 'uv audit' known vulnerabilities: {uv_audit_known_vulnerabilities}")
         print(f"Total 'uv audit' adverse project statuses: {uv_audit_adverse_project_statuses}")
         print("Note: 'uv audit' advisories may contain duplicates of 'safety' advisories.")
+        print("*****************************************************************************")
+        uv_audit_log_path = Path("info_uv_audit.log")
+        uv_audit_output = uv_audit_log_path.read_text(encoding="utf-8", errors="replace")
+        print("Uv audit output:\n")
+        print(uv_audit_output)
 
     # Return whether new advisories have been created or not
     return new_advisory_detected
