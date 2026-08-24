@@ -28,6 +28,7 @@ check-vulnerabilities = [
     "click>=8.4,<9",
     "pygithub>=2.9,<3",
     "safety>=3.8,<4",
+    "uv>=0.12,<1",
 ]
 code-style-pre-commit = [
     "pre-commit<=4.7",

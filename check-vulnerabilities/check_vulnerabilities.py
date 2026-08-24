@@ -33,6 +33,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
@@ -50,6 +51,7 @@ REPOSITORY = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
 DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
 ERROR_IF_NEW_ADVISORY = True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
+UV_AUDIT_ENABLED = True if os.environ.get("DEPENDENCY_CHECK_UV_AUDIT_ENABLED") else False
 
 _SSL_CORPORATE_NETWORK_HINT = (
     "On corporate networks, an SSL inspection proxy may intercept HTTPS connections "
@@ -114,6 +116,36 @@ def check_vulnerabilities():
             "the execution of 'safety check -o bare --save-json info_safety.json'. ",
             "Verify workflow logs.",
         )
+
+    # Parse uv audit output log when uv audit has been enabled in the action.
+    if UV_AUDIT_ENABLED:
+        uv_audit_known_vulnerabilities = 0
+        uv_audit_adverse_project_statuses = 0
+
+        uv_audit_log_path = Path("info_uv_audit.log")
+        if not uv_audit_log_path.exists():
+            raise FileNotFoundError("Uv audit was enabled but 'info_uv_audit.log' is missing.")
+        else:
+            uv_audit_output = uv_audit_log_path.read_text(encoding="utf-8", errors="replace")
+            summary_match = re.search(
+                r"Found\s+(?:(?P<known_no>no)|(?P<known>\d+))\s+known vulnerabilities\s+and\s+"
+                r"(?:(?P<adverse_no>no)|(?P<adverse>\d+))\s+adverse project statuses?\s+in\s+"
+                r"(?P<packages>\d+)\s+packages",
+                uv_audit_output,
+                flags=re.IGNORECASE,
+            )
+
+            if summary_match:
+                uv_audit_known_vulnerabilities = int(summary_match.group("known") or "0")
+                uv_audit_adverse_project_statuses = int(summary_match.group("adverse") or "0")
+                if uv_audit_known_vulnerabilities > 0 or uv_audit_adverse_project_statuses > 0:
+                    new_advisory_detected = True
+            else:
+                raise RuntimeError(
+                    "Unable to parse uv audit summary from 'info_uv_audit.log'. "
+                    "Expected line starting with 'Found ... known vulnerabilities and ... "
+                    "adverse project statuses in ... packages'."
+                )
 
     # Connect to the repository
     g = github.Github(auth=github.Auth.Token(TOKEN))
@@ -332,6 +364,12 @@ once it has been verified (since it has been created in draft mode).
     print(f"Total advisories detected: {safety_entries + bandit_entries}")
     print(f"Total advisories reported: {safety_results_reported + bandit_results_reported}")
     print("*******************************************")
+
+    # Additional advisory checks for uv-audit
+    if UV_AUDIT_ENABLED:
+        print(f"Total 'uv audit' known vulnerabilities: {uv_audit_known_vulnerabilities}")
+        print(f"Total 'uv audit' adverse project statuses: {uv_audit_adverse_project_statuses}")
+        print("Note: 'uv audit' advisories may contain duplicates of 'safety' advisories.")
 
     # Return whether new advisories have been created or not
     return new_advisory_detected

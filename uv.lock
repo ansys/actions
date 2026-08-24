@@ -75,6 +75,7 @@ check-vulnerabilities = [
     { name = "click" },
     { name = "pygithub" },
     { name = "safety" },
+    { name = "uv" },
 ]
 code-style-pre-commit = [
     { name = "pre-commit" },
@@ -171,6 +172,7 @@ check-vulnerabilities = [
     { name = "click", specifier = ">=8.4,<9" },
     { name = "pygithub", specifier = ">=2.9,<3" },
     { name = "safety", specifier = ">=3.8,<4" },
+    { name = "uv", specifier = ">=0.12,<1" },
 ]
 code-style-pre-commit = [{ name = "pre-commit", specifier = "<=4.7" }]
 code-style-prek = [{ name = "prek", specifier = "<=0.5" }]
