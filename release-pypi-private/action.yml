@@ -114,6 +114,14 @@ inputs:
     default: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"
     type: string
 
+  verify-tag-version:
+    description: |
+      Verify that the git ref that triggered the workflow is the same as the version
+      of the package being uploaded.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -129,3 +137,4 @@ runs:
         dry-run: ${{ inputs.dry-run }}
         skip-existing: ${{ inputs.skip-existing }}
         use-trusted-publisher: ${{ inputs.use-trusted-publisher }}
+        verify-tag-version: ${{ inputs.verify-tag-version }}
