@@ -52,7 +52,7 @@ inputs:
   python-version:
     description: |
       Python version used for installing and running ``Sphinx``.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
@@ -232,6 +232,13 @@ inputs:
     default: false
     type: boolean
 
+  skip-latex-install:
+    description: |
+      Whether to skip the installation of LaTeX. Default value is ``false``.
+    required: false
+    default: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -304,6 +311,7 @@ runs:
         optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
         group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
         uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
+        skip-latex-install: ${{ inputs.skip-latex-install }}
 
     # ------------------------------------------------------------------------
 
@@ -331,3 +339,4 @@ runs:
         optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
         group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
         uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
+        skip-latex-install: ${{ inputs.skip-latex-install }}

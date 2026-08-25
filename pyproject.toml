@@ -3,7 +3,7 @@
 
 [project]
 name = "ansys-actions-ci-dependencies"
-version = "10.4.dev0"
+version = "11.1.dev0"
 requires-python = ">=3.12"
 
 [dependency-groups]
@@ -16,7 +16,7 @@ build-library-uv = [
 ]
 build-wheelhouse = [
     "build<=1.5",
-    "wheel<=0.47",
+    "wheel<=0.49",
 ]
 check-licenses = [
     "pip-licenses<=5.6",
@@ -45,7 +45,7 @@ doc-deploy-changelog = [
     "towncrier<=25.8",
 ]
 doc-deploy-stable = [
-    "packaging<=26.2",
+    "packaging<=26.3",
 ]
 doc-style = [
     "docutils<=0.23",
@@ -54,12 +54,12 @@ doc-style = [
 hk-package-clean-except = [
     "fastcore<=2.2",
     "ghapi<=2.1",
-    "packaging<=26.2",
+    "packaging<=26.3",
 ]
 hk-package-clean-untagged = [
     "fastcore<=2.2",
     "ghapi<=2.1",
-    "packaging<=26.2",
+    "packaging<=26.3",
 ]
 release-github = [
     "pypandoc-binary<=1.17",
@@ -78,19 +78,19 @@ tests-pytest = [
 # These groups are defined to develop and maintain this artificial project #
 # ######################################################################## #
 dev = [
-    "tox>=4.57",
+    "tox>=4.59",
     "tox-uv>=1.36",
     { include-group = "doc" },
     { include-group = "quality" },
 ]
 quality = [
   "prek<=0.5",
-  "ruff<=0.16",
+  "ruff<=0.17",
   # NOTE: This one is particular and only contains patch releases atm
-  "ty<=0.0.61",
+  "ty<=0.0.66",
 ]
 doc = [
-    "ansys-sphinx-theme>=1.9",
+    "ansys-sphinx-theme>=1.10.0",
     "jupyter>=1.1",
     "pyyaml>=6.0",
     "Sphinx>=9.1",

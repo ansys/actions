@@ -147,6 +147,12 @@ inputs:
     required: true
     type: string
 
+  skip-latex-install:
+    description: |
+      Whether to skip the installation of LaTeX.
+    required: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -201,6 +207,7 @@ runs:
         choco install $packages -y
 
     - name: Install MiKTeX and update PATH with MiKTeX binaries
+      if: ${{ inputs.skip-latex-install == 'false' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
         # NOTE: Declared at script scope so it can be accessed inside function
@@ -352,13 +359,24 @@ runs:
     - name: "Auto-detect uv lockfile"
       id: auto-detect-uv-lockfile
       if: ${{ inputs.use-uv == 'true' }}
-      shell: bash
+      shell: powershell
       run: |
-        if [[ -f "uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
-        else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
-        fi
+        if (Test-Path "uv.lock") {
+          "USE_UV_LOCKFILE=true" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        } else {
+          "USE_UV_LOCKFILE=false" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        }
+
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: powershell
+      run: |
+        if (Test-Path ".python-version") {
+          Write-Host ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          Remove-Item ".python-version"
+        } else {
+          Write-Host ".python-version file not detected. No action required."
+        }
 
     # ------------------------------------------------------------------------
 

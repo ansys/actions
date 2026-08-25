@@ -140,8 +140,6 @@ jobs:
         repository:
           - name: pytwin
             library: pytwin
-          - name: pyacp
-            library: ansys-acp-core
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false
@@ -183,8 +181,6 @@ jobs:
         repository:
           - name: pytwin
             library: pytwin
-          - name: pyacp
-            library: ansys-acp-core
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false
@@ -224,8 +220,6 @@ jobs:
         repository:
           - name: pytwin
             library: pytwin
-          - name: pyacp
-            library: ansys-acp-core
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false
@@ -294,8 +288,6 @@ jobs:
         repository:
           - name: pytwin
             library: pytwin
-          - name: pyacp
-            library: ansys-acp-core
           - name: pydpf-composites
             library: ansys-dpf-composites
       fail-fast: false

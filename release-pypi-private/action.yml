@@ -104,7 +104,7 @@ inputs:
       Python version for installing and using `twine
       <https://twine.readthedocs.io/en/stable/>`_.
     required: false
-    default: '3.11'
+    default: '3.12'
     type: string
 
   index-name:
@@ -113,6 +113,14 @@ inputs:
     required: true
     default: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"
     type: string
+
+  verify-tag-version:
+    description: |
+      Verify that the git ref that triggered the workflow is the same as the version
+      of the package being uploaded.
+    required: false
+    default: true
+    type: boolean
 
 runs:
   using: "composite"
@@ -129,3 +137,4 @@ runs:
         dry-run: ${{ inputs.dry-run }}
         skip-existing: ${{ inputs.skip-existing }}
         use-trusted-publisher: ${{ inputs.use-trusted-publisher }}
+        verify-tag-version: ${{ inputs.verify-tag-version }}

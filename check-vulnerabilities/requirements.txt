@@ -69,7 +69,7 @@ mdurl==0.1.2
     # via markdown-it-py
 nltk==3.9.4
     # via safety
-packaging==26.2
+packaging==26.3
     # via
     #   dparse
     #   safety

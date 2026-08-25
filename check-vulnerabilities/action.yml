@@ -209,7 +209,7 @@ inputs:
   python-version:
     description: |
       Desired Python version.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
@@ -385,6 +385,17 @@ runs:
         else
           echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
           echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/bin/activate')" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f ".python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          rm .python-version
+        else
+          echo ".python-version file not detected. No action required."
         fi
 
     # ------------------------------------------------------------------------

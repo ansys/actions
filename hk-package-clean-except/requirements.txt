@@ -6,13 +6,13 @@ certifi==2026.4.22
     # via
     #   httpcore
     #   httpx
-fastcore==2.1.16
+fastcore==2.2.0
     # via
     #   fastspec
     #   ghapi
-fastspec==0.1.0
+fastspec==0.1.5
     # via ghapi
-ghapi==2.0.3
+ghapi==2.0.5
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
@@ -23,6 +23,6 @@ idna==3.15
     # via
     #   anyio
     #   httpx
-packaging==26.2
+packaging==26.3
 typing-extensions==4.15.0 ; python_full_version < '3.13'
     # via anyio
