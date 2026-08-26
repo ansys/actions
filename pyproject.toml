@@ -77,7 +77,7 @@ tests-pytest = [
 # These groups are defined to develop and maintain this artificial project #
 # ######################################################################## #
 dev = [
-    "tox>=4.59",
+    "tox>=4.60.0",
     "tox-uv>=1.36",
     { include-group = "doc" },
     { include-group = "quality" },
