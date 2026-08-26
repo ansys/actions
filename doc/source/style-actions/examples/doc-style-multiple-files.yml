@@ -5,19 +5,23 @@ doc-style:
     contents: read
     pull-requests: write
   steps:
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v6
+
     - name: "Install jq"
       run: |
         # Used to format Vale input as a JSON-formatted list of files
         sudo apt install -y jq
 
     - name: "Collect files for Vale"
+      id: collect-files
       run: |
         RST_FILES=$(find doc/source -type f -name "*.rst" ! -path "doc/source/api/*")
         VALE_FILES=$(echo -e "$RST_FILES" | jq -R . | jq -s .)
-        echo "VALE_FILES=$(echo "$VALE_FILES")" >> "$GITHUB_ENV"
+        echo "VALE_FILES=$(echo "$VALE_FILES")" >> "${GITHUB_OUTPUT}"
 
     - name: "Running documentation style checks"
       uses: ansys/actions/doc-style@{{ version }}
       with:
         token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
-        files: ${{ '{{ env.VALE_FILES }}' }}
+        files: ${{ '{{ steps.collect-files.outputs.VALE_FILES }}' }}
