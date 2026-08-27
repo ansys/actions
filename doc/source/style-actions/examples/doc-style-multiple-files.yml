@@ -14,11 +14,20 @@ doc-style:
         sudo apt install -y jq
 
     - name: "Collect files for Vale"
-      id: collect-files
-      run: |
-        RST_FILES=$(find doc/source -type f -name "*.rst" ! -path "doc/source/api/*")
-        VALE_FILES=$(echo -e "$RST_FILES" | jq -R . | jq -s .)
-        echo "VALE_FILES=$(echo "$VALE_FILES")" >> "${GITHUB_OUTPUT}"
+        id: collect-files
+        shell: bash
+        run: |
+          python - <<'PY' >> "${GITHUB_OUTPUT}"
+          import json
+          from pathlib import Path
+
+          files = sorted(
+              str(path)
+              for path in Path("doc/source").rglob("*.rst")
+              if not path.is_relative_to("doc/source/api")
+          )
+          print(f"VALE_FILES={json.dumps(files)}")
+          PY
 
     - name: "Running documentation style checks"
       uses: ansys/actions/doc-style@{{ version }}
