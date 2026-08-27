@@ -53,7 +53,7 @@ runs:
   steps:
 
     - name: "Set up Python 3.14"
-      uses: ansys/actions/_setup-python@v11.0.3
+      uses: ansys/actions/_setup-python@v11.0.4
       with:
         python-version: '3.14'
         use-cache: false
