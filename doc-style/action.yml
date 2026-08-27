@@ -143,6 +143,13 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: read, pull-requests: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#doc-style-action"
+
     - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
