@@ -54,6 +54,13 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: ansys/actions/_check-github-permissions@main
+      with:
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.approver-token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#auto-merge-pull-requests"
+
     - name: Verify allowed PRs (dependabot and pre-commit.ci)
       id: verify-allowed-prs
       shell: bash
