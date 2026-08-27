@@ -180,7 +180,7 @@ runs:
   steps:
 
     - name: "Check GitHub permissions"
-      uses: ansys/actions/_check-github-permissions@main
+      uses: ansys/actions/_check-github-permissions@feat/check-permissions 
       with:
         permissions: "${{ inputs.attest-provenance == 'true' && 'contents: read, id-token: write, attestations: write' || 'contents: read' }}"
         doc-url: "https://actions.docs.ansys.com/version/stable/build-actions/index.html#build-wheelhouse-action"

@@ -61,7 +61,7 @@ runs:
   steps:
 
     - name: "Check GitHub permissions"
-      uses: ansys/actions/_check-github-permissions@main
+      uses: ansys/actions/_check-github-permissions@feat/check-permissions 
       with:
         permissions: "pull-requests: read"
         token: ${{ inputs.token != '' && inputs.token || github.token }}

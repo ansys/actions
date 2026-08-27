@@ -224,7 +224,7 @@ runs:
   steps:
 
     - name: "Check GitHub permissions"
-      uses: ansys/actions/_check-github-permissions@main
+      uses: ansys/actions/_check-github-permissions@feat/check-permissions 
       with:
         permissions: "${{ inputs.create-issues == 'true' && 'contents: read, issues: write' || 'contents: read' }}"
         token: ${{ inputs.token }}
