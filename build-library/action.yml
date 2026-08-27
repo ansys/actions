@@ -222,9 +222,9 @@ runs:
       env:
         TAG_REF: ${{ github.ref_name }}
         LIBRARY_NAME: ${{ inputs.library-name }}
-        USE_UV: ${{ inputs.use-uv }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
-        if [[ "${USE_UV}" == 'true' ]]; then
+        if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
           LIBRARY_VERSION=$(uv run python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$LIBRARY_NAME'))")
         else
           LIBRARY_VERSION=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$LIBRARY_NAME'))")
