@@ -27,6 +27,10 @@ description: |
   Custom action to create latest vX and vX.Y tag to point to the latest released version.
   A new branch 'release/vX.Y.Z' is also pushed to be used for hotfixes.
 
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to create and update git tags and release branches
+
   .. note::
 
       This action is intended to be used in a workflow triggered by a release event.
@@ -48,6 +52,14 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - name: "Check GitHub permissions"
+      uses: ansys/actions/_check-github-permissions@main
+      with:
+        permissions: "contents: write"
+        token: ${{ inputs.gh-token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#tag-repository-version"
+
     - name: Pick the input semantic version
       shell: bash
       id: pick_version

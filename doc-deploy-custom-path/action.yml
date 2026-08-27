@@ -124,6 +124,13 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: ansys/actions/_check-github-permissions@main
+      with:
+        permissions: "contents: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-custom-path-action"
+
     - uses: ansys/actions/_logging@main
       with:
         level: "INFO"

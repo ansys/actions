@@ -60,6 +60,13 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: ansys/actions/_check-github-permissions@main
+      with:
+        permissions: "pull-requests: read"
+        token: ${{ inputs.token != '' && inputs.token || github.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#pull-request-title-action"
+
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' }}
       uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1

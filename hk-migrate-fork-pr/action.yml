@@ -147,6 +147,13 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: ansys/actions/_check-github-permissions@main
+      with:
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.github-token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#migrate-fork-pull-requests"
+
     - name: "Log start of migration"
       uses: ansys/actions/_logging@main
       with:
