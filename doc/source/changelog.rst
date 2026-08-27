@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.0.3 <https://github.com/ansys/actions/releases/tag/v11.0.3>`_ - August 18, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Use \`uv run python\` for version lookup when uv is available
+          - `#1487 <https://github.com/ansys/actions/pull/1487>`_
+
+
 `11.0.2 <https://github.com/ansys/actions/releases/tag/v11.0.2>`_ - August 13, 2026
 ===================================================================================
 

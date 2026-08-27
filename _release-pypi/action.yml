@@ -81,6 +81,13 @@ inputs:
     required: true
     type: boolean
 
+  verify-tag-version:
+    description: |
+      Verify that the git ref that triggered the workflow is the same as the version
+      of the package being uploaded.
+    required: true
+    type: boolean
+
   use-trusted-publisher:
     description: |
       Whether to use the OIDC token for releasing.
@@ -151,6 +158,7 @@ runs:
 
     - name: "Verify tag and artifacts version match"
       shell: bash
+      if: ${{ inputs.verify-tag-version == 'true' }}
       env:
         ARTIFACT_DIR: ${{ inputs.library-name }}-artifacts
       run: |
