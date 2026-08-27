@@ -125,7 +125,7 @@ runs:
   steps:
 
     - name: "Check GitHub permissions"
-      uses: ansys/actions/_check-github-permissions@feat/check-permissions 
+      uses: ansys/actions/_check-github-permissions@feat/check-permissions
       with:
         permissions: "contents: write"
         token: ${{ inputs.token }}
