@@ -9,6 +9,70 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.0.4 <https://github.com/ansys/actions/releases/tag/v11.0.4>`_ - August 27, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow to skip latex install
+          - `#1497 <https://github.com/ansys/actions/pull/1497>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Delete local tags before recreating in rolling release
+          - `#1489 <https://github.com/ansys/actions/pull/1489>`_
+
+        * - Make version check optional for private pypi publish
+          - `#1500 <https://github.com/ansys/actions/pull/1500>`_
+
+        * - Build-library for projects not using uv lockfiles
+          - `#1503 <https://github.com/ansys/actions/pull/1503>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add disclaimer to the disclaimer on check-vulnerabilities
+          - `#1504 <https://github.com/ansys/actions/pull/1504>`_
+
+        * - Update vulnerability documentation on safety local scanning
+          - `#1512 <https://github.com/ansys/actions/pull/1512>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump ansys-sphinx-theme from 1.9.0 to 1.10.0
+          - `#1480 <https://github.com/ansys/actions/pull/1480>`_
+
+        * - Bump prek from 0.4.12 to 0.4.13
+          - `#1492 <https://github.com/ansys/actions/pull/1492>`_
+
+        * - Bump wheel from 0.47.0 to 0.48.0
+          - `#1493 <https://github.com/ansys/actions/pull/1493>`_
+
+        * - Bump pre-commit from 4.6.1 to 4.6.2
+          - `#1494 <https://github.com/ansys/actions/pull/1494>`_
+
+
 `11.0.3 <https://github.com/ansys/actions/releases/tag/v11.0.3>`_ - August 18, 2026
 ===================================================================================
 
