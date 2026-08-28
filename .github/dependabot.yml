@@ -71,6 +71,7 @@ updates:
       cicd-actions:
         patterns:
           - "micnncim/action-label-syncer"
+          - "pypa/gh-action-pypi-publish"
       # Github actions that are used in our composite actions
       github-actions:
         patterns:
@@ -104,15 +105,14 @@ updates:
       # Actions associated to our release composite actions
       release-related-actions:
         patterns:
-          - "pypa/gh-action-pypi-publish"
           - "softprops/action-gh-release"
       # Missed non ansys actions that should by assigned to a group
       must-be-assigned-actions:
         patterns:
-          - peter-evans/find-comment
-          - pyvista/setup-headless-display-action
-          - vimtor/action-zip
-          - dependabot/fetch-metadata
+          - "peter-evans/find-comment"
+          - "pyvista/setup-headless-display-action"
+          - "vimtor/action-zip"
+          - "dependabot/fetch-metadata"
         exclude-patterns:
           - "ansys/actions*"
 
