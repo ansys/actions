@@ -72,6 +72,7 @@ updates:
         patterns:
           - "micnncim/action-label-syncer"
           - "pypa/gh-action-pypi-publish"
+          - "pyvista/setup-headless-display-action"
       # Github actions that are used in our composite actions
       github-actions:
         patterns:
@@ -110,7 +111,6 @@ updates:
       must-be-assigned-actions:
         patterns:
           - "peter-evans/find-comment"
-          - "pyvista/setup-headless-display-action"
           - "vimtor/action-zip"
           - "dependabot/fetch-metadata"
         exclude-patterns:
