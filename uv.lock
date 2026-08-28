@@ -213,12 +213,12 @@ doc-style = [
     { name = "tomlkit", specifier = "<=0.16" },
 ]
 hk-package-clean-except = [
-    { name = "fastcore", specifier = "<=2.2.13" },
+    { name = "fastcore", specifier = "<=2.3" },
     { name = "ghapi", specifier = "<=2.1" },
     { name = "packaging", specifier = "<=26.3" },
 ]
 hk-package-clean-untagged = [
-    { name = "fastcore", specifier = "<=2.2.13" },
+    { name = "fastcore", specifier = "<=2.3" },
     { name = "ghapi", specifier = "<=2.1" },
     { name = "packaging", specifier = "<=26.3" },
 ]
