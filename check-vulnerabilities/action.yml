@@ -705,12 +705,24 @@ runs:
           python "${GITHUB_ACTION_PATH}/check_vulnerabilities.py"
         fi
 
+    - name: "Compute upload paths"
+      id: compute-upload-paths
+      shell: bash
+      env:
+        USE_UV_AUDIT: ${{ inputs.use-uv-audit }}
+      run: |
+        PATHS="./info_*.json"
+        if [[ "${USE_UV_AUDIT}" == 'true' ]]; then
+          PATHS="${PATHS}"$'\n'"./info_uv_audit.log"
+        fi
+        echo "UPLOAD_PATHS<<EOF" >> ${GITHUB_OUTPUT}
+        echo "${PATHS}" >> ${GITHUB_OUTPUT}
+        echo "EOF" >> ${GITHUB_OUTPUT}
+
     - name: "Uploading results"
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       if: inputs.upload-reports == 'true' || ( failure() && inputs.upload-reports == 'true' )
       with:
         name: vulnerability-results
-        path: |
-          ./info_*.json
-          ./info_uv_audit.log
+        path: ${{ steps.compute-upload-paths.outputs.UPLOAD_PATHS }}
         retention-days: 7
