@@ -105,14 +105,6 @@ inputs:
     default: false
     type: boolean
 
-  skip-existing:
-    description: |
-      Continue uploading files if one already exists. Only valid when uploading
-      to PyPI. Other implementations may not support this.
-    required: false
-    default: true
-    type: boolean
-
   python-version:
     description: |
       Python version for installing and using `twine
