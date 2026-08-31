@@ -706,6 +706,7 @@ runs:
         fi
 
     - name: "Compute upload paths"
+      if: inputs.upload-reports == 'true' || ( failure() && inputs.upload-reports == 'true' )
       id: compute-upload-paths
       shell: bash
       env:
