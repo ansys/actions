@@ -6,7 +6,7 @@ certifi==2026.4.22
     # via
     #   httpcore
     #   httpx
-fastcore==2.2.0
+fastcore==2.2.13
     # via
     #   fastspec
     #   ghapi

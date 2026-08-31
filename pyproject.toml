@@ -52,12 +52,12 @@ doc-style = [
     "tomlkit<=0.16",
 ]
 hk-package-clean-except = [
-    "fastcore<=2.2",
+    "fastcore<=2.3",
     "ghapi<=2.1",
     "packaging<=26.3",
 ]
 hk-package-clean-untagged = [
-    "fastcore<=2.2",
+    "fastcore<=2.3",
     "ghapi<=2.1",
     "packaging<=26.3",
 ]
@@ -87,7 +87,7 @@ quality = [
   "prek<=0.5",
   "ruff<=0.17",
   # NOTE: This one is particular and only contains patch releases atm
-  "ty<=0.0.66",
+  "ty<=0.0.73",
 ]
 doc = [
     "ansys-sphinx-theme>=1.10.0",
