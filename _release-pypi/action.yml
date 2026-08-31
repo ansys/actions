@@ -74,13 +74,6 @@ inputs:
     required: true
     type: boolean
 
-  skip-existing:
-    description: |
-      Continue uploading files if one already exists. Only valid when uploading
-      to PyPI. Other implementations may not support this.
-    required: true
-    type: boolean
-
   verify-tag-version:
     description: |
       Verify that the git ref that triggered the workflow is the same as the version
@@ -207,27 +200,14 @@ runs:
       shell: bash
       run: ls -R
 
-    - name: "Evaluate if skip-existing is required"
-      shell: bash
-      id: skip-existing
-      env:
-        SKIP_EXISTING: ${{ inputs.skip-existing }}
-      run: |
-        if [[ "${SKIP_EXISTING}" == 'true' ]]; then
-          echo "SKIP_EXISTING_CMD=--skip-existing" >> ${GITHUB_OUTPUT}
-        else
-          echo "SKIP_EXISTING_CMD=''" >> ${GITHUB_OUTPUT}
-        fi
-
     - name: "Upload artifacts to PyPi"
       shell: bash
       if: inputs.dry-run == 'false' && inputs.use-trusted-publisher == 'false'
       run: |
-        python -m twine upload --verbose ${SKIP_EXISTING_CMD} ${LIBRARY_NAME}-artifacts/*.whl
-        python -m twine upload --verbose ${SKIP_EXISTING_CMD} ${LIBRARY_NAME}-artifacts/*.tar.gz
+        python -m twine upload --verbose ${LIBRARY_NAME}-artifacts/*.whl
+        python -m twine upload --verbose ${LIBRARY_NAME}-artifacts/*.tar.gz
       env:
         TWINE_USERNAME: ${{ inputs.twine-username }}
         TWINE_PASSWORD: ${{ inputs.twine-token }}
         TWINE_REPOSITORY_URL: ${{ inputs.index-name }}
         LIBRARY_NAME: ${{ inputs.library-name }}
-        SKIP_EXISTING_CMD: ${{ steps.skip-existing.outputs.SKIP_EXISTING_CMD }}
