@@ -629,6 +629,24 @@ runs:
         message: >
           Running uv audit security checks.
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv-audit == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f "uv.lock" ]]; then
+          echo "DETECTED_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "DETECTED_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.use-uv-audit == 'true' && steps.auto-detect-uv-lockfile.outputs.DETECTED_UV_LOCKFILE == 'false' }}
+      with:
+        level: "ERROR"
+        message: >
+          Input use-uv-audit is enabled but no uv.lock file was detected. Please, consider using uv lock files to manage your dependencies. Run 'uv lock' to generate one.
+
     - name: "Detect uv audit malware-check config"
       id: detect-uv-audit-malware-check
       if: ${{ inputs.use-uv-audit == 'true' }}
