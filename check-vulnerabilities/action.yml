@@ -269,6 +269,13 @@ runs:
           echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
         fi
 
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.use-uv-audit == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'false' }}
+      with:
+        level: "ERROR"
+        message: >
+          Input use-uv-audit is enabled but no uv.lock file was detected. Please, consider using uv lock files to manage your dependencies. Run 'uv lock' to generate one.
+
     # ------------------------------------------------------------------------
 
     - name: "Check if requirements.txt file exists"
@@ -628,13 +635,6 @@ runs:
         level: "INFO"
         message: >
           Running uv audit security checks.
-
-    - uses: ansys/actions/_logging@main
-      if: ${{ inputs.use-uv-audit == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'false' }}
-      with:
-        level: "ERROR"
-        message: >
-          Input use-uv-audit is enabled but no uv.lock file was detected. Please, consider using uv lock files to manage your dependencies. Run 'uv lock' to generate one.
 
     - name: "Detect uv audit malware-check config"
       id: detect-uv-audit-malware-check
