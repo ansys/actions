@@ -129,12 +129,9 @@ def check_vulnerabilities():
         else:
             uv_audit_output = uv_audit_log_path.read_text(encoding="utf-8", errors="replace")
 
-            vulnerabilities_marker = "Vulnerabilities:"
-            marker_index = uv_audit_output.find(vulnerabilities_marker)
-            if marker_index != -1:
-                uv_audit_vulnerability_details = uv_audit_output[
-                    marker_index + len(vulnerabilities_marker) :
-                ].strip()
+            marker_match = re.search(r"(?m)^Vulnerabilities:\s*$", uv_audit_output)
+            if marker_match:
+                uv_audit_vulnerability_details = uv_audit_output[marker_match.end() :].strip()
 
             summary_match = re.search(
                 r"Found\s+(?:(?P<known_no>no)|(?P<known>\d+))\s+known\s+vulnerabilit(?:y|ies)\s+and\s+"
