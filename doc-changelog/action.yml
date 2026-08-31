@@ -139,7 +139,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v11.0.4 # TODO: Remove in v12
+    - uses: ansys/actions/_logging@v11.0.5 # TODO: Remove in v12
       if: inputs.use-conventional-commits != ''
       with:
         level: "ERROR"
@@ -147,7 +147,7 @@ runs:
           The ``use-conventional-commits`` input is deprecated and will be removed in v12.
           Please use the ``use-pull-request-title`` input instead.
 
-    - uses: ansys/actions/_logging@v11.0.4 # TODO: Remove in v12
+    - uses: ansys/actions/_logging@v11.0.5 # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
         level: "ERROR"
@@ -156,7 +156,7 @@ runs:
           ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
           will be removed in v12.
 
-    - uses: ansys/actions/_logging@v11.0.4
+    - uses: ansys/actions/_logging@v11.0.5
       if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
       with:
         level: "ERROR"
@@ -188,7 +188,7 @@ runs:
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials should be persisted
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@v11.0.4
+      uses: ansys/actions/_setup-python@v11.0.5
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -222,13 +222,13 @@ runs:
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ (steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'lowercase') }}
-      uses: ansys/actions/check-pr-title@v11.0.4
+      uses: ansys/actions/check-pr-title@v11.0.5
       with:
         token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
       if: ${{ (steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'uppercase') }}
-      uses: ansys/actions/check-pr-title@v11.0.4
+      uses: ansys/actions/check-pr-title@v11.0.5
       with:
         token: ${{ inputs.token }}
         use-upper-case: true

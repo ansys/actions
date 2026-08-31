@@ -47,7 +47,7 @@ wheels = [
 
 [[package]]
 name = "ansys-actions-ci-dependencies"
-version = "11.0.4"
+version = "11.0.5"
 source = { virtual = "." }
 
 [package.dev-dependencies]
@@ -185,7 +185,7 @@ dev = [
     { name = "sphinx-design", specifier = "==0.7.0" },
     { name = "sphinx-jinja", specifier = ">=2.0" },
     { name = "tabulate", specifier = "==0.10.0" },
-    { name = "tox", specifier = ">=4.59" },
+    { name = "tox", specifier = ">=4.57" },
     { name = "tox-uv", specifier = ">=1.36" },
     { name = "ty", specifier = "<=0.0.61" },
 ]

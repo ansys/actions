@@ -119,7 +119,7 @@ runs:
 
     # TODO: The action file should be removed in ansys/actions@v12
     - name: "Fail the action"
-      uses: ansys/actions/_logging@v11.0.4
+      uses: ansys/actions/_logging@v11.0.5
       with:
         level: "ERROR"
         message: >
