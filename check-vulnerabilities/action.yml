@@ -629,19 +629,8 @@ runs:
         message: >
           Running uv audit security checks.
 
-    - name: "Auto-detect uv lockfile"
-      id: auto-detect-uv-lockfile
-      if: ${{ inputs.use-uv-audit == 'true' }}
-      shell: bash
-      run: |
-        if [[ -f "uv.lock" ]]; then
-          echo "DETECTED_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
-        else
-          echo "DETECTED_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
-        fi
-
     - uses: ansys/actions/_logging@main
-      if: ${{ inputs.use-uv-audit == 'true' && steps.auto-detect-uv-lockfile.outputs.DETECTED_UV_LOCKFILE == 'false' }}
+      if: ${{ inputs.use-uv-audit == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'false' }}
       with:
         level: "ERROR"
         message: >
