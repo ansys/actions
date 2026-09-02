@@ -214,7 +214,7 @@ doc-style = [
 ]
 hk-package-clean-except = [
     { name = "fastcore", specifier = "<=2.3" },
-    { name = "ghapi", specifier = "<=2.1.2" },
+    { name = "ghapi", specifier = "<=2.2" },
     { name = "packaging", specifier = "<=26.3" },
 ]
 hk-package-clean-untagged = [
