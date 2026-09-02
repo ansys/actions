@@ -183,6 +183,25 @@ inputs:
     default: ''
     type: string
 
+  bump-version:
+    description: |
+      Whether to bump the version on the target branch after a successful release. When
+      ``true``, the minor version is incremented and a ``.dev0`` suffix is appended
+      (e.g. ``1.2.3`` → ``1.3.dev0``). The ``pyproject.toml`` and ``VERSION`` files
+      are updated and a commit is pushed to the target branch. This step is skipped
+      when ``dry-run`` is ``true``. Default value is ``true``.
+    required: false
+    default: true
+    type: boolean
+
+  bump-version-branch:
+    description: |
+      Branch to push the version bump commit to. Defaults to the repository's
+      default branch when left empty.
+    required: false
+    default: ''
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -526,3 +545,130 @@ runs:
 
           # [COMMENT] Include additional artifacts
           dist/extra/**/*
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: inputs.bump-version == 'true' && inputs.dry-run == 'false'
+      with:
+        level: "INFO"
+        message: >
+          Bump the minor version on the target branch and push a commit so that
+          development continues on the next version.
+
+    - name: "Compute next development version"
+      if: inputs.bump-version == 'true' && inputs.dry-run == 'false'
+      id: bump_version
+      shell: bash
+      env:
+        RELEASE_TAG: ${{ github.ref_name }}
+      run: |
+        if [[ ! "${RELEASE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "ERROR: '${RELEASE_TAG}' is not a valid vX.Y.Z tag. Cannot compute next dev version."
+          exit 1
+        fi
+        VERSION="${RELEASE_TAG#v}"
+        MAJOR=$(echo "$VERSION" | cut -d. -f1)
+        MINOR=$(echo "$VERSION" | cut -d. -f2)
+        NEXT_VERSION="${MAJOR}.$((MINOR + 1)).dev0"
+        echo "Released version: ${VERSION}"
+        echo "Next dev version: ${NEXT_VERSION}"
+        echo "NEXT_VERSION=${NEXT_VERSION}" >> $GITHUB_OUTPUT
+
+    - name: "Switch to target branch"
+      if: inputs.bump-version == 'true' && inputs.dry-run == 'false'
+      shell: bash
+      env:
+        BUMP_VERSION_BRANCH: ${{ inputs.bump-version-branch }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+      run: |
+        BRANCH="${BUMP_VERSION_BRANCH:-$DEFAULT_BRANCH}"
+        git fetch origin "${BRANCH}"
+        git checkout "${BRANCH}"
+        echo "Switched to branch: ${BRANCH}"
+
+    - name: "Update version files"
+      if: inputs.bump-version == 'true' && inputs.dry-run == 'false'
+      shell: python
+      env:
+        NEXT_VERSION: ${{ steps.bump_version.outputs.NEXT_VERSION }}
+      run: |
+        import os
+        import re
+        import sys
+        from pathlib import Path
+
+        import tomlkit
+
+        next_version = os.environ["NEXT_VERSION"]
+        workspace = Path(os.environ["GITHUB_WORKSPACE"])
+        updated = []
+
+        # pyproject.toml: use tomlkit to update only [project].version or [tool.poetry].version
+        pyproject = workspace / "pyproject.toml"
+        if pyproject.exists():
+            content = pyproject.read_text(encoding="utf-8")
+            doc = tomlkit.parse(content)
+            if "project" in doc and "version" in doc["project"]:
+                doc["project"]["version"] = next_version
+                pyproject.write_text(tomlkit.dumps(doc), encoding="utf-8")
+                updated.append(str(pyproject))
+                print(f"Updated {pyproject}")
+            elif "tool" in doc and "poetry" in doc.get("tool", {}) and "version" in doc["tool"]["poetry"]:
+                doc["tool"]["poetry"]["version"] = next_version
+                pyproject.write_text(tomlkit.dumps(doc), encoding="utf-8")
+                updated.append(str(pyproject))
+                print(f"Updated {pyproject}")
+
+        # Plain VERSION file
+        version_file = workspace / "VERSION"
+        if version_file.exists():
+            version_file.write_text(next_version + "\n", encoding="utf-8")
+            updated.append(str(version_file))
+            print(f"Updated {version_file}")
+
+        # setup.py: version="..." or version='...'
+        setup_py = workspace / "setup.py"
+        if setup_py.exists():
+            content = setup_py.read_text(encoding="utf-8")
+            new_content = re.sub(r'(version\s*=\s*["\'])[^"\']*(["\'])', rf'\g<1>{next_version}\2', content)
+            if new_content != content:
+                setup_py.write_text(new_content, encoding="utf-8")
+                updated.append(str(setup_py))
+                print(f"Updated {setup_py}")
+
+        # __version__.py and __init__.py that define __version__, excluding virtual envs
+        _EXCLUDED = {".tox", ".venv", "venv", "site-packages", ".git", "__pycache__"}
+        version_attr_pattern = re.compile(r'(__version__\s*=\s*["\'])[^"\']*(["\'])')
+        candidates = list(workspace.glob("**/__version__.py")) + list(workspace.glob("**/__init__.py"))
+        for candidate in candidates:
+            if any(part in _EXCLUDED for part in candidate.parts):
+                continue
+            content = candidate.read_text(encoding="utf-8")
+            if "__version__" not in content:
+                continue
+            new_content = version_attr_pattern.sub(rf'\g<1>{next_version}\2', content)
+            if new_content != content:
+                candidate.write_text(new_content, encoding="utf-8")
+                updated.append(str(candidate))
+                print(f"Updated {candidate}")
+
+        if not updated:
+            print("ERROR: No version files were found or updated. Cannot bump version.", file=sys.stderr)
+            sys.exit(1)
+
+    - name: "Commit and push version bump"
+      if: inputs.bump-version == 'true' && inputs.dry-run == 'false'
+      shell: bash
+      env:
+        NEXT_VERSION: ${{ steps.bump_version.outputs.NEXT_VERSION }}
+        BUMP_VERSION_BRANCH: ${{ inputs.bump-version-branch }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+      run: |
+        BRANCH="${BUMP_VERSION_BRANCH:-$DEFAULT_BRANCH}"
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add -u
+        git diff --cached --quiet && echo "No version files changed, skipping commit." && exit 0
+        git commit -m "chore: bump version to ${NEXT_VERSION} after release"
+        git push origin "${BRANCH}"
