@@ -483,23 +483,35 @@ runs:
       run: |
         # Find the first artifact that already has a discoverable attestation.
         attested_file=""
+        echo "[DEBUG] Attestation scan started"
 
         # Standard release artifacts: wheels, sdist, wheelhouse, SBOM.
         for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
+          echo "[DEBUG] Checking standard artifact: ${artifact}"
           if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             attested_file="$(basename "$artifact")"
+            echo "[DEBUG] Attestation found for standard artifact: ${artifact}"
             break
           fi
         done
 
         # If none found yet, also try files from additional-artifacts.
         if [[ -z "${attested_file}" && -n "${ADDITIONAL_ARTIFACTS}" ]]; then
+          echo "[DEBUG] No standard attested artifact found. Scanning dist/extra"
           while IFS= read -r -d '' artifact; do
+            echo "[DEBUG] Checking additional artifact: ${artifact}"
             if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
               attested_file="$(basename "$artifact")"
+              echo "[DEBUG] Attestation found for additional artifact: ${artifact}"
               break
             fi
           done < <(find dist/extra -type f -print0)
+        fi
+
+        if [[ -n "${attested_file}" ]]; then
+          echo "[DEBUG] Selected attested file example: ${attested_file}"
+        else
+          echo "[DEBUG] No attested file detected"
         fi
 
         {
