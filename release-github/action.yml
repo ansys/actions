@@ -520,7 +520,7 @@ runs:
           echo ""
 
           if [[ -n "${attested_file}" ]]; then
-            echo "Below is an example with one of the attested artifacts `${attested_file}`:"
+            echo "Below is an example with one of the attested artifacts \`${attested_file}\`:"
             echo ""
             echo "\`\`\`bash"
             echo "gh attestation verify ${attested_file} --repo ${GITHUB_REPOSITORY}"
