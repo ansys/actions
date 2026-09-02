@@ -191,33 +191,6 @@ runs:
       with:
         level: "INFO"
         message: >
-          Collect the version number from the tag or the branch name according
-          to the reference type. Tags names are expected to follow
-          'v<MAJOR>.<MINOR>' or 'v<MAJOR>.<MINOR>.<PATCH>'. Branches must follow
-          'release/<MAJOR>.<MINOR>'.
-
-    - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
-      with:
-        python-version: ${{ inputs.python-version }}
-        use-cache: ${{ inputs.use-python-cache }}
-        provision-uv: ${{ inputs.use-uv }}
-        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
-
-    - name: "Install packaging"
-      shell: bash
-      env:
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
-      run: |
-        ${INSTALL_COMMAND} --upgrade pip
-        ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
-
-    # ------------------------------------------------------------------------
-
-    - uses: ansys/actions/_logging@main
-      with:
-        level: "INFO"
-        message: >
           Checkout the repository branch for deploying the documentation. If this
           step fails, then it means that the provided token is not valid.
 
@@ -238,6 +211,33 @@ runs:
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credential must be persisted in this case
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Collect the version number from the tag or the branch name according
+          to the reference type. Tags names are expected to follow
+          'v<MAJOR>.<MINOR>' or 'v<MAJOR>.<MINOR>.<PATCH>'. Branches must follow
+          'release/<MAJOR>.<MINOR>'.
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      uses: ansys/actions/_setup-python@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: ${{ inputs.use-uv }}
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - name: "Install packaging"
+      shell: bash
+      env:
+        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+      run: |
+        ${INSTALL_COMMAND} --upgrade pip
+        ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Ensure that the desired branch exists"
       shell: bash
