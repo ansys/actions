@@ -327,11 +327,11 @@ runs:
         if [[ "${TARGET}" != '' ]]; then
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${TARGET}"
-            poetry install --extras "${TARGET}"
+            poetry install --only main --extras "${TARGET}"
           elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             echo "Installing extra targets with uv: ${TARGET}"
             if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --extra "${TARGET}" --no-dev --no-managed-python
+              uv sync --frozen --extra "${TARGET}" --no-default-groups --no-managed-python
             else
               uv pip install --no-managed-python .[${TARGET}]
             fi
@@ -342,16 +342,34 @@ runs:
         else
           echo "No extra targets to install"
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-            poetry install
+            poetry install --only main
           elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --no-dev --no-managed-python
+              uv sync --frozen --no-default-groups --no-managed-python
             else
               uv pip install --no-managed-python .
             fi
           else
             python -m pip install .
           fi
+        fi
+
+    - name: "Warn if scanned environment contains build tooling"
+      # Belt-and-braces for skip-install=true: alert if the caller's venv includes packages that should not appear in a runtime license report.
+      if: inputs.skip-install == 'true'
+      shell: bash
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+      run: |
+        ${ACTIVATE_VENV}
+        LEAKED=""
+        for pkg in build wheel pyproject-hooks pip-licenses; do
+          if python -c "import importlib.metadata; importlib.metadata.version('${pkg}')" >/dev/null 2>&1; then
+            LEAKED="${LEAKED} ${pkg}"
+          fi
+        done
+        if [[ -n "${LEAKED}" ]]; then
+          echo "::warning::Scanned virtual environment contains build tooling not part of the project runtime:${LEAKED}. License results may include entries not shipped to consumers."
         fi
 
     - name: "Install pip-licenses in its own virtual environment"
