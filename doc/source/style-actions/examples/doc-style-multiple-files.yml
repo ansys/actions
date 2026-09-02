@@ -1,0 +1,36 @@
+doc-style:
+  name: "Running documentation style checks on multiple files"
+  runs-on: ubuntu-latest
+  permissions:
+    contents: read
+    pull-requests: write
+  steps:
+    - name: "Install Git and clone project"
+      uses: actions/checkout@v6
+
+    - name: "Install jq"
+      run: |
+        # Used to format Vale input as a JSON-formatted list of files
+        sudo apt install -y jq
+
+    - name: "Collect files for Vale"
+      id: collect-files
+      shell: bash
+      run: |
+        python - <<'PY' >> "${GITHUB_OUTPUT}"
+        import json
+        from pathlib import Path
+
+        files = sorted(
+            str(path)
+            for path in Path("doc/source").rglob("*.rst")
+            if not path.is_relative_to("doc/source/api")
+        )
+        print(f"VALE_FILES={json.dumps(files)}")
+        PY
+
+    - name: "Running documentation style checks"
+      uses: ansys/actions/doc-style@{{ version }}
+      with:
+        token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
+        files: ${{ '{{ steps.collect-files.outputs.VALE_FILES }}' }}
