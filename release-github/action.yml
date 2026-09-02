@@ -477,8 +477,31 @@ runs:
       shell: bash
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
+        ADDITIONAL_ARTIFACTS: ${{ inputs.additional-artifacts }}
         REPO_URL: ${{ github.event.repository.html_url }}
+        GH_TOKEN: ${{ inputs.token }}
       run: |
+        # Find the first artifact that already has a discoverable attestation.
+        attested_file=""
+
+        # Standard release artifacts: wheels, sdist, wheelhouse, SBOM.
+        for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
+          if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            attested_file="$(basename "$artifact")"
+            break
+          fi
+        done
+
+        # If none found yet, also try files from additional-artifacts.
+        if [[ -z "${attested_file}" && -n "${ADDITIONAL_ARTIFACTS}" ]]; then
+          for artifact in dist/extra/*; do
+            if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+              attested_file="$(basename "$artifact")"
+              break
+            fi
+          done
+        fi
+
         {
           echo "RELEASE_NOTES_BODY<<EOF"
           echo "${RELEASE_NOTES_BODY}"
@@ -490,6 +513,17 @@ runs:
           echo "\`\`\`bash"
           echo "gh attestation verify <file-path-of-downloaded-artifact> --repo ${GITHUB_REPOSITORY}"
           echo "\`\`\`"
+          echo ""
+
+          if [[ -n "${attested_file}" ]]; then
+            echo "Example with an attested artifact (${attested_file}):"
+            echo ""
+            echo "\`\`\`bash"
+            echo "gh attestation verify ${attested_file} --repo ${GITHUB_REPOSITORY}"
+            echo "\`\`\`"
+            echo ""
+          fi
+
           echo "You can also download the attestation from [GitHub](${REPO_URL}/attestations) and verify against that directly:"
           echo ""
           echo "\`\`\`bash"
