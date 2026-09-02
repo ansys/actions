@@ -494,12 +494,12 @@ runs:
 
         # If none found yet, also try files from additional-artifacts.
         if [[ -z "${attested_file}" && -n "${ADDITIONAL_ARTIFACTS}" ]]; then
-          for artifact in dist/extra/*; do
+          while IFS= read -r -d '' artifact; do
             if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
               attested_file="$(basename "$artifact")"
               break
             fi
-          done
+          done < <(find dist/extra -type f -print0)
         fi
 
         {
