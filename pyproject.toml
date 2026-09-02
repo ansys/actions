@@ -26,7 +26,7 @@ check-licenses = [
 check-vulnerabilities = [
     "bandit>=1.9,<2",
     "click>=8.4,<9",
-    "pygithub>=2.10.0,<3",
+    "pygithub>=2.10,<3",
     "safety>=3.8,<4",
 ]
 code-style-pre-commit = [
