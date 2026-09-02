@@ -9,6 +9,38 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.0.5 <https://github.com/ansys/actions/releases/tag/v11.0.5>`_ - August 31, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump fastcore from 2.2.0 to 2.2.13
+          - `#1508 <https://github.com/ansys/actions/pull/1508>`_
+
+        * - Bump prek from 0.4.13 to 0.4.14
+          - `#1510 <https://github.com/ansys/actions/pull/1510>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove \`skip-existing\` input for release-pypi-private
+          - `#1518 <https://github.com/ansys/actions/pull/1518>`_
+
+        * - Remove reference to skip existing in other release actions
+          - `#1525 <https://github.com/ansys/actions/pull/1525>`_
+
+
 `11.0.4 <https://github.com/ansys/actions/releases/tag/v11.0.4>`_ - August 27, 2026
 ===================================================================================
 
