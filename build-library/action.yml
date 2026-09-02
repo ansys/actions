@@ -84,6 +84,16 @@ inputs:
     default: true
     type: boolean
 
+  checkout-lfs:
+    description: |
+      Whether to download Git LFS-tracked files during the checkout step.
+      Enable this when the repository stores package data files tracked with
+      Git LFS that must be included in the built sdist/wheel. Only applies
+      when ``checkout`` is ``true``. Default value is ``false``.
+    required: false
+    default: false
+    type: boolean
+
   validate-build:
     description: |
       Whether to validate the build process. If ``true``, the build process is
@@ -147,6 +157,7 @@ runs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+        lfs: ${{ inputs.checkout-lfs }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
       if: ${{ inputs.skip-python-setup == 'false' }}
