@@ -52,12 +52,12 @@ doc-style = [
 ]
 hk-package-clean-except = [
     "fastcore<=2.3",
-    "ghapi<=2.1",
+    "ghapi<=2.2",
     "packaging<=26.3",
 ]
 hk-package-clean-untagged = [
     "fastcore<=2.3",
-    "ghapi<=2.1",
+    "ghapi<=2.1.2",
     "packaging<=26.3",
 ]
 release-github = [
