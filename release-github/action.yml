@@ -187,7 +187,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@v11.0.5 # TODO: Remove in v12
+    - uses: ansys/actions/_logging@v11.0.6 # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
         level: "ERROR"
@@ -196,7 +196,7 @@ runs:
           ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
           will be removed in v12.
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: inputs.tomlkit-version != '' || inputs.pypandoc-binary-version != ''
       with:
         level: "ERROR"
@@ -207,7 +207,7 @@ runs:
 
     # Only one of both can be true: generate-release-notes, changelog-release-notes
     - name: "Sanity check on release notes"
-      uses: ansys/actions/_logging@v11.0.5
+      uses: ansys/actions/_logging@v11.0.6
       if: ${{ inputs.generate-release-notes == 'true' && inputs.changelog-release-notes == 'true' }}
       with:
         level: "ERROR"
@@ -220,7 +220,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       with:
         level: "INFO"
         message: >
@@ -238,7 +238,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       with:
         level: "INFO"
@@ -271,7 +271,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -288,7 +288,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -305,7 +305,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -323,7 +323,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -380,7 +380,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -401,7 +401,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       with:
         level: "INFO"
         message: >
@@ -412,7 +412,7 @@ runs:
       run: ls -R dist/
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@v11.0.5
+      uses: ansys/actions/_setup-python@v11.0.6
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}

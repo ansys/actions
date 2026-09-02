@@ -163,7 +163,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       with:
         level: "INFO"
         message: >
@@ -183,7 +183,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       with:
         level: "INFO"
         message: >
@@ -191,7 +191,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       with:
         level: "INFO"
         message: >
@@ -199,14 +199,14 @@ runs:
 
     - name: "Set up Python ${{ inputs.python-version }}"
       if: ${{ inputs.skip-python-setup == 'false' }}
-      uses: ansys/actions/_setup-python@v11.0.5
+      uses: ansys/actions/_setup-python@v11.0.6
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: ${{ inputs.skip-python-setup == 'true' }}
       with:
         level: "INFO"
@@ -230,7 +230,7 @@ runs:
           echo "resolved-group=$GRP_DEPS" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: ${{ steps.resolve-deps.outputs.resolved-optional != '' && steps.resolve-deps.outputs.resolved-group != '' }}
       with:
         level: "WARNING"
@@ -326,7 +326,7 @@ runs:
       run:
         echo "Output was found $EXISTS_TESTS_REQUIREMENTS"
 
-    - uses: ansys/actions/_logging@v11.0.5
+    - uses: ansys/actions/_logging@v11.0.6
       if: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS == 'true' }}
       with:
         level: "ERROR"
