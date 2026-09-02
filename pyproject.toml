@@ -26,7 +26,7 @@ check-licenses = [
 check-vulnerabilities = [
     "bandit>=1.9,<2",
     "click>=8.4,<9",
-    "pygithub>=2.9,<3",
+    "pygithub>=2.10,<3",
     "safety>=3.8,<4",
 ]
 code-style-pre-commit = [
@@ -52,12 +52,12 @@ doc-style = [
 ]
 hk-package-clean-except = [
     "fastcore<=2.3",
-    "ghapi<=2.1",
+    "ghapi<=2.2",
     "packaging<=26.3",
 ]
 hk-package-clean-untagged = [
     "fastcore<=2.3",
-    "ghapi<=2.1",
+    "ghapi<=2.1.2",
     "packaging<=26.3",
 ]
 release-github = [
@@ -86,7 +86,7 @@ quality = [
   "prek<=0.5",
   "ruff<=0.17",
   # NOTE: This one is particular and only contains patch releases atm
-  "ty<=0.0.73",
+  "ty<=0.0.74",
 ]
 doc = [
     "ansys-sphinx-theme>=1.10.0",
