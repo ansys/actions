@@ -493,7 +493,7 @@ runs:
           echo "You can also download the attestation from [GitHub](${REPO_URL}/attestations) and verify against that directly:"
           echo ""
           echo "\`\`\`bash"
-          echo "gh attestation verify <file-path-of-downloaded-artifact> --bundle <file-path-of-downloaded-attestation>"
+          echo "gh attestation verify <file-path-of-downloaded-artifact> --bundle <file-path-of-downloaded-attestation> --repo ${GITHUB_REPOSITORY}"
           echo "\`\`\`"
           echo "EOF"
         } >> "$GITHUB_ENV"
