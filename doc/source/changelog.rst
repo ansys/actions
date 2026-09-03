@@ -9,6 +9,35 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.0.6 <https://github.com/ansys/actions/releases/tag/v11.0.6>`_ - September 02, 2026
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Tag check for releases
+          - `#1533 <https://github.com/ansys/actions/pull/1533>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump pygithub from 2.9.1 to 2.10.0
+          - `#1520 <https://github.com/ansys/actions/pull/1520>`_
+
+        * - Bump ghapi from 2.0.5 to 2.1.2
+          - `#1524 <https://github.com/ansys/actions/pull/1524>`_
+
+
 `11.0.5 <https://github.com/ansys/actions/releases/tag/v11.0.5>`_ - August 31, 2026
 ===================================================================================
 

@@ -360,7 +360,8 @@ runs:
         #   ansys_project-1.2.3-py3-none-any.whl
         #   ansys_project-1.2.3.tar.gz
         ARTIFACT_VERSION="$(basename "${ARTIFACT_FILE}" \
-          | sed -E 's/^[^0-9]+//; s/-.*$//; s/\.(tar\.gz|whl)$//')"
+          | cut -d'-' -f2 \
+          | sed -E 's/\.(tar\.gz|whl)$//')"
 
         if [[ -z "${ARTIFACT_VERSION}" ]]; then
           echo "Failed to extract version from artifact filename"
