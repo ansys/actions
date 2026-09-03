@@ -508,10 +508,6 @@ runs:
           echo "Error: No 'index.html' file found in version/stable or version/${VERSION}." >&2
           exit 1
         fi
-        else
-          echo "Error: No 'index.html' file found in version/stable or version/${VERSION}." >&2
-          exit 1
-        fi
 
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash

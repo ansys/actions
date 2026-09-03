@@ -127,7 +127,7 @@ runs:
             continue
           fi
 
-          if grep -q '<meta name="robots" content="noindex' "$file"; then
+          if grep -Eiq "<meta[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"'][^>]*content[[:space:]]*=[[:space:]]*[\"'][^\"'>]*noindex|<meta[^>]*content[[:space:]]*=[[:space:]]*[\"'][^\"'>]*noindex[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"']" "$file"; then
             skipped_noindex=$((skipped_noindex + 1))
             continue
           fi

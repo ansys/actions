@@ -61,8 +61,10 @@ runs:
 
     - name: "Inject noindex meta tags into non-stable pages"
       shell: bash
+      env:
+        VERSION_DIRECTORY: ${{ inputs.version-directory }}
       run: |
-        version_dir="${{ inputs.version-directory }}"
+        version_dir="${VERSION_DIRECTORY}"
 
         if [[ ! -d "$version_dir" ]]; then
           echo "Skipping noindex injection: directory '$version_dir' does not exist."
@@ -71,7 +73,7 @@ runs:
 
         inject_noindex() {
             local file=$1
-            if grep -q '<meta name="robots"' "$file"; then
+            if grep -Eiq "<meta[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"']" "$file"; then
                 return
             fi
             if ! grep -q '</head>' "$file"; then

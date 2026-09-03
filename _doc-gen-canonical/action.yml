@@ -66,7 +66,7 @@ runs:
 
         remove_canonical_tag() {
             local file=$1
-            sed -i '/<link rel="canonical"/d' $file
+            sed -i '/<link rel="canonical"/d' "$file"
         }
 
         add_canonical_tag() {
