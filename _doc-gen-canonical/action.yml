@@ -73,6 +73,11 @@ runs:
             local file=$1
             local filename=$(basename "$file")
             local relative_path=${file#*version/*/}
+            local stable_target="${VERSION_DIRECTORY}/stable/${relative_path}"
+            if [[ ! -f "$stable_target" ]]; then
+                echo "Skipping canonical for $file (no stable counterpart at $stable_target)"
+                return
+            fi
             local baseurl="https://${CNAME}/version/stable"
             local canonical_url="${baseurl}/${relative_path}"
             local link_tag="\ \ <link rel=\"canonical\" href=\"$canonical_url\" />"
@@ -82,6 +87,7 @@ runs:
 
         export -f remove_canonical_tag
         export -f add_canonical_tag
+        export VERSION_DIRECTORY
 
         find_html_files() {
             local directory=$1
@@ -114,4 +120,3 @@ runs:
           echo "Error: The 'index.html' file does not exist." >&2
           exit 1
         fi
-

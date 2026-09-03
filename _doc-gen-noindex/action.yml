@@ -1,0 +1,88 @@
+# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: >
+  Inject noindex meta tags into non-stable documentation pages.
+
+description: |
+  This process injects ``<meta name="robots" content="noindex, follow" />``
+  into every HTML page under the version directory that is *not* served from
+  ``version/stable/``. The ``noindex`` directive removes the page from the
+  search index while ``follow`` still lets search engines walk links to the
+  canonical stable version, so link equity is preserved.
+
+  This action is a private composite action executed as a component of the
+  PyAnsys documentation deployment strategies. It complements
+  ``_doc-gen-robots`` (which prevents crawling) and ``_doc-gen-canonical``
+  (which points to the stable counterpart).
+
+inputs:
+
+  # Optional inputs
+
+  version-directory:
+    description: >
+      Relative path to the directory containing the version pages of the
+      website. The ``stable`` subdirectory of this path is always skipped.
+    required: false
+    default: 'version'
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Injecting noindex meta tags into non-stable documentation pages.
+
+    - name: "Inject noindex meta tags into non-stable pages"
+      shell: bash
+      run: |
+        version_dir="${{ inputs.version-directory }}"
+
+        if [[ ! -d "$version_dir" ]]; then
+          echo "Skipping noindex injection: directory '$version_dir' does not exist."
+          exit 0
+        fi
+
+        inject_noindex() {
+            local file=$1
+            if grep -q '<meta name="robots"' "$file"; then
+                return
+            fi
+            if ! grep -q '</head>' "$file"; then
+                return
+            fi
+            local tag='  <meta name="robots" content="noindex, follow" />'
+            sed -i "/<\/head>/i\\${tag}" "$file"
+            echo "Injected noindex into $file"
+        }
+        export -f inject_noindex
+
+        find "$version_dir" -type f -name "*.html" \
+            ! -path "$version_dir/stable/*" \
+            -exec bash -c 'inject_noindex "$0"' {} \;

@@ -29,6 +29,13 @@ description: |
   composite action that is executed as a component of the PyAnsys documentation
   deployment strategies.
 
+  Only pages the site actually wants indexed are advertised. Pages that declare
+  ``<meta name="robots" content="noindex...">`` are skipped, together with the
+  configurable ``exclude`` list of boilerplate/utility filenames. Each URL
+  carries an individual ``<lastmod>`` derived from the file's mtime; the
+  legacy ``<changefreq>`` and ``<priority>`` hints are omitted (Google ignores
+  them).
+
 inputs:
 
   # Required inputs
@@ -45,6 +52,18 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
+  exclude:
+    description: |
+      Space-separated list of HTML file basenames to exclude from the sitemap.
+      These are Sphinx utility pages, boilerplate banners and other pages that
+      hurt search quality when advertised in a sitemap. Any HTML file whose
+      basename matches an entry is skipped.
+    required: false
+    default: 'announcement.html search.html genindex.html py-modindex.html 404.html webpack-macros.html'
+    type: string
+
 
 runs:
   using: "composite"
@@ -56,46 +75,81 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generating the XML sitemap.
+          Generating the XML sitemap. Skips pages listed in the ``exclude``
+          input and any HTML file that declares ``<meta name="robots"
+          content="noindex...">``. Uses each file's modification time as
+          ``<lastmod>`` and omits ``<changefreq>``/``<priority>`` (both are
+          ignored by Google).
 
     - name: "Generate the sitemap.xml file"
       shell: bash
       env:
         CNAME: ${{ inputs.cname }}
         HTML_DIRECTORY: ${{ inputs.html-directory }}
+        EXCLUDE_LIST: ${{ inputs.exclude }}
       run: |
-        # Declare the website name and the output file for the sitemap
         website="https://${CNAME}"
         input_dir="${HTML_DIRECTORY}"
         output="sitemap.xml"
 
-        # Add URLs to the sitemap
-        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $output
-        echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> $output
-
-        # Add homepage
-        echo "  <url>" >> $output
-        echo "    <loc>$website</loc>" >> $output
-        echo "    <lastmod>$(date +%Y-%m-%dT%H:%M:%S+00:00)</lastmod>" >> $output
-        echo "    <changefreq>daily</changefreq>" >> $output
-        echo "    <priority>1.0</priority>" >> $output
-        echo "  </url>" >> $output
-
-        # Add other URLs
-        while IFS= read -r -d '' file; do
-          if [[ $file == *"$input_dir"* ]]; then
-            url=${file}
+        # Build an alternation regex from the space-separated exclude list
+        exclude_regex=""
+        for name in ${EXCLUDE_LIST}; do
+          [[ -z "$name" ]] && continue
+          if [[ -z "$exclude_regex" ]]; then
+            exclude_regex="$name"
           else
-            # $input_dir is not in the file path, add it to the beginning of the URL
-            url="$input_dir${file}"
+            exclude_regex="${exclude_regex}|${name}"
           fi
-          echo "  <url>" >> $output
-          echo "    <loc>$website/$url</loc>" >> $output
-          echo "    <lastmod>$(date +%Y-%m-%dT%H:%M:%S+00:00)</lastmod>" >> $output
-          echo "    <changefreq>weekly</changefreq>" >> $output
-          echo "    <priority>0.5</priority>" >> $output
-          echo "  </url>" >> $output
-        done < <(find "$input_dir" -type f -name "*.html" ! -name "search.html" ! -name "genindex.html" -print0)
+        done
 
-        # Close the sitemap
-        echo "</urlset>" >> $output
+        now=$(date -u +%Y-%m-%dT%H:%M:%S+00:00)
+
+        {
+          echo '<?xml version="1.0" encoding="UTF-8"?>'
+          echo '<!-- managed-by: ansys/actions/_doc-gen-sitemap -->'
+          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+          echo '  <url>'
+          echo "    <loc>${website}/</loc>"
+          echo "    <lastmod>${now}</lastmod>"
+          echo '  </url>'
+        } > "$output"
+
+        total=0
+        skipped_excluded=0
+        skipped_noindex=0
+
+        while IFS= read -r -d '' file; do
+          basename=$(basename "$file")
+
+          if [[ -n "$exclude_regex" ]] && [[ "$basename" =~ ^($exclude_regex)$ ]]; then
+            skipped_excluded=$((skipped_excluded + 1))
+            continue
+          fi
+
+          if grep -q '<meta name="robots" content="noindex' "$file"; then
+            skipped_noindex=$((skipped_noindex + 1))
+            continue
+          fi
+
+          if [[ "$file" == "$input_dir"* || "$file" == *"/$input_dir/"* ]]; then
+            url_path="/${file}"
+          else
+            url_path="/${input_dir%/}/${file}"
+          fi
+
+          lastmod=$(date -u -r "$file" +"%Y-%m-%dT%H:%M:%S+00:00" 2>/dev/null || echo "$now")
+
+          {
+            echo '  <url>'
+            echo "    <loc>${website}${url_path}</loc>"
+            echo "    <lastmod>${lastmod}</lastmod>"
+            echo '  </url>'
+          } >> "$output"
+
+          total=$((total + 1))
+        done < <(find "$input_dir" -type f -name "*.html" -print0)
+
+        echo '</urlset>' >> "$output"
+
+        echo "Sitemap entries: ${total} (excluded by name: ${skipped_excluded}, skipped for noindex: ${skipped_noindex})."

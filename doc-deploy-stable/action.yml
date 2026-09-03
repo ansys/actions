@@ -459,6 +459,21 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Inject ``noindex, follow`` meta tags into every non-stable
+          documentation page so search engines drop them from the index while
+          still following links to their canonical stable counterpart.
+
+    - name: "Inject noindex meta tags into non-stable pages"
+      uses: ansys/actions/_doc-gen-noindex@main
+      with:
+        version-directory: version
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
       if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       with:
         level: "INFO"
@@ -489,6 +504,10 @@ runs:
           sed -i "s|const SEARCH_FILE = \".*_static/search.json\";|const SEARCH_FILE = \"version/${VERSION}/_static/search.json\";|g" index.html
           sed -i "/const ADVANCE_SEARCH_PATH = \"search.html\";/s|search.html|version/${VERSION}/search.html|" index.html
           sed -i "s|<html lang=\"en\" data-content_root=\"./\" >|<html lang=\"en\" data-content_root=\"./version/${VERSION}/\" >|g" index.html
+        else
+          echo "Error: No 'index.html' file found in version/stable or version/${VERSION}." >&2
+          exit 1
+        fi
         else
           echo "Error: No 'index.html' file found in version/stable or version/${VERSION}." >&2
           exit 1

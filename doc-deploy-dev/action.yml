@@ -133,6 +133,7 @@ inputs:
     default: true
     type: string
 
+
 runs:
   using: "composite"
   steps:
@@ -291,6 +292,21 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Inject ``noindex, follow`` meta tags into every non-stable
+          documentation page so search engines drop them from the index while
+          still following links to their canonical stable counterpart.
+
+    - name: "Inject noindex meta tags into non-stable pages"
+      uses: ansys/actions/_doc-gen-noindex@main
+      with:
+        version-directory: version
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
       if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       with:
         level: "INFO"
@@ -382,8 +398,9 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generate the site-map for the latest development or stable
-          documentation.
+          Generate the site-map for the latest stable documentation. This step
+          is skipped when no stable release exists yet, because the sitemap
+          only advertises indexable URLs (under ``version/stable/``).
 
     - name: "Generate 'sitemap.xml' file"
       uses: ansys/actions/_doc-gen-sitemap@main
@@ -392,6 +409,21 @@ runs:
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate the robots.txt file for guiding web crawlers so that only
+          ``/version/stable/`` is crawled.
+
+    - name: "Generate 'robots.txt' file"
+      uses: ansys/actions/_doc-gen-robots@main
+      with:
+        cname: ${{ inputs.cname }}
+        custom-path: ''
 
     # ------------------------------------------------------------------------
 
@@ -426,6 +458,7 @@ runs:
         fi
 
     # ------------------------------------------------------------------------
+
 
     - uses: ansys/actions/_logging@main
       with:
