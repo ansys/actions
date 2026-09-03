@@ -8,6 +8,18 @@ if fragment files exist in their designated directory, for example ``doc/changel
 ``CHANGELOG.md`` file is updated in the release branch corresponding to the tag being pushed, such as ``release/0.1``,
 and a pull request is created to merge the CHANGELOG update and deleted fragment files into main.
 
+If your repository does not follow the ``release/X.Y`` naming convention, the action tries to identify the branch
+the tag was created from. When the branch cannot be identified, for example because several branches contain the
+tagged commit, the CHANGELOG file is updated in a temporary branch that is deleted once the tag is recreated. In that
+case, use the ``release-branch`` input to specify the branch the tag was created from:
+
+.. code:: yaml
+
+    - uses: ansys/actions/doc-deploy-changelog@{{ version }}
+      with:
+        token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        release-branch: "stable"
+
 Use the following link to set up the ``ansys/actions/doc-changelog`` action before setting up the ``doc-deploy-changelog`` action: :ref:`docs_changelog_action_setup`
 Once the ``doc-changelog`` action is done being set up, continue with the ``doc-deploy-changelog`` action setup:
 

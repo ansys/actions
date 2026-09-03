@@ -156,6 +156,32 @@ inputs:
     default: false
     type: boolean
 
+  release-branch:
+    description: |
+      Name of the branch the tag was created from, in which the CHANGELOG file
+      is updated. Use this input in repositories that do not follow the
+      ``release/X.Y`` branch naming convention. It is ignored when
+      ``release-from-main`` is ``true``.
+
+      When this input is empty, the branch is detected automatically using the
+      following order of precedence:
+
+      1. The branch the tag was created from, as reported by
+         ``github.event.base_ref`` on tag push events.
+
+      2. The ``release/X.Y`` branch matching the tag, if it exists on the remote.
+
+      3. The only remote branch containing the tagged commit, excluding the
+         default branch. If several branches contain the commit, this strategy
+         is skipped.
+
+      If none of these strategies identify a branch, the CHANGELOG file is
+      updated in a temporary ``docs/changelog-update-vX.Y.Z`` branch, which is
+      deleted once the tag is recreated.
+    required: false
+    default: ''
+    type: string
+
   use-upper-case:
     description: |
       Use of uppercase letters in the "type" field of:
@@ -298,28 +324,102 @@ runs:
         MAIN_BRANCH: ${{ steps.main-branch-name.outputs.MAIN_BRANCH }}
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
         RELEASE_FROM_MAIN: ${{ inputs.release-from-main }}
+        RELEASE_BRANCH_INPUT: ${{ inputs.release-branch }}
+        BASE_REF: ${{ github.event.base_ref }}
       run: |
         if [[ "${RELEASE_FROM_MAIN}" == "true" ]]; then
           echo "UPDATE_BRANCH=${MAIN_BRANCH}" >> ${GITHUB_OUTPUT}
           echo "RELEASE_BRANCH_EXISTS=true" >> ${GITHUB_OUTPUT}
-        else
-          # Assume release branch is "release/major.minor"
-          # v0.1.0 (tag) -> release/0.1
-          tag_version=${TAG_VERSION}
-          release_branch="release/${tag_version%.*}"
+          exit 0
+        fi
 
-          # Check release_branch exists on remote
-          release_branch_exists=$(git ls-remote --branches origin refs/heads/$release_branch 2>&1)
+        # Returns 0 if the branch exists on the remote and is not the default branch
+        is_usable_branch() {
+          branch="$1"
 
-          # If the release branch doesn't exist, then use the temporary branch
-          if [ -z "$release_branch_exists" ]; then
-            # docs/changelog-update-v0.1.0
-            echo "UPDATE_BRANCH=docs/changelog-update-v${TAG_VERSION}" >> ${GITHUB_OUTPUT}
-            echo "RELEASE_BRANCH_EXISTS=false" >> ${GITHUB_OUTPUT}
-          else
-            echo "UPDATE_BRANCH=${release_branch}" >> ${GITHUB_OUTPUT}
-            echo "RELEASE_BRANCH_EXISTS=true" >> ${GITHUB_OUTPUT}
+          if [ -z "$branch" ]; then
+            return 1
           fi
+
+          if [[ "$branch" == "${MAIN_BRANCH}" ]]; then
+            echo "Ignoring '${branch}' since it is the default branch."
+            return 1
+          fi
+
+          if [ -z "$(git ls-remote --branches origin "refs/heads/${branch}")" ]; then
+            echo "Ignoring '${branch}' since it does not exist on the remote."
+            return 1
+          fi
+
+          return 0
+        }
+
+        release_branch=""
+        strategy=""
+
+        # 1. Branch explicitly provided through the "release-branch" input
+        if [ -n "${RELEASE_BRANCH_INPUT}" ]; then
+          if is_usable_branch "${RELEASE_BRANCH_INPUT}"; then
+            release_branch="${RELEASE_BRANCH_INPUT}"
+            strategy="the 'release-branch' input"
+          else
+            echo -e "\033[1;91m[ERROR]: The branch '${RELEASE_BRANCH_INPUT}' provided through the 'release-branch' input cannot be used.\033[0m"
+            exit 1
+          fi
+        fi
+
+        # 2. Branch the tag was created from, as reported by the push event
+        if [ -z "${release_branch}" ] && [ -n "${BASE_REF}" ]; then
+          base_ref_branch="${BASE_REF#refs/heads/}"
+          if is_usable_branch "${base_ref_branch}"; then
+            release_branch="${base_ref_branch}"
+            strategy="the branch the tag was created from"
+          fi
+        fi
+
+        # 3. Release branch following the "release/major.minor" convention
+        #    v0.1.0 (tag) -> release/0.1
+        if [ -z "${release_branch}" ]; then
+          convention_branch="release/${TAG_VERSION%.*}"
+          if is_usable_branch "${convention_branch}"; then
+            release_branch="${convention_branch}"
+            strategy="the 'release/X.Y' naming convention"
+          fi
+        fi
+
+        # 4. Single remote branch containing the tagged commit
+        if [ -z "${release_branch}" ]; then
+          candidates=$(git branch --remotes --contains HEAD --format='%(refname:lstrip=3)' \
+            | grep -v -x -e "HEAD" -e "${MAIN_BRANCH}" || true)
+          number_of_candidates=$(echo -n "${candidates}" | grep -c '^' || true)
+
+          if [ "${number_of_candidates}" -eq 1 ]; then
+            if is_usable_branch "${candidates}"; then
+              release_branch="${candidates}"
+              strategy="the only remote branch containing the tagged commit"
+            fi
+          elif [ "${number_of_candidates}" -gt 1 ]; then
+            echo "Several remote branches contain the tagged commit, so none of them can be used:"
+            echo "${candidates}"
+          fi
+        fi
+
+        if [ -n "${release_branch}" ]; then
+          echo "Using the '${release_branch}' branch, identified through ${strategy}."
+          echo "UPDATE_BRANCH=${release_branch}" >> ${GITHUB_OUTPUT}
+          echo "RELEASE_BRANCH_EXISTS=true" >> ${GITHUB_OUTPUT}
+        else
+          message="No release branch could be identified for tag v${TAG_VERSION}. The CHANGELOG \
+          file is updated in the temporary 'docs/changelog-update-v${TAG_VERSION}' branch, which is \
+          deleted once the tag is recreated. As a result, the CHANGELOG update is only kept in the \
+          pull request created into the '${MAIN_BRANCH}' branch. Use the 'release-branch' input to \
+          specify the branch the tag was created from."
+
+          echo -e "\033[1;93m[WARNING]: $message\033[0m"
+
+          # docs/changelog-update-v0.1.0
+          echo "UPDATE_BRANCH=docs/changelog-update-v${TAG_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "RELEASE_BRANCH_EXISTS=false" >> ${GITHUB_OUTPUT}
         fi
 
     - name: "Get current date"
