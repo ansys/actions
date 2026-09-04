@@ -125,6 +125,9 @@ runs:
         elif [[ -f "${VERSION_DIRECTORY}/dev/index.html" ]]; then
           replace_canonical_link 'version/dev/index.html'
         else
-          echo "Error: The 'index.html' file does not exist." >&2
-          exit 1
+          # First-ever prerelease deploy with no prior dev/stable: skip the
+          # landing-version canonical rewrite instead of failing. The root
+          # landing page canonical is enforced separately in the
+          # doc-deploy-{dev,stable} actions.
+          echo "Warning: no 'version/stable/index.html' or 'version/dev/index.html' present; skipping root-canonical rewrite for the landing version."
         fi
