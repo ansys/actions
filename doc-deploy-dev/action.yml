@@ -339,6 +339,30 @@ runs:
           exit 1
         fi
 
+    - name: "Ensure the root landing page is indexable and self-canonical"
+      shell: bash
+      if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
+      env:
+        CNAME: ${{ inputs.cname }}
+      run: |
+        # The landing page is copied from a versioned page above. When that
+        # source came from a non-stable version it carries the ``noindex``
+        # meta injected by ``_doc-gen-noindex``; that would hide the site's
+        # own root from search engines. Strip any inherited robots meta and
+        # enforce a self-canonical so the root is treated as authoritative.
+        if [[ ! -f index.html ]]; then
+          exit 0
+        fi
+
+        perl -0777 -i -pe 's#<meta[^>]*name\s*=\s*["\x27]robots["\x27][^>]*/?>##gi' index.html
+
+        canonical_tag="<link rel=\"canonical\" href=\"https://${CNAME}/\">"
+        if grep -q '<link rel="canonical"' index.html; then
+          sed -i "s|<link rel=\"canonical\".*>|${canonical_tag}|g" index.html
+        else
+          sed -i "/^ *<\/head>/i\\  ${canonical_tag}" index.html
+        fi
+
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
       run: |
