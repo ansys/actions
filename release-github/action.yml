@@ -34,6 +34,10 @@ description: |
     setup guide, https://actions.docs.ansys.com/version/dev/migrations/docs-changelog-setup.html,
     the changelog for your release is included in the release notes on GitHub.
 
+    If you are using the attestation features, we recommend you add the ``attestations: read``
+    permission to your GitHub token. Doing so will allow this action to add an example of
+    attested artifacts to the release notes.
+
     .. important:: **Required GitHub Permissions**
 
        - **contents**: ``write`` - Required to create GitHub releases and upload release assets
@@ -478,7 +482,31 @@ runs:
       shell: bash
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
+        ADDITIONAL_ARTIFACTS: ${{ inputs.additional-artifacts }}
+        REPO_URL: ${{ github.event.repository.html_url }}
+        GH_TOKEN: ${{ inputs.token }}
       run: |
+        # Find the first artifact that already has a discoverable attestation.
+        attested_file=""
+
+        # Standard release artifacts: wheels, sdist, wheelhouse, SBOM.
+        for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
+          if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            attested_file="$(basename "$artifact")"
+            break
+          fi
+        done
+
+        # If none found yet, also try files from additional-artifacts.
+        if [[ -z "${attested_file}" && -n "${ADDITIONAL_ARTIFACTS}" ]]; then
+          while IFS= read -r -d '' artifact; do
+            if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+              attested_file="$(basename "$artifact")"
+              break
+            fi
+          done < <(find dist/extra -type f -print0)
+        fi
+
         {
           echo "RELEASE_NOTES_BODY<<EOF"
           echo "${RELEASE_NOTES_BODY}"
@@ -488,13 +516,23 @@ runs:
           echo "You can verify this release's artifact attestations using [GitHub's command-line tool](https://cli.github.com/). For example, download the files from this release page or from [PyPI](https://pypi.org/). Then, run the following commands:"
           echo ""
           echo "\`\`\`bash"
+          echo "gh attestation verify <file-path-of-downloaded-artifact> --repo ${GITHUB_REPOSITORY}"
+          echo "\`\`\`"
+          echo ""
 
-          # Find the following artifacts: wheels, source distribution, wheelhouse and SBOM files
-          for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
-            filename=$(basename "$artifact")
-            echo "\$ gh attestation verify --owner ${GITHUB_REPOSITORY_OWNER} ${filename}"
-          done
+          if [[ -n "${attested_file}" ]]; then
+            echo "Below is an example with artifact \`${attested_file}\`:"
+            echo ""
+            echo "\`\`\`bash"
+            echo "gh attestation verify ${attested_file} --repo ${GITHUB_REPOSITORY}"
+            echo "\`\`\`"
+            echo ""
+          fi
 
+          echo "You can also download the attestation from [GitHub](${REPO_URL}/attestations) and verify against that directly:"
+          echo ""
+          echo "\`\`\`bash"
+          echo "gh attestation verify <file-path-of-downloaded-artifact> --bundle <file-path-of-downloaded-attestation> --repo ${GITHUB_REPOSITORY}"
           echo "\`\`\`"
           echo "EOF"
         } >> "$GITHUB_ENV"
