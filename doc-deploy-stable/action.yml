@@ -553,17 +553,21 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       with:
         level: "INFO"
         message: >
-          Generate the site-map for the latest development or stable
-          documentation.
+          Generate the site-map for the latest stable documentation. This step
+          is skipped when no stable release exists yet, because the sitemap
+          only advertises indexable URLs (under ``version/stable/``) and the
+          noindex step above has already neutralised every other version.
 
     - name: "Generate 'sitemap.xml' file"
       uses: ansys/actions/_doc-gen-sitemap@main
+      if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       with:
         cname: ${{ inputs.cname }}
-        html-directory: version/${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION != '' && 'stable' || steps.version-number.outputs.VERSION }}
+        html-directory: version/stable
 
     # ------------------------------------------------------------------------
 
@@ -578,6 +582,7 @@ runs:
       with:
         cname: ${{ inputs.cname }}
         custom-path: ''
+        include-sitemap: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION != '' }}
 
     # ------------------------------------------------------------------------
 

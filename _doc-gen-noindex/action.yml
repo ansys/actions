@@ -77,8 +77,14 @@ runs:
                 return
             fi
 
-            # Keep a single robots directive and enforce noindex for non-stable pages.
-            sed -E -i "s#<meta[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"'][^>]*>##Ig" "$file"
+            # Strip any pre-existing robots meta so re-runs stay idempotent and
+            # a stale ``index`` directive cannot override our noindex. Perl is
+            # used (rather than ``sed``) for two reasons:
+            #   * ``-0777`` slurps the whole file so multi-line ``<meta ...>``
+            #     tags are matched.
+            #   * ``/i`` (case-insensitive) works on both GNU and BSD builds,
+            #     while ``sed``'s ``/I`` flag is a GNU extension.
+            perl -0777 -i -pe 's#<meta[^>]*name\s*=\s*["\x27]robots["\x27][^>]*/?>##gi' "$file"
 
             local tag='  <meta name="robots" content="noindex, follow" />'
             sed -i "/<\/head>/i\\${tag}" "$file"
