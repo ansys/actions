@@ -79,6 +79,32 @@ Version ``v11``
 - **Minimum permissions documented in examples:** All action examples now also document the minimum GitHub permissions
   required to run them, making it easier to set up workflows with the correct permissions.
 
+- **SEO refinements in the documentation deployment actions:** The ``ansys/actions/doc-deploy-dev``,
+  ``ansys/actions/doc-deploy-stable`` and ``ansys/actions/_pr-doc-deployment`` actions now enforce a
+  consistent set of SEO signals across every deployed page. No changes to ``conf.py`` or workflow files
+  are required. Notable behavior changes:
+
+  - Every non-stable version page and every pull-request preview under ``pull/<pr>/`` is stamped
+    with ``<meta name="robots" content="noindex, follow" />``. This complements the existing
+    ``robots.txt`` ``Disallow`` rules so that pages discovered through direct backlinks also drop
+    out of search-engine indexes.
+  - The generated ``robots.txt`` file switched from enumerating every deployed version to a
+    wildcard rule (``Disallow: /version/`` combined with ``Allow: /version/stable/``). Projects that
+    do not maintain a ``version/stable/`` alias will no longer have any version crawled; add the
+    ``stable`` alias to restore indexing of the release documentation.
+  - The generated ``sitemap.xml`` now excludes pages that declare ``<meta name="robots"
+    content="noindex...">`` and a broader default list of boilerplate/utility filenames
+    (``announcement.html``, ``search.html``, ``genindex.html``, ``py-modindex.html``, ``404.html``,
+    ``webpack-macros.html``). Override with the new ``exclude`` input on ``_doc-gen-sitemap`` if a
+    project depends on any of these URLs being advertised.
+  - The generated ``robots.txt`` gains an optional ``include-sitemap`` input (default ``true``).
+    The deployment actions set it to ``false`` automatically when no ``version/stable/`` exists,
+    so ``robots.txt`` no longer advertises a sitemap URL that would return 404.
+  - The root landing page is now stripped of any inherited ``robots`` meta tag and pinned to a
+    self-referential ``<link rel="canonical" href="https://<cname>/">`` after being copied from
+    a non-stable version. This prevents the site's root from being deindexed when only prerelease
+    or development documentation is available.
+
 **Migration Steps:**
 
 - **Changed default behavior of doc-build dependency inputs:** The default behavior of the
@@ -610,7 +636,6 @@ Version ``v6``
 - Allow ``ansys/actions/commit-style`` to work with upper case in the type field of a commit.
   Expected types are upper cases of  `conventional commit types
   <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
-
 
 **Breaking changes:**
 

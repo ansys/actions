@@ -21,14 +21,23 @@
 # SOFTWARE.
 
 name: >
-  Inject noindex meta tags into non-stable documentation pages.
+  Inject noindex meta tags into HTML pages that must not be indexed.
 
 description: |
   This process injects ``<meta name="robots" content="noindex, follow" />``
-  into every HTML page under the version directory that is *not* served from
-  ``version/stable/``. The ``noindex`` directive removes the page from the
-  search index while ``follow`` still lets search engines walk links to the
-  canonical stable version, so link equity is preserved.
+  into every HTML page under the target directory, except pages under a
+  ``stable/`` subdirectory. The ``noindex`` directive removes the page from
+  the search index while ``follow`` still lets search engines walk links to
+  the canonical stable version, so link equity is preserved.
+
+  The ``ansys/actions/doc-deploy-{dev,stable}`` deployment actions use this
+  helper twice per deploy:
+
+  - Once with ``version-directory: version`` to stamp every non-stable
+    documentation version.
+  - Once with ``version-directory: pull`` to stamp every pull-request preview
+    (``pull/<pr>/``). The ``ansys/actions/_pr-doc-deployment`` action also
+    runs it at PR-preview deploy time.
 
   This action is a private composite action executed as a component of the
   PyAnsys documentation deployment strategies. It complements
