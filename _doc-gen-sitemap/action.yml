@@ -92,16 +92,18 @@ runs:
         input_dir="${HTML_DIRECTORY}"
         output="sitemap.xml"
 
-        # Build an alternation regex from the space-separated exclude list
-        exclude_regex=""
-        for name in ${EXCLUDE_LIST}; do
-          [[ -z "$name" ]] && continue
-          if [[ -z "$exclude_regex" ]]; then
-            exclude_regex="$name"
-          else
-            exclude_regex="${exclude_regex}|${name}"
-          fi
-        done
+        read -r -a exclude_names <<< "${EXCLUDE_LIST}"
+
+        is_excluded_file() {
+          local candidate=$1
+          local excluded
+          for excluded in "${exclude_names[@]}"; do
+            if [[ "$candidate" == "$excluded" ]]; then
+              return 0
+            fi
+          done
+          return 1
+        }
 
         now=$(date -u +%Y-%m-%dT%H:%M:%S+00:00)
 
@@ -122,7 +124,7 @@ runs:
         while IFS= read -r -d '' file; do
           basename=$(basename "$file")
 
-          if [[ -n "$exclude_regex" ]] && [[ "$basename" =~ ^($exclude_regex)$ ]]; then
+          if is_excluded_file "$basename"; then
             skipped_excluded=$((skipped_excluded + 1))
             continue
           fi

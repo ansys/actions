@@ -424,6 +424,7 @@ runs:
       with:
         cname: ${{ inputs.cname }}
         custom-path: ''
+        include-sitemap: ${{ steps.version-stable-exists.outputs.VERSION_STABLE_EXISTS }}
 
     # ------------------------------------------------------------------------
 

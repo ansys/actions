@@ -50,6 +50,15 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
+  include-sitemap:
+    description: |
+      Whether to include the sitemap location line in ``robots.txt``.
+    required: false
+    default: 'true'
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -86,6 +95,7 @@ runs:
         echo "Disallow: /${CUSTOM_PATH}/" >> robots.txt
 
     - name: "Include the location of the sitemap.xml file"
+      if: inputs.include-sitemap == 'true'
       shell: bash
       env:
         CNAME: ${{ inputs.cname }}

@@ -73,15 +73,16 @@ runs:
 
         inject_noindex() {
             local file=$1
-            if grep -Eiq "<meta[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"']" "$file"; then
-                return
-            fi
             if ! grep -q '</head>' "$file"; then
                 return
             fi
+
+            # Keep a single robots directive and enforce noindex for non-stable pages.
+            sed -E -i "s#<meta[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"'][^>]*>##Ig" "$file"
+
             local tag='  <meta name="robots" content="noindex, follow" />'
             sed -i "/<\/head>/i\\${tag}" "$file"
-            echo "Injected noindex into $file"
+            echo "Ensured noindex robots meta in $file"
         }
         export -f inject_noindex
 
