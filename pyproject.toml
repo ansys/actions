@@ -86,7 +86,7 @@ quality = [
   "prek<=0.5",
   "ruff<=0.17",
   # NOTE: This one is particular and only contains patch releases atm
-  "ty<=0.0.74",
+  "ty<=0.0.75",
 ]
 doc = [
     "ansys-sphinx-theme>=1.10.0",
