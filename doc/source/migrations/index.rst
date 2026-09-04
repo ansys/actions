@@ -611,6 +611,7 @@ Version ``v6``
   Expected types are upper cases of  `conventional commit types
   <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
 
+
 **Breaking changes:**
 
 - Upgrade default ``vale`` version from ``2.29.6`` to ``3.4.1`` in ``ansys/actions/doc-style`` action.

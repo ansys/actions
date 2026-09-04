@@ -66,13 +66,18 @@ runs:
 
         remove_canonical_tag() {
             local file=$1
-            sed -i '/<link rel="canonical"/d' $file
+            sed -i '/<link rel="canonical"/d' "$file"
         }
 
         add_canonical_tag() {
             local file=$1
             local filename=$(basename "$file")
             local relative_path=${file#*version/*/}
+            local stable_target="${VERSION_DIRECTORY}/stable/${relative_path}"
+            if [[ ! -f "$stable_target" ]]; then
+                echo "Skipping canonical for $file (no stable counterpart at $stable_target)"
+                return
+            fi
             local baseurl="https://${CNAME}/version/stable"
             local canonical_url="${baseurl}/${relative_path}"
             local link_tag="\ \ <link rel=\"canonical\" href=\"$canonical_url\" />"
@@ -82,6 +87,7 @@ runs:
 
         export -f remove_canonical_tag
         export -f add_canonical_tag
+        export VERSION_DIRECTORY
 
         find_html_files() {
             local directory=$1
@@ -97,11 +103,19 @@ runs:
         find_html_files ${VERSION_DIRECTORY}
 
         # Ensure that 'version/{stable|dev}/index.html' uses as canonical the
-        # landing page of the documentation
+        # landing page of the documentation. When ``add_canonical_tag`` above
+        # skipped the file (no stable counterpart exists yet) the canonical
+        # tag is missing, so insert one instead of only replacing.
 
         replace_canonical_link() {
             local file="$1"
-            sed -i "s|<link rel=\"canonical\".*>|<link rel=\"canonical\" href=\"https://${CNAME}/\">|g" "$file"
+            local canonical_url="https://${CNAME}/"
+            local link_tag="<link rel=\"canonical\" href=\"${canonical_url}\">"
+            if grep -q '<link rel="canonical"' "$file"; then
+                sed -i "s|<link rel=\"canonical\".*>|${link_tag}|g" "$file"
+            else
+                sed -i "/^ *<\/head>/i\\  ${link_tag}" "$file"
+            fi
         }
 
         export -f replace_canonical_link
@@ -111,7 +125,9 @@ runs:
         elif [[ -f "${VERSION_DIRECTORY}/dev/index.html" ]]; then
           replace_canonical_link 'version/dev/index.html'
         else
-          echo "Error: The 'index.html' file does not exist." >&2
-          exit 1
+          # First-ever prerelease deploy with no prior dev/stable: skip the
+          # landing-version canonical rewrite instead of failing. The root
+          # landing page canonical is enforced separately in the
+          # doc-deploy-{dev,stable} actions.
+          echo "Warning: no 'version/stable/index.html' or 'version/dev/index.html' present; skipping root-canonical rewrite for the landing version."
         fi
-

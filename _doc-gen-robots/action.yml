@@ -29,6 +29,10 @@ description: |
   composite action that is executed as a component of the PyAnsys documentation
   deployment strategies.
 
+  Emits a wildcard-based rule so that only ``/version/stable/`` is crawled,
+  regardless of the set of deployed versions. Callers can extend the deny list
+  with ``custom-path``.
+
 inputs:
 
   # Required inputs
@@ -46,6 +50,15 @@ inputs:
     required: true
     type: string
 
+  # Optional inputs
+
+  include-sitemap:
+    description: |
+      Whether to include the sitemap location line in ``robots.txt``.
+    required: false
+    default: 'true'
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -56,29 +69,22 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generating the "robots.txt" file.
+          Generate a wildcard-based robots.txt so that only /version/stable/
+          is crawled, regardless of the set of deployed versions.
 
-    - name: "Generate the robots.txt file"
+    - name: "Write the robots.txt file"
       shell: bash
       run: |
-        rm -rf robots.txt && touch robots.txt
+        rm -f robots.txt
+        cat > robots.txt <<'EOF'
+        # managed-by: ansys/actions/_doc-gen-robots
+        # Manual edits are overwritten on the next documentation deploy.
 
-    - name: "Allow all agents to crawl the website"
-      shell: bash
-      run: |
-        echo -e "User-agent: *\n" >> robots.txt
-
-    - name: "Iterate over all versions except the "
-      shell: bash
-      run: |
-        for version in $(ls version |
-                    grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
-                    sort -r --version-sort | \
-                    # Do not include the first version
-                    tail -n +2); do
-            echo "Disallow: /version/${version}" >> robots.txt
-        done
-        echo "Disallow: /pull/" >> robots.txt
+        User-agent: *
+        Disallow: /version/
+        Allow: /version/stable/
+        Disallow: /pull/
+        EOF
 
     - name: "Disallow crawling of the custom path"
       if: inputs.custom-path != ''
@@ -89,8 +95,12 @@ runs:
         echo "Disallow: /${CUSTOM_PATH}/" >> robots.txt
 
     - name: "Include the location of the sitemap.xml file"
+      if: inputs.include-sitemap == 'true'
       shell: bash
       env:
         CNAME: ${{ inputs.cname }}
       run: |
-        echo -e "\nSitemap: https://${CNAME}/sitemap.xml" >> robots.txt
+        echo "" >> robots.txt
+        echo "Sitemap: https://${CNAME}/sitemap.xml" >> robots.txt
+        echo "----- robots.txt -----"
+        cat robots.txt

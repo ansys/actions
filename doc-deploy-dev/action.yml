@@ -133,6 +133,7 @@ inputs:
     default: true
     type: string
 
+
 runs:
   using: "composite"
   steps:
@@ -291,6 +292,21 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Inject ``noindex, follow`` meta tags into every non-stable
+          documentation page so search engines drop them from the index while
+          still following links to their canonical stable counterpart.
+
+    - name: "Inject noindex meta tags into non-stable pages"
+      uses: ansys/actions/_doc-gen-noindex@main
+      with:
+        version-directory: version
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
       if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       with:
         level: "INFO"
@@ -321,6 +337,30 @@ runs:
         else
           echo "Error: The 'index.html' file does not exist." >&2
           exit 1
+        fi
+
+    - name: "Ensure the root landing page is indexable and self-canonical"
+      shell: bash
+      if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
+      env:
+        CNAME: ${{ inputs.cname }}
+      run: |
+        # The landing page is copied from a versioned page above. When that
+        # source came from a non-stable version it carries the ``noindex``
+        # meta injected by ``_doc-gen-noindex``; that would hide the site's
+        # own root from search engines. Strip any inherited robots meta and
+        # enforce a self-canonical so the root is treated as authoritative.
+        if [[ ! -f index.html ]]; then
+          exit 0
+        fi
+
+        perl -0777 -i -pe 's#<meta[^>]*name\s*=\s*["\x27]robots["\x27][^>]*/?>##gi' index.html
+
+        canonical_tag="<link rel=\"canonical\" href=\"https://${CNAME}/\">"
+        if grep -q '<link rel="canonical"' index.html; then
+          sed -i "s|<link rel=\"canonical\".*>|${canonical_tag}|g" index.html
+        else
+          sed -i "/^ *<\/head>/i\\  ${canonical_tag}" index.html
         fi
 
     - name: "Show the contents of the 'index.html' redirection file"
@@ -382,8 +422,9 @@ runs:
       with:
         level: "INFO"
         message: >
-          Generate the site-map for the latest development or stable
-          documentation.
+          Generate the site-map for the latest stable documentation. This step
+          is skipped when no stable release exists yet, because the sitemap
+          only advertises indexable URLs (under ``version/stable/``).
 
     - name: "Generate 'sitemap.xml' file"
       uses: ansys/actions/_doc-gen-sitemap@main
@@ -392,6 +433,22 @@ runs:
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Generate the robots.txt file for guiding web crawlers so that only
+          ``/version/stable/`` is crawled.
+
+    - name: "Generate 'robots.txt' file"
+      uses: ansys/actions/_doc-gen-robots@main
+      with:
+        cname: ${{ inputs.cname }}
+        custom-path: ''
+        include-sitemap: ${{ steps.version-stable-exists.outputs.VERSION_STABLE_EXISTS }}
 
     # ------------------------------------------------------------------------
 
@@ -426,6 +483,24 @@ runs:
         fi
 
     # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Retroactively stamp ``noindex, follow`` meta tags on every remaining
+          pull-request preview so legacy previews deployed before this feature
+          also drop out of search indexes. Safe to re-run because the noindex
+          step strips and reinjects the meta tag.
+
+    - name: "Inject noindex meta tags into pull-request preview pages"
+      if: hashFiles('pull/**/*.html') != ''
+      uses: ansys/actions/_doc-gen-noindex@main
+      with:
+        version-directory: pull
+
+    # ------------------------------------------------------------------------
+
 
     - uses: ansys/actions/_logging@main
       with:
