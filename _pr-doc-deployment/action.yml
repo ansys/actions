@@ -300,6 +300,23 @@ runs:
       with:
         level: "INFO"
         message: >
+          Inject ``noindex, follow`` meta tags into every HTML page of this
+          pull-request preview so search engines drop them from the index even
+          when the URL is discovered through a direct backlink.
+
+    - name: "Inject noindex meta tags into pull-request preview pages"
+      if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
+      uses: ansys/actions/_doc-gen-noindex@main
+      with:
+        version-directory: pull/${{ github.event.pull_request.number }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
+      with:
+        level: "INFO"
+        message: >
           Generate the "robots.txt" file for guiding web crawlers (spiders)
 
     - name: "Generate 'robots.txt' file"

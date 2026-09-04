@@ -484,6 +484,23 @@ runs:
 
     # ------------------------------------------------------------------------
 
+    - uses: ansys/actions/_logging@main
+      with:
+        level: "INFO"
+        message: >
+          Retroactively stamp ``noindex, follow`` meta tags on every remaining
+          pull-request preview so legacy previews deployed before this feature
+          also drop out of search indexes. Safe to re-run because the noindex
+          step strips and reinjects the meta tag.
+
+    - name: "Inject noindex meta tags into pull-request preview pages"
+      if: hashFiles('pull/**/*.html') != ''
+      uses: ansys/actions/_doc-gen-noindex@main
+      with:
+        version-directory: pull
+
+    # ------------------------------------------------------------------------
+
 
     - uses: ansys/actions/_logging@main
       with:
