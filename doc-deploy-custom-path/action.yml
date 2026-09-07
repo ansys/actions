@@ -288,7 +288,7 @@ runs:
           Generate the "robots.txt" file for guiding web crawlers (spiders)
 
     - name: "Generate 'robots.txt' file"
-      uses: ../_doc-gen-robots
+      uses: $/_doc-gen-robots
       with:
         cname: ${{ inputs.cname }}
         custom-path: ${{ inputs.custom-path }}

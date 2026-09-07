@@ -316,7 +316,7 @@ runs:
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ../_setup-python
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false

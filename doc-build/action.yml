@@ -253,7 +253,7 @@ runs:
 
     - name: "Set up Python ${{ inputs.python-version }}"
       if: ${{ inputs.skip-python-setup == 'false' }}
-      uses: ../_setup-python
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -296,7 +296,7 @@ runs:
 
     - name: Documentation build (Linux)
       if: ${{ runner.os == 'Linux' }}
-      uses: ../_doc-build-linux
+      uses: $/_doc-build-linux
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}
@@ -317,7 +317,7 @@ runs:
 
     - name: Check input (Windows)
       if: ${{ (runner.os == 'Windows') && (inputs.requires-xvfb == 'true') }}
-      uses: ../_logging
+      uses: $/_logging
       with:
         level: "WARNING"
         message: >
@@ -325,7 +325,7 @@ runs:
 
     - name: Documentation build (Windows)
       if: ${{ runner.os == 'Windows' }}
-      uses: ../_doc-build-windows
+      uses: $/_doc-build-windows
       with:
         sphinxopts: ${{ inputs.sphinxopts }}
         dependencies: ${{ inputs.dependencies }}

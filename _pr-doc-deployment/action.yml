@@ -306,7 +306,7 @@ runs:
 
     - name: "Inject noindex meta tags into pull-request preview pages"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: ../_doc-gen-noindex
+      uses: $/_doc-gen-noindex
       with:
         version-directory: pull/${{ github.event.pull_request.number }}
 
@@ -321,7 +321,7 @@ runs:
 
     - name: "Generate 'robots.txt' file"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: ../_doc-gen-robots
+      uses: $/_doc-gen-robots
       with:
         cname: ${{ inputs.cname }}
         custom-path: ''

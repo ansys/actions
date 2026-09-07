@@ -138,7 +138,7 @@ runs:
 
     - name: "Closed event trigger no longer needed for documentation cleanup"
       if: github.event.pull_request.state == 'closed'
-      uses: ../_logging
+      uses: $/_logging
       with:
         level: "WARNING"
         message: >

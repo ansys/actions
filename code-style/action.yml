@@ -195,7 +195,7 @@ runs:
           Set up python to check code style.
 
     - name: "Set up Python"
-      uses: ../_setup-python
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -376,7 +376,7 @@ runs:
 
     - name: "Run Dockerfile linting in directories 'docker' and '.devcontainer'"
       if: inputs.docker-lint == 'true'
-      uses: ../docker-style
+      uses: $/docker-style
       with:
         directory: "docker .devcontainer"
         recursive: ${{ inputs.docker-recursive }}

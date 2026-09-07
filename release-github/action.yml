@@ -207,7 +207,7 @@ runs:
 
     # Only one of both can be true: generate-release-notes, changelog-release-notes
     - name: "Sanity check on release notes"
-      uses: ../_logging
+      uses: $/_logging
       if: ${{ inputs.generate-release-notes == 'true' && inputs.changelog-release-notes == 'true' }}
       with:
         level: "ERROR"
@@ -412,7 +412,7 @@ runs:
       run: ls -R dist/
 
     - name: "Set up Python"
-      uses: ../_setup-python
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
