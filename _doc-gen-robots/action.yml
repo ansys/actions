@@ -30,8 +30,12 @@ description: |
   deployment strategies.
 
   Emits a wildcard-based rule so that only ``/version/stable/`` is crawled,
-  regardless of the set of deployed versions. Callers can extend the deny list
-  with ``custom-path``.
+  regardless of the set of deployed versions. The generated rules intentionally
+  pair a broad ``Disallow: /version/`` with a specific
+  ``Allow: /version/stable/``; this follows `RFC 9309
+  <https://www.rfc-editor.org/info/rfc9309/#name-the-allow-and-disallow-line>`_
+  and common crawler behavior (for example, Google). Callers can extend the
+  deny list with ``custom-path``.
 
 inputs:
 
@@ -76,6 +80,8 @@ runs:
         cat > robots.txt <<'EOF'
         # managed-by: ansys/actions/_doc-gen-robots
         # Manual edits are overwritten on the next documentation deploy.
+        # Intentionally broad deny + specific allow (RFC 9309 longest match):
+        # only /version/stable/ remains crawlable under /version/.
 
         User-agent: *
         Disallow: /version/
