@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     cooldown:
       default-days: 7
@@ -56,7 +56,7 @@ updates:
       - "release-pypi-test"
       - "tests-pytest"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     cooldown:
       default-days: 7
@@ -119,7 +119,7 @@ updates:
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     cooldown:
       default-days: 7 # semver-* options are not applicable for pre-commit
