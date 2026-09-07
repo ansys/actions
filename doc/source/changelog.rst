@@ -9,6 +9,42 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.0.7 <https://github.com/ansys/actions/releases/tag/v11.0.7>`_ - September 07, 2026
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - SEO improvements
+          - `#1538 <https://github.com/ansys/actions/pull/1538>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Error message rendering in doc-deploy-changelog
+          - `#1536 <https://github.com/ansys/actions/pull/1536>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump pyvista/setup-headless-display-action from 4.3 to 5.0 in /.github/workflows in the cicd-actions group across 1 directory
+          - `#1521 <https://github.com/ansys/actions/pull/1521>`_
+
+
 `11.0.6 <https://github.com/ansys/actions/releases/tag/v11.0.6>`_ - September 02, 2026
 ======================================================================================
 
