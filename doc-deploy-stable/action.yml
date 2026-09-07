@@ -593,6 +593,7 @@ runs:
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
+        exclude: 'announcement.html search.html genindex.html py-modindex.html 404.html webpack-macros.html'
 
     # ------------------------------------------------------------------------
 

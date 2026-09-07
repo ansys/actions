@@ -52,7 +52,7 @@ inputs:
     required: true
     type: string
 
-  # Optional inputs
+  # Required inputs
 
   exclude:
     description: |
@@ -60,8 +60,7 @@ inputs:
       These are Sphinx utility pages, boilerplate banners and other pages that
       hurt search quality when advertised in a sitemap. Any HTML file whose
       basename matches an entry is skipped.
-    required: false
-    default: 'announcement.html search.html genindex.html py-modindex.html 404.html webpack-macros.html'
+    required: true
     type: string
 
 
