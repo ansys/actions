@@ -358,7 +358,10 @@ runs:
 
         canonical_tag="<link rel=\"canonical\" href=\"https://${CNAME}/\">"
         if grep -q '<link rel="canonical"' index.html; then
-          sed -i "s|<link rel=\"canonical\".*>|${canonical_tag}|g" index.html
+          # Match only up to the closing '>' of the canonical tag itself so
+          # single-line/minified HTML that carries other tags on the same line
+          # is not truncated by a greedy ``.*>``.
+          sed -i "s|<link rel=\"canonical\"[^>]*>|${canonical_tag}|g" index.html
         else
           sed -i "/^ *<\/head>/i\\  ${canonical_tag}" index.html
         fi
@@ -474,7 +477,14 @@ runs:
               # Remove pr directory if it is closed
               if [[ ${closed} == "true" ]]; then
                 message="This PR has been closed. Documentation for this pull request will shortly be removed from its [former deployment address](https://${CNAME}/pull/${pr_number})."
-                gh pr comment "${pr_number}" --body "${message}"
+                # Guard the comment call: a locked PR, missing
+                # ``pull-requests: write`` scope, or a transient API failure
+                # must not abort the deploy or block the ``rm -rf`` below.
+                # Removing the directory unconditionally also prevents the
+                # notice from being re-posted on the next run.
+                if ! gh pr comment "${pr_number}" --body "${message}"; then
+                  echo "Warning: could not comment on PR #${pr_number}; continuing with cleanup."
+                fi
                 echo "Removing directory ${pr_number}..."
                 rm -rf "pull/${pr_number}"
               fi
