@@ -30,11 +30,14 @@ description: |
   deployment strategies.
 
   Only pages the site actually wants indexed are advertised. Pages that declare
-  ``<meta name="robots" content="noindex...">`` are skipped, together with the
-  configurable ``exclude`` list of boilerplate/utility filenames. Each URL
-  carries an individual ``<lastmod>`` derived from the file's mtime; the
-  legacy ``<changefreq>`` and ``<priority>`` hints are omitted (Google ignores
-  them).
+  ``<meta name="robots" content="noindex...">`` in their ``<head>`` are
+  skipped, together with the configurable ``exclude`` list of
+  boilerplate/utility filenames. ``<lastmod>`` is emitted only for the site
+  root; per-URL ``<lastmod>`` is intentionally omitted because
+  ``actions/download-artifact`` does not preserve source mtimes, so every
+  file's mtime would collapse to the deploy time and Google would learn to
+  distrust the signal. The legacy ``<changefreq>`` and ``<priority>`` hints
+  are also omitted (Google ignores them).
 
 inputs:
 
@@ -75,10 +78,11 @@ runs:
         level: "INFO"
         message: >
           Generating the XML sitemap. Skips pages listed in the ``exclude``
-          input and any HTML file that declares ``<meta name="robots"
-          content="noindex...">``. Uses each file's modification time as
-          ``<lastmod>`` and omits ``<changefreq>``/``<priority>`` (both are
-          ignored by Google).
+          input and any HTML file whose ``<head>`` declares ``<meta
+          name="robots" content="noindex...">``. Emits ``<lastmod>`` only for
+          the site root and omits ``<changefreq>``/``<priority>`` (all three
+          are ignored or distrusted by Google when they are inaccurate, which
+          per-file mtimes from ``actions/download-artifact`` would be).
 
     - name: "Generate the sitemap.xml file"
       shell: bash
@@ -128,7 +132,14 @@ runs:
             continue
           fi
 
-          if grep -Eiq "<meta[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"'][^>]*content[[:space:]]*=[[:space:]]*[\"'][^\"'>]*noindex|<meta[^>]*content[[:space:]]*=[[:space:]]*[\"'][^\"'>]*noindex[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"']" "$file"; then
+          # Only look at the ``<head>`` window when detecting a robots
+          # ``noindex`` directive. Scanning the whole file causes false
+          # positives when the string ``noindex`` appears inside a
+          # ``<!-- comment -->``, a ``<script>`` block, or as a substring of an
+          # unrelated word (for example ``noindexing-guide``), which would
+          # silently drop legitimate pages from the sitemap.
+          if sed -n '/<[Hh][Ee][Aa][Dd]/,/<\/[Hh][Ee][Aa][Dd]>/p' "$file" | \
+              grep -Eiq "<meta[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"'][^>]*content[[:space:]]*=[[:space:]]*[\"'][^\"']*\<noindex\>|<meta[^>]*content[[:space:]]*=[[:space:]]*[\"'][^\"']*\<noindex\>[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"']"; then
             skipped_noindex=$((skipped_noindex + 1))
             continue
           fi
@@ -139,12 +150,15 @@ runs:
             url_path="/${input_dir%/}/${file}"
           fi
 
-          lastmod=$(date -u -r "$file" +"%Y-%m-%dT%H:%M:%S+00:00" 2>/dev/null || echo "$now")
-
+          # ``<lastmod>`` is intentionally omitted for individual URLs. The
+          # HTML files come from ``actions/download-artifact``, which does not
+          # preserve source mtimes: every file would carry the deploy time,
+          # and Google explicitly warns that an inaccurate ``<lastmod>`` makes
+          # it distrust the signal. Only the site-root entry above keeps
+          # ``<lastmod>``, which is legitimately "now" for the deploy.
           {
             echo '  <url>'
             echo "    <loc>${website}${url_path}</loc>"
-            echo "    <lastmod>${lastmod}</lastmod>"
             echo '  </url>'
           } >> "$output"
 
