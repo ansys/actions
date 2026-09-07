@@ -129,3 +129,4 @@ runs:
         dry-run: ${{ inputs.dry-run }}
         use-trusted-publisher: ${{ inputs.use-trusted-publisher }}
         verify-tag-version: ${{ inputs.verify-tag-version }}
+        use-uv: true
