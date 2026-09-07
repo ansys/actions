@@ -72,10 +72,14 @@ runs:
       env:
         VERSION_DIRECTORY: ${{ inputs.version-directory }}
       run: |
-        version_dir="${VERSION_DIRECTORY}"
+        # Strip any trailing slash so the ``! -path "$version_dir/stable/*"``
+        # filter below matches ``version/stable/foo.html`` rather than the
+        # non-existent ``version//stable/foo.html`` that a caller-supplied
+        # trailing slash would produce.
+        version_dir="${VERSION_DIRECTORY%/}"
 
-        if [[ ! -d "$version_dir" ]]; then
-          echo "Skipping noindex injection: directory '$version_dir' does not exist."
+        if [[ -z "$version_dir" || ! -d "$version_dir" ]]; then
+          echo "Skipping noindex injection: directory '${VERSION_DIRECTORY}' does not exist."
           exit 0
         fi
 
