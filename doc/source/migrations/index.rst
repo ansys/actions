@@ -93,13 +93,13 @@ Version ``v11``
     do not maintain a ``version/stable/`` alias will no longer have any version crawled; add the
     ``stable`` alias to restore indexing of the release documentation.
   - The generated ``sitemap.xml`` now excludes pages that declare ``<meta name="robots"
-    content="noindex...">`` and a broader default list of boilerplate/utility filenames
-    (``announcement.html``, ``search.html``, ``genindex.html``, ``py-modindex.html``, ``404.html``,
-    ``webpack-macros.html``). Override with the new ``exclude`` input on ``_doc-gen-sitemap`` if a
-    project depends on any of these URLs being advertised.
-  - The generated ``robots.txt`` gains an optional ``include-sitemap`` input (default ``true``).
-    The deployment actions set it to ``false`` automatically when no ``version/stable/`` exists,
-    so ``robots.txt`` no longer advertises a sitemap URL that would return 404.
+    content="noindex...">`` in their ``<head>`` and skips a default list of boilerplate/utility
+    filenames (``announcement.html``, ``search.html``, ``genindex.html``, ``py-modindex.html``,
+    ``404.html``, ``webpack-macros.html``). ``<lastmod>`` is emitted only for the site root, since
+    ``actions/download-artifact`` does not preserve per-file mtimes.
+  - The generated ``robots.txt`` conditionally advertises the sitemap: the deployment actions omit
+    the ``Sitemap:`` line automatically when no ``version/stable/`` exists, so ``robots.txt`` no
+    longer points at a URL that would return 404.
   - The root landing page is now stripped of any inherited ``robots`` meta tag and pinned to a
     self-referential ``<link rel="canonical" href="https://<cname>/">`` after being copied from
     a non-stable version. This prevents the site's root from being deindexed when only prerelease
