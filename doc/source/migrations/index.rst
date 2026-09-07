@@ -90,7 +90,7 @@ Version ``v11``
     out of search-engine indexes.
   - The generated ``robots.txt`` file switched from enumerating every deployed version to a
     wildcard rule (``Disallow: /version/`` combined with ``Allow: /version/stable/``). Projects that
-    do not maintain a ``version/stable/`` alias will no longer have any version crawled; add the
+    do not maintain a ``version/stable/`` alias no longer have any version crawled; add the
     ``stable`` alias to restore indexing of the release documentation.
   - The generated ``sitemap.xml`` now excludes pages that declare ``<meta name="robots"
     content="noindex...">`` in their ``<head>`` and skips a default list of boilerplate/utility
