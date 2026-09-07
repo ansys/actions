@@ -152,7 +152,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.pre-commit-version != '' || inputs.prek-version != ''
       with:
         level: "WARNING"
@@ -160,7 +160,7 @@ runs:
           The ``pre-commit-version`` and ``prek-version`` inputs are deprecated and will be
           removed in v12.
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -180,7 +180,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -188,7 +188,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -367,7 +367,7 @@ runs:
     # ------------------------------------------------------------------------
 
     # Trigger docker-style action if docker-lint is set to true.
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.docker-lint == 'true'
       with:
         level: "INFO"
@@ -385,7 +385,7 @@ runs:
     # ------------------------------------------------------------------------
 
     # End action as docker-lint is set to false.
-    - uses: ../_logging
+    - uses: $/_logging
       if: ${{ inputs.docker-lint == 'false' }}
       with:
         level: "INFO"

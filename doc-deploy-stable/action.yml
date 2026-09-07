@@ -187,7 +187,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -214,7 +214,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -296,7 +296,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -353,7 +353,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -392,7 +392,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       with:
         level: "INFO"
@@ -444,7 +444,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -458,7 +458,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -473,7 +473,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       with:
         level: "INFO"
@@ -549,7 +549,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -557,14 +557,14 @@ runs:
           no stable release is available, copy the 'dev/index.html' instead.
           Update all references to point to 'stable/_static' or 'dev/_static'.
 
-    - uses: ../_doc-gen-versions-page
+    - uses: $/_doc-gen-versions-page
       with:
         cname: ${{ inputs.cname }}
         content-element-id: ${{ inputs.content-element-id }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -580,7 +580,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       with:
         level: "INFO"
@@ -600,7 +600,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -615,7 +615,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -632,7 +632,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >

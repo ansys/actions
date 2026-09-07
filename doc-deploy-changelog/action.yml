@@ -191,7 +191,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ../_logging # TODO: Remove in v12
+    - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
         level: "ERROR"
@@ -200,7 +200,7 @@ runs:
           ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
           will be removed in v12.
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
       with:
         level: "ERROR"

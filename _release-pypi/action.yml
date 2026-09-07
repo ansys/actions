@@ -106,7 +106,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.use-trusted-publisher == 'true'
       with:
         level: "ERROR"

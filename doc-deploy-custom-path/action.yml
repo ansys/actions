@@ -124,7 +124,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -161,7 +161,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -224,7 +224,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -281,7 +281,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -296,7 +296,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >

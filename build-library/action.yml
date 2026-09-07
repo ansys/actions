@@ -157,7 +157,7 @@ runs:
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: ${{ inputs.skip-python-setup == 'true' }}
       with:
         level: "INFO"

@@ -187,7 +187,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ../_logging # TODO: Remove in v12
+    - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
         level: "ERROR"
@@ -196,7 +196,7 @@ runs:
           ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
           will be removed in v12.
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.tomlkit-version != '' || inputs.pypandoc-binary-version != ''
       with:
         level: "ERROR"
@@ -220,7 +220,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -238,7 +238,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       with:
         level: "INFO"
@@ -271,7 +271,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -288,7 +288,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -305,7 +305,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -323,7 +323,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -380,7 +380,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -401,7 +401,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ../_logging
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
