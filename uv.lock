@@ -47,7 +47,7 @@ wheels = [
 
 [[package]]
 name = "ansys-actions-ci-dependencies"
-version = "11.0.6"
+version = "11.0.7"
 source = { virtual = "." }
 
 [package.dev-dependencies]
