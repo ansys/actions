@@ -46,14 +46,13 @@ description: |
 
 inputs:
 
-  # Optional inputs
+  # Required inputs
 
   version-directory:
     description: >
       Relative path to the directory containing the version pages of the
       website. The ``stable`` subdirectory of this path is always skipped.
-    required: false
-    default: 'version'
+    required: true
     type: string
 
 runs:
