@@ -50,13 +50,10 @@ inputs:
     required: true
     type: string
 
-  # Optional inputs
-
   include-sitemap:
     description: |
       Whether to include the sitemap location line in ``robots.txt``.
-    required: false
-    default: 'true'
+    required: true
     type: string
 
 runs:
