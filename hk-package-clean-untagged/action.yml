@@ -52,6 +52,13 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: ansys/actions/_check-github-permissions@feat/check-permissions
+      with:
+        permissions: "packages: delete"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#package-cleanup-of-untagged-versions"
+
     - name: "Set up Python 3.14"
       uses: ansys/actions/_setup-python@main
       with:

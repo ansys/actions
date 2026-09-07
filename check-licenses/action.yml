@@ -140,6 +140,12 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: ansys/actions/_check-github-permissions@feat/check-permissions
+      with:
+        permissions: "contents: read"
+        doc-url: "https://actions.docs.ansys.com/version/stable/licenses-actions/index.html#check-licenses-action"
+
     - name: Check virutal environment existence (if needed)
       if: ${{ inputs.skip-install == 'true' && inputs.activate-venv == '' }}
       uses: ansys/actions/_logging@main
