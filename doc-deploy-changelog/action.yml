@@ -387,10 +387,7 @@ runs:
 
           if [ -n "$section_exists_err" ] && [[ "${IS_PRE_RELEASE}" == "false" ]]; then
             # Print error message on how to fix this
-            message="Your changelog file already contains section ${TAG_VERSION} in the \
-            ${UPDATE_BRANCH} branch. Please checkout ${UPDATE_BRANCH}, revert \
-            the commit named 'chore: updating CHANGELOG for v${TAG_VERSION}', and \
-            re-run the workflow."
+            message="Your changelog file already contains section ${TAG_VERSION} in the ${UPDATE_BRANCH} branch. Please checkout ${UPDATE_BRANCH}, revert the commit named 'chore: updating CHANGELOG for v${TAG_VERSION}', and re-run the workflow."
 
             echo -e "\033[1;91m[ERROR]: $message\033[0m"
             exit 1
