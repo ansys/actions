@@ -166,9 +166,26 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: "Collect files for Vale as JSON"
+        id: collect-vale-files
+        shell: bash
+        run: |
+          python - <<'PY' >> "${GITHUB_OUTPUT}"
+          import json
+          from pathlib import Path
+
+          files = sorted(
+              str(path)
+              for path in Path("doc/source").rglob("*.rst")
+              if not path.is_relative_to("doc/source/api")
+          )
+          print(f"vale_files={json.dumps(files)}")
+          PY
+
       - uses: ./doc-style
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ steps.collect-vale-files.outputs.vale_files }}
           checkout: false
 
   doc-build:

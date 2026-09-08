@@ -48,7 +48,10 @@ inputs:
 
   files:
     description: |
-      Path to the directory containing the documentation files.
+      Path to the documentation files to check. You can pass a directory path
+      (for example ``doc``) or a JSON-formatted array of file paths
+      (for example ``["doc/source/index.rst", "doc/source/getting-started.rst"]``)
+      to lint multiple explicit files.
     default: 'doc'
     required: false
     type: string
