@@ -292,6 +292,7 @@ runs:
       with:
         cname: ${{ inputs.cname }}
         custom-path: ${{ inputs.custom-path }}
+        include-sitemap: 'true'
 
     # ------------------------------------------------------------------------
 
