@@ -34,14 +34,13 @@ description: |
     setup guide, https://actions.docs.ansys.com/version/dev/migrations/docs-changelog-setup.html,
     the changelog for your release is included in the release notes on GitHub.
 
-    If you are using the attestation features, we recommend you add the ``attestations: read``
-    permission to your GitHub token. Doing so will allow this action to add an example of
-    attested artifacts to the release notes.
-
     .. important:: **Required GitHub Permissions**
 
        - **contents**: ``write`` - Required to create GitHub releases and upload release assets
 
+    .. note:: **Optional GitHub Permissions**
+
+       - **attestations**: ``read`` - Recommended if using the attestation features to include an example of attested artifacts in the release notes.
 
 inputs:
 
