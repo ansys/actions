@@ -30,7 +30,7 @@ jobs:
 
       - name: Decide which environment should be used
         id: block
-        uses: ./_check-environment-approval
+        uses: $/_check-environment-approval
         with:
           manual-check-environment: 'dependabot'
           skip-manual-check-environment: ''
@@ -96,11 +96,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./check-pr-title
+      - uses: $/check-pr-title
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: ./doc-changelog
+      - uses: $/doc-changelog
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           use-pull-request-title: true
@@ -119,7 +119,7 @@ jobs:
           persist-credentials: false
 
       - name: "Run code style checks"
-        uses: ./code-style
+        uses: $/code-style
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -135,7 +135,7 @@ jobs:
           persist-credentials: false
 
       - name: "Set up Python"
-        uses: ansys/actions/_setup-python@main
+        uses: $/_setup-python
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-cache: false
@@ -145,11 +145,10 @@ jobs:
       - name: Create virtual environment
         run: uv venv .venv
 
-      # TODO: Once depency update logic has been defined, the handling of ty should align
       - name: Install dependencies
         run: |
           source .venv/bin/activate
-          uv pip install ty==0.0.29
+          uv sync --frozen --only-group quality --no-install-project
 
       - name: Run ty
         run: |
@@ -166,7 +165,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./doc-style
+      - uses: $/doc-style
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           checkout: false
@@ -185,7 +184,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./doc-build
+      - uses: $/doc-build
         with:
           skip-install: true
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -535,7 +534,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./check-actions-security
+      - uses: $/check-actions-security
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -552,7 +551,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./_setup-python
+      - uses: $/_setup-python
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-cache: false
