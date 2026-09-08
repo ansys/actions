@@ -73,7 +73,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >

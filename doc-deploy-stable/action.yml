@@ -187,7 +187,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -197,7 +197,7 @@ runs:
           'release/<MAJOR>.<MINOR>'.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -214,7 +214,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -296,7 +296,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -353,7 +353,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -392,7 +392,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       with:
         level: "INFO"
@@ -444,21 +444,21 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
           Include a link canonical tag in old versions if not present.
 
     - name: "Include link canonical tag in pages"
-      uses: ansys/actions/_doc-gen-canonical@main
+      uses: $/_doc-gen-canonical
       with:
         cname: ${{ inputs.cname }}
         version-directory: version
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -467,13 +467,13 @@ runs:
           still following links to their canonical stable counterpart.
 
     - name: "Inject noindex meta tags into non-stable pages"
-      uses: ansys/actions/_doc-gen-noindex@main
+      uses: $/_doc-gen-noindex
       with:
         version-directory: version
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       with:
         level: "INFO"
@@ -549,7 +549,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -557,14 +557,14 @@ runs:
           no stable release is available, copy the 'dev/index.html' instead.
           Update all references to point to 'stable/_static' or 'dev/_static'.
 
-    - uses: ansys/actions/_doc-gen-versions-page@main
+    - uses: $/_doc-gen-versions-page
       with:
         cname: ${{ inputs.cname }}
         content-element-id: ${{ inputs.content-element-id }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -580,7 +580,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       with:
         level: "INFO"
@@ -591,7 +591,7 @@ runs:
           noindex step above has already neutralised every other version.
 
     - name: "Generate 'sitemap.xml' file"
-      uses: ansys/actions/_doc-gen-sitemap@main
+      uses: $/_doc-gen-sitemap
       if: steps.versions-json-file.outputs.LATEST_STABLE_VERSION != ''
       with:
         cname: ${{ inputs.cname }}
@@ -600,14 +600,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
           Generate the "robots.txt" file for guiding web crawlers (spiders)
 
     - name: "Generate 'robots.txt' file"
-      uses: ansys/actions/_doc-gen-robots@main
+      uses: $/_doc-gen-robots
       with:
         cname: ${{ inputs.cname }}
         custom-path: ''
@@ -615,7 +615,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -626,13 +626,13 @@ runs:
 
     - name: "Inject noindex meta tags into pull-request preview pages"
       if: hashFiles('pull/**/*.html') != ''
-      uses: ansys/actions/_doc-gen-noindex@main
+      uses: $/_doc-gen-noindex
       with:
         version-directory: pull
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >

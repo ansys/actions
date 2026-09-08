@@ -108,7 +108,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -119,7 +119,7 @@ runs:
           added to the deployment branch as separate commits. The branch history is only rewritten into a single commit when
           doc-deploy-dev or doc-deploy-stable is run with ``force-orphan: true`` (which is the default value).
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -182,7 +182,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -295,7 +295,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       with:
         level: "INFO"
@@ -306,13 +306,13 @@ runs:
 
     - name: "Inject noindex meta tags into pull-request preview pages"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: ansys/actions/_doc-gen-noindex@main
+      uses: $/_doc-gen-noindex
       with:
         version-directory: pull/${{ github.event.pull_request.number }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       with:
         level: "INFO"
@@ -321,7 +321,7 @@ runs:
 
     - name: "Generate 'robots.txt' file"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: ansys/actions/_doc-gen-robots@main
+      uses: $/_doc-gen-robots
       with:
         cname: ${{ inputs.cname }}
         custom-path: ''
@@ -329,7 +329,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
       with:
         level: "INFO"

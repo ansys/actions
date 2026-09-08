@@ -124,7 +124,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -161,7 +161,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -224,7 +224,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -281,14 +281,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
           Generate the "robots.txt" file for guiding web crawlers (spiders)
 
     - name: "Generate 'robots.txt' file"
-      uses: ansys/actions/_doc-gen-robots@main
+      uses: $/_doc-gen-robots
       with:
         cname: ${{ inputs.cname }}
         custom-path: ${{ inputs.custom-path }}
@@ -296,7 +296,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
