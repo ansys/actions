@@ -269,7 +269,7 @@ runs:
           echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ inputs.use-uv-audit == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'false' }}
       with:
         level: "ERROR"
@@ -629,7 +629,7 @@ runs:
         # Run bandit security checks
         bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ inputs.use-uv-audit == 'true' }}
       with:
         level: "INFO"
@@ -643,14 +643,14 @@ runs:
       run: |
         python ${GITHUB_ACTION_PATH}/../python-utils/detect_uv_audit_malware_check.py
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ inputs.use-uv-audit == 'true' && steps.detect-uv-audit-malware-check.outputs.HAS_AUDIT_MALWARE_CHECK == 'false' }}
       with:
         level: "INFO"
         message: >
           Input use-uv-audit is enabled but malware-check is not set in pyproject.toml. A fallback UV_MALWARE_CHECK=1 will be used for uv audit. Consider adding malware-check to pyproject.toml to avoid this fallback.
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ inputs.use-uv-audit == 'true' && steps.detect-uv-audit-malware-check.outputs.AUDIT_MALWARE_CHECK_VALUE == 'false' }}
       with:
         level: "WARNING"
