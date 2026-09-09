@@ -467,6 +467,8 @@ runs:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
         GITHUB_WORKSPACE: ${{ github.workspace }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
+        TARGET: ${{ inputs.target }}
       run: |
         ${ACTIVATE_VENV}
         cd ${WORKING_DIRECTORY}
@@ -474,7 +476,14 @@ runs:
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
           pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
         else
-          python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
+          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+            EXPORT_OPTIONS="--format=requirements.txt --no-hashes --no-dev --no-emit-project"
+            EXPORT_OPTIONS+=$( [[ "${TARGET}" != '' ]] && echo " --extra ${TARGET}" || echo "" )
+            uv export $EXPORT_OPTIONS --output-file=wheel_reqs.txt
+            python -m pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
+          else
+            python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
+          fi
         fi
 
     - name: "Compress the wheelhouse"
