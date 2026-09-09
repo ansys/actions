@@ -25,8 +25,9 @@ name: |
 
 description: |
   Action actively checking for library and third party vulnerabilities by
-  means of the `bandit <https://bandit.readthedocs.io/en/latest/>`_ and
-  `safety <https://pyup.io/safety/>`_ Python packages. These packages
+  means of `bandit <https://bandit.readthedocs.io/en/latest/>`_,
+  `safety <https://pyup.io/safety/>`_ and (optionally)
+  `uv audit <https://docs.astral.sh/uv/reference/cli/#uv-audit>`_. These tools
   allow you to identify security issues and vulnerabilities inside your code.
 
   This action has two running modes:
@@ -219,6 +220,14 @@ inputs:
     required: false
     type: boolean
 
+  use-uv-audit:
+    description: |
+      Whether to run ``uv audit`` in addition to safety and bandit checks.
+      Default value is ``false``.
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -259,6 +268,13 @@ runs:
         else
           echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
         fi
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.use-uv-audit == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'false' }}
+      with:
+        level: "ERROR"
+        message: >
+          Input use-uv-audit is enabled but no uv.lock file was detected. Please, consider using uv lock files to manage your dependencies. Run 'uv lock' to generate one.
 
     # ------------------------------------------------------------------------
 
@@ -613,6 +629,46 @@ runs:
         # Run bandit security checks
         bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.use-uv-audit == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Running uv audit security checks.
+
+    - name: "Detect uv audit malware-check config"
+      id: detect-uv-audit-malware-check
+      if: ${{ inputs.use-uv-audit == 'true' }}
+      shell: bash
+      run: |
+        python ${GITHUB_ACTION_PATH}/../python-utils/detect_uv_audit_malware_check.py
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.use-uv-audit == 'true' && steps.detect-uv-audit-malware-check.outputs.HAS_AUDIT_MALWARE_CHECK == 'false' }}
+      with:
+        level: "INFO"
+        message: >
+          Input use-uv-audit is enabled but malware-check is not set in pyproject.toml. A fallback UV_MALWARE_CHECK=1 will be used for uv audit. Consider adding malware-check to pyproject.toml to avoid this fallback.
+
+    - uses: ansys/actions/_logging@main
+      if: ${{ inputs.use-uv-audit == 'true' && steps.detect-uv-audit-malware-check.outputs.AUDIT_MALWARE_CHECK_VALUE == 'false' }}
+      with:
+        level: "WARNING"
+        message: >
+          malware-check is set to false in pyproject.toml, consider changing it to true. UV_MALWARE_CHECK=1 will be forced for uv audit.
+
+    - name: "Run uv audit checks"
+      if: ${{ inputs.use-uv-audit == 'true' }}
+      id: run-uv-audit-checks
+      shell: bash
+      continue-on-error: true
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        UV_MALWARE_CHECK: 1
+      run: |
+        ${ACTIVATE_VENV}
+        uv audit --frozen --no-dev --preview-features audit-command > info_uv_audit.log 2>&1
+
     - name: "Run advisory checks"
       shell: bash
       env:
@@ -622,6 +678,7 @@ runs:
         DEPENDENCY_CHECK_PACKAGE_NAME: ${{ inputs.python-package-name }}
         DEPENDENCY_CHECK_REPOSITORY: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
         DEPENDENCY_CHECK_CREATE_ISSUES: ${{ inputs.create-issues == 'true' && '1' || '' }}
+        DEPENDENCY_CHECK_UV_AUDIT_ENABLED: ${{ inputs.use-uv-audit == 'true' && '1' || '' }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${HIDE_LOG}" == 'true' ]]; then
@@ -630,10 +687,12 @@ runs:
           python "${GITHUB_ACTION_PATH}/check_vulnerabilities.py"
         fi
 
-    - name: "Uploading safety and bandit results"
+    - name: "Uploading results"
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      if: inputs.upload-reports == 'true' || ( failure() && inputs.upload-reports == 'true' )
+      if: ${{ always() && inputs.upload-reports == 'true' }}
       with:
         name: vulnerability-results
-        path: ./info_*.json
+        path: |
+          ./info_*.json
+          ${{ inputs.use-uv-audit == 'true' && './info_uv_audit.log' || '' }}
         retention-days: 7
