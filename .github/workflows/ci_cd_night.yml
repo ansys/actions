@@ -21,8 +21,10 @@ jobs:
   doc-build:
     name: "Doc build"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: ansys/actions/doc-build@main
+      - uses: $/doc-build
         with:
           group-dependencies-name: 'doc'
           needs-quarto: true
@@ -37,7 +39,7 @@ jobs:
     permissions:
       contents: write # Needed to update files on the gh-pages branch
     steps:
-      - uses: ansys/actions/doc-deploy-dev@main
+      - uses: $/doc-deploy-dev
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,9 +58,8 @@ jobs:
       contents: read
       attestations: write # Needed for provenance attestation
     steps:
-
       - name: "Build wheelhouse and perform smoke test for ${{ env.LIBRARY_NAME }} package"
-        uses: ansys/actions/build-wheelhouse@main
+        uses: $/build-wheelhouse
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           operating-system: ${{ matrix.os }}
@@ -75,9 +76,8 @@ jobs:
       contents: read
       attestations: write # Needed for provenance attestation
     steps:
-
       - name: "Build library for ${{ env.LIBRARY_NAME }} package"
-        uses: ansys/actions/build-library@main
+        uses: $/build-library
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           attest-provenance: true

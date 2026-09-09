@@ -109,7 +109,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main # TODO: Remove in v12
+    - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
         level: "ERROR"
@@ -118,7 +118,7 @@ runs:
           ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
           will be removed in v12.
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: inputs.tomlkit-version != ''
       with:
         level: "ERROR"
@@ -133,7 +133,7 @@ runs:
         persist-credentials: false
       if: inputs.checkout == 'true'
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
