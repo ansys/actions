@@ -8,14 +8,14 @@ requires-python = ">=3.12"
 
 [dependency-groups]
 build-library-pip = [
-    "build<=1.5",
+    "build<=1.6.0",
     "twine<=7.1",
 ]
 build-library-uv = [
     "twine<=7.1",
 ]
 build-wheelhouse = [
-    "build<=1.5",
+    "build<=1.6.0",
     "wheel<=0.49",
 ]
 check-licenses = [
@@ -26,8 +26,9 @@ check-licenses = [
 check-vulnerabilities = [
     "bandit>=1.9,<2",
     "click>=8.4,<9",
-    "pygithub>=2.9,<3",
+    "pygithub>=2.10,<3",
     "safety>=3.8,<4",
+    "uv>=0.12,<1",
 ]
 code-style-pre-commit = [
     "pre-commit<=4.7",
@@ -51,13 +52,13 @@ doc-style = [
     "tomlkit<=0.16",
 ]
 hk-package-clean-except = [
-    "fastcore<=2.2",
-    "ghapi<=2.1",
+    "fastcore<=2.3",
+    "ghapi<=2.2",
     "packaging<=26.3",
 ]
 hk-package-clean-untagged = [
-    "fastcore<=2.2",
-    "ghapi<=2.1",
+    "fastcore<=2.3",
+    "ghapi<=2.1.2",
     "packaging<=26.3",
 ]
 release-github = [
@@ -86,7 +87,7 @@ quality = [
   "prek<=0.5",
   "ruff<=0.17",
   # NOTE: This one is particular and only contains patch releases atm
-  "ty<=0.0.66",
+  "ty<=0.0.77",
 ]
 doc = [
     "ansys-sphinx-theme>=1.10.0",

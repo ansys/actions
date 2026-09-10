@@ -14,6 +14,7 @@
 * [Christian Frisson](https://github.com/anscfrisson)
 * [Dipin](https://github.com/dipinknair)
 * [Dominik Gresch](https://github.com/greschd)
+* [Doug Addy](https://github.com/da1910)
 * [Edouard Coussoux](https://github.com/ecoussoux-ansys)
 * [German](https://github.com/germa89)
 * [Guillem Barroso](https://github.com/GuillemBarroso)

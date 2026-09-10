@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     cooldown:
       default-days: 7
@@ -56,7 +56,7 @@ updates:
       - "release-pypi-test"
       - "tests-pytest"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     cooldown:
       default-days: 7
@@ -71,6 +71,8 @@ updates:
       cicd-actions:
         patterns:
           - "micnncim/action-label-syncer"
+          - "pypa/gh-action-pypi-publish"
+          - "pyvista/setup-headless-display-action"
       # Github actions that are used in our composite actions
       github-actions:
         patterns:
@@ -104,22 +106,20 @@ updates:
       # Actions associated to our release composite actions
       release-related-actions:
         patterns:
-          - "pypa/gh-action-pypi-publish"
           - "softprops/action-gh-release"
       # Missed non ansys actions that should by assigned to a group
       must-be-assigned-actions:
         patterns:
-          - peter-evans/find-comment
-          - pyvista/setup-headless-display-action
-          - vimtor/action-zip
-          - dependabot/fetch-metadata
+          - "peter-evans/find-comment"
+          - "vimtor/action-zip"
+          - "dependabot/fetch-metadata"
         exclude-patterns:
           - "ansys/actions*"
 
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     cooldown:
       default-days: 7 # semver-* options are not applicable for pre-commit

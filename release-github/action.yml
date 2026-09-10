@@ -38,6 +38,9 @@ description: |
 
        - **contents**: ``write`` - Required to create GitHub releases and upload release assets
 
+    .. note:: **Optional GitHub Permissions**
+
+       - **attestations**: ``read`` - Recommended if using the attestation features to include an example of attested artifacts in the release notes.
 
 inputs:
 
@@ -187,7 +190,7 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main # TODO: Remove in v12
+    - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
         level: "ERROR"
@@ -196,7 +199,7 @@ runs:
           ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
           will be removed in v12.
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: inputs.tomlkit-version != '' || inputs.pypandoc-binary-version != ''
       with:
         level: "ERROR"
@@ -207,7 +210,7 @@ runs:
 
     # Only one of both can be true: generate-release-notes, changelog-release-notes
     - name: "Sanity check on release notes"
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       if: ${{ inputs.generate-release-notes == 'true' && inputs.changelog-release-notes == 'true' }}
       with:
         level: "ERROR"
@@ -220,7 +223,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -238,7 +241,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       with:
         level: "INFO"
@@ -271,7 +274,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -288,7 +291,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -305,7 +308,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -323,7 +326,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: inputs.only-code == 'false'
       with:
         level: "INFO"
@@ -360,7 +363,8 @@ runs:
         #   ansys_project-1.2.3-py3-none-any.whl
         #   ansys_project-1.2.3.tar.gz
         ARTIFACT_VERSION="$(basename "${ARTIFACT_FILE}" \
-          | sed -E 's/^[^0-9]+//; s/-.*$//; s/\.(tar\.gz|whl)$//')"
+          | cut -d'-' -f2 \
+          | sed -E 's/\.(tar\.gz|whl)$//')"
 
         if [[ -z "${ARTIFACT_VERSION}" ]]; then
           echo "Failed to extract version from artifact filename"
@@ -379,7 +383,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: inputs.additional-artifacts != ''
       with:
         level: "INFO"
@@ -400,7 +404,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -411,7 +415,7 @@ runs:
       run: ls -R dist/
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -477,7 +481,31 @@ runs:
       shell: bash
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
+        ADDITIONAL_ARTIFACTS: ${{ inputs.additional-artifacts }}
+        REPO_URL: ${{ github.event.repository.html_url }}
+        GH_TOKEN: ${{ inputs.token }}
       run: |
+        # Find the first artifact that already has a discoverable attestation.
+        attested_file=""
+
+        # Standard release artifacts: wheels, sdist, wheelhouse, SBOM.
+        for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
+          if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            attested_file="$(basename "$artifact")"
+            break
+          fi
+        done
+
+        # If none found yet, also try files from additional-artifacts.
+        if [[ -z "${attested_file}" && -n "${ADDITIONAL_ARTIFACTS}" ]]; then
+          while IFS= read -r -d '' artifact; do
+            if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+              attested_file="$(basename "$artifact")"
+              break
+            fi
+          done < <(find dist/extra -type f -print0)
+        fi
+
         {
           echo "RELEASE_NOTES_BODY<<EOF"
           echo "${RELEASE_NOTES_BODY}"
@@ -487,13 +515,23 @@ runs:
           echo "You can verify this release's artifact attestations using [GitHub's command-line tool](https://cli.github.com/). For example, download the files from this release page or from [PyPI](https://pypi.org/). Then, run the following commands:"
           echo ""
           echo "\`\`\`bash"
+          echo "gh attestation verify <file-path-of-downloaded-artifact> --repo ${GITHUB_REPOSITORY}"
+          echo "\`\`\`"
+          echo ""
 
-          # Find the following artifacts: wheels, source distribution, wheelhouse and SBOM files
-          for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
-            filename=$(basename "$artifact")
-            echo "\$ gh attestation verify --owner ${GITHUB_REPOSITORY_OWNER} ${filename}"
-          done
+          if [[ -n "${attested_file}" ]]; then
+            echo "Below is an example with artifact \`${attested_file}\`:"
+            echo ""
+            echo "\`\`\`bash"
+            echo "gh attestation verify ${attested_file} --repo ${GITHUB_REPOSITORY}"
+            echo "\`\`\`"
+            echo ""
+          fi
 
+          echo "You can also download the attestation from [GitHub](${REPO_URL}/attestations) and verify against that directly:"
+          echo ""
+          echo "\`\`\`bash"
+          echo "gh attestation verify <file-path-of-downloaded-artifact> --bundle <file-path-of-downloaded-attestation> --repo ${GITHUB_REPOSITORY}"
           echo "\`\`\`"
           echo "EOF"
         } >> "$GITHUB_ENV"

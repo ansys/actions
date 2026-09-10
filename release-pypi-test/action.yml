@@ -113,21 +113,13 @@ inputs:
     default: '3.12'
     type: string
 
-  skip-existing:
-    description: |
-      Continue uploading files if one already exists. Only valid when uploading
-      to PyPI. Other implementations may not support this.
-    required: false
-    default: true
-    type: boolean
-
 runs:
   using: "composite"
   steps:
 
     # TODO: The action file should be removed in ansys/actions@v12
     - name: "Fail the action"
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "ERROR"
         message: >

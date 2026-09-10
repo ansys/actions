@@ -9,6 +9,103 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.0.8 <https://github.com/ansys/actions/releases/tag/v11.0.8>`_ - September 07, 2026
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - SEO improvements
+          - `#1538 <https://github.com/ansys/actions/pull/1538>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Error message rendering in doc-deploy-changelog
+          - `#1536 <https://github.com/ansys/actions/pull/1536>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump pyvista/setup-headless-display-action from 4.3 to 5.0 in /.github/workflows in the cicd-actions group across 1 directory
+          - `#1521 <https://github.com/ansys/actions/pull/1521>`_
+
+
+`11.0.6 <https://github.com/ansys/actions/releases/tag/v11.0.6>`_ - September 02, 2026
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Tag check for releases
+          - `#1533 <https://github.com/ansys/actions/pull/1533>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump pygithub from 2.9.1 to 2.10.0
+          - `#1520 <https://github.com/ansys/actions/pull/1520>`_
+
+        * - Bump ghapi from 2.0.5 to 2.1.2
+          - `#1524 <https://github.com/ansys/actions/pull/1524>`_
+
+
+`11.0.5 <https://github.com/ansys/actions/releases/tag/v11.0.5>`_ - August 31, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump fastcore from 2.2.0 to 2.2.13
+          - `#1508 <https://github.com/ansys/actions/pull/1508>`_
+
+        * - Bump prek from 0.4.13 to 0.4.14
+          - `#1510 <https://github.com/ansys/actions/pull/1510>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove \`skip-existing\` input for release-pypi-private
+          - `#1518 <https://github.com/ansys/actions/pull/1518>`_
+
+        * - Remove reference to skip existing in other release actions
+          - `#1525 <https://github.com/ansys/actions/pull/1525>`_
+
+
 `11.0.4 <https://github.com/ansys/actions/releases/tag/v11.0.4>`_ - August 27, 2026
 ===================================================================================
 
