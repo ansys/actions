@@ -224,7 +224,7 @@ runs:
 
         quarto --version
         quarto install tool tinytex --no-prompt --log-level warning
-        echo "$HOME/bin" >> "$GITHUB_PATH"
+        echo "$HOME/bin" >> "$GITHUB_PATH" # zizmor: ignore[github-env]
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}
