@@ -4,14 +4,15 @@ on:
   schedule:
     - cron: '0 2 1 1,7 *'
 
-permissions:
-  contents: read
-  issues: write
+permissions: {}
 
 jobs:
   open-update-issue:
     name: Open or refresh semestrial tooling update issue
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # Needed to create a reminding issue
     steps:
       - name: Check for an existing open issue
         env:
