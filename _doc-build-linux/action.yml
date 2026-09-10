@@ -226,12 +226,6 @@ runs:
         quarto install tool tinytex --no-prompt --log-level warning
         echo "$HOME/bin" >> "$GITHUB_PATH"
 
-    - name: Check Quarto Version
-      if: ${{ inputs.needs-quarto == 'true' }}
-      shell: bash
-      run: |
-        quarto --version
-
     - name: "Install Poppler for PDF to PNG conversion"
       shell: bash
       run: |
