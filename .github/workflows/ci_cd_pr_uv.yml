@@ -32,7 +32,7 @@ jobs:
 
       - name: Decide which environment should be used
         id: block
-        uses: ./_check-environment-approval
+        uses: $/_check-environment-approval
         with:
           manual-check-environment: 'dependabot'
           skip-manual-check-environment: ''
@@ -76,7 +76,7 @@ jobs:
           persist-credentials: false
 
       - name: "Build wheelhouse and perform smoke test for ${{ env.LIBRARY_NAME }} package"
-        uses: ./build-wheelhouse
+        uses: $/build-wheelhouse
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           operating-system: ${{ matrix.os }}
@@ -101,7 +101,7 @@ jobs:
           persist-credentials: false
 
       - name: "Build library for ${{ env.LIBRARY_NAME }} package"
-        uses: ./build-library
+        uses: $/build-library
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           attest-provenance: true
@@ -123,7 +123,7 @@ jobs:
           persist-credentials: false
 
     - name: "Test release to devpi"
-      uses: ./_release-devpi
+      uses: $/_release-devpi
       with:
         library-name: ${{ env.LIBRARY_NAME }}
 
@@ -153,7 +153,7 @@ jobs:
           rm -rf .ci
 
       - name: "Check vulnerabilities for ${{ env.LIBRARY_NAME }} package"
-        uses: ./check-vulnerabilities
+        uses: $/check-vulnerabilities
         with:
           checkout: false
           dev-mode: ${{ github.ref != 'refs/heads/main' }}

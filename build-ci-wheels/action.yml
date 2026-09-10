@@ -100,7 +100,7 @@ runs:
 
     # TODO: The action file should be removed in ansys/actions@v12
     - name: "Deprecation warning"
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "WARNING"
         message: >

@@ -29,6 +29,16 @@ description: |
   composite action that is executed as a component of the PyAnsys documentation
   deployment strategies.
 
+  Only pages the site actually wants indexed are advertised. Pages that declare
+  ``<meta name="robots" content="noindex...">`` in their ``<head>`` are
+  skipped, together with the configurable ``exclude`` list of
+  boilerplate/utility filenames. ``<lastmod>`` is emitted only for the site
+  root; per-URL ``<lastmod>`` is intentionally omitted because
+  ``actions/download-artifact`` does not preserve source mtimes, so every
+  file's mtime would collapse to the deploy time and Google would learn to
+  distrust the signal. The legacy ``<changefreq>`` and ``<priority>`` hints
+  are also omitted (Google ignores them).
+
 inputs:
 
   # Required inputs
@@ -45,6 +55,17 @@ inputs:
     required: true
     type: string
 
+  # Required inputs
+
+  exclude:
+    description: |
+      Space-separated list of HTML file basenames to exclude from the sitemap.
+      These are Sphinx utility pages, boilerplate banners and other pages that
+      hurt search quality when advertised in a sitemap. Any HTML file whose
+      basename matches an entry is skipped.
+    required: true
+    type: string
+
 
 runs:
   using: "composite"
@@ -52,50 +73,98 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
-          Generating the XML sitemap.
+          Generating the XML sitemap. Skips pages listed in the ``exclude``
+          input and any HTML file whose ``<head>`` declares ``<meta
+          name="robots" content="noindex...">``. Emits ``<lastmod>`` only for
+          the site root and omits ``<changefreq>``/``<priority>`` (all three
+          are ignored or distrusted by Google when they are inaccurate, which
+          per-file mtimes from ``actions/download-artifact`` would be).
 
     - name: "Generate the sitemap.xml file"
       shell: bash
       env:
         CNAME: ${{ inputs.cname }}
         HTML_DIRECTORY: ${{ inputs.html-directory }}
+        EXCLUDE_LIST: ${{ inputs.exclude }}
       run: |
-        # Declare the website name and the output file for the sitemap
         website="https://${CNAME}"
         input_dir="${HTML_DIRECTORY}"
         output="sitemap.xml"
 
-        # Add URLs to the sitemap
-        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $output
-        echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">" >> $output
+        read -r -a exclude_names <<< "${EXCLUDE_LIST}"
 
-        # Add homepage
-        echo "  <url>" >> $output
-        echo "    <loc>$website</loc>" >> $output
-        echo "    <lastmod>$(date +%Y-%m-%dT%H:%M:%S+00:00)</lastmod>" >> $output
-        echo "    <changefreq>daily</changefreq>" >> $output
-        echo "    <priority>1.0</priority>" >> $output
-        echo "  </url>" >> $output
+        is_excluded_file() {
+          local candidate=$1
+          local excluded
+          for excluded in "${exclude_names[@]}"; do
+            if [[ "$candidate" == "$excluded" ]]; then
+              return 0
+            fi
+          done
+          return 1
+        }
 
-        # Add other URLs
+        now=$(date -u +%Y-%m-%dT%H:%M:%S+00:00)
+
+        {
+          echo '<?xml version="1.0" encoding="UTF-8"?>'
+          echo '<!-- managed-by: ansys/actions/_doc-gen-sitemap -->'
+          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+          echo '  <url>'
+          echo "    <loc>${website}/</loc>"
+          echo "    <lastmod>${now}</lastmod>"
+          echo '  </url>'
+        } > "$output"
+
+        total=0
+        skipped_excluded=0
+        skipped_noindex=0
+
         while IFS= read -r -d '' file; do
-          if [[ $file == *"$input_dir"* ]]; then
-            url=${file}
-          else
-            # $input_dir is not in the file path, add it to the beginning of the URL
-            url="$input_dir${file}"
-          fi
-          echo "  <url>" >> $output
-          echo "    <loc>$website/$url</loc>" >> $output
-          echo "    <lastmod>$(date +%Y-%m-%dT%H:%M:%S+00:00)</lastmod>" >> $output
-          echo "    <changefreq>weekly</changefreq>" >> $output
-          echo "    <priority>0.5</priority>" >> $output
-          echo "  </url>" >> $output
-        done < <(find "$input_dir" -type f -name "*.html" ! -name "search.html" ! -name "genindex.html" -print0)
+          basename=$(basename "$file")
 
-        # Close the sitemap
-        echo "</urlset>" >> $output
+          if is_excluded_file "$basename"; then
+            skipped_excluded=$((skipped_excluded + 1))
+            continue
+          fi
+
+          # Only look at the ``<head>`` window when detecting a robots
+          # ``noindex`` directive. Scanning the whole file causes false
+          # positives when the string ``noindex`` appears inside a
+          # ``<!-- comment -->``, a ``<script>`` block, or as a substring of an
+          # unrelated word (for example ``noindexing-guide``), which would
+          # silently drop legitimate pages from the sitemap.
+          if sed -n '/<[Hh][Ee][Aa][Dd]/,/<\/[Hh][Ee][Aa][Dd]>/p' "$file" | \
+              grep -Eiq "<meta[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"'][^>]*content[[:space:]]*=[[:space:]]*[\"'][^\"']*\<noindex\>|<meta[^>]*content[[:space:]]*=[[:space:]]*[\"'][^\"']*\<noindex\>[^>]*name[[:space:]]*=[[:space:]]*[\"']robots[\"']"; then
+            skipped_noindex=$((skipped_noindex + 1))
+            continue
+          fi
+
+          if [[ "$file" == "$input_dir"* || "$file" == *"/$input_dir/"* ]]; then
+            url_path="/${file}"
+          else
+            url_path="/${input_dir%/}/${file}"
+          fi
+
+          # ``<lastmod>`` is intentionally omitted for individual URLs. The
+          # HTML files come from ``actions/download-artifact``, which does not
+          # preserve source mtimes: every file would carry the deploy time,
+          # and Google explicitly warns that an inaccurate ``<lastmod>`` makes
+          # it distrust the signal. Only the site-root entry above keeps
+          # ``<lastmod>``, which is legitimately "now" for the deploy.
+          {
+            echo '  <url>'
+            echo "    <loc>${website}${url_path}</loc>"
+            echo '  </url>'
+          } >> "$output"
+
+          total=$((total + 1))
+        done < <(find "$input_dir" -type f -name "*.html" -print0)
+
+        echo '</urlset>' >> "$output"
+
+        echo "Sitemap entries: ${total} (excluded by name: ${skipped_excluded}, skipped for noindex: ${skipped_noindex})."
