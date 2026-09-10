@@ -153,12 +153,12 @@ tests-pytest = [
 
 [package.metadata.requires-dev]
 build-library-pip = [
-    { name = "build", specifier = "<=1.6.0" },
+    { name = "build", specifier = "<=1.7" },
     { name = "twine", specifier = "<=7.1" },
 ]
 build-library-uv = [{ name = "twine", specifier = "<=7.1" }]
 build-wheelhouse = [
-    { name = "build", specifier = "<=1.6.0" },
+    { name = "build", specifier = "<=1.7" },
     { name = "wheel", specifier = "<=0.49" },
 ]
 check-actions-security = [{ name = "zizmor", specifier = "<=1.29" }]
@@ -177,7 +177,7 @@ check-vulnerabilities = [
 code-style-pre-commit = [{ name = "pre-commit", specifier = "<=4.7" }]
 code-style-prek = [{ name = "prek", specifier = "<=0.5" }]
 dev = [
-    { name = "ansys-sphinx-theme", specifier = ">=1.10.0" },
+    { name = "ansys-sphinx-theme", specifier = ">=1.10" },
     { name = "jupyter", specifier = ">=1.1" },
     { name = "prek", specifier = "<=0.5" },
     { name = "pyyaml", specifier = ">=6.0" },
@@ -187,12 +187,12 @@ dev = [
     { name = "sphinx-design", specifier = "==0.7.0" },
     { name = "sphinx-jinja", specifier = ">=2.0" },
     { name = "tabulate", specifier = "==0.10.0" },
-    { name = "tox", specifier = ">=4.60.0" },
+    { name = "tox", specifier = ">=4.60" },
     { name = "tox-uv", specifier = ">=1.36" },
     { name = "ty", specifier = "<=0.0.77" },
 ]
 doc = [
-    { name = "ansys-sphinx-theme", specifier = ">=1.10.0" },
+    { name = "ansys-sphinx-theme", specifier = ">=1.10" },
     { name = "jupyter", specifier = ">=1.1" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "sphinx", specifier = ">=9.1" },
@@ -221,7 +221,7 @@ hk-package-clean-except = [
 ]
 hk-package-clean-untagged = [
     { name = "fastcore", specifier = "<=2.3" },
-    { name = "ghapi", specifier = "<=2.1.2" },
+    { name = "ghapi", specifier = "<=2.2" },
     { name = "packaging", specifier = "<=26.3" },
 ]
 quality = [
