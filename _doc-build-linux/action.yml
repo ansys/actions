@@ -209,7 +209,7 @@ runs:
       env:
         QUARTO_VERSION: "1.10.18"
         QUARTO_DEB_SHA256: "4bdf5a17df300003beb2f8f0e4dfe568e2ca0ff91318220c8537d2655015c430"
-      run: |
+      run: | # zizmor: ignore[github-env]
         cd /tmp
         curl -sSfL -o quarto-linux-amd64.deb \
           "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb"
@@ -224,7 +224,7 @@ runs:
 
         quarto --version
         quarto install tool tinytex --no-prompt --log-level warning
-        echo "$HOME/bin" >> "$GITHUB_PATH" # zizmor: ignore[github-env]
+        echo "$HOME/bin" >> "$GITHUB_PATH"
 
     - name: Check Quarto Version
       if: ${{ inputs.needs-quarto == 'true' }}
