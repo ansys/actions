@@ -7,6 +7,19 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v11.1``
+-----------------
+
+**New Features:**
+
+- **Git LFS support during checkout:** The ``doc-build``, ``tests-pytest``,
+  ``build-library``, and ``build-wheelhouse`` actions now expose a new
+  ``checkout-lfs`` boolean input (default ``false``). When set to ``true``, the
+  checkout step downloads Git LFS-tracked files. Enable this input when the
+  repository stores files with Git LFS that must be materialized before the action runs.
+  The default preserves the previous behavior, so no changes are required for existing
+  workflows.
+
 Version ``v11``
 ---------------
 
