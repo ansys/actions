@@ -31,11 +31,13 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   bandit
     #   click
     #   tqdm
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   authlib
     #   joserfc
     #   pyjwt
+defusedxml==0.7.1
+    # via nltk
 dparse==0.6.4
     # via
     #   safety
@@ -57,7 +59,7 @@ jinja2==3.1.6
     # via safety
 joblib==1.5.3
     # via nltk
-joserfc==1.6.5
+joserfc==1.6.8
     # via authlib
 markdown-it-py==4.2.0
     # via rich
@@ -67,7 +69,7 @@ marshmallow==4.3.0
     # via safety
 mdurl==0.1.2
     # via markdown-it-py
-nltk==3.9.4
+nltk==3.10.3
     # via safety
 packaging==26.3
     # via
