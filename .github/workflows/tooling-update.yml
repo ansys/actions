@@ -55,18 +55,22 @@ jobs:
           This PR updates the pinned versions of Syft and Quarto to the latest stable releases older than one week.
           EOF
           )
-
           CURRENT_DATE=$(date +%Y-%m)
           PR_TITLE="chore: bump tooling to latest releases (${CURRENT_DATE})"
           BRANCH_NAME="chore/bump-tooling-${CURRENT_DATE}"
 
+          if git ls-remote --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH_NAME} already exists. Skipping duplicate creation."
+            exit 1
+          fi
+
           git config user.name "${BOT_USER}"
           git config user.email "${BOT_EMAIL}"
 
-          git checkout -b "$BRANCH_NAME" || git checkout "$BRANCH_NAME"
+          git checkout -b "$BRANCH_NAME"
           git add .
           git commit -m "$PR_TITLE" || echo "Nothing to commit"
-          git push --set-upstream origin "$BRANCH_NAME" || true
+          git push --set-upstream origin "$BRANCH_NAME"
 
           gh pr create \
             --base main \
