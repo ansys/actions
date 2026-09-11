@@ -412,12 +412,14 @@ runs:
         WHEELHOUSE_TARGET: ${{ steps.specific-target-requested.outputs.wheelhouse_target }}
         OPERATING_SYSTEM: ${{ inputs.operating-system }}
         PYTHON_VERSION: ${{ inputs.python-version }}
+        SYFT_VERSION: "1.51.1"
+        SYFT_GIT_SHA: "91a0032987d91b7411b52f6f5c185c5e7f775495"
       shell: bash
       run: |
         if ! command -v syft > /dev/null; then
-          echo "Syft not found, installation of v1.43.0 in progress..."
+          echo "Syft not found, installation of v${SYFT_VERSION} in progress..."
           mkdir -p ~/.local/bin
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/ac883f52edb8ca1f5a0a61d12c288d4b34ea3897/install.sh | sh -s -- -b ~/.local/bin v1.43.0
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/${SYFT_GIT_SHA}/install.sh | sh -s -- -b ~/.local/bin v${SYFT_VERSION}
         else
           echo "Syft installation found"
         fi
