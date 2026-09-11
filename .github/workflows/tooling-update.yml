@@ -7,12 +7,15 @@ on:
     - cron: '0 2 1 1,7 *'
   workflow_dispatch:
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   open-draft-pr:
+    name: Open tooling update PR
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed to create PR for tooling updates
