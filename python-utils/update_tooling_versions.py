@@ -153,12 +153,9 @@ def update_quarto_version(path: Path, version: str) -> str:
     with tempfile.NamedTemporaryFile(suffix=".deb", delete=False) as temp_file:
         download_path = Path(temp_file.name)
 
-    try:
-        subprocess.run(["curl", "-fsSL", "-o", str(download_path), deb_url], check=True)
-        new_hash = hashlib.sha256(download_path.read_bytes()).hexdigest()
-    finally:
-        if download_path.exists():
-            download_path.unlink()
+    subprocess.run(["curl", "-fsSL", "-o", str(download_path), deb_url], check=True)
+    new_hash = hashlib.sha256(download_path.read_bytes()).hexdigest()
+    download_path.unlink(missing_ok=True)
 
     updated_text, hash_count = re.subn(
         r'(QUARTO_DEB_SHA256\s*:\s*")[^"]*(\")',
