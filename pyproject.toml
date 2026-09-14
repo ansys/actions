@@ -34,7 +34,7 @@ code-style-pre-commit = [
     "pre-commit<=4.7",
 ]
 code-style-prek = [
-    "prek<=0.5",
+    "prek<=0.5.2",
 ]
 doc-changelog = [
     "tomlkit<=0.16",
@@ -84,7 +84,7 @@ dev = [
     { include-group = "quality" },
 ]
 quality = [
-  "prek<=0.5",
+  "prek<=0.5.2",
   "ruff<=0.17",
   # NOTE: This one is particular and only contains patch releases atm
   "ty<=0.0.77",
