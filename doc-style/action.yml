@@ -46,6 +46,40 @@ inputs:
 
   # Optional inputs
 
+  python-version:
+    description: |
+      Python version used to parse the ``pyproject.toml`` file and retrieve the towncrier
+      directory.
+    default: '3.12'
+    required: false
+    type: string
+
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
+  skip-python-setup:
+    description: |
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
+
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
+    required: false
+    default: false
+    type: boolean
+
   files:
     description: |
       Path to the directory containing the documentation files.
@@ -174,6 +208,22 @@ runs:
             exit 1
           fi
         fi
+
+    - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ inputs.skip-python-setup == 'false' }}
+      uses: $/_setup-python
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: false
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - uses: $/_logging
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
 
     - name: "Install tomlkit and docutils"
       shell: bash
