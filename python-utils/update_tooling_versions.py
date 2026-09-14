@@ -24,10 +24,10 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterable
 from datetime import UTC, datetime
 import hashlib
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -35,6 +35,8 @@ import tempfile
 from typing import Any
 
 ONE_WEEK_SECONDS = 7 * 24 * 60 * 60
+FETCH_PER_PAGE = 10
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _now_utc() -> datetime:
@@ -56,7 +58,7 @@ def select_release_older_than(releases: list[dict[str, Any]], age_seconds: int) 
             return tag
 
 
-def fetch_releases(repo: str, per_page: int = 10) -> list[dict[str, Any]]:
+def fetch_releases(repo: str, per_page: int) -> list[dict[str, Any]]:
     """Fetch a small sample of the most recent releases for a repository."""
     payload = subprocess.check_output(
         [
@@ -73,20 +75,9 @@ def fetch_releases(repo: str, per_page: int = 10) -> list[dict[str, Any]]:
     return json.loads(payload)
 
 
-def get_eligible_release(repo: str, cutoff_seconds: int = ONE_WEEK_SECONDS) -> str | None:
+def get_eligible_release(repo: str, cutoff_seconds: int) -> str | None:
     """Return the newest release older than the requested cutoff for a repository."""
-    return select_release_older_than(fetch_releases(repo), cutoff_seconds)
-
-
-def _write_github_output(name: str, value: str) -> None:
-    """Write a key-value pair to GITHUB_OUTPUT when available."""
-    github_output = os.environ.get("GITHUB_OUTPUT")
-    if github_output is None:
-        print(f"{name}={value}")
-        return
-
-    with Path(github_output).open("a", encoding="utf-8") as file:
-        file.write(f"{name}={value}\n")
+    return select_release_older_than(fetch_releases(repo, FETCH_PER_PAGE), cutoff_seconds)
 
 
 def resolve_syft_git_commit_sha(version: str) -> str:
@@ -109,7 +100,7 @@ def resolve_syft_git_commit_sha(version: str) -> str:
     return result.split()[0]
 
 
-def update_syft_version(path: Path, version: str, git_commit_sha: str | None = None) -> None:
+def update_syft_version(path: Path, version: str, git_commit_sha: str | None) -> None:
     """Update the pinned Syft version and the Git commit SHA used by the install script."""
     text = path.read_text(encoding="utf-8")
 
@@ -170,28 +161,56 @@ def update_quarto_version(path: Path, version: str) -> str:
     return new_hash
 
 
+def apply_version_updates_to_matching_actions(
+    action_files: Iterable[Path],
+    syft_version: str | None,
+    syft_git_sha: str | None,
+    quarto_version: str | None,
+) -> list[Path]:
+    """Update the supported tools in any action.yml files that contain them."""
+    updated_files: list[Path] = []
+    for path in action_files:
+        text = path.read_text(encoding="utf-8")
+        if syft_version is not None and "SYFT_VERSION" in text:
+            update_syft_version(path, syft_version, syft_git_sha)
+            updated_files.append(path)
+        if quarto_version is not None and "QUARTO_VERSION" in text:
+            update_quarto_version(path, quarto_version)
+            updated_files.append(path)
+    return updated_files
+
+
 def resolve_tooling_updates(
-    cutoff_seconds: int = ONE_WEEK_SECONDS,
+    cutoff_seconds: int,
 ) -> tuple[str | None, str | None, str | None]:
     """Return the eligible Syft and Quarto versions, plus the Git SHA for the Syft tag."""
-    syft_tag = get_eligible_release("anchore/syft", cutoff_seconds=cutoff_seconds)
-    quarto_tag = get_eligible_release("quarto-dev/quarto-cli", cutoff_seconds=cutoff_seconds)
+    syft_tag = get_eligible_release("anchore/syft", cutoff_seconds)
+    quarto_tag = get_eligible_release("quarto-dev/quarto-cli", cutoff_seconds)
     syft_git_sha = resolve_syft_git_commit_sha(syft_tag) if syft_tag else None
     return syft_tag, syft_git_sha, quarto_tag
 
 
-def apply_tooling_updates(cutoff_seconds: int = ONE_WEEK_SECONDS) -> None:
-    """Resolve the eligible releases and update the action YAML files in place."""
-    syft_tag, syft_git_sha, quarto_tag = resolve_tooling_updates(cutoff_seconds=cutoff_seconds)
+def apply_tooling_updates(cutoff_seconds: int) -> None:
+    """Resolve the eligible releases and update the matching action YAML files in place."""
+    syft_tag, syft_git_sha, quarto_tag = resolve_tooling_updates(cutoff_seconds)
     if syft_tag is None and quarto_tag is None:
         print("No eligible release found for Syft or Quarto. Nothing to update.")
+        return
 
-    if syft_tag is not None:
-        update_syft_version(Path("build-wheelhouse/action.yml"), syft_tag, syft_git_sha)
-    if quarto_tag is not None:
-        update_quarto_version(Path("_doc-build-linux/action.yml"), quarto_tag)
+    action_files = REPO_ROOT.rglob("action.yml")
+    updated_files = apply_version_updates_to_matching_actions(
+        action_files,
+        syft_tag,
+        syft_git_sha,
+        quarto_tag,
+    )
 
-    print(f"Updated Syft={syft_tag or 'unchanged'}, Quarto={quarto_tag or 'unchanged'}")
+    if not updated_files:
+        print("No supported tooling pins found in action.yml files. Nothing to update.")
+    else:
+        relative_paths = ", ".join(str(path.relative_to(REPO_ROOT)) for path in updated_files)
+        print(f"Updated files: {relative_paths}")
+        print(f"Updated Syft={syft_tag or 'unchanged'}, Quarto={quarto_tag or 'unchanged'}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -210,7 +229,7 @@ def main() -> None:
     """Resolve eligible releases and update the pinned tooling versions."""
     parser = build_parser()
     args = parser.parse_args()
-    apply_tooling_updates(cutoff_seconds=args.cutoff_seconds)
+    apply_tooling_updates(args.cutoff_seconds)
 
 
 if __name__ == "__main__":
