@@ -479,7 +479,7 @@ runs:
           if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
             EXPORT_OPTIONS="--format=requirements.txt --no-hashes --no-dev"
             EXPORT_OPTIONS+=$( [[ "${TARGET}" != '' ]] && echo " --extra ${TARGET}" || echo "" )
-            uv export $EXPORT_OPTIONS --output-file=wheel_reqs.txt
+            uv export $EXPORT_OPTIONS --output-file=wheel_reqs.txt --frozen
             python -m pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
           else
             python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
