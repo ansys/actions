@@ -90,7 +90,6 @@ updates:
       doc-related-actions:
         patterns:
           - "awalsh128/cache-apt-pkgs-action"
-          - "quarto-dev/quarto-actions/setup"
           - "peaceiris/actions-gh-pages"
           - "peter-evans/create-or-update-comment"
       # Actions associated to our tests composite actions
