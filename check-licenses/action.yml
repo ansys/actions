@@ -170,7 +170,7 @@ runs:
           activate-venv only contains consumer-facing dependencies (project
           runtime and selected extras). Dependency groups (dev, doc, test, ...)
           and build tooling (build, wheel, pyproject-hooks, ...) installed in
-          this environment also be reported, which may not be desired.
+          this environment will also be reported, which may not be desired.
 
     - name: Check python version
       id: check-python-version
