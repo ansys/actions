@@ -56,7 +56,19 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check whether a baseline landing page is available"
+      id: baseline-check
+      shell: bash
+      run: |
+        if [[ -f 'version/stable/index.html' || -f 'version/dev/index.html' ]]; then
+          echo "HAS_BASELINE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "HAS_BASELINE=false" >> ${GITHUB_OUTPUT}
+          echo "Warning: no 'version/stable/index.html' or 'version/dev/index.html' present; skipping versions-page generation."
+        fi
+
     - name: "Use the latest 'index.html' as baseline for the versions page"
+      if: steps.baseline-check.outputs.HAS_BASELINE == 'true'
       shell: bash
       run: |
         if [[ -f 'version/stable/index.html' ]]; then
@@ -66,6 +78,7 @@ runs:
         fi
 
     - name: "Update all references to point to 'stable/_static' or 'dev/_static'"
+      if: steps.baseline-check.outputs.HAS_BASELINE == 'true'
       shell: bash
       run: |
         if [[ -f 'version/stable/index.html' ]]; then
@@ -75,6 +88,7 @@ runs:
         fi
 
     - name: "Collect all released versions and update the 'version/index.html' file"
+      if: steps.baseline-check.outputs.HAS_BASELINE == 'true'
       shell: bash
       env:
         CNAME: ${{ inputs.cname }}

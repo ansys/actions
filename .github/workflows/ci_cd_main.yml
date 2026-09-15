@@ -19,8 +19,10 @@ jobs:
   doc-build:
     name: "Doc build"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: ansys/actions/doc-build@main
+      - uses: $/doc-build
         with:
           group-dependencies-name: 'doc'
           needs-quarto: true
@@ -36,7 +38,7 @@ jobs:
       contents: write # Needed to update files on the gh-pages branch
       pull-requests: write # Needed to add comments to the PR when cleaning pull directory
     steps:
-      - uses: ansys/actions/doc-deploy-dev@main
+      - uses: $/doc-deploy-dev
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
