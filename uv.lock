@@ -182,11 +182,11 @@ check-vulnerabilities = [
     { name = "uv", specifier = ">=0.12,<1" },
 ]
 code-style-pre-commit = [{ name = "pre-commit", specifier = "<=4.7" }]
-code-style-prek = [{ name = "prek", specifier = "<=0.5.2" }]
+code-style-prek = [{ name = "prek", specifier = "<=0.6" }]
 dev = [
     { name = "ansys-sphinx-theme", specifier = ">=1.10" },
     { name = "jupyter", specifier = ">=1.1" },
-    { name = "prek", specifier = "<=0.5.2" },
+    { name = "prek", specifier = "<=0.6" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", specifier = "<=0.17" },
     { name = "sphinx", specifier = ">=9.1" },
@@ -232,7 +232,7 @@ hk-package-clean-untagged = [
     { name = "packaging", specifier = "<=26.3" },
 ]
 quality = [
-    { name = "prek", specifier = "<=0.5.2" },
+    { name = "prek", specifier = "<=0.6" },
     { name = "ruff", specifier = "<=0.17" },
     { name = "ty", specifier = "<=0.0.77" },
 ]
