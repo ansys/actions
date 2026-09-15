@@ -1,0 +1,83 @@
+# This helps in performing updates for tooling such as Syft and Quarto.
+
+name: Semestrial or manual tooling update PR
+
+on:
+  schedule:
+    - cron: '0 2 1 1,7 *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  open-draft-pr:
+    name: Open tooling update PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to create PR for tooling updates
+      pull-requests: write # Needed to create PR for tooling updates
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Resolve eligible versions and update pins
+        id: update
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python "${GITHUB_ACTION_PATH}/../python-utils/update_tooling_versions.py"
+
+          # Exit if there are no changes to commit
+          if git diff --quiet --exit-code; then
+            echo "No updates to tooling detected."
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "updated=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create PR with the dependency update
+        if: steps.update.outputs.updated == 'true'
+        env:
+          BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+          GH_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PR_BODY=$(cat <<'EOF'
+          ## Summary
+
+          This PR updates the pinned versions of Syft and Quarto to the latest stable releases older than one week.
+          EOF
+          )
+          CURRENT_DATE=$(date +%Y-%m)
+          PR_TITLE="chore: bump tooling to latest releases (${CURRENT_DATE})"
+          BRANCH_NAME="chore/bump-tooling-${CURRENT_DATE}"
+
+          if git ls-remote --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH_NAME} already exists. Skipping duplicate creation."
+            exit 1
+          fi
+
+          git config user.name "${BOT_USER}"
+          git config user.email "${BOT_EMAIL}"
+
+          git checkout -b "$BRANCH_NAME"
+          git add .
+          git commit -m "$PR_TITLE" || echo "Nothing to commit"
+          git push --set-upstream origin "$BRANCH_NAME"
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "$PR_TITLE" \
+            --label "dependencies,ci" \
+            --body "$PR_BODY"

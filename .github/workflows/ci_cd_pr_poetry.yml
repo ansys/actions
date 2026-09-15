@@ -31,7 +31,7 @@ jobs:
 
       - name: Decide which environment should be used
         id: block
-        uses: ./_check-environment-approval
+        uses: $/_check-environment-approval
         with:
           manual-check-environment: 'dependabot'
           skip-manual-check-environment: ''
@@ -75,7 +75,7 @@ jobs:
           persist-credentials: false
 
       - name: "Build wheelhouse and perform smoke test for ${{ env.LIBRARY_NAME }} package"
-        uses: ./build-wheelhouse
+        uses: $/build-wheelhouse
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           operating-system: ${{ matrix.os }}
@@ -104,7 +104,7 @@ jobs:
           persist-credentials: false
 
       - name: "Build library for ${{ env.LIBRARY_NAME }} package"
-        uses: ./build-library
+        uses: $/build-library
         with:
           library-name: ${{ env.LIBRARY_NAME }}
           attest-provenance: true
@@ -126,7 +126,7 @@ jobs:
           persist-credentials: false
 
     - name: "Test release to devpi"
-      uses: ./_release-devpi
+      uses: $/_release-devpi
       with:
         library-name: ${{ env.LIBRARY_NAME }}
 
@@ -156,14 +156,8 @@ jobs:
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          path: actions
-
       - name: "Build wheelhouse and perform smoke test for ${{ matrix.repository.name }}"
-        uses: ./actions/build-wheelhouse
+        uses: $/build-wheelhouse
         with:
           checkout: false
           library-name: ${{ matrix.repository.library }}
@@ -197,14 +191,8 @@ jobs:
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          path: actions
-
       - name: "Build library for ${{ matrix.repository.name }}"
-        uses: ./actions/build-library
+        uses: $/build-library
         with:
           checkout: false
           library-name: ${{ matrix.repository.library }}
@@ -232,14 +220,8 @@ jobs:
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          path: actions
-
       - name: "Check license validity for ${{ matrix.repository.name }}"
-        uses: ./actions/check-licenses
+        uses: $/check-licenses
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           checkout: false
@@ -264,14 +246,8 @@ jobs:
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          path: actions
-
       - name: "Run code style checks for ${{ matrix.repository.name }}"
-        uses: ./actions/code-style
+        uses: $/code-style
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -300,14 +276,8 @@ jobs:
           repository: ansys/${{ matrix.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Clone ansys/actions into a different path"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          path: actions
-
       - name: "Run doc style checks for ${{ matrix.repository.name }}"
-        uses: ./actions/doc-style
+        uses: $/doc-style
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           checkout: false

@@ -31,11 +31,13 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   bandit
     #   click
     #   tqdm
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   authlib
     #   joserfc
     #   pyjwt
+defusedxml==0.7.1
+    # via nltk
 dparse==0.6.4
     # via
     #   safety
@@ -48,7 +50,7 @@ httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via safety
-idna==3.15
+idna==3.19
     # via
     #   anyio
     #   httpx
@@ -57,7 +59,7 @@ jinja2==3.1.6
     # via safety
 joblib==1.5.3
     # via nltk
-joserfc==1.6.5
+joserfc==1.6.8
     # via authlib
 markdown-it-py==4.2.0
     # via rich
@@ -67,7 +69,7 @@ marshmallow==4.3.0
     # via safety
 mdurl==0.1.2
     # via markdown-it-py
-nltk==3.9.4
+nltk==3.10.3
     # via safety
 packaging==26.3
     # via
@@ -82,7 +84,7 @@ pydantic==2.13.4
     #   safety-schemas
 pydantic-core==2.46.4
     # via pydantic
-pygithub==2.9.1
+pygithub==2.10.0
 pygments==2.20.0
     # via rich
 pyjwt==2.13.0
@@ -135,3 +137,4 @@ urllib3==2.7.0
     # via
     #   pygithub
     #   requests
+uv==0.12.10
