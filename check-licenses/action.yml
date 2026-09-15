@@ -159,6 +159,19 @@ runs:
           When skip-install is set to false, activate-venv input is not needed
           and will be ignored.
 
+    - name: Advise on external virtual environment scope
+      if: ${{ inputs.skip-install == 'true' && inputs.activate-venv != '' }}
+      uses: $/_logging
+      with:
+        level: "WARNING"
+        message: >
+          The license check inspects every package installed in the provided
+          virtual environment. Make sure the environment activated via
+          activate-venv only contains consumer-facing dependencies (project
+          runtime and selected extras). Dependency groups (dev, doc, test, ...)
+          and build tooling (build, wheel, pyproject-hooks, ...) installed in
+          this environment also be reported, which may not be desired.
+
     - name: Check python version
       id: check-python-version
       shell: bash
