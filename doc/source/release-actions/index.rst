@@ -6,8 +6,8 @@ These actions assume that you have used the :ref:`Documentation actions`
 and the :ref:`Build actions`. The reason is that the artifacts generated during these
 actions are the ones to be released.
 
-Release workflow setup
-----------------------
+Setting up a release workflow
+-----------------------------
 
 See :ref:`Release workflow setup` for typical release workflow setups, grouped according
 to the different modes for generating the changelog during a release.
