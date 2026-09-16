@@ -225,6 +225,16 @@ runs:
         message: >
           Skipping Python setup to use system Python.
 
+    - name: "Create isolated virtual environment"
+      shell: bash
+      run: |
+        python -m venv .venv
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          echo "${GITHUB_WORKSPACE}/.venv/Scripts" >> $GITHUB_PATH # zizmor: ignore[github-env]
+        else
+          echo "${GITHUB_WORKSPACE}/.venv/bin" >> $GITHUB_PATH # zizmor: ignore[github-env]
+        fi
+
     - name: "Install tomlkit and docutils"
       shell: bash
       run: |
