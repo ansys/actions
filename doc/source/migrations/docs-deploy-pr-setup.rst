@@ -10,6 +10,16 @@ Deploy documentation from a pull request
   version ``v10.2``, this requirement is removed. Documentation cleanup now happens automatically in the
   background. The cleanup process uses ``ansys/actions/doc-deploy-dev``, so make sure that your
   workflows also use version ``v10.2`` or later of ``ansys/actions/doc-deploy-dev``.
+  This cleanup requires ``pull-requests: write`` permission in the ``doc-deploy-dev`` job token.
+  Without this permission, cleanup fails and closed-PR directories under ``gh-pages/pull/`` are not removed.
+
+  Minimum permission snippet:
+
+  .. code:: yaml
+
+    permissions:
+      contents: write
+      pull-requests: write
 
 The ``ansys/action/doc-deploy-pr`` action automates the deployment of HTML documentation from a pull
 request (PR) and its removal when the PR is closed.
