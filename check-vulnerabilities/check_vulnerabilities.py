@@ -27,12 +27,17 @@ Notes
 -----
 Script for detecting vulnerabilities on a given repo and creating
 associated security vulnerability advisories.
+
+In addition to Safety and Bandit outputs, this script can optionally parse
+``uv audit`` results when ``DEPENDENCY_CHECK_UV_AUDIT_ENABLED`` is set. In
+that mode, ``info_uv_audit.log`` must exist in the working directory.
 """
 
 import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
@@ -50,6 +55,7 @@ REPOSITORY = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
 DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
 ERROR_IF_NEW_ADVISORY = True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
 CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
+UV_AUDIT_ENABLED = True if os.environ.get("DEPENDENCY_CHECK_UV_AUDIT_ENABLED") else False
 
 _SSL_CORPORATE_NETWORK_HINT = (
     "On corporate networks, an SSL inspection proxy may intercept HTTPS connections "
@@ -81,8 +87,14 @@ def dict_hash(dictionary: dict[str, Any]) -> str:
 
 
 def check_vulnerabilities():
-    """Check library and third-party vulnerabilities."""
+    """Check library and third-party vulnerabilities.
+
+    This function consumes ``info_safety.json`` and ``info_bandit.json``.
+    When ``DEPENDENCY_CHECK_UV_AUDIT_ENABLED`` is set, it also parses
+    ``info_uv_audit.log`` to include ``uv audit`` findings in the report.
+    """
     new_advisory_detected = False
+    uv_audit_vulnerability_details = ""
     # Check that the needed environment variables are provided
     if not TOKEN:
         raise RuntimeError("Required environment variable 'DEPENDENCY_CHECK_TOKEN' is not defined.")
@@ -114,6 +126,41 @@ def check_vulnerabilities():
             "the execution of 'safety check -o bare --save-json info_safety.json'. ",
             "Verify workflow logs.",
         )
+
+    # Parse uv audit output log when uv audit has been enabled in the action.
+    if UV_AUDIT_ENABLED:
+        uv_audit_known_vulnerabilities = 0
+        uv_audit_adverse_project_statuses = 0
+
+        uv_audit_log_path = Path("info_uv_audit.log")
+        if not uv_audit_log_path.exists():
+            raise FileNotFoundError("Uv audit was enabled but 'info_uv_audit.log' is missing.")
+        else:
+            uv_audit_output = uv_audit_log_path.read_text(encoding="utf-8", errors="replace")
+
+            marker_match = re.search(r"(?m)^Vulnerabilities:\s*$", uv_audit_output)
+            if marker_match:
+                uv_audit_vulnerability_details = uv_audit_output[marker_match.end() :].strip()
+
+            summary_match = re.search(
+                r"Found\s+(?:(?P<known_no>no)|(?P<known>\d+))\s+known\s+vulnerabilit(?:y|ies)\s+and\s+"
+                r"(?:(?P<adverse_no>no)|(?P<adverse>\d+))\s+adverse\s+project\s+status(?:es)?\s+in\s+"
+                r"(?P<packages>\d+)\s+packages",
+                uv_audit_output,
+                flags=re.IGNORECASE,
+            )
+
+            if summary_match:
+                uv_audit_known_vulnerabilities = int(summary_match.group("known") or "0")
+                uv_audit_adverse_project_statuses = int(summary_match.group("adverse") or "0")
+                if uv_audit_known_vulnerabilities > 0 or uv_audit_adverse_project_statuses > 0:
+                    new_advisory_detected = True
+            else:
+                raise RuntimeError(
+                    "Unable to parse uv audit summary from 'info_uv_audit.log'. "
+                    "Expected line starting with 'Found ... known vulnerabilities and ... "
+                    "adverse project statuses in ... packages'."
+                )
 
     # Connect to the repository
     g = github.Github(auth=github.Auth.Token(TOKEN))
@@ -323,15 +370,33 @@ once it has been verified (since it has been created in draft mode).
     # Print out information
     safety_entries = len(safety_results["vulnerabilities"])
     bandit_entries = len(bandit_results["results"])
-    print("\n*******************************************")
+
+    uv_detected_findings = 0
+    if UV_AUDIT_ENABLED:
+        uv_detected_findings = uv_audit_known_vulnerabilities + uv_audit_adverse_project_statuses
+
+    total_detected = safety_entries + bandit_entries + uv_detected_findings
+    total_reported = safety_results_reported + bandit_results_reported
+
+    print("*****************************************************************************")
     print(f"Total 'safety' advisories detected: {safety_entries}")
     print(f"Total 'safety' advisories reported: {safety_results_reported}")
+    if UV_AUDIT_ENABLED:
+        print(f"Total 'uv audit' known vulnerabilities: {uv_audit_known_vulnerabilities}")
+        print(f"Total 'uv audit' adverse project statuses: {uv_audit_adverse_project_statuses}")
+        print(f"Total 'uv audit' findings detected: {uv_detected_findings}")
     print(f"Total 'bandit' advisories detected: {bandit_entries}")
     print(f"Total 'bandit' advisories reported: {bandit_results_reported}")
-    print("*******************************************")
-    print(f"Total advisories detected: {safety_entries + bandit_entries}")
-    print(f"Total advisories reported: {safety_results_reported + bandit_results_reported}")
-    print("*******************************************")
+    print("*****************************************************************************")
+    print(f"Total advisories/findings detected: {total_detected}")
+    print(f"Total advisories reported: {total_reported}")
+    print("*****************************************************************************")
+    if UV_AUDIT_ENABLED:
+        print("Note: 'uv audit' advisories may contain duplicates of 'safety' advisories.")
+        if uv_audit_vulnerability_details:
+            print("Uv audit vulnerabilities:")
+            print(uv_audit_vulnerability_details)
+        print("*****************************************************************************")
 
     # Return whether new advisories have been created or not
     return new_advisory_detected
@@ -341,8 +406,19 @@ def generate_advisory_files():
     """
     Generate advisory files for local purposes.
 
-    This function runs safety and bandit on the user's behalf at the current location
-    and generates the necessary advisory files for local testing.
+    This function runs ``safety``, ``bandit``, and ``uv audit`` at the current
+    location and generates local artifacts consumed by ``check_vulnerabilities``.
+
+    Generated files
+    ---------------
+    - ``info_safety.json`` from safety
+    - ``info_bandit.json`` from bandit
+    - ``info_uv_audit.log`` from uv audit
+
+    Prerequisites
+    -------------
+    - ``requirements-for-safety.txt`` exists in the working directory
+    - ``safety``, ``bandit``, and ``uv`` executables are available
 
     Notes
     -----
@@ -356,12 +432,17 @@ def generate_advisory_files():
         Path("info_safety.json").unlink()
     if Path("info_bandit.json").exists():
         Path("info_bandit.json").unlink()
+    if Path("info_uv_audit.log").exists():
+        Path("info_uv_audit.log").unlink()
     safety_exe = shutil.which("safety")
     if safety_exe is None:
         raise FileNotFoundError("safety executable not found")
     bandit_exe = shutil.which("bandit")
     if bandit_exe is None:
         raise FileNotFoundError("bandit executable not found")
+    uv_audit_exe = shutil.which("uv")
+    if uv_audit_exe is None:
+        raise FileNotFoundError("uv executable not found")
 
     if not Path("requirements-for-safety.txt").exists():
         raise FileNotFoundError(
@@ -412,6 +493,28 @@ def generate_advisory_files():
         print(f"Bandit check warning: {e}")
     finally:
         print("Bandit check performed.")
+
+    # UV audit check - invoke the uv executable directly
+    try:
+        with Path("info_uv_audit.log").open("w", encoding="utf-8") as uv_audit_log:
+            subprocess.run(
+                [
+                    uv_audit_exe,
+                    "audit",
+                    "--frozen",
+                    "--no-dev",
+                    "--preview-features",
+                    "audit-command",
+                ],
+                check=False,
+                stdout=uv_audit_log,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+    except Exception as e:
+        print(f"Uv audit check warning: {e}")
+    finally:
+        print("Uv audit check performed.")
 
     print("Advisory files generated successfully.")
 

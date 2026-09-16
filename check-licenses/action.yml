@@ -142,7 +142,7 @@ runs:
 
     - name: Check virutal environment existence (if needed)
       if: ${{ inputs.skip-install == 'true' && inputs.activate-venv == '' }}
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "ERROR"
         message: >
@@ -152,12 +152,25 @@ runs:
 
     - name: Warn about input combination
       if: ${{ inputs.skip-install == 'false' && inputs.activate-venv != '' }}
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "WARNING"
         message: >
           When skip-install is set to false, activate-venv input is not needed
           and will be ignored.
+
+    - name: Advise on external virtual environment scope
+      if: ${{ inputs.skip-install == 'true' && inputs.activate-venv != '' }}
+      uses: $/_logging
+      with:
+        level: "WARNING"
+        message: >
+          The license check inspects every package installed in the provided
+          virtual environment. Make sure the environment activated via
+          activate-venv only contains consumer-facing dependencies (project
+          runtime and selected extras). Dependency groups (dev, doc, test, ...)
+          and build tooling (build, wheel, pyproject-hooks, ...) installed in
+          this environment will also be reported, which may not be desired.
 
     - name: Check python version
       id: check-python-version
@@ -171,7 +184,7 @@ runs:
         fi
 
     - name: Break if Python version is too old
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       if: steps.check-python-version.outputs.PYTHON_TOO_OLD == 'true'
       with:
         level: "ERROR"
@@ -180,7 +193,7 @@ runs:
           This package requires Python 3.10 or higher.
 
     - name: Announce the switch to original pip-licenses package
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -195,7 +208,7 @@ runs:
 
     - name: "Set up Python"
       if: inputs.skip-install == 'false'
-      uses: ansys/actions/_setup-python@main
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -327,11 +340,11 @@ runs:
         if [[ "${TARGET}" != '' ]]; then
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${TARGET}"
-            poetry install --extras "${TARGET}"
+            poetry install --only main --extras "${TARGET}"
           elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             echo "Installing extra targets with uv: ${TARGET}"
             if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --extra "${TARGET}" --no-dev --no-managed-python
+              uv sync --frozen --extra "${TARGET}" --no-default-groups --no-managed-python
             else
               uv pip install --no-managed-python .[${TARGET}]
             fi
@@ -342,10 +355,10 @@ runs:
         else
           echo "No extra targets to install"
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-            poetry install
+            poetry install --only main
           elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --no-dev --no-managed-python
+              uv sync --frozen --no-default-groups --no-managed-python
             else
               uv pip install --no-managed-python .
             fi
@@ -427,7 +440,7 @@ runs:
         echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> ${GITHUB_OUTPUT}
 
     - name: Log ignored packages and accepted licenses
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "INFO"
         message: |
