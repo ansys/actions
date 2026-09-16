@@ -13,10 +13,6 @@ Deploy documentation from a pull request
   When ``token`` resolves to ``GITHUB_TOKEN``, this cleanup requires ``pull-requests: write`` permission
   in the ``doc-deploy-dev`` job token. Without this permission, cleanup fails and closed-PR directories
   under ``gh-pages/pull/`` are not removed.
-  Even with the required permission, cleanup is only guaranteed when ``doc-deploy-dev`` runs with
-  ``force-orphan: true`` (default). If ``force-orphan: false`` is used, deployment keeps existing files
-  (``keep_files: true`` in ``peaceiris/actions-gh-pages``), so old ``gh-pages/pull/<pr>/`` directories can
-  remain.
   If ``token`` uses ``secrets.PYANSYS_CI_BOT_TOKEN`` instead, this workflow
   ``permissions`` requirement does not apply.
   For commits and PR comments, ``doc-deploy-dev`` and ``doc-deploy-pr`` use:
@@ -32,6 +28,12 @@ Deploy documentation from a pull request
     permissions:
       contents: write
       pull-requests: write
+
+.. warning::
+
+  Cleanup of ``gh-pages/pull/<pr>/`` directories is only guaranteed when ``doc-deploy-dev`` runs with
+  ``force-orphan: true`` (default). If ``force-orphan: false`` is used, deployment keeps existing files
+  (``keep_files: true`` in ``peaceiris/actions-gh-pages``), so old PR directories can remain.
 
 The ``ansys/action/doc-deploy-pr`` action automates the deployment of HTML documentation from a pull
 request (PR) and its removal when the PR is closed.
