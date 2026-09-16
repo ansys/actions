@@ -9,7 +9,7 @@ actions are the ones to be released.
 Release workflow setup
 ----------------------
 
-See :ref:`release_workflow_setup` for typical release workflow setups, grouped according
+See :ref:`Release workflow setup` for typical release workflow setups, grouped according
 to the different modes for generating the changelog during a release.
 
 

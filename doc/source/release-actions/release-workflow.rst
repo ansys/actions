@@ -1,5 +1,3 @@
-.. _release_workflow_setup:
-
 Release workflow setup
 ======================
 
