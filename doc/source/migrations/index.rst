@@ -107,6 +107,19 @@ Version ``v11``
 
 **Migration Steps:**
 
+- **Grant pull request permissions to doc-deploy-dev when using doc-deploy-pr cleanup:** If your
+  project deploys PR documentation with ``doc-deploy-pr`` (``v10.2`` or later), cleanup of closed-PR
+  directories is now performed by ``doc-deploy-dev``. When ``token`` resolves to ``GITHUB_TOKEN``,
+  ensure the ``doc-deploy-dev`` job has ``pull-requests: write`` in addition to ``contents: write``.
+  Without this permission, the cleanup step fails and old ``gh-pages/pull/<pr>/`` directories are
+  left behind. Also, directory removal is only guaranteed when ``doc-deploy-dev`` uses
+  ``force-orphan: true`` (default). If ``force-orphan: false`` is set, ``peaceiris/actions-gh-pages``
+  runs with ``keep_files: true`` and can preserve old ``gh-pages/pull/<pr>/`` directories.
+  If ``token`` uses ``secrets.PYANSYS_CI_BOT_TOKEN`` instead, this workflow
+  ``permissions`` requirement does not apply. Also ensure
+  ``PYANSYS_CI_BOT_USERNAME`` and ``PYANSYS_CI_BOT_EMAIL`` are configured and map to the same bot
+  identity used for commit metadata and PR comments.
+
 - **Changed default behavior of doc-build dependency inputs:** The default behavior of the
   ``optional-dependencies-name`` and ``group-dependencies-name`` inputs of the ``doc-build`` action has changed.
   Previously, ``optional-dependencies-name`` always defaulted to ``doc`` even when ``group-dependencies-name``
