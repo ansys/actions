@@ -24,17 +24,28 @@ name: |
   Build CHANGELOG from towncrier fragment files
 
 description: |
-  Builds the CHANGELOG using ``towncrier`` fragment files for the tagged version.
-  Creates a pull request into main with the CHANGELOG updates and deleted
-  towncrier fragment files.
+  Builds the CHANGELOG using ``towncrier`` fragment files for the tagged version,
+  commits the changes, creates a pull request into main when required, and updates
+  the release tag to reference the changelog commit.
 
   This action will only work on Linux/macOS runners.
 
-  Pushing a release tag results in this action running twice:
+  By default, pushing a release tag results in this action running twice:
 
   - Once to run ``towncrier`` and consolidate the changelog fragment files
     into a single update of the CHANGELOG file.
   - Once to release the package after the CHANGELOG file has been updated.
+
+  Projects using protected GitHub environments can instead enable ``same-workflow``.
+  This keeps the release in the workflow initiated by the original tag pusher, allowing
+  environment rules such as **Prevent self-review** to identify that user correctly.
+  In this mode, the action completes successfully and provides the final tagged commit
+  through the ``release-commit-sha`` output.
+
+  Same-workflow mode requires the repository's ``GITHUB_TOKEN``. Downstream jobs that
+  read repository content must explicitly check out ``release-commit-sha`` instead of
+  relying on ``github.sha``. See :ref:`same_workflow_release` for a complete release
+  workflow.
 
   There are two options when making a release for your repository:
 
@@ -61,8 +72,12 @@ description: |
   on the remote, create the new tag locally, and push the tag on the remote.
   Delete the temporary branch if one was used to update the CHANGELOG file.
 
-  e) Exit on error if the CHANGELOG is updated, so that the package is not released from
-  this instance of the workflow.
+  e) When ``same-workflow`` is ``false``, exit on error if the CHANGELOG is updated,
+  so that the package is not released from this instance of the workflow. The recreated
+  tag starts a new workflow run.
+
+  f) When ``same-workflow`` is ``true``, complete successfully and return the recreated
+  tag's commit through the ``release-commit-sha`` output.
 
   2. You pushed a tag from the main branch (``release-from-main`` is ``true``)
 
@@ -74,13 +89,26 @@ description: |
   b) Checkout the main branch, delete the tag locally and on the remote,
   create the new tag locally, and push the new tag on the remote.
 
-  c) Exit on error if the CHANGELOG is updated, so that the package is not released from
-  this instance of the workflow.
+  c) When ``same-workflow`` is ``false``, exit on error if the CHANGELOG is updated,
+  so that the package is not released from this instance of the workflow. The recreated
+  tag starts a new workflow run.
+
+  d) When ``same-workflow`` is ``true``, complete successfully and return the recreated
+  tag's commit through the ``release-commit-sha`` output.
 
   .. important:: **Required GitHub Permissions**
 
      - **contents**: ``write`` - Required to push commits, delete and create tags
      - **pull-requests**: ``write`` - Required to create pull requests
+
+    .. important:: **Same-workflow releases**
+
+      When ``same-workflow`` is enabled, pass the repository's ``GITHUB_TOKEN``. GitHub
+      does not create another workflow run for a tag pushed with this token. A personal
+      access token or GitHub App token can create a duplicate run.
+
+      Downstream jobs must check out the commit from the ``release-commit-sha`` output
+      rather than relying on ``github.sha``.
 
 
 inputs:
@@ -88,21 +116,27 @@ inputs:
 
   token:
     description: |
-      Use the PYANSYS_CI_BOT_TOKEN to do a git commit & push.
-      The "contents: write" and "pull-requests: write" permissions
-      are required for this action.
+      Token used to commit, push, and create the changelog pull request. Use
+      ``PYANSYS_CI_BOT_TOKEN`` for the default two-workflow behavior. When
+      ``same-workflow`` is ``true``, use the repository's ``GITHUB_TOKEN`` to
+      prevent the recreated tag from starting a duplicate workflow.
+
+      The ``contents: write`` and ``pull-requests: write`` permissions are
+      required for this action.
     required: true
     type: string
 
   bot-user:
     description: |
-      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+      User name for the changelog commit. Use ``PYANSYS_CI_BOT_USERNAME`` for
+      the default behavior or ``github-actions[bot]`` with ``GITHUB_TOKEN``.
     required: true
     type: string
 
   bot-email:
     description: |
-      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+      Email address for the changelog commit. Use ``PYANSYS_CI_BOT_EMAIL`` for
+      the default behavior or the GitHub Actions bot email with ``GITHUB_TOKEN``.
     required: true
     type: string
 
@@ -156,6 +190,27 @@ inputs:
     default: false
     type: boolean
 
+  same-workflow:
+    description: |
+      Whether to continue the workflow run started by the original release tag push
+      after the changelog commit and release tag are updated.
+
+      Enable this option when subsequent release jobs must retain the identity of the
+      user who pushed the original tag. This is particularly useful for protected GitHub
+      environments that prevent users from approving their own deployments.
+
+      If ``false``, the action retains its legacy behavior: after updating the changelog
+      and recreating the tag, it stops the current workflow so that the new tag push starts
+      another workflow run.
+
+      If ``true``, use ``GITHUB_TOKEN`` so that recreating the tag does not start a
+      duplicate workflow. Downstream jobs must check out the commit identified by the
+      ``release-commit-sha`` output. See :ref:`same_workflow_release` for the complete
+      setup and example workflows.
+    required: false
+    default: false
+    type: boolean
+
   use-upper-case:
     description: |
       Use of uppercase letters in the "type" field of:
@@ -186,6 +241,12 @@ inputs:
     required: false
     default: true
     type: boolean
+
+outputs:
+
+  release-commit-sha:
+    description: Commit SHA referenced by the final release tag.
+    value: ${{ steps.release-commit.outputs.RELEASE_COMMIT_SHA }}
 
 runs:
   using: "composite"
@@ -519,5 +580,16 @@ runs:
             git push origin --delete "${UPDATE_BRANCH}"
           fi
 
-          # Exit on error if the CHANGELOG is updated to prevent the release action from running
-          exit 1
+    - name: "Resolve release commit"
+      id: release-commit
+      env:
+        TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
+      shell: bash
+      run: |
+        release_commit_sha=$(git rev-parse "v${TAG_VERSION}^{commit}")
+        echo "RELEASE_COMMIT_SHA=${release_commit_sha}" >> "${GITHUB_OUTPUT}"
+
+    - name: "Stop the original release workflow"
+      if: ${{ steps.new-section-changelog.outputs.UPDATED_CHANGELOG == 'true' && inputs.same-workflow != 'true' }}
+      shell: bash
+      run: exit 1

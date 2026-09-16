@@ -6,6 +6,12 @@ These actions assume that you have used the :ref:`Documentation actions`
 and the :ref:`Build actions`. The reason is that the artifacts generated during these
 actions are the ones to be released.
 
+Release workflow setup
+----------------------
+
+See :ref:`release_workflow_setup` for typical release workflow setups, grouped according
+to the different modes for generating the changelog during a release.
+
 
 Release PyPI private action
 ---------------------------
@@ -30,3 +36,8 @@ Release GitHub action
 
 .. jinja:: release-github
     :file: _templates/action.rst.jinja
+
+.. toctree::
+    :hidden:
+
+    release-workflow
