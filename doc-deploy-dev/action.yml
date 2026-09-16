@@ -466,7 +466,6 @@ runs:
             for pr_number in $(ls pull/); do
               if ! closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>&1); then
                 echo "Warning: could not read PR #${pr_number} state; skipping cleanup for this PR."
-                echo "${closed}"
                 continue
               fi
 
