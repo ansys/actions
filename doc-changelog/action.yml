@@ -121,6 +121,14 @@ inputs:
     default: false
     type: boolean
 
+  config-file:
+    description: |
+      Towncrier configuration file to use. Defaults to ``pyproject.toml``.
+      Set to ``towncrier.toml`` to override the default when both files are present.
+    required: false
+    default: pyproject.toml
+    type: string
+
   use-ansys-default-template:
     description: |
       Use the default towncrier template in the pyproject.toml file.
@@ -337,25 +345,28 @@ runs:
 
     - name: "Get towncrier directory and template"
       shell: python
+      env:
+        TOWNCRIER_CONFIG_FILE: ${{ inputs.config-file }}
       run: |
         import pathlib
         import os
         import tomlkit
 
-        # Identify towncrier configuration file
-        pyproject_file = pathlib.Path("pyproject.toml")
-        towncrier_file = pathlib.Path("towncrier.toml")
-        if not pyproject_file.exists() and not towncrier_file.exists():
-            print("No pyproject.toml or towncrier.toml file found.")
+        towncrier_config = pathlib.Path(os.environ.get("TOWNCRIER_CONFIG_FILE", "pyproject.toml"))
+        if not towncrier_config.exists():
+            print(f"Towncrier configuration file '{towncrier_config}' was not found.")
             exit(1)
 
-        towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
-
-        # Load pyproject.toml
         with open(towncrier_config, 'rb') as f:
             config = tomlkit.load(f)
-            template = config["tool"]["towncrier"]["template"]
-            filename = config["tool"]["towncrier"]["filename"]
+
+        towncrier = config.get("tool", {}).get("towncrier", {})
+        if not towncrier:
+            print(f"No towncrier section found in '{towncrier_config}'.")
+            exit(1)
+
+        template = towncrier["template"]
+        filename = towncrier["filename"]
 
         # Get the GITHUB_ENV variable
         github_env = os.getenv('GITHUB_ENV')
@@ -368,6 +379,7 @@ runs:
       env:
         REPO_NAME: ${{ github.event.repository.name }}
         USE_DEFAULT_TOWNCRIER_CONFIG: ${{ inputs.use-default-towncrier-config }}
+        TOWNCRIER_CONFIG_FILE: ${{ inputs.config-file }}
       shell: python
       run: |
         import os
@@ -380,10 +392,11 @@ runs:
 
         repo_name = os.environ.get("REPO_NAME")
         org_name = os.getenv("GITHUB_REPOSITORY_OWNER")
+        towncrier_config_file = os.environ.get("TOWNCRIER_CONFIG_FILE")
 
         default_config = True if os.environ.get("USE_DEFAULT_TOWNCRIER_CONFIG") == "true" else False
 
-        add_towncrier_config(org_name, repo_name, default_config)
+        add_towncrier_config(org_name, repo_name, default_config, towncrier_config_file)
 
     - name: "Rewrite the template with the default template"
       if: ${{ inputs.use-ansys-default-template }}
