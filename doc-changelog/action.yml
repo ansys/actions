@@ -392,7 +392,7 @@ runs:
 
         repo_name = os.environ.get("REPO_NAME")
         org_name = os.getenv("GITHUB_REPOSITORY_OWNER")
-        towncrier_config_file = os.environ.get("TOWNCRIER_CONFIG_FILE")
+        towncrier_config_file = os.environ.get("TOWNCRIER_CONFIG_FILE", "pyproject.toml")
 
         default_config = True if os.environ.get("USE_DEFAULT_TOWNCRIER_CONFIG") == "true" else False
 
