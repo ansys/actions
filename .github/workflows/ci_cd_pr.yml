@@ -173,6 +173,8 @@ jobs:
           import json
           from pathlib import Path
 
+          # Keep Vale scope aligned with this job's intent: lint RST docs,
+          # excluding generated API pages under doc/source/api.
           files = sorted(
               str(path)
               for path in Path("doc/source").rglob("*.rst")

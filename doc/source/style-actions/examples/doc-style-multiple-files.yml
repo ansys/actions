@@ -8,11 +8,6 @@ doc-style:
     - name: "Install Git and clone project"
       uses: actions/checkout@v6
 
-    - name: "Install jq"
-      run: |
-        # Used to format Vale input as a JSON-formatted list of files
-        sudo apt install -y jq
-
     - name: "Collect files for Vale"
       id: collect-files
       shell: bash
