@@ -303,7 +303,7 @@ runs:
           poetry install
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-            uv sync --frozen --no-dev
+            uv sync --frozen
           else
             uv pip install .
           fi
