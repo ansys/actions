@@ -112,7 +112,10 @@ Version ``v11``
   directories is now performed by ``doc-deploy-dev``. When ``token`` resolves to ``GITHUB_TOKEN``,
   ensure the ``doc-deploy-dev`` job has ``pull-requests: write`` in addition to ``contents: write``.
   Without this permission, the cleanup step fails and old ``gh-pages/pull/<pr>/`` directories are
-  left behind. If ``token`` uses ``secrets.PYANSYS_CI_BOT_TOKEN`` instead, this workflow
+  left behind. Also, directory removal is only guaranteed when ``doc-deploy-dev`` uses
+  ``force-orphan: true`` (default). If ``force-orphan: false`` is set, ``peaceiris/actions-gh-pages``
+  runs with ``keep_files: true`` and can preserve old ``gh-pages/pull/<pr>/`` directories.
+  If ``token`` uses ``secrets.PYANSYS_CI_BOT_TOKEN`` instead, this workflow
   ``permissions`` requirement does not apply. Also ensure
   ``PYANSYS_CI_BOT_USERNAME`` and ``PYANSYS_CI_BOT_EMAIL`` are configured and map to the same bot
   identity used for commit metadata and PR comments.
