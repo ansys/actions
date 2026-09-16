@@ -342,9 +342,9 @@ runs:
         ${ACTIVATE_VENV}
         cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install ${INSTALL_TARGET}
+          poetry install --only main ${INSTALL_TARGET}
         elif [[ "${USE_UV}" == 'true' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
-          SYNC_OPTIONS="--no-dev"
+          SYNC_OPTIONS="--no-default-groups"
           SYNC_OPTIONS+=$( [[ "${TARGET}" != '' ]] && echo " --extra ${TARGET}" || echo "" )
           # NOTE: --active is only needed when the working directory is not the root of the repository.
           # This is because uv sync works with the project environment path and since the virtual
@@ -464,8 +464,9 @@ runs:
       run: |
         ${ACTIVATE_VENV}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          # Scope build tooling to a non-main group so poetry export skips it and it stays out of the wheelhouse.
           grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
-            poetry add "${line//\'/\"}" --lock
+            poetry add "${line//\'/\"}" --group build-and-wheel --lock
           done
           poetry install
         else
