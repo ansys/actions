@@ -113,7 +113,9 @@ Version ``v11``
   ensure the ``doc-deploy-dev`` job has ``pull-requests: write`` in addition to ``contents: write``.
   Without this permission, the cleanup step fails and old ``gh-pages/pull/<pr>/`` directories are
   left behind. If a dedicated bot token is used instead of ``GITHUB_TOKEN``, workflow-level
-  ``permissions`` do not apply to that bot token.
+  ``permissions`` do not apply to that bot token. Also ensure
+  ``PYANSYS_CI_BOT_USERNAME`` and ``PYANSYS_CI_BOT_EMAIL`` are configured and map to the same bot
+  identity used for commit metadata and PR comments.
 
 - **Changed default behavior of doc-build dependency inputs:** The default behavior of the
   ``optional-dependencies-name`` and ``group-dependencies-name`` inputs of the ``doc-build`` action has changed.

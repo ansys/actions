@@ -14,6 +14,11 @@ Deploy documentation from a pull request
   in the ``doc-deploy-dev`` job token. Without this permission, cleanup fails and closed-PR directories
   under ``gh-pages/pull/`` are not removed. If a dedicated bot token is used instead of ``GITHUB_TOKEN``,
   workflow-level ``permissions`` do not apply to that bot token.
+  For commits and PR comments, ``doc-deploy-dev`` and ``doc-deploy-pr`` use:
+  ``bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}`` and
+  ``bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}``.
+  ``PYANSYS_CI_BOT_USERNAME`` must be the bot account login and
+  ``PYANSYS_CI_BOT_EMAIL`` must be the matching email identity for that account.
 
   Minimum permission snippet:
 
