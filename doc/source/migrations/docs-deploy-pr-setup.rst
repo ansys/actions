@@ -10,8 +10,10 @@ Deploy documentation from a pull request
   version ``v10.2``, this requirement is removed. Documentation cleanup now happens automatically in the
   background. The cleanup process uses ``ansys/actions/doc-deploy-dev``, so make sure that your
   workflows also use version ``v10.2`` or later of ``ansys/actions/doc-deploy-dev``.
-  This cleanup requires ``pull-requests: write`` permission in the ``doc-deploy-dev`` job token.
-  Without this permission, cleanup fails and closed-PR directories under ``gh-pages/pull/`` are not removed.
+  When ``token`` resolves to ``GITHUB_TOKEN``, this cleanup requires ``pull-requests: write`` permission
+  in the ``doc-deploy-dev`` job token. Without this permission, cleanup fails and closed-PR directories
+  under ``gh-pages/pull/`` are not removed. If a dedicated bot token is used instead of ``GITHUB_TOKEN``,
+  workflow-level ``permissions`` do not apply to that bot token.
 
   Minimum permission snippet:
 
