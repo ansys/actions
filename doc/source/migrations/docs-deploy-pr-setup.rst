@@ -10,6 +10,30 @@ Deploy documentation from a pull request
   version ``v10.2``, this requirement is removed. Documentation cleanup now happens automatically in the
   background. The cleanup process uses ``ansys/actions/doc-deploy-dev``, so make sure that your
   workflows also use version ``v10.2`` or later of ``ansys/actions/doc-deploy-dev``.
+  When ``token`` resolves to ``GITHUB_TOKEN``, this cleanup requires ``pull-requests: write`` permission
+  in the ``doc-deploy-dev`` job token. Without this permission, cleanup fails and closed-PR directories
+  under ``gh-pages/pull/`` are not removed.
+  If ``token`` uses ``secrets.PYANSYS_CI_BOT_TOKEN`` instead, this workflow
+  ``permissions`` requirement does not apply.
+  For commits and PR comments, ``doc-deploy-dev`` and ``doc-deploy-pr`` use:
+  ``bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}`` and
+  ``bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}``.
+  ``PYANSYS_CI_BOT_USERNAME`` must be the bot account login and
+  ``PYANSYS_CI_BOT_EMAIL`` must be the matching email identity for that account.
+
+  Minimum permission snippet:
+
+  .. code:: yaml
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+.. warning::
+
+  Cleanup of ``gh-pages/pull/<pr>/`` directories is only guaranteed when ``doc-deploy-dev`` runs with
+  ``force-orphan: true`` (default). If ``force-orphan: false`` is used, deployment keeps existing files
+  (``keep_files: true`` in ``peaceiris/actions-gh-pages``), so old PR directories can remain.
 
 The ``ansys/action/doc-deploy-pr`` action automates the deployment of HTML documentation from a pull
 request (PR) and its removal when the PR is closed.
