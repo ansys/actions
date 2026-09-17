@@ -12,6 +12,13 @@ Version ``v11.1``
 
 **New Features:**
 
+- **Optional uv audit vulnerability scanning:** The ``check-vulnerabilities`` action has a new
+  ``use-uv-audit`` input (default: ``false``). When enabled, ``uv audit`` runs in addition to Safety
+  and Bandit, checks the dependencies pinned in ``uv.lock`` against the OSV advisory database, and
+  performs a malware scan. The results are included in the action report and in the uploaded
+  ``vulnerability-results`` artifact. A ``uv.lock`` file is required. Because ``uv audit`` and Safety
+  use different advisory sources, the report can contain duplicate findings.
+
 - **Git LFS support during checkout:** The ``doc-build``, ``tests-pytest``,
   ``build-library``, and ``build-wheelhouse`` actions now expose a new
   ``checkout-lfs`` boolean input (default ``false``). When set to ``true``, the
@@ -19,6 +26,52 @@ Version ``v11.1``
   repository stores files with Git LFS that must be materialized before the action runs.
   The default preserves the previous behavior, so no changes are required for existing
   workflows.
+
+- **Reproducible wheelhouses from uv.lock:** When ``use-uv`` is ``true`` and ``uv.lock`` exists,
+  ``build-wheelhouse`` now exports the locked runtime dependencies and selected extra before building
+  the wheelhouse.
+
+- **Runtime-only license checks:** By default, ``check-licenses`` now installs and checks only the
+  project's runtime dependencies and any extra selected with ``target``. Development, documentation,
+  test, and build dependency groups are excluded. When ``skip-install`` is ``true``, the action still
+  checks every package in the environment supplied through ``activate-venv``; ensure that environment
+  contains only the dependencies whose licenses you intend to check.
+
+- **Configurable Python setup in doc-style:** Three new inputs have been added to the ``doc-style``
+  action to allow projects to customize Python setup when needed: ``python-version`` (default: ``3.12``),
+  ``use-python-cache`` (default: ``true``), and ``skip-python-setup`` (default: ``false``). Most workflows
+  require no changes.
+
+- **Improved artifact attestation notes:** When ``add-artifact-attestation-notes`` is ``true``,
+  ``release-github`` now searches the release files for a verifiable attestation and adds a concrete
+  ``gh attestation verify`` example to the release notes. Granting ``attestations: read`` is recommended
+  so that the action can discover attestations; the existing generic verification instructions remain
+  available when no attested artifact is found. To improve readability, the release body size has been
+  reduced and no longer lists all the ``gh attestation verify ...`` commands.
+
+**Migration Steps:**
+
+- **Activating uv audit:** Ensure the project's ``uv.lock`` is up-to-date, then enable the additional
+  ``check-vulnerabilities`` action input. The action forces malware scanning even when
+  ``tool.uv.audit.malware-check`` is absent or ``false``.
+
+  .. code:: yaml
+
+    - name: "Check vulnerabilities"
+      uses: ansys/actions/check-vulnerabilities@v11.1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        python-package-name: ansys-example-library
+        use-uv-audit: true
+
+  .. code:: toml
+
+    [tool.uv.audit]
+    malware-check = true
+
+- **Review lock files used to build wheelhouses:** If the project commits ``uv.lock``, update it before
+  building a release and verify that it includes the runtime dependencies and extras requested through
+  ``target``.
 
 Version ``v11``
 ---------------
@@ -78,9 +131,11 @@ Version ``v11``
 
   - The dependency versions installed at runtime come from ``uv.lock``, not from a fresh resolution
     of ``pyproject.toml``. Keep the lockfile up to date so that the actions install what you intend.
-  - The ``dev`` dependency group is intentionally excluded (``--no-dev``). If your tests, docs, or
-    style checks rely on dev-only dependencies, move them to a dedicated group or extras target
-    (depending on the action) and reference it via the relevant action input.
+  - Actions that install runtime dependencies intentionally exclude the ``dev`` dependency group
+    (``--no-dev``). If your tests or docs rely on dev-only dependencies, move them to a dedicated group
+    or extras target and reference it through the relevant action input. Starting with ``v11.1``,
+    ``code-style`` is an exception and installs the default groups so that development tools are
+    available to style hooks.
   - Projects that do not commit a ``uv.lock`` are unaffected; behavior falls back to using ``uv`` to
     install project dependencies.
 
@@ -122,7 +177,7 @@ Version ``v11``
 
 - **Grant pull request permissions to doc-deploy-dev when using doc-deploy-pr cleanup:** If your
   project deploys PR documentation with ``doc-deploy-pr`` (``v10.2`` or later), cleanup of closed-PR
-  directories is now performed by ``doc-deploy-dev``. When ``token`` resolves to ``GITHUB_TOKEN``,
+  directories is now performed by ``doc-deploy-dev``. When the ``token`` used is ``GITHUB_TOKEN``,
   ensure the ``doc-deploy-dev`` job has ``pull-requests: write`` in addition to ``contents: write``.
   Without this permission, the cleanup step fails and old ``gh-pages/pull/<pr>/`` directories are
   left behind. Also, directory removal is only guaranteed when ``doc-deploy-dev`` uses
