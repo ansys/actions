@@ -241,6 +241,15 @@ runs:
         python -m pip install --upgrade pip
         python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
 
+    - name: "Expose rst2html on PATH"
+      shell: bash
+      run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          cp "${GITHUB_WORKSPACE}/.venv/Scripts/rst2html.exe" "${pythonLocation}/Scripts/rst2html.exe"
+        else
+          sudo ln -sf "${GITHUB_WORKSPACE}/.venv/bin/rst2html" /usr/local/bin/rst2html
+        fi
+
     - name: "Get towncrier directory"
       shell: bash
       run: |
