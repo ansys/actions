@@ -46,7 +46,8 @@ Version ``v11.1``
   ``release-github`` now searches the release files for a verifiable attestation and adds a concrete
   ``gh attestation verify`` example to the release notes. Granting ``attestations: read`` is recommended
   so that the action can discover attestations; the existing generic verification instructions remain
-  available when no attested artifact is found.
+  available when no attested artifact is found. To improve readability, the release body size has been
+  reduced and no longer lists all the ``gh attestation verify ...`` commands.
 
 **Migration Steps:**
 
