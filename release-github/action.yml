@@ -176,6 +176,15 @@ inputs:
     required: false
     type: boolean
 
+  tag-name:
+    description: |
+      Git tag to associate with the GitHub release. When omitted, the tag defaults
+      to ``github.ref_name``, matching the default behavior of underlying
+      ``softprops/action-gh-release`` action.
+    default: ''
+    required: false
+    type: string
+
   dist-filter:
     description: |
       Comma-separated list of glob patterns to keep in the ``dist/wheelhouse`` and ``dist/sbom``
@@ -220,6 +229,8 @@ runs:
 
     - name: "Checkout repository" # zizmor: ignore[artipacked] , credentials must be persisted in this case
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.tag-name || github.sha }}
 
     # ------------------------------------------------------------------------
 
@@ -338,6 +349,7 @@ runs:
       shell: bash
       env:
         ARTIFACT_DIR: dist/${{ inputs.library-name }}-artifacts
+        RELEASE_TAG_NAME: ${{ inputs.tag-name || github.ref_name }}
       run: |
 
         if [[ ! -d "${ARTIFACT_DIR}" ]]; then
@@ -346,7 +358,7 @@ runs:
         fi
 
         # Extract version from git tag (strip refs/tags/ and optional leading 'v')
-        TAG_VERSION="${GITHUB_REF_NAME#v}"
+        TAG_VERSION="${RELEASE_TAG_NAME#v}"
         echo "Git tag version: ${TAG_VERSION}"
 
         # Find first wheel or sdist
@@ -546,6 +558,7 @@ runs:
         generate_release_notes: ${{ inputs.generate-release-notes }}
         body: ${{ env.RELEASE_NOTES_BODY }}
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
+        tag_name: ${{ inputs.tag-name || github.ref_name }}
         token: ${{ inputs.token }}
         files: |
           # [COMMENT] Include wheel and source distribution artifacts
