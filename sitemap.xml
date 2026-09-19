@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- managed-by: ansys/actions/_doc-gen-sitemap -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://actions.docs.ansys.com/</loc>
+    <lastmod>2026-09-19T00:23:20+00:00</lastmod>
+  </url>
+  <url>
+    <loc>https://actions.docs.ansys.com/version/stable/changelog.html</loc>
+  </url>
+  <url>
+    <loc>https://actions.docs.ansys.com/version/stable/migrations/index.html</loc>
+  </url>
+</urlset>
