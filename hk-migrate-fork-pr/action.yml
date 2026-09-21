@@ -153,6 +153,7 @@ runs:
         permissions: "contents: write, pull-requests: write"
         token: ${{ inputs.github-token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#migrate-fork-pull-requests"
+        fail-on-missing-gh: "true"
 
     - name: "Log start of migration"
       uses: $/_logging

@@ -60,6 +60,7 @@ runs:
         permissions: "contents: write, pull-requests: write"
         token: ${{ inputs.approver-token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#auto-merge-pull-requests"
+        fail-on-missing-gh: "true"
 
     - name: Verify allowed PRs (dependabot and pre-commit.ci)
       id: verify-allowed-prs

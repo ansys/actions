@@ -197,6 +197,7 @@ runs:
         permissions: "contents: write, pull-requests: write"
         token: ${{ inputs.token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-changelog-action"
+        fail-on-missing-gh: "true"
 
     - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
