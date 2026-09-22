@@ -252,6 +252,12 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: read"
+        doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-build-action"
+
     # --------------- Common to linux and windows doc-build ----------------
 
     - name: "Install Git and clone project"
