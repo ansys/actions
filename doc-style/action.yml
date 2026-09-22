@@ -146,6 +146,13 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: read, pull-requests: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#doc-style-action"
+
     - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
@@ -228,15 +235,40 @@ runs:
         message: >
           Skipping Python setup to use system Python.
 
+    - name: "Create isolated virtual environment"
+      shell: bash
+      run: |
+        python -m venv .venv
+
     - name: "Install tomlkit and docutils"
       shell: bash
       run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          source .venv/Scripts/activate
+        else
+          source .venv/bin/activate
+        fi
         python -m pip install --upgrade pip
         python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
 
-    - name: "Get towncrier directory"
-      shell: python
+    - name: "Expose rst2html on PATH"
+      shell: bash
       run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          cp "${GITHUB_WORKSPACE}/.venv/Scripts/rst2html.exe" "${pythonLocation}/Scripts/rst2html.exe"
+        else
+          sudo ln -sf "${GITHUB_WORKSPACE}/.venv/bin/rst2html" /usr/local/bin/rst2html
+        fi
+
+    - name: "Get towncrier directory"
+      shell: bash
+      run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          source .venv/Scripts/activate
+        else
+          source .venv/bin/activate
+        fi
+        python <<'EOF'
         import os
         import tomlkit
 
@@ -259,6 +291,7 @@ runs:
         # Append the TOWNCRIER_DIR with its value to GITHUB_ENV
         with open(github_env, "a") as f:
             f.write(f"TOWNCRIER_DIR={directory}")
+        EOF
 
     - name: "Check if changelog.d is ignored"
       id: vale-flags

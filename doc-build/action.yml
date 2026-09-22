@@ -138,6 +138,15 @@ inputs:
     required: false
     type: boolean
 
+  checkout-lfs:
+    description: |
+      Whether to download Git LFS-tracked files during the checkout step.
+      Enable this when the repository stores documentation assets tracked with
+      Git LFS. Only applies when ``checkout`` is ``true``. Default value is ``false``.
+    default: false
+    required: false
+    type: boolean
+
   check-links:
     description: |
       Whether to perform external link checks during the generation of
@@ -243,12 +252,19 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: read"
+        doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-build-action"
+
     # --------------- Common to linux and windows doc-build ----------------
 
     - name: "Install Git and clone project"
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+        lfs: ${{ inputs.checkout-lfs }}
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
