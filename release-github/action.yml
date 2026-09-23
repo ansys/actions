@@ -230,7 +230,7 @@ runs:
     - name: "Checkout repository" # zizmor: ignore[artipacked] , credentials must be persisted in this case
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
-        ref: ${{ inputs.tag-name || github.sha }}
+        ref: ${{ inputs.tag-name }}
 
     # ------------------------------------------------------------------------
 
@@ -558,7 +558,7 @@ runs:
         generate_release_notes: ${{ inputs.generate-release-notes }}
         body: ${{ env.RELEASE_NOTES_BODY }}
         repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
-        tag_name: ${{ inputs.tag-name || github.ref_name }}
+        tag_name: ${{ inputs.tag-name }}
         token: ${{ inputs.token }}
         files: |
           # [COMMENT] Include wheel and source distribution artifacts
