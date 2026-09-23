@@ -257,8 +257,24 @@ project. Adapt the example as needed for a specific project.
              token: ${{ github.token }}
              tag-name: ${{ github.ref_name }}
 
-The explicit checkout in each source-consuming job is required. Setting ``checkout:
-false`` prevents the composite action from replacing it with the original event commit.
-The ``tag-name`` passed to ``release-github`` also makes that action read changelog
-content from the recreated release tag. If ``tag-name`` is omitted, the action retains
-its existing behavior and uses ``github.ref_name`` for the GitHub release.
+     doc-deploy-stable:
+       name: Deploy stable documentation
+       needs: [prepare-release, release]
+       runs-on: ubuntu-latest
+       permissions:
+         contents: write
+       steps:
+         - uses: ansys/actions/doc-deploy-stable@v11
+           with:
+             cname: example.docs.ansys.com
+             token: ${{ github.token }}
+             bot-user: github-actions[bot]
+             bot-email: 41898282+github-actions[bot]@users.noreply.github.com
+             ref: ${{ needs.prepare-release.outputs.release-commit-sha }}
+
+The explicit checkout step is required in each job where an action supporting ``checkout: false``
+is used, ensuring that those actions work from release commit.
+
+For actions which do not support ``checkout: false``, there are inputs that allow specifying the
+commit or reference to work from. For example, the ``tag-name`` passed to ``release-github`` and
+the ``ref`` input passed to ``doc-deploy-stable`` also allows specifying the commit to deploy.

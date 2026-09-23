@@ -183,6 +183,18 @@ inputs:
     default: true
     type: boolean
 
+  ref:
+    description: |
+      Reference to check out before deploying the documentation. The commit that
+      triggered the workflow is used by default.
+
+      Set this input when the release tag is moved during the same workflow run,
+      for example when ``doc-deploy-changelog`` runs with ``same-workflow``
+      enabled.
+    required: false
+    default: ''
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -210,6 +222,7 @@ runs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
+        ref: ${{ inputs.ref }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credential must be persisted in this case
 
     # ------------------------------------------------------------------------
