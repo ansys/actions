@@ -252,6 +252,13 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-changelog-action"
+
     - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
@@ -548,12 +555,20 @@ runs:
         > [!CAUTION]
         > Do not merge this pull request until the release has been successfully made."
 
-        gh pr create --title "$pr_title" --body "${body_msg}"
+        pr_url=$(gh pr create --title "$pr_title" --body "${body_msg}")
+        echo "Created pull request: ${pr_url}"
 
-        # Best effort: a rejected review request must not abort the release.
-        # This allows the GITHUB_TOKEN usecase to work correctly.
-        gh pr edit "${pr_branch}" --add-reviewer "${GITHUB_ACTOR}" || \
-          echo "::warning::Could not request a review from ${GITHUB_ACTOR} on ${pr_branch}."
+        if reviewer_output=$(gh pr edit "${pr_url}" --add-reviewer "${GITHUB_ACTOR}" 2>&1); then
+          echo "Requested review from ${GITHUB_ACTOR}"
+        else
+          echo "Reviewer assignment failed; retrying once."
+          if reviewer_output=$(gh pr edit "${pr_url}" --add-reviewer "${GITHUB_ACTOR}" 2>&1); then
+            echo "Requested review from ${GITHUB_ACTOR} on retry"
+          else
+            echo "::warning::Unable to request a review from ${GITHUB_ACTOR} after two attempts. The pull request was created successfully."
+            printf '%s\n' "${reviewer_output}" >&2
+          fi
+        fi
 
     - name: "Delete & Re-create tag"
       env:

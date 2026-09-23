@@ -89,6 +89,16 @@ inputs:
     required: false
     type: boolean
 
+  checkout-lfs:
+    description: |
+      Whether to download Git LFS-tracked files during the checkout step.
+      Enable this when the repository stores test fixtures tracked with Git LFS
+      (reference data, mesh files, binary result files). Only applies when
+      ``checkout`` is ``true``. Default value is ``false``.
+    default: false
+    required: false
+    type: boolean
+
   skip-install:
     description: |
       Skip installation process. This should be set to `false` when using poetry
@@ -155,10 +165,17 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: read"
+        doc-url: "https://actions.docs.ansys.com/version/stable/tests-actions/index.html#test-library-action"
+
     - name: "Install Git and clone project"
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+        lfs: ${{ inputs.checkout-lfs }}
       if: ${{ inputs.checkout == 'true' }}
 
     # ------------------------------------------------------------------------
