@@ -548,7 +548,12 @@ runs:
         > [!CAUTION]
         > Do not merge this pull request until the release has been successfully made."
 
-        gh pr create --title "$pr_title" --body "${body_msg}" --reviewer "${GITHUB_ACTOR}"
+        gh pr create --title "$pr_title" --body "${body_msg}"
+
+        # Best effort: a rejected review request must not abort the release.
+        # This allows the GITHUB_TOKEN usecase to work correctly.
+        gh pr edit "${pr_branch}" --add-reviewer "${GITHUB_ACTOR}" || \
+          echo "::warning::Could not request a review from ${GITHUB_ACTOR} on ${pr_branch}."
 
     - name: "Delete & Re-create tag"
       env:
