@@ -168,9 +168,8 @@ inputs:
         PDF file is copied in ``doc/_build/html/_static/assets/download``.
         If such directories do not exist in your repo, the action will fail.
 
-    default: false
-    required: false
-    type: boolean
+    default: 'true'
+    type: string #true, false, html-only
 
   needs-quarto:
     description: >
@@ -310,24 +309,24 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - name: Documentation build (Linux)
-      if: ${{ runner.os == 'Linux' }}
-      uses: $/_doc-build-linux
-      with:
-        sphinxopts: ${{ inputs.sphinxopts }}
-        dependencies: ${{ inputs.dependencies }}
-        skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
-        requires-xvfb: ${{ inputs.requires-xvfb }}
-        skip-install: ${{ inputs.skip-install }}
-        requirements-file: ${{ inputs.requirements-file }}
-        check-links: ${{ inputs.check-links }}
-        add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        needs-quarto: ${{ inputs.needs-quarto }}
-        use-uv: ${{ inputs.use-uv }}
-        optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
-        group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
-        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
-        skip-latex-install: ${{ inputs.skip-latex-install }}
+    # - name: Documentation build (Linux)
+    #   if: ${{ runner.os == 'Linux' }}
+    #   uses: $/_doc-build-linux
+    #   with:
+    #     sphinxopts: ${{ inputs.sphinxopts }}
+    #     dependencies: ${{ inputs.dependencies }}
+    #     skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
+    #     requires-xvfb: ${{ inputs.requires-xvfb }}
+    #     skip-install: ${{ inputs.skip-install }}
+    #     requirements-file: ${{ inputs.requirements-file }}
+    #     check-links: ${{ inputs.check-links }}
+    #     add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
+    #     needs-quarto: ${{ inputs.needs-quarto }}
+    #     use-uv: ${{ inputs.use-uv }}
+    #     optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
+    #     group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
+    #     uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
+    #     skip-latex-install: ${{ inputs.skip-latex-install }}
 
     # ------------------------------------------------------------------------
 
