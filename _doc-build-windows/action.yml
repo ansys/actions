@@ -100,8 +100,8 @@ inputs:
           PDF file is copied in ``doc\_build\html\_static\assets\download``.
           If such directories do not exist in your repo, the action will fail.
 
-    required: true
-    type: boolean
+    default: 'true'
+    type: string #true, false, html-only
 
   needs-quarto:
     description: |
@@ -503,12 +503,20 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: $/_logging
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
         message: >
           Build HTML and PDF documentation.
 
-    - name: Build HTML and PDF documentation
+    - uses: $/_logging
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'html-only' }}
+      with:
+        level: "INFO"
+        message: >
+          Build HTML documentation.
+
+    - name: Build documentation
       shell: powershell
       env:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
@@ -519,24 +527,30 @@ runs:
         cd doc
         if ($env:BUILD_BACKEND -eq "poetry") {
           poetry run -- make.bat html SPHINXOPTS="$env:SPHINXOPTS"
-          poetry run -- make.bat pdf
-          if ($env:CHECK_LINKS -eq 'true') {
-            poetry run -- make.bat pdf linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+          if (${{ inputs.add-pdf-html-docs-as-assets == 'true' }}) {
+            poetry run -- make.bat pdf
+            if ($env:CHECK_LINKS -eq 'true') {
+              poetry run -- make.bat pdf linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+            }
           }
         }
         else {
           if ($env:BUILD_BACKEND -eq "uv") {
             uv run --no-sync -- .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
-            uv run --no-sync -- .\make.bat pdf
-            if ($env:CHECK_LINKS -eq 'true') {
-              uv run --no-sync -- .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+            if (${{ inputs.add-pdf-html-docs-as-assets == 'true' }}) {
+              uv run --no-sync -- .\make.bat pdf
+              if ($env:CHECK_LINKS -eq 'true') {
+                uv run --no-sync -- .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+              }
             }
           }
           else {
             .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
-            .\make.bat pdf
-            if ($env:CHECK_LINKS -eq 'true') {
-              .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+            if (${{ inputs.add-pdf-html-docs-as-assets == 'true' }}) {
+              .\make.bat pdf
+              if ($env:CHECK_LINKS -eq 'true') {
+                .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+              }
             }
           }
         }
@@ -594,7 +608,7 @@ runs:
         echo "EXISTS_EXPECTED_BUILD_DIR=$(if (Test-Path "$env:EXPECTED_BUILD_DIR") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
     - uses: $/_logging
-      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-build-directory.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' || inputs.add-pdf-html-docs-as-assets == 'html-only') && (steps.set-exists-expected-build-directory.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
         message: >
@@ -602,7 +616,7 @@ runs:
 
     - name: Set expected download directory
       id: set-expected-download-directory
-      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' || inputs.add-pdf-html-docs-as-assets == 'html-only' }}
       shell: powershell
       env:
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
@@ -611,7 +625,7 @@ runs:
 
     - name: Check expected download directory
       id: set-exists-expected-download-directory
-      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' || inputs.add-pdf-html-docs-as-assets == 'html-only' }}
       shell: powershell
       env:
         EXPECTED_DOWNLOAD_DIR: ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }}
@@ -619,14 +633,14 @@ runs:
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$(if (Test-Path "$env:EXPECTED_DOWNLOAD_DIR") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
     - uses: $/_logging
-      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' || inputs.add-pdf-html-docs-as-assets == 'html-only') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"
         message: >
           Expected download directory ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }} does not exist. Creating it...
 
     - name: Create expected download directory
-      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' || inputs.add-pdf-html-docs-as-assets == 'html-only') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       shell: powershell
       env:
         EXPECTED_DOWNLOAD_DIR: ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }}
@@ -648,7 +662,7 @@ runs:
           Write-Error "Documentation has not been generated properly"
         }
         # Check if the PDF files have been generated
-        if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}") {
+        if (${{ inputs.add-pdf-html-docs-as-assets == 'true' }} && Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}") {
           Write-Host "PDF file has been generated successfully"
         } else {
           Write-Error "PDF file has not been generated properly"
@@ -662,9 +676,16 @@ runs:
         level: "INFO"
         message: >
           Add PDF and HTML documentation as assets.
+    
+    - uses: $/_logging
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'html-only' }}
+      with:
+        level: "INFO"
+        message: >
+          Add HTML documentation as assets.
 
     - name: Add assets to HTML docs
-      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' || inputs.add-pdf-html-docs-as-assets == 'html-only' }}
       shell: powershell
       env:
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
@@ -696,6 +717,7 @@ runs:
         retention-days: 7
 
     - name: Upload PDF documentation artifact
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
