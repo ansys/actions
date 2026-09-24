@@ -37,6 +37,35 @@ SEMVER_REGEX = (
     r"(?:\+(>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
 )
 
+TAB_ITEM_REGEX = re.compile(r"^\s*\.\.\s+tab-item::\s+(.+?)\s*$", re.MULTILINE)
+
+
+def promote_tab_titles(rst_body: str, markdown_body: str) -> str:
+    """Turn the ``tab-item`` titles of a changelog section into markdown headers.
+
+    Parameters
+    ----------
+    rst_body: str
+        The rst content of the changelog section.
+    markdown_body: str
+        The same content, converted to markdown by pandoc.
+
+    Returns
+    -------
+    str
+        The markdown content with the tab titles as headers.
+    """
+    titles = set(TAB_ITEM_REGEX.findall(rst_body))
+
+    if not titles:
+        return markdown_body
+
+    return "\n".join(
+        # Pandoc escapes markdown special characters in paragraphs
+        f"## {line}" if line.strip().replace("\\", "") in titles else line
+        for line in markdown_body.split("\n")
+    )
+
 
 def get_pattern(content: str, section_title_regex: str) -> str:
     """Get the regex for locating section titles and content.
@@ -132,7 +161,8 @@ def get_tag_section(changelog_file: Path, body: str) -> str:
 
                 # Convert rst to markdown
                 if file_type.lower() == "rst":
-                    body = pypandoc.convert_text(body, "markdown_strict", format="rst")
+                    markdown_body = pypandoc.convert_text(body, "markdown_strict", format="rst")
+                    body = promote_tab_titles(body, markdown_body)
         else:
             print("Cannot generate release notes from changelog file.")
 
