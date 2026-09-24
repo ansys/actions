@@ -207,7 +207,7 @@ runs:
         choco install $packages -y
 
     - name: Install MiKTeX and update PATH with MiKTeX binaries
-      if: ${{ inputs.skip-latex-install == 'false' }}
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' && inputs.skip-latex-install == 'false' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
         # NOTE: Declared at script scope so it can be accessed inside function
@@ -258,18 +258,20 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: $/_logging
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' && inputs.skip-latex-install == 'false' }}
       with:
         level: "INFO"
         message: >
           Set up MiKTeX to allow downloading missing packages when building documentation.
 
     - name: Set up MiKTeX to automatically install packages
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' && inputs.skip-latex-install == 'false' }}
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
 
     - name: Install additional packages for MiKTeX (known to be required for Quarto cheatsheet)
-      if: ${{ inputs.needs-quarto == 'true' }}
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' && inputs.needs-quarto == 'true' }}
       shell: powershell
       run: |
         mpm --install lm-math
