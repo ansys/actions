@@ -186,6 +186,21 @@ inputs:
     default: ''
     type: string
 
+  release-notes-file:
+    description: |
+      Path, relative to the root of the repository, of a Markdown file whose content is used
+      as the body of the GitHub release, for example ``'doc/release_notes.md'``. When this
+      input is provided, ``changelog-release-notes`` and ``generate-release-notes`` must both
+      be set to ``false``. Default value is ``''``, in which case no file is read.
+
+      .. note::
+
+        If ``add-artifact-attestation-notes`` is ``true``, the artifact attestation notes are
+        still appended to the content of this file.
+    required: false
+    default: ''
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -224,6 +239,15 @@ runs:
         message: >
           Only one of the inputs ``generate-release-notes`` and ``changelog-release-notes``
           can be true. Please set one of them to false.
+
+    - name: "Sanity check on release notes file"
+      uses: $/_logging
+      if: ${{ inputs.release-notes-file != '' && (inputs.changelog-release-notes == 'true' || inputs.generate-release-notes == 'true') }}
+      with:
+        level: "ERROR"
+        message: >
+          The ``release-notes-file`` input cannot be combined with ``changelog-release-notes``
+          or ``generate-release-notes``. Please set both of them to false.
 
     - name: "Checkout repository" # zizmor: ignore[artipacked] , credentials must be persisted in this case
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -478,8 +502,28 @@ runs:
 
         get_release_notes(pyproject_path)
 
+    - name: "Get the release notes body from a file"
+      if: inputs.release-notes-file != ''
+      shell: python
+      env:
+        RELEASE_NOTES_FILE: ${{ inputs.release-notes-file }}
+      run: |
+        import os
+        import sys
+        from pathlib import Path
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from release_github_utils import get_release_notes_from_file
+
+        github_workspace = Path(os.environ["GITHUB_WORKSPACE"])
+        release_notes_file = os.environ["RELEASE_NOTES_FILE"]
+
+        get_release_notes_from_file(github_workspace, release_notes_file)
+
     - name: "Set RELEASE_NOTES_BODY env variable"
-      if: inputs.changelog-release-notes == 'false'
+      if: inputs.changelog-release-notes == 'false' && inputs.release-notes-file == ''
       shell: bash
       run: echo "RELEASE_NOTES_BODY= " >> $GITHUB_ENV
 

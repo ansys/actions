@@ -164,6 +164,43 @@ def get_release_notes(pyproject_path: Path):
     save_env_variable("RELEASE_NOTES_BODY", body)
 
 
+def get_release_notes_from_file(workspace: Path, release_notes_file: str):
+    """Create release notes from a user-provided Markdown file.
+
+    Parameters
+    ----------
+    workspace: pathlib.Path
+        The path to the root of the checked out repository.
+    release_notes_file: str
+        The path of the release notes file, relative to ``workspace``.
+    """
+    candidate = Path(release_notes_file)
+
+    if candidate.is_absolute():
+        print(f"The release notes file must be a relative path, got '{release_notes_file}'.")
+        exit(1)
+
+    # Resolve the path to reject any traversal outside of the repository
+    workspace = workspace.resolve()
+    resolved = (workspace / candidate).resolve()
+
+    if not resolved.is_relative_to(workspace):
+        print(f"The release notes file must be located inside '{workspace}'.")
+        exit(1)
+
+    if not resolved.is_file():
+        print(f"Cannot find the release notes file '{release_notes_file}'.")
+        exit(1)
+
+    body = resolved.read_text(encoding="utf-8")
+
+    if not body.strip():
+        print(f"The release notes file '{release_notes_file}' is empty.")
+        exit(1)
+
+    save_env_variable("RELEASE_NOTES_BODY", body)
+
+
 def filter_dist_files(dist_filter: str) -> None:
     """Filter files in wheelhouse and SBOM distribution directories.
 
