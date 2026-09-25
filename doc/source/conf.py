@@ -194,9 +194,7 @@ def generate_inputs_table_from_action_file(action_file):
                 table_row.extend(values)
                 table_content.append(table_row)
         # Number parsing is disabled so booleans are not rendered as 1 and 0
-        return str(
-            tabulate(table_content, headers=headers, tablefmt="grid", disable_numparse=True)
-        )
+        return str(tabulate(table_content, headers=headers, tablefmt="grid", disable_numparse=True))
 
 
 # Collect all public actions directories and files
