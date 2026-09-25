@@ -49,6 +49,22 @@ Version ``v11.1``
   available when no attested artifact is found. To improve readability, the release body size has been
   reduced and no longer lists all the ``gh attestation verify ...`` commands.
 
+- **Custom release notes file:** The ``release-github`` action has a new ``release-notes-file`` input
+  (default: ``''``). When set to the path of a Markdown file in the repository, the content of that
+  file is used as the body of the GitHub release. This input cannot be combined with
+  ``changelog-release-notes`` or ``generate-release-notes``, which must both be set to ``false``.
+  Artifact attestation notes are still appended when ``add-artifact-attestation-notes`` is ``true``.
+
+  .. code:: yaml
+
+    - name: "Release to GitHub"
+      uses: ansys/actions/release-github@{{ version }}
+      with:
+        library-name: "ansys-<product>-<library>"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        changelog-release-notes: false
+        release-notes-file: "doc/release_notes.md"
+
 **Migration Steps:**
 
 - **Activating uv audit:** Ensure the project's ``uv.lock`` is up-to-date, then enable the additional
