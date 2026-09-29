@@ -465,9 +465,9 @@ runs:
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
             if [[ "${EXTRA_TARGETS}" != '' ]]; then
-              uv sync --frozen --extra "${EXTRA_TARGETS}" --no-dev
+              uv sync --frozen --extra "${EXTRA_TARGETS}" --no-default-groups
             else
-              uv sync --frozen --no-dev
+              uv sync --frozen --no-default-groups
             fi
           else
             uv pip install ."${extra_targets}"
@@ -675,7 +675,7 @@ runs:
         UV_MALWARE_CHECK: 1
       run: |
         ${ACTIVATE_VENV}
-        uv audit --frozen --no-dev --preview-features audit-command > info_uv_audit.log 2>&1
+        uv audit --frozen --no-default-groups --preview-features audit-command > info_uv_audit.log 2>&1
 
     - name: "Run advisory checks"
       shell: bash

@@ -54,7 +54,7 @@ jobs:
               echo "  Processing: $dir_cleaned/requirements.txt (group: $group_name)"
 
               # Run uv export command
-              uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes --no-dev
+              uv export --format requirements.txt --group "$group_name" --output-file "$dir_cleaned/requirements.txt" --no-hashes --no-default-groups
           done
 
           # Process requirements-<suffix>.txt files (e.g., code-style/requirements-prek.txt)
@@ -72,7 +72,7 @@ jobs:
               echo "  Processing: $file_cleaned (group: $group_name)"
 
               # Run uv export command
-              uv export --format requirements.txt --group "$group_name" --output-file "$file_cleaned" --no-hashes --no-dev
+              uv export --format requirements.txt --group "$group_name" --output-file "$file_cleaned" --no-hashes --no-default-groups
           done
 
       - name: Commit and push requirements files if changed
