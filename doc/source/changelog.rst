@@ -9,6 +9,235 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.1.0rc0 <https://github.com/ansys/actions/releases/tag/v11.1.0rc0>`_ - September 17, 2026
+============================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Breaking
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add setup python step in doc-style
+          - `#1551 <https://github.com/ansys/actions/pull/1551>`_
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add uv audit in check vulnerability
+          - `#1498 <https://github.com/ansys/actions/pull/1498>`_
+
+        * - LFS support during checkout
+          - `#1531 <https://github.com/ansys/actions/pull/1531>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Align uv project installation in `code-style` with Poetry by installing dev dependencies when `uv.lock` is present
+          - `#926 <https://github.com/ansys/actions/pull/926>`_
+
+        * - Dependabot(uv) update issues
+          - `#1474 <https://github.com/ansys/actions/pull/1474>`_
+
+        * - Reorder \`doc-deploy-stable\` action steps to allow uv caching
+          - `#1532 <https://github.com/ansys/actions/pull/1532>`_
+
+        * - Avoid silent PR cleanup failures
+          - `#1566 <https://github.com/ansys/actions/pull/1566>`_
+
+        * - Align uv install behavior with poetry
+          - `#1569 <https://github.com/ansys/actions/pull/1569>`_
+
+        * - Run doc-style dependency install in an isolated virtualenv
+          - `#1570 <https://github.com/ansys/actions/pull/1570>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update \`\`CONTRIBUTORS.md\`\` with the latest contributors
+          - `#1517 <https://github.com/ansys/actions/pull/1517>`_
+
+        * - Document doc-deploy-dev PR write permission
+          - `#1565 <https://github.com/ansys/actions/pull/1565>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.0 to 0.16.1 in the pre-commit-hooks group
+          - `#1460 <https://github.com/ansys/actions/pull/1460>`_
+
+        * - Bump ruff from 0.16.0 to 0.16.1
+          - `#1462 <https://github.com/ansys/actions/pull/1462>`_
+
+        * - Bump ty from 0.0.61 to 0.0.65
+          - `#1464 <https://github.com/ansys/actions/pull/1464>`_
+
+        * - Bump ty from 0.0.65 to 0.0.66
+          - `#1481 <https://github.com/ansys/actions/pull/1481>`_
+
+        * - Bump the pre-commit-hooks group with 2 updates
+          - `#1490 <https://github.com/ansys/actions/pull/1490>`_
+
+        * - Bump ruff from 0.16.1 to 0.16.2
+          - `#1491 <https://github.com/ansys/actions/pull/1491>`_
+
+        * - Bump tox from 4.58.0 to 4.59.0
+          - `#1495 <https://github.com/ansys/actions/pull/1495>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#1496 <https://github.com/ansys/actions/pull/1496>`_, `#1511 <https://github.com/ansys/actions/pull/1511>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.2 to 0.16.3 in the pre-commit-hooks group
+          - `#1505 <https://github.com/ansys/actions/pull/1505>`_
+
+        * - Bump ruff from 0.16.2 to 0.16.3
+          - `#1506 <https://github.com/ansys/actions/pull/1506>`_
+
+        * - Bump tox from 4.59.0 to 4.60.0
+          - `#1507 <https://github.com/ansys/actions/pull/1507>`_
+
+        * - Bump ty from 0.0.66 to 0.0.73
+          - `#1509 <https://github.com/ansys/actions/pull/1509>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.3 to 0.16.4 in the pre-commit-hooks group across 1 directory
+          - `#1519 <https://github.com/ansys/actions/pull/1519>`_
+
+        * - Bump ruff from 0.16.3 to 0.16.4
+          - `#1522 <https://github.com/ansys/actions/pull/1522>`_
+
+        * - Bump ty from 0.0.73 to 0.0.74
+          - `#1523 <https://github.com/ansys/actions/pull/1523>`_
+
+        * - Bump ruff from 0.16.4 to 0.16.5
+          - `#1541 <https://github.com/ansys/actions/pull/1541>`_
+
+        * - Bump prek from 0.4.14 to 0.5.0
+          - `#1542 <https://github.com/ansys/actions/pull/1542>`_
+
+        * - Bump ty from 0.0.74 to 0.0.77
+          - `#1544 <https://github.com/ansys/actions/pull/1544>`_
+
+        * - Update dependencies
+          - `#1553 <https://github.com/ansys/actions/pull/1553>`_
+
+        * - Bump prek from 0.5.0 to 0.5.2
+          - `#1554 <https://github.com/ansys/actions/pull/1554>`_
+
+        * - Bump fastcore from 2.2.13 to 2.2.22
+          - `#1555 <https://github.com/ansys/actions/pull/1555>`_
+
+        * - Bump uv from 0.12.1 to 0.12.10
+          - `#1556 <https://github.com/ansys/actions/pull/1556>`_
+
+        * - Bump ruff from 0.16.5 to 0.16.6
+          - `#1557 <https://github.com/ansys/actions/pull/1557>`_
+
+        * - Bump zizmor from 1.29.0 to 1.30.0
+          - `#1558 <https://github.com/ansys/actions/pull/1558>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.4 to 0.16.6 in the pre-commit-hooks group across 1 directory
+          - `#1559 <https://github.com/ansys/actions/pull/1559>`_
+
+        * - Bump the build-related-actions group across 1 directory with 2 updates
+          - `#1560 <https://github.com/ansys/actions/pull/1560>`_
+
+        * - Bump the release-related-actions group across 2 directories with 1 update
+          - `#1561 <https://github.com/ansys/actions/pull/1561>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update CHANGELOG for v11.0.0
+          - `#1470 <https://github.com/ansys/actions/pull/1470>`_
+
+        * - Bump dev version
+          - `#1471 <https://github.com/ansys/actions/pull/1471>`_
+
+        * - Update CHANGELOG for v11.0.1
+          - `#1477 <https://github.com/ansys/actions/pull/1477>`_
+
+        * - Update CHANGELOG for v11.0.2
+          - `#1486 <https://github.com/ansys/actions/pull/1486>`_
+
+        * - Update CHANGELOG for v11.0.3
+          - `#1488 <https://github.com/ansys/actions/pull/1488>`_
+
+        * - Update CHANGELOG for v11.0.4
+          - `#1514 <https://github.com/ansys/actions/pull/1514>`_
+
+        * - Update dependabot configuration
+          - `#1516 <https://github.com/ansys/actions/pull/1516>`_
+
+        * - Update CHANGELOG for v11.0.5
+          - `#1526 <https://github.com/ansys/actions/pull/1526>`_
+
+        * - Update CHANGELOG for v11.0.6
+          - `#1534 <https://github.com/ansys/actions/pull/1534>`_
+
+        * - Delay dependabot update to monthly
+          - `#1539 <https://github.com/ansys/actions/pull/1539>`_
+
+        * - Update CHANGELOG for v11.0.8
+          - `#1547 <https://github.com/ansys/actions/pull/1547>`_
+
+        * - Rework subaction usage to leverage local path
+          - `#1548 <https://github.com/ansys/actions/pull/1548>`_
+
+        * - Update refs in workflows to self-repository syntax
+          - `#1562 <https://github.com/ansys/actions/pull/1562>`_
+
+        * - Update migration guide for v11.1 pre-release
+          - `#1571 <https://github.com/ansys/actions/pull/1571>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Reduce release note body size and add cmd
+          - `#1527 <https://github.com/ansys/actions/pull/1527>`_
+
+        * - Update check-licenses to exclude non-runtime dependencies during checks
+          - `#1535 <https://github.com/ansys/actions/pull/1535>`_
+
+        * - Use lockfile to generate wheelhouse
+          - `#1549 <https://github.com/ansys/actions/pull/1549>`_
+
+        * - Reference inner action with new syntax
+          - `#1550 <https://github.com/ansys/actions/pull/1550>`_
+
+        * - Remove quarto setup action
+          - `#1552 <https://github.com/ansys/actions/pull/1552>`_
+
+        * - Exclude build and wheel from generated wheelhouse
+          - `#1563 <https://github.com/ansys/actions/pull/1563>`_
+
+
 `11.0.8 <https://github.com/ansys/actions/releases/tag/v11.0.8>`_ - September 07, 2026
 ======================================================================================
 

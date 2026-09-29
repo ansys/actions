@@ -28,9 +28,12 @@ Notes
 Script for detecting vulnerabilities on a given repo and creating
 associated security vulnerability advisories.
 
+Every parameter is available both as a command line option and as an
+environment variable. The only exception is the GitHub token, which is read
+exclusively from ``DEPENDENCY_CHECK_TOKEN``.
+
 In addition to Safety and Bandit outputs, this script can optionally parse
-``uv audit`` results when ``DEPENDENCY_CHECK_UV_AUDIT_ENABLED`` is set. In
-that mode, ``info_uv_audit.log`` must exist in the working directory.
+``uv audit`` results when ``--uv-audit`` is passed.
 """
 
 import hashlib
@@ -49,13 +52,8 @@ from github.AdvisoryVulnerability import (
 )
 from requests.exceptions import SSLError
 
+# The token is intentionally not exposed as a command line option for security reasons.
 TOKEN = os.environ.get("DEPENDENCY_CHECK_TOKEN", None)
-PACKAGE = os.environ.get("DEPENDENCY_CHECK_PACKAGE_NAME", None)
-REPOSITORY = os.environ.get("DEPENDENCY_CHECK_REPOSITORY", None)
-DRY_RUN = True if os.environ.get("DEPENDENCY_CHECK_DRY_RUN", None) else False
-ERROR_IF_NEW_ADVISORY = True if os.environ.get("DEPENDENCY_CHECK_ERROR_EXIT", None) else False
-CREATE_ISSUES = True if os.environ.get("DEPENDENCY_CHECK_CREATE_ISSUES") else False
-UV_AUDIT_ENABLED = True if os.environ.get("DEPENDENCY_CHECK_UV_AUDIT_ENABLED") else False
 
 _SSL_CORPORATE_NETWORK_HINT = (
     "On corporate networks, an SSL inspection proxy may intercept HTTPS connections "
@@ -86,31 +84,53 @@ def dict_hash(dictionary: dict[str, Any]) -> str:
     return dhash.hexdigest()
 
 
-def check_vulnerabilities():
+def _validate_repository(ctx, param, value: str) -> str:
+    """Ensure the repository is given as '<owner>/<repository>'."""
+    if not re.fullmatch(r"[^/\s]+/[^/\s]+", value):
+        raise click.BadParameter(
+            f"Invalid repository '{value}'. Expected format: '<owner>/<repository>'."
+        )
+    return value
+
+
+def check_vulnerabilities(
+    package: str,
+    repository: str,
+    dry_run: bool = False,
+    create_issues: bool = False,
+    uv_audit_enabled: bool = False,
+):
     """Check library and third-party vulnerabilities.
 
     This function consumes ``info_safety.json`` and ``info_bandit.json``.
-    When ``DEPENDENCY_CHECK_UV_AUDIT_ENABLED`` is set, it also parses
-    ``info_uv_audit.log`` to include ``uv audit`` findings in the report.
+    When ``uv_audit_enabled`` is set, it also parses ``info_uv_audit.log``
+    to include ``uv audit`` findings in the report.
+
+    Parameters
+    ----------
+    package : str
+        Python package name being evaluated, as shown on PyPI.
+    repository : str
+        Full name of the repository to evaluate, as ``<owner>/<repository>``.
+    dry_run : bool, default: False
+        Whether to print the detected advisories instead of creating them.
+    create_issues : bool, default: False
+        Whether to create an issue for each new advisory detected.
+    uv_audit_enabled : bool, default: False
+        Whether to parse ``info_uv_audit.log`` findings.
+
+    Returns
+    -------
+    bool
+        Whether new advisories have been detected or not.
     """
     new_advisory_detected = False
     uv_audit_vulnerability_details = ""
-    # Check that the needed environment variables are provided
+
     if not TOKEN:
         raise RuntimeError("Required environment variable 'DEPENDENCY_CHECK_TOKEN' is not defined.")
 
-    if not REPOSITORY:
-        raise RuntimeError(
-            "Required environment variable 'DEPENDENCY_CHECK_REPOSITORY' is not defined."
-        )
-
-    if not PACKAGE:
-        raise RuntimeError(
-            "Required environment variable 'DEPENDENCY_CHECK_PACKAGE_NAME' is not defined."
-        )
-
-    # Check if DRY_RUN or not
-    if DRY_RUN:
+    if dry_run:
         print("Dry run... not creating advisories and issues.")
         print("Information will be presented on screen.\n")
 
@@ -128,7 +148,7 @@ def check_vulnerabilities():
         )
 
     # Parse uv audit output log when uv audit has been enabled in the action.
-    if UV_AUDIT_ENABLED:
+    if uv_audit_enabled:
         uv_audit_known_vulnerabilities = 0
         uv_audit_adverse_project_statuses = 0
 
@@ -167,7 +187,7 @@ def check_vulnerabilities():
 
     # Get the repository
     try:
-        repo = g.get_repo(REPOSITORY)
+        repo = g.get_repo(repository)
     except SSLError as e:
         raise RuntimeError(
             "SSL error occurred while trying to access the GitHub API. "
@@ -225,7 +245,7 @@ Visit {v_url} to find out more information.
         # Check if the advisory already exists
         if existing_advisories.get(summary):
             continue
-        elif not DRY_RUN:
+        elif not dry_run:
             # New safety advisory detected
             safety_results_reported += 1
             new_advisory_detected = True
@@ -240,7 +260,7 @@ Visit {v_url} to find out more information.
             )
 
             # Create an issue
-            if CREATE_ISSUES:
+            if create_issues:
                 issue_body = f"""
 A new security advisory was open in this repository. See {advisory.html_url}.
 
@@ -293,7 +313,7 @@ once it has been verified (since it has been created in draft mode).
         v_severity_level = vulnerability.get("issue_severity", "medium").lower()
         v_filename = vulnerability.get("filename")
         v_code = vulnerability.get("code")
-        v_package = PACKAGE
+        v_package = package
         v_cwe = vulnerability.get("issue_cwe", {"id": "", "link": ""})
         v_url = vulnerability.get("more_info")
         v_desc = vulnerability.get("issue_text")
@@ -328,7 +348,7 @@ Visit {v_url} to find out more information.
         # Check if the advisory already exists
         if existing_advisories.get(summary):
             continue
-        elif not DRY_RUN:
+        elif not dry_run:
             # New bandit advisory detected
             bandit_results_reported += 1
             new_advisory_detected = True
@@ -343,7 +363,7 @@ Visit {v_url} to find out more information.
             )
 
             # Create an issue
-            if CREATE_ISSUES:
+            if create_issues:
                 issue_body = f"""
 A new security advisory was open in this repository. See {advisory.html_url}.
 
@@ -372,7 +392,7 @@ once it has been verified (since it has been created in draft mode).
     bandit_entries = len(bandit_results["results"])
 
     uv_detected_findings = 0
-    if UV_AUDIT_ENABLED:
+    if uv_audit_enabled:
         uv_detected_findings = uv_audit_known_vulnerabilities + uv_audit_adverse_project_statuses
 
     total_detected = safety_entries + bandit_entries + uv_detected_findings
@@ -381,7 +401,7 @@ once it has been verified (since it has been created in draft mode).
     print("*****************************************************************************")
     print(f"Total 'safety' advisories detected: {safety_entries}")
     print(f"Total 'safety' advisories reported: {safety_results_reported}")
-    if UV_AUDIT_ENABLED:
+    if uv_audit_enabled:
         print(f"Total 'uv audit' known vulnerabilities: {uv_audit_known_vulnerabilities}")
         print(f"Total 'uv audit' adverse project statuses: {uv_audit_adverse_project_statuses}")
         print(f"Total 'uv audit' findings detected: {uv_detected_findings}")
@@ -391,7 +411,7 @@ once it has been verified (since it has been created in draft mode).
     print(f"Total advisories/findings detected: {total_detected}")
     print(f"Total advisories reported: {total_reported}")
     print("*****************************************************************************")
-    if UV_AUDIT_ENABLED:
+    if uv_audit_enabled:
         print("Note: 'uv audit' advisories may contain duplicates of 'safety' advisories.")
         if uv_audit_vulnerability_details:
             print("Uv audit vulnerabilities:")
@@ -521,21 +541,77 @@ def generate_advisory_files():
 
 @click.command(short_help="Perform third-party and in-library vulnerability analysis.")
 @click.option(
+    "--package",
+    "-p",
+    required=True,
+    envvar="DEPENDENCY_CHECK_PACKAGE_NAME",
+    help="Python package name being evaluated, as shown on PyPI.",
+)
+@click.option(
+    "--repository",
+    "-r",
+    required=True,
+    envvar="DEPENDENCY_CHECK_REPOSITORY",
+    callback=_validate_repository,
+    help="Full name of the repository to evaluate, as '<owner>/<repository>'.",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    envvar="DEPENDENCY_CHECK_DRY_RUN",
+    help="Print the detected advisories on screen instead of creating them.",
+)
+@click.option(
+    "--error-on-new-advisory",
+    is_flag=True,
+    default=False,
+    envvar="DEPENDENCY_CHECK_ERROR_EXIT",
+    help="Exit with an error code if a new advisory is detected.",
+)
+@click.option(
+    "--create-issues",
+    is_flag=True,
+    default=False,
+    envvar="DEPENDENCY_CHECK_CREATE_ISSUES",
+    help="Create an issue for each new advisory detected.",
+)
+@click.option(
+    "--uv-audit",
+    is_flag=True,
+    default=False,
+    envvar="DEPENDENCY_CHECK_UV_AUDIT_ENABLED",
+    help="Include 'uv audit' findings from 'info_uv_audit.log' in the report.",
+)
+@click.option(
     "--run-local",
     is_flag=True,
     default=False,
-    help="Simulate the behavior of the synchronization without performing it.",
+    help="Generate the advisory files locally and run in dry run mode.",
 )
-def main(run_local: bool):
+def main(
+    package: str,
+    repository: str,
+    dry_run: bool,
+    error_on_new_advisory: bool,
+    create_issues: bool,
+    uv_audit: bool,
+    run_local: bool,
+):
     """Run the main function."""
     if run_local:
         generate_advisory_files()
-        global DRY_RUN
-        DRY_RUN = True
+        dry_run = True
 
-    new_advisory_detected = check_vulnerabilities()
+    new_advisory_detected = check_vulnerabilities(
+        package=package,
+        repository=repository,
+        dry_run=dry_run,
+        create_issues=create_issues,
+        uv_audit_enabled=uv_audit,
+    )
 
-    if new_advisory_detected and ERROR_IF_NEW_ADVISORY:
+    if new_advisory_detected and error_on_new_advisory:
         # New advisories detected - exit with error
         sys.exit(1)
     else:
