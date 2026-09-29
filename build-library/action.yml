@@ -218,7 +218,7 @@ runs:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
         cd ${WORKING_DIRECTORY}
-        uv sync --frozen --no-managed-python --no-dev
+        uv sync --frozen --no-managed-python --no-default-groups
 
     # ------------------------------------------------------------------------
     # Install package without leveraging uv lockfile
