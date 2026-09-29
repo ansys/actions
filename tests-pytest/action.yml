@@ -379,7 +379,7 @@ runs:
           poetry install
         elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
           if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-            uv sync --frozen --no-dev
+            uv sync --frozen --no-default-groups
           else
             uv pip install .
           fi
@@ -454,7 +454,7 @@ runs:
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --no-dev $group_dependencies_flag $extra_dependencies_flags
+              uv sync --frozen --no-default-groups $group_dependencies_flag $extra_dependencies_flags
             else
               uv pip install $group_dependencies_flag $project_spec
             fi

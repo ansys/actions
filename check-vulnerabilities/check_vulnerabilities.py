@@ -522,7 +522,7 @@ def generate_advisory_files():
                     uv_audit_exe,
                     "audit",
                     "--frozen",
-                    "--no-dev",
+                    "--no-default-groups",
                     "--preview-features",
                     "audit-command",
                 ],
