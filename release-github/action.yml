@@ -557,8 +557,11 @@ runs:
           done < <(find dist/extra -type f -print0)
         fi
 
+        # A random delimiter prevents the body from closing the heredoc early
+        delimiter="ghadelim_$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+
         {
-          echo "RELEASE_NOTES_BODY<<EOF"
+          echo "RELEASE_NOTES_BODY<<${delimiter}"
           echo "${RELEASE_NOTES_BODY}"
 
           echo "### Artifact Attestations"
@@ -584,7 +587,7 @@ runs:
           echo "\`\`\`bash"
           echo "gh attestation verify <file-path-of-downloaded-artifact> --bundle <file-path-of-downloaded-attestation> --repo ${GITHUB_REPOSITORY}"
           echo "\`\`\`"
-          echo "EOF"
+          echo "${delimiter}"
         } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"

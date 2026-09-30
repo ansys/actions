@@ -51,9 +51,10 @@ Version ``v11.1``
 
 - **Custom release notes file:** The ``release-github`` action has a new ``release-notes-file`` input
   (default: ``''``). When set to the path of a Markdown file in the repository, the content of that
-  file is used as the body of the GitHub release. This input cannot be combined with
-  ``changelog-release-notes`` or ``generate-release-notes``, which must both be set to ``false``.
-  Artifact attestation notes are still appended when ``add-artifact-attestation-notes`` is ``true``.
+  file is used as the body of the GitHub release. This path must be relative to the project root.
+  This input cannot be combined with ``changelog-release-notes`` or ``generate-release-notes``, which
+  must both be set to ``false``. Artifact attestation notes are still appended when
+  ``add-artifact-attestation-notes`` is ``true``.
 
   .. code:: yaml
 
