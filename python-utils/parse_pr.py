@@ -299,8 +299,10 @@ def clean_pr_title(pr_title: str, use_pr_title: str):
     save_env_variable("CLEAN_TITLE", clean_title)
 
 
-def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
-    """Append the missing towncrier information to the pyproject.toml file.
+def add_towncrier_config(
+    org_name: str, repo_name: str, default_config: bool, config_file: str = "pyproject.toml"
+):
+    """Append missing towncrier information to the selected configuration file.
 
     Parameters
     ----------
@@ -310,23 +312,23 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
         The name of the repository.
     default_config: bool
         Whether or not to use the default towncrier configuration for the pyproject.toml file.
+    config_file: str
+        Towncrier configuration file to use.
     """
-    pyproject_file = Path("pyproject.toml")
-    towncrier_file = Path("towncrier.toml")
-
-    if not pyproject_file.exists() and not towncrier_file.exists():
-        print("No pyproject.toml or towncrier.toml file found.")
+    towncrier_config = Path(config_file)
+    if not towncrier_config.exists():
+        print(f"Towncrier configuration file '{towncrier_config}' was not found.")
         exit(1)
 
-    towncrier_config = pyproject_file if pyproject_file.exists() else towncrier_file
     with towncrier_config.open("rb") as file:
         config = tomlkit.load(file)
 
-    tool = config.get("tool", "DNE")
+    tool = config.get("tool", {})
+    towncrier = tool.get("towncrier", {})
 
-    towncrier = "DNE"
-    if tool != "DNE":
-        towncrier = tool.get("towncrier", "DNE")
+    if not towncrier:
+        print(f"No towncrier section found in '{towncrier_config}'.")
+        exit(1)
 
     # Ordered list containing changelog sections under each release
     changelog_sections = [
@@ -362,29 +364,25 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     }
 
     # Get the package name from [tool.flit.module]
-    flit = tool.get("flit", "DNE")
-    module = name = ""
-    if flit != "DNE":
-        module = flit.get("module", "DNE")
-        if module != ("DNE" or ""):
-            name = module.get("name", "DNE")
-            # If [tool.flit.module] name exists, create the package string
-            if name != ("DNE" and ""):
-                towncrier_config_sections["package"] = name
+    flit = tool.get("flit", {})
+    module = flit.get("module", {})
+    name = module.get("name", "")
+    if name:
+        # If [tool.flit.module] name exists, create the package string
+        towncrier_config_sections["package"] = name
 
     # Preserve the full ordered list before remove_existing_types mutates it
     all_changelog_sections = list(changelog_sections)
 
-    if towncrier != "DNE":
-        # Get the existing [[tool.towncrier.type]] sections
-        types = towncrier.get("type", "DNE")
-        if types != "DNE":
-            remove_existing_types(types, changelog_sections)
+    # Get the existing [[tool.towncrier.type]] sections
+    types = towncrier.get("type", [])
+    if types:
+        remove_existing_types(types, changelog_sections)
 
     if default_config:
         # If there is no towncrier configuration information or if [[tool.towncrier.type]]
         # is the only towncrier information in the pyproject.toml file
-        if towncrier == "DNE" or len(towncrier) == 1:
+        if len(towncrier) == 1 and "type" in towncrier:
             # Update the [tool.towncrier] section in the config dict
             write_towncrier_config_section(config, towncrier_config_sections, True)
 
