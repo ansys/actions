@@ -18,6 +18,7 @@
 * [Edouard Coussoux](https://github.com/ecoussoux-ansys)
 * [German](https://github.com/germa89)
 * [Guillem Barroso](https://github.com/GuillemBarroso)
+* [inimaz](https://github.com/inimaz)
 * [Jeff Moody](https://github.com/ansjmoody)
 * [Kathy Pippert](https://github.com/PipKat)
 * [Kerry McAdams](https://github.com/klmcadams)

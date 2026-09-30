@@ -434,7 +434,7 @@ runs:
           poetry install
         } elseif ($env:BUILD_BACKEND -eq "uv") {
           if ($env:USE_UV_LOCKFILE -eq "true") {
-            uv sync --frozen --no-dev
+            uv sync --frozen --no-default-groups
           } else {
             uv pip install .
           }
@@ -491,7 +491,7 @@ runs:
           # Install dependencies (potentially mix of optional and group)
           if ($env:BUILD_BACKEND -eq "uv") {
             if ($env:USE_UV_LOCKFILE -eq "true") {
-              uv sync --frozen --no-dev @group_dependencies_flag @extra_dependencies_flags
+              uv sync --frozen --no-default-groups @group_dependencies_flag @extra_dependencies_flags
             } else {
               uv pip install @group_dependencies_flag $project_spec
             }
