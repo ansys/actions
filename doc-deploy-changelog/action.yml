@@ -101,14 +101,14 @@ description: |
      - **contents**: ``write`` - Required to push commits, delete and create tags
      - **pull-requests**: ``write`` - Required to create pull requests
 
-    .. important:: **Same-workflow releases**
+  .. important:: **Same-workflow releases**
 
-      When ``same-workflow`` is enabled, pass the repository's ``GITHUB_TOKEN``. GitHub
-      does not create another workflow run for a tag pushed with this token. A personal
-      access token or GitHub App token can create a duplicate run.
+    When ``same-workflow`` is enabled, pass the repository's ``GITHUB_TOKEN``. GitHub
+    does not create another workflow run for a tag pushed with this token. A personal
+    access token or GitHub App token can create a duplicate run.
 
-      Downstream jobs must check out the commit from the ``release-commit-sha`` output
-      rather than relying on ``github.sha``.
+    Downstream jobs must check out the commit from the ``release-commit-sha`` output
+    rather than relying on ``github.sha``.
 
 
 inputs:
