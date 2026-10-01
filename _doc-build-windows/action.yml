@@ -711,8 +711,9 @@ runs:
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
         EXPECTED_DOWNLOAD_DIR: ${{ steps.set-expected-download-directory.outputs.EXPECTED_DOWNLOAD_DIR }}
       run: |
-        cd ${env:EXPECTED_BUILD_DIR}\html; zip -r documentation-html.zip *; cd ..\..\..
-        mv ${env:EXPECTED_BUILD_DIR}\html\documentation-html.zip ${env:EXPECTED_DOWNLOAD_DIR}
+        $tmpZip = Join-Path $env:RUNNER_TEMP "documentation-html.zip"
+        Compress-Archive -Path "${env:EXPECTED_BUILD_DIR}\html\*" -DestinationPath $tmpZip -Force
+        Move-Item -Path $tmpZip -Destination ${env:EXPECTED_DOWNLOAD_DIR} -Force
         if ($env:ADD_PDF_HTML_DOCS_AS_ASSETS -eq 'true') {
           if (Test-Path ${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}) {
             cp ${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME} ${env:EXPECTED_DOWNLOAD_DIR}
