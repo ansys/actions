@@ -541,20 +541,13 @@ runs:
           if ($env:BUILD_BACKEND -eq "uv") {
             uv run --no-sync -- .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
 
-            Write-Host "LASTEXITCODE=$LASTEXITCODE"
-            Get-ChildItem _build\html | Select-Object -First 5
-
             if ($env:ADD_PDF_HTML_DOCS_AS_ASSETS -eq 'true') {
               uv run --no-sync -- .\make.bat pdf
             }
-            Write-Host "STEP A"
-            Write-Host "LASTEXITCODE=$LASTEXITCODE"
 
             if ($env:CHECK_LINKS -eq 'true') {
               uv run --no-sync -- .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
             }
-            Write-Host "STEP B"
-            Write-Host "LASTEXITCODE=$LASTEXITCODE"
           }
           else {
             .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
@@ -565,11 +558,7 @@ runs:
               .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
             }
           }
-          Write-Host "AFTER ELSE"
-          Write-Host "LASTEXITCODE=$LASTEXITCODE"
         }
-        Write-Host "Out of IF"
-        Write-Host "LASTEXITCODE=$LASTEXITCODE"
 
     # ------------------------------------------------------------------------
 
