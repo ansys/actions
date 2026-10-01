@@ -72,7 +72,7 @@ release-pypi = [
     "twine<=7.1",
 ]
 tests-pytest = [
-    "pytest-randomly<=4.1",
+    "pytest-randomly<=5.0.0",
 ]
 # ######################################################################## #
 # These groups are defined to develop and maintain this artificial project #
