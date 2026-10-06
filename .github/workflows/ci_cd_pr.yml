@@ -7,6 +7,7 @@ env:
   MAIN_PYTHON_VERSION: '3.14'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
+  ACTIONLINT_VERSION: '1.7.2'
 
 permissions:
   contents: read
@@ -513,6 +514,17 @@ jobs:
           auditing-level: 'high'
           trust-ansys-actions: true
           checkout: false
+
+      - name: "Run ShellCheck on composite actions"
+        uses: saleor/shellcheck-gha@566bb6932997a64bd5da0bc46c0b5ce8aeb332b6
+        with:
+          scan-directory-path: .
+
+      - name: "Run actionlint on workflows"
+        shell: bash
+        run: |
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.2 \
+            -ignore 'could not parse action metadata.*unexpected key "type"'
 
   python-utilites-test:
     name: "Run all python utilities tests"
