@@ -523,7 +523,7 @@ jobs:
       - name: "Run actionlint on workflows"
         shell: bash
         run: |
-          go run github.com/rhysd/actionlint/cmd/actionlint@v${{ env.ACTIONLINT_VERSION }} \
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.2 \
             -ignore 'could not parse action metadata.*unexpected key "type"'
 
   python-utilites-test:
