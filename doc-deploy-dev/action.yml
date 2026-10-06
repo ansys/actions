@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -133,11 +133,19 @@ inputs:
     default: true
     type: string
 
+
 runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-dev-action"
+
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -157,10 +165,11 @@ runs:
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         repository: ${{ steps.get-repository-name.outputs.REPOSITORY }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials need to be persisted in this case
+
 
     - name: "Ensure that the desired branch exists"
       shell: bash
@@ -200,7 +209,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -229,14 +238,20 @@ runs:
       shell: bash
       if: inputs.decompress-artifact == 'true'
       run: |
-        sudo apt-get install -y cargo && cargo install ouch
+        sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd version/dev && compressed_artifact=$(ls .)
-        ouch decompress $compressed_artifact
-        decompressed_artifact=$(ls -I "*${compressed_artifact##*.}")
-        mv $decompressed_artifact/* .
-        rm -rf $compressed_artifact $decompressed_artifact
+        cd version/dev
+        compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
+        mkdir _decomp
+        ouch decompress "$compressed_artifact" --dir _decomp --yes
+        content=(_decomp/*)
+        if [ "${#content[@]}" -eq 1 ] && [ -d "${content[0]}" ]; then
+          mv "${content[0]}"/* .
+        else
+          mv _decomp/* .
+        fi
+        rm -rf "$compressed_artifact" _decomp
 
     - name: "Display structure of version/dev"
       shell: bash
@@ -245,7 +260,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -270,21 +285,36 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
           Include a link canonical tag in old versions if not present.
 
     - name: "Include link canonical tag in pages"
-      uses: ansys/actions/_doc-gen-canonical@main
+      uses: $/_doc-gen-canonical
       with:
         cname: ${{ inputs.cname }}
         version-directory: version
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
+      with:
+        level: "INFO"
+        message: >
+          Inject ``noindex, follow`` meta tags into every non-stable
+          documentation page so search engines drop them from the index while
+          still following links to their canonical stable counterpart.
+
+    - name: "Inject noindex meta tags into non-stable pages"
+      uses: $/_doc-gen-noindex
+      with:
+        version-directory: version
+
+    # ------------------------------------------------------------------------
+
+    - uses: $/_logging
       if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
       with:
         level: "INFO"
@@ -317,6 +347,33 @@ runs:
           exit 1
         fi
 
+    - name: "Ensure the root landing page is indexable and self-canonical"
+      shell: bash
+      if: ${{ inputs.use-latest-index-in-landing-page == 'true' }}
+      env:
+        CNAME: ${{ inputs.cname }}
+      run: |
+        # The landing page is copied from a versioned page above. When that
+        # source came from a non-stable version it carries the ``noindex``
+        # meta injected by ``_doc-gen-noindex``; that would hide the site's
+        # own root from search engines. Strip any inherited robots meta and
+        # enforce a self-canonical so the root is treated as authoritative.
+        if [[ ! -f index.html ]]; then
+          exit 0
+        fi
+
+        perl -0777 -i -pe 's#<meta[^>]*name\s*=\s*["\x27]robots["\x27][^>]*/?>##gi' index.html
+
+        canonical_tag="<link rel=\"canonical\" href=\"https://${CNAME}/\">"
+        if grep -q '<link rel="canonical"' index.html; then
+          # Match only up to the closing '>' of the canonical tag itself so
+          # single-line/minified HTML that carries other tags on the same line
+          # is not truncated by a greedy ``.*>``.
+          sed -i "s|<link rel=\"canonical\"[^>]*>|${canonical_tag}|g" index.html
+        else
+          sed -i "/^ *<\/head>/i\\  ${canonical_tag}" index.html
+        fi
+
     - name: "Show the contents of the 'index.html' redirection file"
       shell: bash
       run: |
@@ -329,7 +386,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -337,14 +394,14 @@ runs:
           no stable release is available, copy the 'dev/index.html' instead.
           Update all references to point to 'stable/_static' or 'dev/_static'.
 
-    - uses: ansys/actions/_doc-gen-versions-page@main
+    - uses: $/_doc-gen-versions-page
       with:
         cname: ${{ inputs.cname }}
         content-element-id: ${{ inputs.content-element-id }}
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -370,22 +427,40 @@ runs:
           echo "VERSION_STABLE_EXISTS=false" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       # Apply this step only if 'version/stable/' dir exists
       if: ${{ steps.version-stable-exists.outputs.VERSION_STABLE_EXISTS == 'true' }}
       with:
         level: "INFO"
         message: >
-          Generate the site-map for the latest development or stable
-          documentation.
+          Generate the site-map for the latest stable documentation. This step
+          is skipped when no stable release exists yet, because the sitemap
+          only advertises indexable URLs (under ``version/stable/``).
 
     - name: "Generate 'sitemap.xml' file"
-      uses: ansys/actions/_doc-gen-sitemap@main
+      uses: $/_doc-gen-sitemap
       # Apply this step only if 'version/stable/' dir exists
       if: ${{ steps.version-stable-exists.outputs.VERSION_STABLE_EXISTS == 'true' }}
       with:
         cname: ${{ inputs.cname }}
         html-directory: version/stable
+        exclude: 'announcement.html search.html genindex.html py-modindex.html 404.html webpack-macros.html'
+
+    # ------------------------------------------------------------------------
+
+    - uses: $/_logging
+      with:
+        level: "INFO"
+        message: >
+          Generate the robots.txt file for guiding web crawlers so that only
+          ``/version/stable/`` is crawled.
+
+    - name: "Generate 'robots.txt' file"
+      uses: $/_doc-gen-robots
+      with:
+        cname: ${{ inputs.cname }}
+        custom-path: ''
+        include-sitemap: ${{ steps.version-stable-exists.outputs.VERSION_STABLE_EXISTS }}
 
     # ------------------------------------------------------------------------
 
@@ -397,7 +472,10 @@ runs:
       run: |
         if [[ -d "pull/" ]]; then
             for pr_number in $(ls pull/); do
-              closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>/dev/null)
+              if ! closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>&1); then
+                echo "Warning: could not read PR #${pr_number} state; skipping cleanup for this PR."
+                continue
+              fi
 
               # If PR does not exist, skip)
               if [[ -z "${closed}" ]]; then
@@ -410,7 +488,14 @@ runs:
               # Remove pr directory if it is closed
               if [[ ${closed} == "true" ]]; then
                 message="This PR has been closed. Documentation for this pull request will shortly be removed from its [former deployment address](https://${CNAME}/pull/${pr_number})."
-                gh pr comment "${pr_number}" --body "${message}"
+                # Guard the comment call: a locked PR, missing
+                # ``pull-requests: write`` scope, or a transient API failure
+                # must not abort the deploy or block the ``rm -rf`` below.
+                # Removing the directory unconditionally also prevents the
+                # notice from being re-posted on the next run.
+                if ! gh pr comment "${pr_number}" --body "${message}"; then
+                  echo "Warning: could not comment on PR #${pr_number}; continuing with cleanup."
+                fi
                 echo "Removing directory ${pr_number}..."
                 rm -rf "pull/${pr_number}"
               fi
@@ -421,7 +506,25 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
+      with:
+        level: "INFO"
+        message: >
+          Retroactively stamp ``noindex, follow`` meta tags on every remaining
+          pull-request preview so legacy previews deployed before this feature
+          also drop out of search indexes. Safe to re-run because the noindex
+          step strips and reinjects the meta tag.
+
+    - name: "Inject noindex meta tags into pull-request preview pages"
+      if: hashFiles('pull/**/*.html') != ''
+      uses: $/_doc-gen-noindex
+      with:
+        version-directory: pull
+
+    # ------------------------------------------------------------------------
+
+
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -432,7 +535,7 @@ runs:
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ github.repository }} repository"
       if: inputs.repository == 'current'
-      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
       with:
         publish_dir: .
         publish_branch: ${{ inputs.branch }}
@@ -443,7 +546,7 @@ runs:
 
     - name: "Deploy to ${{ inputs.branch }} branch of ${{ inputs.repository }}"
       if: inputs.repository != 'current'
-      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
       with:
         publish_dir: .
         publish_branch: ${{ inputs.branch }}

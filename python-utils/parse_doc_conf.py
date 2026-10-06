@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,9 +30,9 @@ the PDF generated after building the documentation.
 """
 
 import os
+from pathlib import Path
 import re
 import warnings
-from pathlib import Path
 
 CONF_PATH = Path("doc", "source", "conf.py")
 
@@ -40,11 +40,12 @@ CONF_PATH = Path("doc", "source", "conf.py")
 def get_project_name(conf_path):
     """Parse file to retrieve documentation's project name."""
     res = None
-    with open(conf_path, "r") as conf_file:
+    with Path(conf_path).open("r") as conf_file:
         for line in conf_file:
             if line.strip().startswith(("project =", "project=")):
-                print(line)
-                res = re.search(r'project\s*=\s*[\'"](.+)[\'"]', line).group(1)
+                match = re.search(r'project\s*=\s*[\'"](.+)[\'"]', line)
+                if match:
+                    res = match.group(1)
                 break
     return res
 
@@ -65,10 +66,10 @@ if project_name:
     print(f"PDF file name: {pdf_file_name}")
 
     # Get the GITHUB_ENV variable
-    github_env = os.getenv("GITHUB_ENV")
+    github_env = os.environ["GITHUB_ENV"]
 
     # Append PDF_FILENAME with its value to GITHUB_ENV
-    with open(github_env, "a") as f:
+    with Path(github_env).open("a") as f:
         f.write(f"PDF_FILENAME={pdf_file_name}")
 else:
     warnings.warn(

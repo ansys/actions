@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -19,10 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Utilities for parsing pull request metadata and towncrier configuration."""
 
 import os
-import re
 from pathlib import Path
+import re
 
 import tomlkit
 from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
@@ -39,10 +40,10 @@ def save_env_variable(env_var_name: str, env_var_value: str):
         The value of the environment variable.
     """
     # Get the GITHUB_ENV variable
-    github_env = os.getenv("GITHUB_ENV")
+    github_env = os.environ["GITHUB_ENV"]
 
     # Save environment variable with its value
-    with open(github_env, "a") as file:
+    with Path(github_env).open("a") as file:
         if "\n" in env_var_value or "\r" in env_var_value:
             file.write(f"{env_var_name}<<EOF\n")
             file.write(env_var_value)
@@ -99,8 +100,8 @@ def has_title_breaking_changes(pr_title: str) -> bool:
         True if the pull request title indicates a breaking change, False otherwise.
     """
     colon_count = pr_title.count(":")
-    if colon_count != 1:
-        raise ValueError(f"Expected exactly one ':', found {colon_count}")
+    if colon_count < 1:
+        raise ValueError(f"Expected at least one ':', found {colon_count}")
 
     colon_index = pr_title.index(":")
     exclam_index = pr_title.find("!")
@@ -125,7 +126,20 @@ def has_body_breaking_changes(pr_body: str) -> bool:
         return False
 
     pattern = r"(?i)^breaking[- ]changes?:"
-    return any(re.match(pattern, line.strip()) for line in pr_body.splitlines())
+    # Ignore lines that are within HTML comments in the pull request body
+    in_html_comment = False
+    for line in pr_body.splitlines():
+        stripped = line.strip()
+        if "<!--" in stripped:
+            in_html_comment = True
+        if "-->" in stripped:
+            in_html_comment = False
+            continue
+        if in_html_comment:
+            continue
+        if re.match(pattern, stripped):
+            return True
+    return False
 
 
 def get_conventional_commit_type(pr_title: str, pr_body: str):
@@ -203,7 +217,8 @@ def changelog_categorize_based_on_labels(labels: str):
     """
     # Make sure the labels string is not surrounded by quotes and remove extra whitespace
     # and finally split the labels into a list.
-    # For example, '"enhancement maintenance"' -> "enhancement maintenance" -> ["enhancement", "maintenance"]
+    # For example, '"enhancement maintenance"' -> "enhancement maintenance" ->
+    # ["enhancement", "maintenance"]
     existing_labels = labels.strip('"').strip().split()
 
     # Dictionary with the key as a label from .github/workflows/label.yml and
@@ -220,9 +235,7 @@ def changelog_categorize_based_on_labels(labels: str):
     }
 
     # Save the changelog section to the CHANGELOG_SECTION environment variable
-    save_env_variable(
-        "CHANGELOG_SECTION", get_changelog_section(pr_labels, existing_labels)
-    )
+    save_env_variable("CHANGELOG_SECTION", get_changelog_section(pr_labels, existing_labels))
 
 
 def get_changelog_section(pr_labels: dict, existing_labels: list) -> str:
@@ -337,8 +350,10 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
             "repo": "<!-- towncrier release notes start -->\n",
         },
         "title_format": {
-            "web": f"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}>`_ - {{project_date}}",
-            "repo": f"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/v{{version}}) - {{project_date}}",
+            "web": f"`{{version}} <https://github.com/{org_name}/{repo_name}/releases/tag/"
+            f"v{{version}}>`_ - {{project_date}}",
+            "repo": f"## [{{version}}](https://github.com/{org_name}/{repo_name}/releases/tag/"
+            f"v{{version}}) - {{project_date}}",
         },
         "issue_format": {
             "web": f"`#{{issue}} <https://github.com/{org_name}/{repo_name}/pull/{{issue}}>`_",
@@ -460,9 +475,7 @@ def write_missing_types(config: dict, changelog_sections: list):
             # Parse a formatted string so the inline table has consistent
             # spacing (e.g. "{ key = val }") matching existing parsed entries.
             entry = tomlkit.value(
-                f'{{ directory = "{section}",'
-                f' name = "{section.title()}",'
-                f" showcontent = true }}"
+                f'{{ directory = "{section}", name = "{section.title()}", showcontent = true }}'
             )
         elif isinstance(types, AoT):
             entry = tomlkit.table()
@@ -548,9 +561,7 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
         # Restore trailing closer (e.g. the "\n]" line)
         for trailing in trailing_items:
             new_types._value.append(
-                _ArrayItemGroup(
-                    value=Null(), indent=trailing.indent, comma=None, comment=None
-                )
+                _ArrayItemGroup(value=Null(), indent=trailing.indent, comma=None, comment=None)
             )
     else:
         new_types = tomlkit.aot()
@@ -560,15 +571,15 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
     towncrier_section["type"] = new_types
 
 
-def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.toml"):
+def get_towncrier_config_value(category: str, pyproject_path: str | Path = "pyproject.toml"):
     """Get the value of a category within the [tool.towncrier] section of the pyproject.toml file.
 
     Parameters
-    -----------
+    ----------
     category: str
         The category name within the [tool.towncrier] section you want to obtain information about.
         For example, "filename" or "directory".
-    pyproject_path: str
+    pyproject_path: str | Path
         The path to the pyproject.toml file. By default, this is "pyproject.toml".
 
     Returns
@@ -599,14 +610,14 @@ def get_towncrier_config_value(category: str, pyproject_path: str = "pyproject.t
     return category_value
 
 
-def rewrite_template(template_path: None, file_name: None):
+def rewrite_template(template_path: str | None = None, file_name: str | None = None) -> bool:
     """Rewrite the template.jinja file with the default template.
 
     Parameters
     ----------
-    template_path: str
+    template_path: str | None
         The path to the template.jinja file to be rewritten.
-    file_name: str
+    file_name: str | None
         The name of the file to check if it ends with .md.
 
     Returns
@@ -621,8 +632,15 @@ def rewrite_template(template_path: None, file_name: None):
         # Path to the default template file in the repository
         default_template_path = Path(__file__).parent / "default_template.jinja"
 
+        if not default_template_path.is_file():
+            print(
+                f"Default template file not found at {default_template_path}. "
+                "Cannot rewrite template."
+            )
+            return False
+
         # Path to the template.jinja file to be rewritten
-        template_path = Path(template_path)
+        template_path: Path = Path(template_path)
 
         # If filename ends with .md, do not change the template
         if file_name.endswith(".md"):
@@ -630,11 +648,11 @@ def rewrite_template(template_path: None, file_name: None):
             return False
 
         # Read the content of the default template
-        default_template_content = read_file_content(default_template_path)
+        default_template_content = default_template_path.read_text()
 
         # Check if the content of the template.jinja file is the same as the default template
         if template_path.is_file():
-            template_content = read_file_content(template_path)
+            template_content = template_path.read_text()
             if template_content == default_template_content:
                 print("The template.jinja file is already the default template.")
                 return False
@@ -650,25 +668,6 @@ def rewrite_template(template_path: None, file_name: None):
     except Exception as e:
         print(f"An error occurred while rewriting the template.jinja file: {e}")
         return False
-
-
-def read_file_content(file_path: Path) -> str:
-    """Read the content of a file.
-
-    Parameters
-    ----------
-    file_path: Path
-        The path to the file to be read.
-
-    Returns
-    -------
-    str
-        The content of the file.
-    """
-    try:
-        return file_path.read_text()
-    except Exception as e:
-        print(f"An error occurred while reading the file: {e}")
 
 
 def write_file_content(file_path: Path, content: str):

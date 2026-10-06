@@ -1,7 +1,14 @@
 Ansys
 ansys
 automerge
+[Bb]acklinks?
+caio
+Chocolatey
+CA
+certifi's
 CI
+clr_loader
+[Cc]ookiecutter
 cooldown
 dependabot
 dev
@@ -9,6 +16,8 @@ dependabot
 fastcore
 ghapi
 GitHub
+lockfile
+MiKTeX
 prek
 pypa
 pytest
@@ -27,3 +36,4 @@ rulesets
 rst
 uv
 zizmor
+wcwidth

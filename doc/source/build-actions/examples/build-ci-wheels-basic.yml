@@ -1,6 +1,8 @@
 build-c-extension:
   name: "Build a C-extension library"
   runs-on: ${{ '{{ matrix.os }}' }}
+  permissions:
+    contents: read  # Required to checkout repository code when the repository is not public
   strategy:
      matrix:
          os: [ubuntu-latest, windows-latest, macos-11]

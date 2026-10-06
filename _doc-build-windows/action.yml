@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -26,9 +26,8 @@ name: |
 description: |
   Build library documentation using `Sphinx
   <https://www.sphinx-doc.org/en/master/>`_. The action installs documentation
-  dependencies provided either in a requirement file, e.g.
-  ``requirements/requirements_doc.txt``, or in the ``[doc]`` section of the
-  additional dependencies in the ``pyproject.toml`` file. Assuming that
+  dependencies defined in a requirement file, e.g. ``requirements/requirements_doc.txt``,
+  in a lockfile, or as extra/group dependencies in the ``pyproject.toml`` file. Assuming that
   `sphinx-build
   <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ is available
   after installing the documentation dependencies, the action uses it
@@ -148,11 +147,17 @@ inputs:
     required: true
     type: string
 
+  skip-latex-install:
+    description: |
+      Whether to skip the installation of LaTeX.
+    required: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -168,12 +173,12 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
           Install system dependencies. Even if no dependencies are provided,
-          Miktex is installed to build the documentation.
+          MiKTeX is installed at user level to build the documentation.
 
     - name: Collect system dependencies
       id: collect-system-dependencies
@@ -185,7 +190,7 @@ runs:
 
     - name: Cache Chocolatey packages
       id: cache
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       if: ${{ (inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
       with:
         path: ~\AppData\Local\Temp\chocolatey
@@ -197,13 +202,44 @@ runs:
       shell: powershell
       env:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
-      run: choco install $env:NEEDED_DEPS -y
+      run: |
+        $packages = $env:NEEDED_DEPS -split '\s+'
+        choco install $packages -y
 
-    - name: Install Miktex and update PATH with Miktex binaries
+    - name: Install MiKTeX and update PATH with MiKTeX binaries
+      if: ${{ inputs.skip-latex-install == 'false' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
-        choco install miktex -y
-        echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        # NOTE: Declared at script scope so it can be accessed inside function
+        $script:userMiKTeX = "$env:LocalAppData\Programs\MiKTeX\miktex\bin\x64"
+
+        function Invoke-MiKTeXCheck {
+          param(
+            [string]$InstallPath,
+            [string]$Level
+          )
+          Write-Host "MiKTeX already installed at $Level level, using existing installation."
+          $miktexVersion = & "$InstallPath\miktex.exe" --version
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Existing MiKTeX installation at $Level level is not working properly, reinstalling it at user level..."
+            choco install miktex --params '"/Set:basic /ThisUser"' -y --force
+            echo "$script:userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          } else {
+            Write-Host "Existing MiKTeX installation at $Level level is working properly (version: $miktexVersion)."
+            echo "$InstallPath" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          }
+        }
+
+        $systemMiKTeX = "C:\Program Files\MiKTeX\miktex\bin\x64"
+        if (Test-Path "$script:userMiKTeX\miktex.exe") {
+          Invoke-MiKTeXCheck -InstallPath $script:userMiKTeX -Level "user"
+        } elseif (Test-Path "$systemMiKTeX\miktex.exe") {
+          Invoke-MiKTeXCheck -InstallPath $systemMiKTeX -Level "system"
+        } else {
+          Write-Host "MiKTeX is not installed, installing it at user level..."
+          choco install miktex --params '"/Set:basic /ThisUser"' -y
+          echo "$script:userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        }
 
     - name: "Install Poppler for PDF to PNG conversion"
       if: ${{ inputs.needs-quarto == 'true' }}
@@ -221,16 +257,22 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
-          Set up Miktex to allow downloading missing packages when building documentation.
+          Set up MiKTeX to allow downloading missing packages when building documentation.
 
-    - name: Set up Miktex to automatically install packages
+    - name: Set up MiKTeX to automatically install packages
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
+
+    - name: Install additional packages for MiKTeX (known to be required for Quarto cheatsheet)
+      if: ${{ inputs.needs-quarto == 'true' }}
+      shell: powershell
+      run: |
+        mpm --install lm-math
 
     # ------------------------------------------------------------------------
 
@@ -242,7 +284,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -264,7 +306,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -272,7 +314,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -314,6 +356,28 @@ runs:
       shell: powershell
       run: python -m venv .venv
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: powershell
+      run: |
+        if (Test-Path "uv.lock") {
+          "USE_UV_LOCKFILE=true" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        } else {
+          "USE_UV_LOCKFILE=false" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        }
+
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: powershell
+      run: |
+        if (Test-Path ".python-version") {
+          Write-Host ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          Remove-Item ".python-version"
+        } else {
+          Write-Host ".python-version file not detected. No action required."
+        }
+
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
@@ -329,19 +393,27 @@ runs:
         }
 
     - name: "Check if requirements.txt file exists"
-      id: check-requirements-file-exists
+      id: check-exists-requirements-file
       shell: powershell
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
       run: |
         echo "EXISTS_DOC_REQUIREMENTS=$(if (Test-Path "$env:REQUIREMENTS_FILE") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
+    - uses: $/_logging
+      if: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          A uv.lock file was detected and a requirements file exists. Please, either use the
+          lock file or the requirements file, but not both.
+
     - name: Install documentation dependencies from requirements file
       shell: powershell
       env:
         REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
         USE_UV: ${{ inputs.use-uv }}
-      if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
+      if: ${{ steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:USE_UV -eq "true") {
@@ -355,63 +427,82 @@ runs:
       if: ${{ inputs.skip-install == 'false' }}
       env:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
           poetry install
         } elseif ($env:BUILD_BACKEND -eq "uv") {
-          uv pip install .
+          if ($env:USE_UV_LOCKFILE -eq "true") {
+            uv sync --frozen --no-default-groups
+          } else {
+            uv pip install .
+          }
         } else {
           python -m pip install .
         }
 
     - name: Install documentation dependencies from pyproject.toml
       shell: powershell
-      if: ${{ steps.check-requirements-file-exists.outputs.EXISTS_DOC_REQUIREMENTS == 'false' }}
+      if: ${{ steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'false' }}
       env:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
         GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
         OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         .venv\Scripts\Activate.ps1
         if ($env:BUILD_BACKEND -eq "poetry") {
           $arguments = @("install")
 
           if ($env:GROUP_DEPENDENCIES_NAME) {
-              $arguments += @("--with", "$env:GROUP_DEPENDENCIES_NAME")
+            $arguments += @("--with", "$env:GROUP_DEPENDENCIES_NAME")
           }
           if ($env:OPTIONAL_DEPENDENCIES_NAME) {
-              $arguments += @("--extras", "$env:OPTIONAL_DEPENDENCIES_NAME")
+            $arguments += @("--extras", "$env:OPTIONAL_DEPENDENCIES_NAME")
           }
 
           poetry @arguments
         }
         else {
-          # Optional dependencies
-          $optional_dependencies_flag = ""
+          # Optional dependencies handling
+          $extra_dependencies_flags = @()
+          $project_spec = "."
           if ($env:OPTIONAL_DEPENDENCIES_NAME) {
-              $optional_dependencies_flag = "[{0}]" -f $env:OPTIONAL_DEPENDENCIES_NAME
+            if ($env:BUILD_BACKEND -eq "uv" -and $env:USE_UV_LOCKFILE -eq "true") {
+              $extras = $env:OPTIONAL_DEPENDENCIES_NAME -split ','
+              foreach ($extra in $extras) {
+                $extra_dependencies_flags += "--extra"
+                $extra_dependencies_flags += $extra
+              }
+            } else {
+              $project_spec = ".[${env:OPTIONAL_DEPENDENCIES_NAME}]"
+            }
           }
-          # Group dependencies
+          # Group dependencies handling
           $group_dependencies_flag = @()
           if ($env:GROUP_DEPENDENCIES_NAME) {
-              $groups = $env:GROUP_DEPENDENCIES_NAME -split ','
-              foreach ($group in $groups) {
-                  $group_dependencies_flag += "--group"
-                  $group_dependencies_flag += $group
-              }
+            $groups = $env:GROUP_DEPENDENCIES_NAME -split ','
+            foreach ($group in $groups) {
+              $group_dependencies_flag += "--group"
+              $group_dependencies_flag += $group
+            }
           }
           # Install dependencies (potentially mix of optional and group)
           if ($env:BUILD_BACKEND -eq "uv") {
-              uv pip install @group_dependencies_flag ".${optional_dependencies_flag}"
+            if ($env:USE_UV_LOCKFILE -eq "true") {
+              uv sync --frozen --no-default-groups @group_dependencies_flag @extra_dependencies_flags
+            } else {
+              uv pip install @group_dependencies_flag $project_spec
+            }
           } else {
-              python -m pip install @group_dependencies_flag ".${optional_dependencies_flag}"
+            python -m pip install @group_dependencies_flag $project_spec
           }
         }
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -452,7 +543,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -466,14 +557,14 @@ runs:
         .venv\Scripts\Activate.ps1
         python ${env:GITHUB_ACTION_PATH}\..\python-utils\parse_doc_conf.py
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
       with:
         level: "ERROR"
         message: >
           Unable to determine PDF filename using conf.py file.
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
       with:
         level: "INFO"
@@ -482,7 +573,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -502,7 +593,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_BUILD_DIR=$(if (Test-Path "$env:EXPECTED_BUILD_DIR") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-build-directory.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
       with:
         level: "ERROR"
@@ -527,7 +618,7 @@ runs:
       run: |
         echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$(if (Test-Path "$env:EXPECTED_DOWNLOAD_DIR") { echo 'true' } else { echo 'false' })" | Out-File -Append -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.set-exists-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
       with:
         level: "WARNING"
@@ -565,7 +656,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
       with:
         level: "INFO"
@@ -591,21 +682,21 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
           Upload HTML and PDF
 
     - name: Upload HTML documentation artifact
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: Upload PDF documentation artifact
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf

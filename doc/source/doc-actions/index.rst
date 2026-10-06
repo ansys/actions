@@ -32,6 +32,12 @@ Doc deploy pr action
 .. jinja:: doc-deploy-pr
     :file: _templates/action.rst.jinja
 
+Doc deploy custom path action
+------------------------------
+
+.. jinja:: doc-deploy-custom-path
+    :file: _templates/action.rst.jinja
+
 Doc changelog action
 --------------------
 

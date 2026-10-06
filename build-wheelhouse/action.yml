@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -113,6 +113,16 @@ inputs:
     default: true
     type: boolean
 
+  checkout-lfs:
+    description: |
+      Whether to download Git LFS-tracked files during the checkout step.
+      Enable this when the repository stores package data files tracked with
+      Git LFS that must be included in the built wheelhouse. Only applies
+      when ``checkout`` is ``true``. Default value is ``false``.
+    required: false
+    default: false
+    type: boolean
+
   working-directory:
      description: |
        Directory to execute this action. Useful for repositories containing
@@ -149,6 +159,23 @@ inputs:
     required: false
     type: boolean
 
+  skip-python-setup:
+    description: |
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
+
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
+    required: false
+    default: false
+    type: boolean
+
 outputs:
 
   activate-venv:
@@ -162,19 +189,34 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "${{ inputs.attest-provenance == 'true' && 'contents: read, id-token: write, attestations: write' || 'contents: read' }}"
+        doc-url: "https://actions.docs.ansys.com/version/stable/build-actions/index.html#build-wheelhouse-action"
+
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+        lfs: ${{ inputs.checkout-lfs }}
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      if: ${{ inputs.skip-python-setup == 'false' }}
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
+
+    - uses: $/_logging
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
 
     - name: "Identify the build system"
       id: build-system
@@ -265,10 +307,39 @@ runs:
           python -m pip install -U pip
         fi
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/.python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          rm "${WORKING_DIRECTORY}/.python-version"
+        else
+          echo ".python-version file not detected. No action required."
+        fi
+
     - name: "Install the library with the desired targets"
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
+        TARGET: ${{ inputs.target }}
+        USE_UV: ${{ inputs.use-uv }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
@@ -277,7 +348,16 @@ runs:
         ${ACTIVATE_VENV}
         cd ${WORKING_DIRECTORY}
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install ${INSTALL_TARGET}
+          poetry install --only main ${INSTALL_TARGET}
+        elif [[ "${USE_UV}" == 'true' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
+          SYNC_OPTIONS="--no-default-groups"
+          SYNC_OPTIONS+=$( [[ "${TARGET}" != '' ]] && echo " --extra ${TARGET}" || echo "" )
+          # NOTE: --active is only needed when the working directory is not the root of the repository.
+          # This is because uv sync works with the project environment path and since the virtual
+          # environment is created in the root of the repository, uv sync needs to be told to use the
+          # active environment when the working directory is not the root.
+          SYNC_OPTIONS+=$( [[ "${WORKING_DIRECTORY}" != '.' ]] && echo " --active" || echo "" )
+          uv sync --frozen $SYNC_OPTIONS
         else
            ${INSTALL_COMMAND} "${INSTALL_TARGET}"
         fi
@@ -349,12 +429,14 @@ runs:
         WHEELHOUSE_TARGET: ${{ steps.specific-target-requested.outputs.wheelhouse_target }}
         OPERATING_SYSTEM: ${{ inputs.operating-system }}
         PYTHON_VERSION: ${{ inputs.python-version }}
+        SYFT_VERSION: "1.51.1"
+        SYFT_GIT_SHA: "91a0032987d91b7411b52f6f5c185c5e7f775495"
       shell: bash
       run: |
         if ! command -v syft > /dev/null; then
-          echo "Syft not found, installation of v1.26.0 in progress..."
+          echo "Syft not found, installation of v${SYFT_VERSION} in progress..."
           mkdir -p ~/.local/bin
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/ac883f52edb8ca1f5a0a61d12c288d4b34ea3897/install.sh | sh -s -- -b ~/.local/bin v1.26.0
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/${SYFT_GIT_SHA}/install.sh | sh -s -- -b ~/.local/bin v${SYFT_VERSION}
         else
           echo "Syft installation found"
         fi
@@ -366,7 +448,7 @@ runs:
         mv sbom.spdx "${SANITIZED_LIBRARY_NAME}-v${LIBRARY_VERSION}-${WHEELHOUSE_TARGET}-${OPERATING_SYSTEM}-${PYTHON_VERSION}-sbom.spdx"
 
     - name: "Upload the SBOM file"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom
         path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
@@ -374,7 +456,7 @@ runs:
 
     - name: Generate build provenance attestation
       if: ${{ inputs.attest-provenance == 'true' }}
-      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
       with:
         subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-sbom.spdx
 
@@ -383,10 +465,19 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
         ${ACTIVATE_VENV}
-        $INSTALL_COMMAND build wheel
+        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+          # Scope build tooling to a non-main group so poetry export skips it and it stays out of the wheelhouse.
+          grep -v '^\s*#' "${GITHUB_ACTION_PATH}/requirements.txt" | grep -v '^\s*$' | grep -v '^\s' | while read -r line; do
+            poetry add "${line//\'/\"}" --group build-and-wheel --lock
+          done
+          poetry install
+        else
+          $INSTALL_COMMAND -r ${GITHUB_ACTION_PATH}/requirements.txt
+        fi
 
     - name: "Generate the wheelhouse"
       shell: bash
@@ -396,6 +487,8 @@ runs:
         INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
         GITHUB_WORKSPACE: ${{ github.workspace }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
+        TARGET: ${{ inputs.target }}
       run: |
         ${ACTIVATE_VENV}
         cd ${WORKING_DIRECTORY}
@@ -403,7 +496,14 @@ runs:
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
           pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
         else
-          python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
+          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+            EXPORT_OPTIONS="--format=requirements.txt --no-hashes --no-default-groups"
+            EXPORT_OPTIONS+=$( [[ "${TARGET}" != '' ]] && echo " --extra ${TARGET}" || echo "" )
+            uv export $EXPORT_OPTIONS --output-file=wheel_reqs.txt --frozen
+            python -m pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
+          else
+            python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
+          fi
         fi
 
     - name: "Compress the wheelhouse"
@@ -413,7 +513,7 @@ runs:
         dest: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: "Upload the compressed wheelhouse"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}
         path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
@@ -421,12 +521,12 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
       with:
         subject-path: ${{ steps.sanitize.outputs.sanitized_library_name }}-v${{ steps.library-version.outputs.library_version }}-${{ steps.specific-target-requested.outputs.wheelhouse_target }}-${{ inputs.operating-system }}-${{ inputs.python-version }}.zip
 
     - name: Check library's dependencies license
-      uses: ansys/actions/check-licenses@main
+      uses: $/check-licenses
       if: ${{ inputs.check-licenses == 'true' }}
       with:
         python-version: ${{ inputs.python-version }}

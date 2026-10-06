@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -19,21 +19,52 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Utilities for generating GitHub release notes from a changelog."""
 
-import re
+import fnmatch
 from pathlib import Path
+import re
 
-import pypandoc
 from parse_pr import get_towncrier_config_value, save_env_variable
+import pypandoc
 
-"""Semantic version regex as found on semver.org:
-https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string"""
+# Semantic version regex as found on semver.org:
+# https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 SEMVER_REGEX = (
     r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
     r"(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)"
     r"(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
     r"(?:\+(>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
 )
+
+TAB_ITEM_REGEX = re.compile(r"^\s*\.\.\s+tab-item::\s+(.+?)\s*$", re.MULTILINE)
+
+
+def promote_tab_titles(rst_body: str, markdown_body: str) -> str:
+    """Turn the ``tab-item`` titles of a changelog section into markdown headers.
+
+    Parameters
+    ----------
+    rst_body: str
+        The rst content of the changelog section.
+    markdown_body: str
+        The same content, converted to markdown by pandoc.
+
+    Returns
+    -------
+    str
+        The markdown content with the tab titles as headers.
+    """
+    titles = set(TAB_ITEM_REGEX.findall(rst_body))
+
+    if not titles:
+        return markdown_body
+
+    return "\n".join(
+        # Pandoc escapes markdown special characters in paragraphs
+        f"## {line}" if line.strip().replace("\\", "") in titles else line
+        for line in markdown_body.split("\n")
+    )
 
 
 def get_pattern(content: str, section_title_regex: str) -> str:
@@ -114,20 +145,24 @@ def get_tag_section(changelog_file: Path, body: str) -> str:
             # Find the first section title and content
             match = re.search(pattern, content)
 
-            # Access the match group containing the section title and content
-            # The match.group() could look like this, for example:
-            # `0.1.2 <https://github.com/ansys/.../releases/tag/v0.1.2>`_ - 2024-10-30
-            # ========================================================================
-            #
-            # Added
-            # ^^^^^
-            #
-            # - New feature `#1234 <https://github.com/ansys/.../pull/1234>`_
-            body = match.group()
+            if match is None:
+                print("Cannot find a section title from content.")
+            else:
+                # Access the match group containing the section title and content
+                # The match.group() could look like this, for example:
+                # `0.1.2 <https://github.com/ansys/.../releases/tag/v0.1.2>`_ - 2024-10-30
+                # ========================================================================
+                #
+                # Added
+                # ^^^^^
+                #
+                # - New feature `#1234 <https://github.com/ansys/.../pull/1234>`_
+                body = match.group()
 
-            # Convert rst to markdown
-            if file_type.lower() == "rst":
-                body = pypandoc.convert_text(body, "markdown_strict", format="rst")
+                # Convert rst to markdown
+                if file_type.lower() == "rst":
+                    markdown_body = pypandoc.convert_text(body, "markdown_strict", format="rst")
+                    body = promote_tab_titles(body, markdown_body)
         else:
             print("Cannot generate release notes from changelog file.")
 
@@ -139,7 +174,7 @@ def get_tag_section(changelog_file: Path, body: str) -> str:
 
 
 def get_release_notes(pyproject_path: Path):
-    """Main function to create release notes from the changelog file.
+    """Create release notes from the changelog file.
 
     Parameters
     ----------
@@ -157,3 +192,29 @@ def get_release_notes(pyproject_path: Path):
 
     # Save the env variable
     save_env_variable("RELEASE_NOTES_BODY", body)
+
+
+def filter_dist_files(dist_filter: str) -> None:
+    """Filter files in wheelhouse and SBOM distribution directories.
+
+    Files that do not match any of the provided glob patterns are deleted.
+
+    Parameters
+    ----------
+    dist_filter: str
+        Comma-separated list of glob patterns to keep (e.g. ``'*all*,*graphics*'``).
+    """
+    directories = [Path("dist/wheelhouse"), Path("dist/sbom")]
+
+    patterns = [p.strip() for p in dist_filter.split(",") if p.strip()]
+
+    for directory in directories:
+        if not directory.is_dir():
+            continue
+        print(f"Filtering in {directory} with patterns: {dist_filter}")
+        for file in directory.rglob("*"):
+            if not file.is_file():
+                continue
+            if not any(fnmatch.fnmatch(file.name, pattern) for pattern in patterns):
+                print(f"  Removing: {file}")
+                file.unlink()

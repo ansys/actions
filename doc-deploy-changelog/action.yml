@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -24,17 +24,28 @@ name: |
   Build CHANGELOG from towncrier fragment files
 
 description: |
-  Builds the CHANGELOG using ``towncrier`` fragment files for the tagged version.
-  Creates a pull request into main with the CHANGELOG updates and deleted
-  towncrier fragment files.
+  Builds the CHANGELOG using ``towncrier`` fragment files for the tagged version,
+  commits the changes, creates a pull request into main when required, and updates
+  the release tag to reference the changelog commit.
 
   This action will only work on Linux/macOS runners.
 
-  Pushing a release tag results in this action running twice:
+  By default, pushing a release tag results in this action running twice:
 
   - Once to run ``towncrier`` and consolidate the changelog fragment files
     into a single update of the CHANGELOG file.
   - Once to release the package after the CHANGELOG file has been updated.
+
+  Projects using protected GitHub environments can instead enable ``same-workflow``.
+  This keeps the release in the workflow initiated by the original tag pusher, allowing
+  environment rules such as **Prevent self-review** to identify that user correctly.
+  In this mode, the action completes successfully and provides the final tagged commit
+  through the ``release-commit-sha`` output.
+
+  Same-workflow mode requires the repository's ``GITHUB_TOKEN``. Downstream jobs that
+  read repository content must explicitly check out ``release-commit-sha`` instead of
+  relying on ``github.sha``. See :ref:`same_workflow_release` for a complete release
+  workflow.
 
   There are two options when making a release for your repository:
 
@@ -61,8 +72,12 @@ description: |
   on the remote, create the new tag locally, and push the tag on the remote.
   Delete the temporary branch if one was used to update the CHANGELOG file.
 
-  e) Exit on error if the CHANGELOG is updated, so that the package is not released from
-  this instance of the workflow.
+  e) When ``same-workflow`` is ``false``, exit on error if the CHANGELOG is updated,
+  so that the package is not released from this instance of the workflow. The recreated
+  tag starts a new workflow run.
+
+  f) When ``same-workflow`` is ``true``, complete successfully and return the recreated
+  tag's commit through the ``release-commit-sha`` output.
 
   2. You pushed a tag from the main branch (``release-from-main`` is ``true``)
 
@@ -74,13 +89,26 @@ description: |
   b) Checkout the main branch, delete the tag locally and on the remote,
   create the new tag locally, and push the new tag on the remote.
 
-  c) Exit on error if the CHANGELOG is updated, so that the package is not released from
-  this instance of the workflow.
+  c) When ``same-workflow`` is ``false``, exit on error if the CHANGELOG is updated,
+  so that the package is not released from this instance of the workflow. The recreated
+  tag starts a new workflow run.
+
+  d) When ``same-workflow`` is ``true``, complete successfully and return the recreated
+  tag's commit through the ``release-commit-sha`` output.
 
   .. important:: **Required GitHub Permissions**
 
      - **contents**: ``write`` - Required to push commits, delete and create tags
      - **pull-requests**: ``write`` - Required to create pull requests
+
+  .. important:: **Same-workflow releases**
+
+    When ``same-workflow`` is enabled, pass the repository's ``GITHUB_TOKEN``. GitHub
+    does not create another workflow run for a tag pushed with this token. A personal
+    access token or GitHub App token can create a duplicate run.
+
+    Downstream jobs must check out the commit from the ``release-commit-sha`` output
+    rather than relying on ``github.sha``.
 
 
 inputs:
@@ -88,21 +116,27 @@ inputs:
 
   token:
     description: |
-      Use the PYANSYS_CI_BOT_TOKEN to do a git commit & push.
-      The "contents: write" and "pull-requests: write" permissions
-      are required for this action.
+      Token used to commit, push, and create the changelog pull request. Use
+      ``PYANSYS_CI_BOT_TOKEN`` for the default two-workflow behavior. When
+      ``same-workflow`` is ``true``, use the repository's ``GITHUB_TOKEN`` to
+      prevent the recreated tag from starting a duplicate workflow.
+
+      The ``contents: write`` and ``pull-requests: write`` permissions are
+      required for this action.
     required: true
     type: string
 
   bot-user:
     description: |
-      Use the PYANSYS_CI_BOT_USERNAME as the user for a git commit & push.
+      User name for the changelog commit. Use ``PYANSYS_CI_BOT_USERNAME`` for
+      the default behavior or ``github-actions[bot]`` with ``GITHUB_TOKEN``.
     required: true
     type: string
 
   bot-email:
     description: |
-      Use the PYANSYS_CI_BOT_EMAIL as the email for a git commit & push.
+      Email address for the changelog commit. Use ``PYANSYS_CI_BOT_EMAIL`` for
+      the default behavior or the GitHub Actions bot email with ``GITHUB_TOKEN``.
     required: true
     type: string
 
@@ -111,28 +145,28 @@ inputs:
   python-version:
     description: |
       Python version used for setting up Python.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
-  towncrier-version:
+  towncrier-version:  # TODO: Remove deprecated input in v12
     description: |
-      Towncrier version used for updating the CHANGELOG file.
-    default: '24.8.0'
-    required: false
-    type: string
-
-  toml-version: # TODO: Remove deprecated input in v11
-    description: |
-      Toml version used for retrieving the towncrier directory.
+      DEPRECATED ARGUMENT. Towncrier version used for updating the CHANGELOG file.
     default: ''
     required: false
     type: string
 
-  tomli-version:
+  tomli-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomli version used for retrieving the towncrier directory.
-    default: '2.2.1'
+      DEPRECATED ARGUMENT. Tomli version used for retrieving the towncrier directory.
+    default: ''
+    required: false
+    type: string
+
+  tomlkit-version:  # TODO: Remove deprecated input in v12
+    description: |
+      DEPRECATED ARGUMENT. Tomlkit version used for reading and writing the towncrier configuration.
+    default: ''
     required: false
     type: string
 
@@ -152,6 +186,27 @@ inputs:
       If ``true``, you pushed a tag from the main branch.
 
       See the description for more information about each of the options.
+    required: false
+    default: false
+    type: boolean
+
+  same-workflow:
+    description: |
+      Whether to continue the workflow run started by the original release tag push
+      after the changelog commit and release tag are updated.
+
+      Enable this option when subsequent release jobs must retain the identity of the
+      user who pushed the original tag. This is particularly useful for protected GitHub
+      environments that prevent users from approving their own deployments.
+
+      If ``false``, the action retains its legacy behavior: after updating the changelog
+      and recreating the tag, it stops the current workflow so that the new tag push starts
+      another workflow run.
+
+      If ``true``, use ``GITHUB_TOKEN`` so that recreating the tag does not start a
+      duplicate workflow. Downstream jobs must check out the commit identified by the
+      ``release-commit-sha`` output. See :ref:`same_workflow_release` for the complete
+      setup and example workflows.
     required: false
     default: false
     type: boolean
@@ -187,44 +242,85 @@ inputs:
     default: true
     type: boolean
 
+outputs:
+
+  release-commit-sha:
+    description: Commit SHA referenced by the final release tag.
+    value: ${{ steps.release-commit.outputs.RELEASE_COMMIT_SHA }}
+
 runs:
   using: "composite"
   steps:
+
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-changelog-action"
+
+    - uses: $/_logging # TODO: Remove in v12
+      if: inputs.tomli-version != ''
+      with:
+        level: "ERROR"
+        message: >
+          Due to loss of information during parsing, including formatting and comments, the
+          ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
+          will be removed in v12.
+
+    - uses: $/_logging
+      if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
+      with:
+        level: "ERROR"
+        message: >
+          Due to dependency changes breaking the actions and the need to manage which version
+          of dependencies are used in the actions, the ``towncrier-version`` and
+          ``tomlkit-version`` inputs are deprecated and will be removed in v12.
+
     - name: "Install Git and clone project"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         token: ${{ inputs.token }}
         fetch-depth: 0 # zizmor: ignore[artipacked] , credentials must be persisted in this case
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: false
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: Save tag version
+    - name: Save tag version and check if pre-release
       id: save-tag-version
       shell: bash
       run: |
         # /refs/tags/v0.1.0 -> 0.1.0
-        echo "TAG_VERSION=${GITHUB_REF##*/v}" >> ${GITHUB_OUTPUT}
+        tag_version=${GITHUB_REF##*/v}
+        echo "TAG_VERSION=$tag_version" >> ${GITHUB_OUTPUT}
 
-    - name: "Install towncrier, toml, and the project"
-      env:
-        TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOMLI_VERSION: ${{ inputs.tomli-version }}
+        # Check if the tag is a pre-release
+        if [[ $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+           echo "IS_PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
+        elif [[ $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$ ]]; then
+           echo "IS_PRE_RELEASE=true" >> ${GITHUB_OUTPUT}
+        else
+           echo "Error: '${tag_version}' is not a valid release or pre-release tag."
+           exit 1
+        fi
+
+    - name: "Install towncrier, tomlkit, and the project"
       shell: bash
       run: |
-        python -m pip install --upgrade pip towncrier=="${TOWNCRIER_VERSION}" tomli=="${TOMLI_VERSION}"
+        python -m pip install --upgrade pip
+        python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Get towncrier directory and project name"
       shell: python
       run: |
         import pathlib
         import os
-        import tomli
+        import tomlkit
 
         # Identify towncrier configuration file
         pyproject_file = pathlib.Path("pyproject.toml")
@@ -237,7 +333,7 @@ runs:
 
         # Load pyproject.toml
         with open(towncrier_config, 'rb') as f:
-            config = tomli.load(f)
+            config = tomlkit.load(f)
             directory = config["tool"]["towncrier"]["directory"]
             project_name = config["tool"]["towncrier"].get("package")
 
@@ -321,6 +417,7 @@ runs:
       id: new-section-changelog
       env:
         TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
+        IS_PRE_RELEASE: ${{ steps.save-tag-version.outputs.IS_PRE_RELEASE }}
         UPDATE_BRANCH: ${{ steps.set-branch-changelog.outputs.UPDATE_BRANCH }}
         RELEASE_BRANCH_EXISTS: ${{ steps.set-branch-changelog.outputs.RELEASE_BRANCH_EXISTS }}
         BOT_USER: ${{ inputs.bot-user }}
@@ -342,21 +439,29 @@ runs:
 
           # Run towncrier with the tag specified
           # Update changelog with the tag version
-          buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          if [[ "${IS_PRE_RELEASE}" == "true" ]]; then
+            echo "Creating CHANGELOG section for pre-release version ${TAG_VERSION}"
+            buildcmd=$(towncrier build --keep --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          else
+            echo "Creating CHANGELOG section for version ${TAG_VERSION}"
+            buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+          fi
+
+          cat builderr.txt
           section_exists_err=$(grep "already produced newsfiles for this version" builderr.txt || true)
 
           # Remove builderr.txt
           rm builderr.txt
 
-          if [ -n "$section_exists_err" ]; then
+          if [ -n "$section_exists_err" ] && [[ "${IS_PRE_RELEASE}" == "false" ]]; then
             # Print error message on how to fix this
-            message="Your changelog file already contains section ${TAG_VERSION} in the \
-            ${UPDATE_BRANCH} branch. Please checkout ${UPDATE_BRANCH}, revert \
-            the commit named 'chore: updating CHANGELOG for v${TAG_VERSION}', and \
-            re-run the workflow."
+            message="Your changelog file already contains section ${TAG_VERSION} in the ${UPDATE_BRANCH} branch. Please checkout ${UPDATE_BRANCH}, revert the commit named 'chore: updating CHANGELOG for v${TAG_VERSION}', and re-run the workflow."
 
             echo -e "\033[1;91m[ERROR]: $message\033[0m"
             exit 1
+          elif [ -n "$section_exists_err" ] && [[ "${IS_PRE_RELEASE}" == "true" ]]; then
+            echo "Changelog section for pre-release version ${TAG_VERSION} already exists. This is expected behavior for pre-releases, so the workflow will continue without exiting with an error."
+            exit 0
           fi
 
           # Configure git username & email
@@ -450,7 +555,20 @@ runs:
         > [!CAUTION]
         > Do not merge this pull request until the release has been successfully made."
 
-        gh pr create --title "$pr_title" --body "${body_msg}" --reviewer "${GITHUB_ACTOR}"
+        pr_url=$(gh pr create --title "$pr_title" --body "${body_msg}")
+        echo "Created pull request: ${pr_url}"
+
+        if reviewer_output=$(gh pr edit "${pr_url}" --add-reviewer "${GITHUB_ACTOR}" 2>&1); then
+          echo "Requested review from ${GITHUB_ACTOR}"
+        else
+          echo "Reviewer assignment failed; retrying once."
+          if reviewer_output=$(gh pr edit "${pr_url}" --add-reviewer "${GITHUB_ACTOR}" 2>&1); then
+            echo "Requested review from ${GITHUB_ACTOR} on retry"
+          else
+            echo "::warning::Unable to request a review from ${GITHUB_ACTOR} after two attempts. The pull request was created successfully."
+            printf '%s\n' "${reviewer_output}" >&2
+          fi
+        fi
 
     - name: "Delete & Re-create tag"
       env:
@@ -482,5 +600,16 @@ runs:
             git push origin --delete "${UPDATE_BRANCH}"
           fi
 
-          # Exit on error if the CHANGELOG is updated to prevent the release action from running
-          exit 1
+    - name: "Resolve release commit"
+      id: release-commit
+      env:
+        TAG_VERSION: ${{ steps.save-tag-version.outputs.TAG_VERSION }}
+      shell: bash
+      run: |
+        release_commit_sha=$(git rev-parse "v${TAG_VERSION}^{commit}")
+        echo "RELEASE_COMMIT_SHA=${release_commit_sha}" >> "${GITHUB_OUTPUT}"
+
+    - name: "Stop the original release workflow"
+      if: ${{ steps.new-section-changelog.outputs.UPDATED_CHANGELOG == 'true' && inputs.same-workflow != 'true' }}
+      shell: bash
+      run: exit 1

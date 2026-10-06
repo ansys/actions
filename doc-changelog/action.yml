@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,7 +32,7 @@ description: |
   .. important:: **Required GitHub Permissions**
 
      - **contents**: ``write`` - Required to commit and push changelog fragments
-     - **pull-requests**: ``read`` - Required to read pull request labels via GitHub API
+     - **pull-requests**: ``write`` - Required to add comments on pull requests
 
 inputs:
   # Required inputs
@@ -62,35 +62,28 @@ inputs:
   python-version:
     description: |
       Python version used for setting up Python.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
-  towncrier-version:
+  towncrier-version:  # TODO: Remove deprecated input in v12
     description: |
-      Towncrier version used for creating fragment files.
-    default: '24.8.0'
-    required: false
-    type: string
-
-  toml-version: # TODO: Remove deprecated input in v11
-    description: |
-      Toml version used for retrieving the towncrier directory.
+      DEPRECATED ARGUMENT. Towncrier version used for creating fragment files.
     default: ''
     required: false
     type: string
 
   tomli-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomli version used for retrieving the towncrier directory.
-    default: '2.2.1'
+      DEPRECATED ARGUMENT. Tomli version used for retrieving the towncrier directory.
+    default: ''
     required: false
     type: string
 
-  tomlkit-version:
+  tomlkit-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomlkit version used for reading and writing the towncrier configuration.
-    default: '0.14.0'
+      DEPRECATED ARGUMENT. Tomlkit version used for reading and writing the towncrier configuration.
+    default: ''
     required: false
     type: string
 
@@ -114,7 +107,7 @@ inputs:
 
   use-conventional-commits: # TODO: Remove deprecated input in v12
     description: |
-      [DEPRECATED] Use pull request title to determine the changelog category based on
+      DEPRECATED ARGUMENT. Use pull request title to determine the changelog category based on
       conventional commits. If ``false``, the labels in the pull request are used
       to determine the changelog category.
     required: false
@@ -146,33 +139,38 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
-      if: inputs.toml-version != ''
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
       with:
-        level: "ERROR"
-        message: >
-          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
-          is no longer used because it cannot parse ``pyproject.toml`` files where groups
-          include other groups. This action now uses the ``tomli`` library instead. If you
-          want to use a specific version of ``tomli``, please set the ``tomli-version``
-          input accordingly. The ``toml-version`` input will be removed in v11.
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-changelog-action"
 
-    - uses: ansys/actions/_logging@main # Switch logging level to ERROR in v12
+    - uses: $/_logging # TODO: Remove in v12
       if: inputs.use-conventional-commits != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
           The ``use-conventional-commits`` input is deprecated and will be removed in v12.
           Please use the ``use-pull-request-title`` input instead.
 
-    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
+    - uses: $/_logging # TODO: Remove in v12
       if: inputs.tomli-version != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
-          The ``tomli-version`` input is deprecated and will be removed in v12.
-          This action now uses the ``tomlkit`` library instead. Please use the
-          ``tomlkit-version`` input accordingly.
+          Due to loss of information during parsing, including formatting and comments, the
+          ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
+          will be removed in v12.
+
+    - uses: $/_logging
+      if: inputs.towncrier-version != '' || inputs.tomlkit-version != ''
+      with:
+        level: "ERROR"
+        message: >
+          Due to dependency changes breaking the actions and the need to manage which version
+          of dependencies are used in the actions, the ``towncrier-version`` and
+          ``tomlkit-version`` inputs are deprecated and will be removed in v12.
 
     - name: "Mapping to env vars"
       shell: bash
@@ -190,14 +188,14 @@ runs:
     - name: "Install Git and clone project"
       env:
         PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         # Required to checkout branch from origin rather than remote
         ref: ${{ env.PR_BRANCH }}
         token: ${{ inputs.token }} # zizmor: ignore[artipacked] , credentials should be persisted
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -207,11 +205,10 @@ runs:
     - name: "Install towncrier and tomlkit"
       shell: bash
       env:
-        TOWNCRIER_VERSION: ${{ inputs.towncrier-version }}
-        TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} --upgrade pip towncrier==${TOWNCRIER_VERSION} tomlkit==${TOMLKIT_VERSION}
+        ${INSTALL_COMMAND} --upgrade pip
+        ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Get first letter of conventional commit type"
       if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
@@ -232,13 +229,13 @@ runs:
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ (steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'lowercase') }}
-      uses: ansys/actions/check-pr-title@main
+      uses: $/check-pr-title
       with:
         token: ${{ inputs.token }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
       if: ${{ (steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'uppercase') }}
-      uses: ansys/actions/check-pr-title@main
+      uses: $/check-pr-title
       with:
         token: ${{ inputs.token }}
         use-upper-case: true

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -91,20 +91,12 @@ inputs:
     default: false
     type: boolean
 
-  skip-existing:
-    description: |
-      Continue uploading files if one already exists. Only valid when uploading
-      to PyPI. Other implementations may not support this.
-    required: false
-    default: true
-    type: boolean
-
   python-version:
     description: |
       Python version for installing and using `twine
       <https://twine.readthedocs.io/en/stable/>`_.
     required: false
-    default: '3.11'
+    default: '3.12'
     type: string
 
   index-name:
@@ -114,12 +106,20 @@ inputs:
     default: "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/upload"
     type: string
 
+  verify-tag-version:
+    description: |
+      Verify that the git ref that triggered the workflow is the same as the version
+      of the package being uploaded.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
 
     - name: "Release to PyAnsys private index"
-      uses: ansys/actions/_release-pypi@main
+      uses: $/_release-pypi
       with:
         library-name: ${{ inputs.library-name }}
         index-name: ${{ inputs.index-name }}
@@ -127,5 +127,6 @@ runs:
         twine-token: ${{ inputs.twine-token }}
         python-version: ${{ inputs.python-version }}
         dry-run: ${{ inputs.dry-run }}
-        skip-existing: ${{ inputs.skip-existing }}
         use-trusted-publisher: ${{ inputs.use-trusted-publisher }}
+        verify-tag-version: ${{ inputs.verify-tag-version }}
+        use-uv: true

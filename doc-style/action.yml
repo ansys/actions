@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -46,9 +46,46 @@ inputs:
 
   # Optional inputs
 
+  python-version:
+    description: |
+      Python version used to parse the ``pyproject.toml`` file and retrieve the towncrier
+      directory.
+    default: '3.12'
+    required: false
+    type: string
+
+  use-python-cache:
+    description: |
+      Whether to use the Python cache for installing previously downloaded
+      libraries. If ``true``, previously downloaded libraries are installed from the
+      Python cache. If ``false``, libraries are downloaded from the PyPI index.
+    required: false
+    default: true
+    type: boolean
+
+  skip-python-setup:
+    description: |
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
+
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
+    required: false
+    default: false
+    type: boolean
+
   files:
     description: |
-      Path to the directory containing the documentation files.
+      Path to the documentation files to check. You can pass a directory path
+      (for example ``doc``) or a JSON-formatted array of file paths
+      (for example ``["doc/source/index.rst", "doc/source/getting-started.rst"]``)
+      to lint multiple explicit files.
     default: 'doc'
     required: false
     type: string
@@ -67,24 +104,17 @@ inputs:
     required: false
     type: string
 
-  toml-version: # TODO: Remove deprecated input in v11
+  tomli-version:  # TODO: Remove deprecated input in v12
     description: |
-      Toml version used for retrieving the towncrier directory.
+      DEPRECATED ARGUMENT. Tomli version used for retrieving the towncrier directory.
     default: ''
     required: false
     type: string
 
-  tomli-version:  # TODO: Remove deprecated input in v12
+  tomlkit-version:  # TODO: Remove deprecated input in v12
     description: |
-      Tomli version used for retrieving the towncrier directory.
-    default: '2.2.1'
-    required: false
-    type: string
-
-  tomlkit-version:
-    description: |
-      Tomlkit version used for reading the towncrier configuration.
-    default: '0.14.0'
+      DEPRECATED ARGUMENT. Tomlkit version used for reading the towncrier configuration.
+    default: ''
     required: false
     type: string
 
@@ -116,33 +146,38 @@ runs:
   using: "composite"
   steps:
 
-    - uses: ansys/actions/_logging@main
-      if: inputs.toml-version != ''
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: read, pull-requests: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#doc-style-action"
+
+    - uses: $/_logging # TODO: Remove in v12
+      if: inputs.tomli-version != ''
       with:
         level: "ERROR"
         message: >
-          With the adoption of dependency groups in PyAnsys packages, the ``toml`` library
-          is no longer used because it cannot parse ``pyproject.toml`` files where groups
-          include other groups. This action now uses the ``tomli`` library instead. If you
-          want to use a specific version of ``tomli``, please set the ``tomli-version``
-          input accordingly. The ``toml-version`` input will be removed in v11.
+          Due to loss of information during parsing, including formatting and comments, the
+          ``tomli`` library is no longer used. The ``tomli-version`` input is deprecated and
+          will be removed in v12.
 
-    - uses: ansys/actions/_logging@main # TODO: Switch logging level to ERROR in v11, remove in v12
-      if: inputs.tomli-version != ''
+    - uses: $/_logging
+      if: inputs.tomlkit-version != ''
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
-          The ``tomli-version`` input is deprecated and will be removed in v12.
-          This action now uses the ``tomlkit`` library instead. Please use the
-          ``tomlkit-version`` input accordingly.
+          Due to dependency changes breaking the actions and the need to manage which version
+          of dependencies are used in the actions, the ``tomlkit-version`` input is deprecated
+          and will be removed in v12.
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
       if: inputs.checkout == 'true'
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -184,21 +219,56 @@ runs:
           fi
         fi
 
-    - name: "Install tomlkit"
-      shell: bash
-      env:
-       TOMLKIT_VERSION: ${{ inputs.tomlkit-version }}
-      run: |
-        python -m pip install --upgrade pip tomlkit==${TOMLKIT_VERSION}
+    - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ inputs.skip-python-setup == 'false' }}
+      uses: $/_setup-python
+      with:
+        python-version: ${{ inputs.python-version }}
+        use-cache: ${{ inputs.use-python-cache }}
+        provision-uv: false
+        prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
-    - name: "Install docutils"
+    - uses: $/_logging
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
+
+    - name: "Create isolated virtual environment"
       shell: bash
       run: |
-        python -m pip install --upgrade docutils
+        python -m venv .venv
+
+    - name: "Install tomlkit and docutils"
+      shell: bash
+      run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          source .venv/Scripts/activate
+        else
+          source .venv/bin/activate
+        fi
+        python -m pip install --upgrade pip
+        python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+
+    - name: "Expose rst2html on PATH"
+      shell: bash
+      run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          cp "${GITHUB_WORKSPACE}/.venv/Scripts/rst2html.exe" "${pythonLocation}/Scripts/rst2html.exe"
+        else
+          sudo ln -sf "${GITHUB_WORKSPACE}/.venv/bin/rst2html" /usr/local/bin/rst2html
+        fi
 
     - name: "Get towncrier directory"
-      shell: python
+      shell: bash
       run: |
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          source .venv/Scripts/activate
+        else
+          source .venv/bin/activate
+        fi
+        python <<'EOF'
         import os
         import tomlkit
 
@@ -221,6 +291,7 @@ runs:
         # Append the TOWNCRIER_DIR with its value to GITHUB_ENV
         with open(github_env, "a") as f:
             f.write(f"TOWNCRIER_DIR={directory}")
+        EOF
 
     - name: "Check if changelog.d is ignored"
       id: vale-flags
@@ -240,21 +311,9 @@ runs:
     # in the vale-action. If a PR is opened by dependabot, we need to update the
     # reviewdog20 branch with the new release changes, see next step.
     - name: "Dummy step to track vale-action changes"
-      if: false
-      uses: vale-cli/vale-action@d89dee975228ae261d22c15adcd03578634d429c # v2.1.1
+      uses: vale-cli/vale-action@518a9136acc6e6668ce7c00d367051e0941e87ff # v3.0.0
       with:
-        reporter: github-pr-check
-        filter_mode: nofilter
-
-    # WARNING: Do not accept dependabot updates as the hash below is associated
-    # to the reviewdog20 branch and not to a release tag !!! If a PR is opened by
-    # dependabot, we need to update the reviewdog20 branch with the new release changes.
-    # Once performed, we can manually update the commit hash below.
-    - name: "Run Vale"
-      uses: vale-cli/vale-action@8b7efc0909d3e173676d892083470ec35a757858 # zizmor: ignore[stale-action-refs] , Read warning above
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
-      with:
+        reviewdog_version: 0.21.0
         files: ${{ inputs.files }}
         reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
         fail_level: ${{ inputs.fail-level }}

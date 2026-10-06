@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -75,7 +75,7 @@ inputs:
   python-version:
     description: |
       Python version used for installing and executing licence check.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
@@ -140,9 +140,15 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: read"
+        doc-url: "https://actions.docs.ansys.com/version/stable/licenses-actions/index.html#check-licenses-action"
+
     - name: Check virutal environment existence (if needed)
       if: ${{ inputs.skip-install == 'true' && inputs.activate-venv == '' }}
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "ERROR"
         message: >
@@ -152,12 +158,25 @@ runs:
 
     - name: Warn about input combination
       if: ${{ inputs.skip-install == 'false' && inputs.activate-venv != '' }}
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "WARNING"
         message: >
           When skip-install is set to false, activate-venv input is not needed
           and will be ignored.
+
+    - name: Advise on external virtual environment scope
+      if: ${{ inputs.skip-install == 'true' && inputs.activate-venv != '' }}
+      uses: $/_logging
+      with:
+        level: "WARNING"
+        message: >
+          The license check inspects every package installed in the provided
+          virtual environment. Make sure the environment activated via
+          activate-venv only contains consumer-facing dependencies (project
+          runtime and selected extras). Dependency groups (dev, doc, test, ...)
+          and build tooling (build, wheel, pyproject-hooks, ...) installed in
+          this environment will also be reported, which may not be desired.
 
     - name: Check python version
       id: check-python-version
@@ -171,7 +190,7 @@ runs:
         fi
 
     - name: Break if Python version is too old
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       if: steps.check-python-version.outputs.PYTHON_TOO_OLD == 'true'
       with:
         level: "ERROR"
@@ -180,7 +199,7 @@ runs:
           This package requires Python 3.10 or higher.
 
     - name: Announce the switch to original pip-licenses package
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -188,14 +207,14 @@ runs:
           Therefore, the check-licenses action has been updated to use the original pip-licenses package.
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
 
     - name: "Set up Python"
       if: inputs.skip-install == 'false'
-      uses: ansys/actions/_setup-python@main
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
@@ -206,9 +225,13 @@ runs:
       if: inputs.skip-install == 'false'
       id: build-system
       shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
           echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+        elif [[ "${USE_UV}" == 'true' ]]; then
+          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
         else
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
@@ -235,7 +258,7 @@ runs:
     # and after each job. This way poetry is kinda "installed at system level"
     # making it available in the following call and installed in a different
     # environment from the project.
-    - name: "Install poetry and create a virtual environment"
+    - name: "Install poetry"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry' && inputs.skip-install == 'false'
       shell: bash
       run: |
@@ -263,42 +286,108 @@ runs:
         ACTIVATE_VENV: ${{ inputs.activate-venv }}
       run: |
         if [[ -n ${ACTIVATE_VENV} ]]; then
+          ${ACTIVATE_VENV}
           echo "ACTIVATE_VENV=${ACTIVATE_VENV}" >> $GITHUB_OUTPUT
+          echo "PYTHON_VENV=$(which python)" >> $GITHUB_OUTPUT
         else
           if [[ ${RUNNER_OS} == 'Windows' ]]; then
             echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+            echo "PYTHON_VENV=$(echo '.venv/Scripts/python.exe')" >> $GITHUB_OUTPUT
           else
             echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+            echo "PYTHON_VENV=$(echo '.venv/bin/python')" >> $GITHUB_OUTPUT
           fi
         fi
 
-    - name: "Update pip and install pip-licenses library"
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
       shell: bash
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
       run: |
-        ${ACTIVATE_VENV}
-        $INSTALL_COMMAND -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
+        if [[ -f "uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
 
-    - name: "Check if specific target is requested"
-      id: specific-target-requested
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
       shell: bash
-      env:
-        TARGET: ${{ inputs.target }}
       run: |
-        echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '.' || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
+        if [[ -f ".python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          rm .python-version
+        else
+          echo ".python-version file not detected. No action required."
+        fi
 
-    - name: "Install Python library"
+    - name: Create a virtual environment for pip-licenses
+      id: virtual-environment-activation-command-pip-licenses
+      shell: bash
+      run: |
+        python -m venv .venv-pip-licenses
+        if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          echo "ACTIVATE_VENV_PIP_LICENSES=$(echo 'source .venv-pip-licenses/scripts/activate')" >> $GITHUB_OUTPUT
+        else
+          echo "ACTIVATE_VENV_PIP_LICENSES=$(echo 'source .venv-pip-licenses/bin/activate')" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Install project (if not skipped)"
       if: inputs.skip-install == 'false'
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        INSTALL_TARGET: ${{ steps.specific-target-requested.outputs.install_target }}
-        INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python' || 'python -m pip install' }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        SKIP_INSTALL: ${{ inputs.skip-install }}
+        TARGET: ${{ inputs.target }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
         ${ACTIVATE_VENV}
-        ${INSTALL_COMMAND} "$INSTALL_TARGET"
+        if [[ "${TARGET}" != '' ]]; then
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            echo "Installing extra targets with poetry: ${TARGET}"
+            poetry install --only main --extras "${TARGET}"
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            echo "Installing extra targets with uv: ${TARGET}"
+            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              uv sync --frozen --extra "${TARGET}" --no-default-groups --no-managed-python
+            else
+              uv pip install --no-managed-python .[${TARGET}]
+            fi
+          else
+            echo "Installing extra targets with pip: ${TARGET}"
+            python -m pip install .[${TARGET}]
+          fi
+        else
+          echo "No extra targets to install"
+          if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
+            poetry install --only main
+          elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
+            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+              uv sync --frozen --no-default-groups --no-managed-python
+            else
+              uv pip install --no-managed-python .
+            fi
+          else
+            python -m pip install .
+          fi
+        fi
+
+    - name: "Install pip-licenses in its own virtual environment"
+      shell: bash
+      env:
+        ACTIVATE_VENV_PIP_LICENSES: ${{ steps.virtual-environment-activation-command-pip-licenses.outputs.ACTIVATE_VENV_PIP_LICENSES }}
+        BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
+        SKIP_INSTALL: ${{ inputs.skip-install }}
+        TARGET: ${{ inputs.target }}
+        USE_UV: ${{ inputs.use-uv }}
+      run: |
+        ${ACTIVATE_VENV_PIP_LICENSES}
+        if [[ "${USE_UV}" == 'true' ]]; then
+          uv pip install --no-managed-python -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
+        else
+          python -m pip install -U pip -r ${GITHUB_ACTION_PATH}/requirements.txt
+        fi
 
     - name:  "Install wget on Windows"
       if: runner.os == 'Windows'
@@ -357,7 +446,7 @@ runs:
         echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> ${GITHUB_OUTPUT}
 
     - name: Log ignored packages and accepted licenses
-      uses: ansys/actions/_logging@main
+      uses: $/_logging
       with:
         level: "INFO"
         message: |
@@ -368,12 +457,13 @@ runs:
 
           ${{ steps.log-licenses-and-packages.outputs.LOG_IGNORED_PACKAGES }}
 
-    - name: "Check licences of packages"
+    - name: "Check licenses of packages"
       shell: bash
       env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        ACTIVATE_VENV_PIP_LICENSES: ${{ steps.virtual-environment-activation-command-pip-licenses.outputs.ACTIVATE_VENV_PIP_LICENSES }}
+        PYTHON_VENV: ${{ steps.virtual-environment-activation-command.outputs.PYTHON_VENV }}
       run: |
-        ${ACTIVATE_VENV}
+        ${ACTIVATE_VENV_PIP_LICENSES}
 
         # Load accepted licenses
         mapfile licenses_from_txt < accepted-licenses.txt
@@ -388,13 +478,13 @@ runs:
         ignored_packages_from_txt=${ignored_packages_from_txt::-1}
 
         # Verify if the Python environment contains invalid licenses
-        if [[ -z $(pip-licenses --ignore-packages $ignored_packages | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses) ]]; then
+        if [[ -z $(pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses) ]]; then
           echo "All licenses are valid."
         else
           echo -e "\nInvalid licenses found:\n"
-          pip-licenses --ignore-packages $ignored_packages | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses | awk '{ for (i=3; i<=NF; i++) license = license $i (i==NF ? "" : " "); print $1 " " $2 " has " license; license="" }'
+          pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses | awk '{ for (i=3; i<=NF; i++) license = license $i (i==NF ? "" : " "); print $1 " " $2 " has " license; license="" }'
           # print all packages
           echo -e "\n\n"
-          pip-licenses --ignore-packages $ignored_packages
+          pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV
           exit 1
         fi

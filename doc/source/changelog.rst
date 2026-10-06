@@ -9,6 +9,1427 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.1.0rc0 <https://github.com/ansys/actions/releases/tag/v11.1.0rc0>`_ - September 17, 2026
+============================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Breaking
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add setup python step in doc-style
+          - `#1551 <https://github.com/ansys/actions/pull/1551>`_
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add uv audit in check vulnerability
+          - `#1498 <https://github.com/ansys/actions/pull/1498>`_
+
+        * - LFS support during checkout
+          - `#1531 <https://github.com/ansys/actions/pull/1531>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Align uv project installation in `code-style` with Poetry by installing dev dependencies when `uv.lock` is present
+          - `#926 <https://github.com/ansys/actions/pull/926>`_
+
+        * - Dependabot(uv) update issues
+          - `#1474 <https://github.com/ansys/actions/pull/1474>`_
+
+        * - Reorder \`doc-deploy-stable\` action steps to allow uv caching
+          - `#1532 <https://github.com/ansys/actions/pull/1532>`_
+
+        * - Avoid silent PR cleanup failures
+          - `#1566 <https://github.com/ansys/actions/pull/1566>`_
+
+        * - Align uv install behavior with poetry
+          - `#1569 <https://github.com/ansys/actions/pull/1569>`_
+
+        * - Run doc-style dependency install in an isolated virtualenv
+          - `#1570 <https://github.com/ansys/actions/pull/1570>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update \`\`CONTRIBUTORS.md\`\` with the latest contributors
+          - `#1517 <https://github.com/ansys/actions/pull/1517>`_
+
+        * - Document doc-deploy-dev PR write permission
+          - `#1565 <https://github.com/ansys/actions/pull/1565>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.0 to 0.16.1 in the pre-commit-hooks group
+          - `#1460 <https://github.com/ansys/actions/pull/1460>`_
+
+        * - Bump ruff from 0.16.0 to 0.16.1
+          - `#1462 <https://github.com/ansys/actions/pull/1462>`_
+
+        * - Bump ty from 0.0.61 to 0.0.65
+          - `#1464 <https://github.com/ansys/actions/pull/1464>`_
+
+        * - Bump ty from 0.0.65 to 0.0.66
+          - `#1481 <https://github.com/ansys/actions/pull/1481>`_
+
+        * - Bump the pre-commit-hooks group with 2 updates
+          - `#1490 <https://github.com/ansys/actions/pull/1490>`_
+
+        * - Bump ruff from 0.16.1 to 0.16.2
+          - `#1491 <https://github.com/ansys/actions/pull/1491>`_
+
+        * - Bump tox from 4.58.0 to 4.59.0
+          - `#1495 <https://github.com/ansys/actions/pull/1495>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#1496 <https://github.com/ansys/actions/pull/1496>`_, `#1511 <https://github.com/ansys/actions/pull/1511>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.2 to 0.16.3 in the pre-commit-hooks group
+          - `#1505 <https://github.com/ansys/actions/pull/1505>`_
+
+        * - Bump ruff from 0.16.2 to 0.16.3
+          - `#1506 <https://github.com/ansys/actions/pull/1506>`_
+
+        * - Bump tox from 4.59.0 to 4.60.0
+          - `#1507 <https://github.com/ansys/actions/pull/1507>`_
+
+        * - Bump ty from 0.0.66 to 0.0.73
+          - `#1509 <https://github.com/ansys/actions/pull/1509>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.3 to 0.16.4 in the pre-commit-hooks group across 1 directory
+          - `#1519 <https://github.com/ansys/actions/pull/1519>`_
+
+        * - Bump ruff from 0.16.3 to 0.16.4
+          - `#1522 <https://github.com/ansys/actions/pull/1522>`_
+
+        * - Bump ty from 0.0.73 to 0.0.74
+          - `#1523 <https://github.com/ansys/actions/pull/1523>`_
+
+        * - Bump ruff from 0.16.4 to 0.16.5
+          - `#1541 <https://github.com/ansys/actions/pull/1541>`_
+
+        * - Bump prek from 0.4.14 to 0.5.0
+          - `#1542 <https://github.com/ansys/actions/pull/1542>`_
+
+        * - Bump ty from 0.0.74 to 0.0.77
+          - `#1544 <https://github.com/ansys/actions/pull/1544>`_
+
+        * - Update dependencies
+          - `#1553 <https://github.com/ansys/actions/pull/1553>`_
+
+        * - Bump prek from 0.5.0 to 0.5.2
+          - `#1554 <https://github.com/ansys/actions/pull/1554>`_
+
+        * - Bump fastcore from 2.2.13 to 2.2.22
+          - `#1555 <https://github.com/ansys/actions/pull/1555>`_
+
+        * - Bump uv from 0.12.1 to 0.12.10
+          - `#1556 <https://github.com/ansys/actions/pull/1556>`_
+
+        * - Bump ruff from 0.16.5 to 0.16.6
+          - `#1557 <https://github.com/ansys/actions/pull/1557>`_
+
+        * - Bump zizmor from 1.29.0 to 1.30.0
+          - `#1558 <https://github.com/ansys/actions/pull/1558>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.16.4 to 0.16.6 in the pre-commit-hooks group across 1 directory
+          - `#1559 <https://github.com/ansys/actions/pull/1559>`_
+
+        * - Bump the build-related-actions group across 1 directory with 2 updates
+          - `#1560 <https://github.com/ansys/actions/pull/1560>`_
+
+        * - Bump the release-related-actions group across 2 directories with 1 update
+          - `#1561 <https://github.com/ansys/actions/pull/1561>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update CHANGELOG for v11.0.0
+          - `#1470 <https://github.com/ansys/actions/pull/1470>`_
+
+        * - Bump dev version
+          - `#1471 <https://github.com/ansys/actions/pull/1471>`_
+
+        * - Update CHANGELOG for v11.0.1
+          - `#1477 <https://github.com/ansys/actions/pull/1477>`_
+
+        * - Update CHANGELOG for v11.0.2
+          - `#1486 <https://github.com/ansys/actions/pull/1486>`_
+
+        * - Update CHANGELOG for v11.0.3
+          - `#1488 <https://github.com/ansys/actions/pull/1488>`_
+
+        * - Update CHANGELOG for v11.0.4
+          - `#1514 <https://github.com/ansys/actions/pull/1514>`_
+
+        * - Update dependabot configuration
+          - `#1516 <https://github.com/ansys/actions/pull/1516>`_
+
+        * - Update CHANGELOG for v11.0.5
+          - `#1526 <https://github.com/ansys/actions/pull/1526>`_
+
+        * - Update CHANGELOG for v11.0.6
+          - `#1534 <https://github.com/ansys/actions/pull/1534>`_
+
+        * - Delay dependabot update to monthly
+          - `#1539 <https://github.com/ansys/actions/pull/1539>`_
+
+        * - Update CHANGELOG for v11.0.8
+          - `#1547 <https://github.com/ansys/actions/pull/1547>`_
+
+        * - Rework subaction usage to leverage local path
+          - `#1548 <https://github.com/ansys/actions/pull/1548>`_
+
+        * - Update refs in workflows to self-repository syntax
+          - `#1562 <https://github.com/ansys/actions/pull/1562>`_
+
+        * - Update migration guide for v11.1 pre-release
+          - `#1571 <https://github.com/ansys/actions/pull/1571>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Reduce release note body size and add cmd
+          - `#1527 <https://github.com/ansys/actions/pull/1527>`_
+
+        * - Update check-licenses to exclude non-runtime dependencies during checks
+          - `#1535 <https://github.com/ansys/actions/pull/1535>`_
+
+        * - Use lockfile to generate wheelhouse
+          - `#1549 <https://github.com/ansys/actions/pull/1549>`_
+
+        * - Reference inner action with new syntax
+          - `#1550 <https://github.com/ansys/actions/pull/1550>`_
+
+        * - Remove quarto setup action
+          - `#1552 <https://github.com/ansys/actions/pull/1552>`_
+
+        * - Exclude build and wheel from generated wheelhouse
+          - `#1563 <https://github.com/ansys/actions/pull/1563>`_
+
+
+`11.0.8 <https://github.com/ansys/actions/releases/tag/v11.0.8>`_ - September 07, 2026
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - SEO improvements
+          - `#1538 <https://github.com/ansys/actions/pull/1538>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Error message rendering in doc-deploy-changelog
+          - `#1536 <https://github.com/ansys/actions/pull/1536>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump pyvista/setup-headless-display-action from 4.3 to 5.0 in /.github/workflows in the cicd-actions group across 1 directory
+          - `#1521 <https://github.com/ansys/actions/pull/1521>`_
+
+
+`11.0.6 <https://github.com/ansys/actions/releases/tag/v11.0.6>`_ - September 02, 2026
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Tag check for releases
+          - `#1533 <https://github.com/ansys/actions/pull/1533>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump pygithub from 2.9.1 to 2.10.0
+          - `#1520 <https://github.com/ansys/actions/pull/1520>`_
+
+        * - Bump ghapi from 2.0.5 to 2.1.2
+          - `#1524 <https://github.com/ansys/actions/pull/1524>`_
+
+
+`11.0.5 <https://github.com/ansys/actions/releases/tag/v11.0.5>`_ - August 31, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump fastcore from 2.2.0 to 2.2.13
+          - `#1508 <https://github.com/ansys/actions/pull/1508>`_
+
+        * - Bump prek from 0.4.13 to 0.4.14
+          - `#1510 <https://github.com/ansys/actions/pull/1510>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove \`skip-existing\` input for release-pypi-private
+          - `#1518 <https://github.com/ansys/actions/pull/1518>`_
+
+        * - Remove reference to skip existing in other release actions
+          - `#1525 <https://github.com/ansys/actions/pull/1525>`_
+
+
+`11.0.4 <https://github.com/ansys/actions/releases/tag/v11.0.4>`_ - August 27, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow to skip latex install
+          - `#1497 <https://github.com/ansys/actions/pull/1497>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Delete local tags before recreating in rolling release
+          - `#1489 <https://github.com/ansys/actions/pull/1489>`_
+
+        * - Make version check optional for private pypi publish
+          - `#1500 <https://github.com/ansys/actions/pull/1500>`_
+
+        * - Build-library for projects not using uv lockfiles
+          - `#1503 <https://github.com/ansys/actions/pull/1503>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add disclaimer to the disclaimer on check-vulnerabilities
+          - `#1504 <https://github.com/ansys/actions/pull/1504>`_
+
+        * - Update vulnerability documentation on safety local scanning
+          - `#1512 <https://github.com/ansys/actions/pull/1512>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump ansys-sphinx-theme from 1.9.0 to 1.10.0
+          - `#1480 <https://github.com/ansys/actions/pull/1480>`_
+
+        * - Bump prek from 0.4.12 to 0.4.13
+          - `#1492 <https://github.com/ansys/actions/pull/1492>`_
+
+        * - Bump wheel from 0.47.0 to 0.48.0
+          - `#1493 <https://github.com/ansys/actions/pull/1493>`_
+
+        * - Bump pre-commit from 4.6.1 to 4.6.2
+          - `#1494 <https://github.com/ansys/actions/pull/1494>`_
+
+
+`11.0.3 <https://github.com/ansys/actions/releases/tag/v11.0.3>`_ - August 18, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Use \`uv run python\` for version lookup when uv is available
+          - `#1487 <https://github.com/ansys/actions/pull/1487>`_
+
+
+`11.0.2 <https://github.com/ansys/actions/releases/tag/v11.0.2>`_ - August 13, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Ignore .python-version file when detected
+          - `#1485 <https://github.com/ansys/actions/pull/1485>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump prek from 0.4.11 to 0.4.12
+          - `#1478 <https://github.com/ansys/actions/pull/1478>`_
+
+        * - Bump packaging from 26.2 to 26.3
+          - `#1479 <https://github.com/ansys/actions/pull/1479>`_
+
+        * - Bump zizmor from 1.28.0 to 1.29.0
+          - `#1482 <https://github.com/ansys/actions/pull/1482>`_
+
+        * - Bump the github-actions group across 2 directories with 1 update
+          - `#1483 <https://github.com/ansys/actions/pull/1483>`_
+
+        * - Bump pypa/cibuildwheel from 4.1.1 to 4.2.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1484 <https://github.com/ansys/actions/pull/1484>`_
+
+
+`11.0.1 <https://github.com/ansys/actions/releases/tag/v11.0.1>`_ - August 11, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update handling of \`optional-dependencies-name\` and \`group-dependencies-name\` in tests-pytest action
+          - `#1476 <https://github.com/ansys/actions/pull/1476>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump ghapi from 2.0.3 to 2.0.5
+          - `#1463 <https://github.com/ansys/actions/pull/1463>`_
+
+        * - Bump actions/checkout from 7.0.0 to 7.0.1 in /.github/workflows in the github-actions group across 1 directory
+          - `#1465 <https://github.com/ansys/actions/pull/1465>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Deprecate the build-ci-wheels action
+          - `#1459 <https://github.com/ansys/actions/pull/1459>`_
+
+
+`11.0.0 <https://github.com/ansys/actions/releases/tag/v11.0.0>`_ - August 10, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Breaking
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Deprecation of release-pypi-* actions
+          - `#1340 <https://github.com/ansys/actions/pull/1340>`_
+
+        * - Removal of deprecated \`\`generate_release_notes\`\` input in the \`\`release-github\`\` action
+          - `#1348 <https://github.com/ansys/actions/pull/1348>`_
+
+        * - Remove deprecated inputs
+          - `#1376 <https://github.com/ansys/actions/pull/1376>`_
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Cookiecutter uses BSD-3 (permitted)
+          - `#1292 <https://github.com/ansys/actions/pull/1292>`_
+
+        * - Accepting caio package
+          - `#1306 <https://github.com/ansys/actions/pull/1306>`_
+
+        * - Ignore clr_loader since it's MIT
+          - `#1314 <https://github.com/ansys/actions/pull/1314>`_
+
+        * - Pre-commit automatic update using dependabot
+          - `#1329 <https://github.com/ansys/actions/pull/1329>`_
+
+        * - Doc-deploy-custom-path action
+          - `#1374 <https://github.com/ansys/actions/pull/1374>`_
+
+        * - Use uv lock file
+          - `#1427 <https://github.com/ansys/actions/pull/1427>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Geometry doc build
+          - `#1327 <https://github.com/ansys/actions/pull/1327>`_
+
+        * - Pyansys geometry doc-build in tests
+          - `#1380 <https://github.com/ansys/actions/pull/1380>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update \`\`CONTRIBUTORS.md\`\` with the latest contributors
+          - `#1304 <https://github.com/ansys/actions/pull/1304>`_
+
+        * - Update examples with permissions
+          - `#1355 <https://github.com/ansys/actions/pull/1355>`_
+
+        * - Disclaimer on security checks
+          - `#1422 <https://github.com/ansys/actions/pull/1422>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump actions/labeler from 6.0.1 to 6.1.0 in /.github/workflows in the github-actions group across 1 directory
+          - `#1312 <https://github.com/ansys/actions/pull/1312>`_
+
+        * - Bump ansys-sphinx-theme from 1.7.2 to 1.8.0 in /requirements
+          - `#1320 <https://github.com/ansys/actions/pull/1320>`_
+
+        * - Update click requirement from <9,>=8.3.3 to >=8.4.0,<9 in /check-vulnerabilities
+          - `#1330 <https://github.com/ansys/actions/pull/1330>`_
+
+        * - Bump fastcore from 1.13.0 to 1.13.2 in /hk-package-clean-except
+          - `#1331 <https://github.com/ansys/actions/pull/1331>`_
+
+        * - Bump ansys-sphinx-theme from 1.8.0 to 1.8.1 in /requirements
+          - `#1333 <https://github.com/ansys/actions/pull/1333>`_
+
+        * - Bump the pre-commit-hooks group with 2 updates
+          - `#1334 <https://github.com/ansys/actions/pull/1334>`_
+
+        * - Bump ansys-sphinx-theme from 1.8.1 to 1.8.2 in /requirements
+          - `#1335 <https://github.com/ansys/actions/pull/1335>`_
+
+        * - Bump docker/login-action from 4.1.0 to 4.2.0 in /.github/workflows in the test-related-actions group across 1 directory
+          - `#1346 <https://github.com/ansys/actions/pull/1346>`_
+
+        * - Bump prek from 0.4.1 to 0.4.3
+          - `#1352 <https://github.com/ansys/actions/pull/1352>`_
+
+        * - Bump docker/setup-qemu-action from 4.0.0 to 4.1.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1354 <https://github.com/ansys/actions/pull/1354>`_
+
+        * - Bump safety from 3.8.0 to 3.8.1
+          - `#1360 <https://github.com/ansys/actions/pull/1360>`_
+
+        * - Bump the github-actions group across 18 directories with 1 update
+          - `#1361 <https://github.com/ansys/actions/pull/1361>`_, `#1384 <https://github.com/ansys/actions/pull/1384>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#1362 <https://github.com/ansys/actions/pull/1362>`_, `#1416 <https://github.com/ansys/actions/pull/1416>`_, `#1431 <https://github.com/ansys/actions/pull/1431>`_
+
+        * - Bump pyjwt into v2.13.0
+          - `#1365 <https://github.com/ansys/actions/pull/1365>`_
+
+        * - Bump cryptography into v49.0.0
+          - `#1366 <https://github.com/ansys/actions/pull/1366>`_
+
+        * - Bump check-jsonschema from 0.37.2 to 0.37.2 in the pre-commit-hooks group
+          - `#1367 <https://github.com/ansys/actions/pull/1367>`_
+
+        * - Bump wcwidth from 0.7.0 to 0.8.1
+          - `#1368 <https://github.com/ansys/actions/pull/1368>`_
+
+        * - Bump prek from 0.4.3 to 0.4.4
+          - `#1370 <https://github.com/ansys/actions/pull/1370>`_
+
+        * - Bump pypa/cibuildwheel from 3.4.1 to 4.0.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1371 <https://github.com/ansys/actions/pull/1371>`_
+
+        * - Bump prek from 0.4.4 to 0.4.5
+          - `#1381 <https://github.com/ansys/actions/pull/1381>`_
+
+        * - Bump ansys-sphinx-theme from 1.8.2 to 1.9.0 in /requirements
+          - `#1382 <https://github.com/ansys/actions/pull/1382>`_
+
+        * - Bump fastcore from 1.13.3 to 1.13.5
+          - `#1383 <https://github.com/ansys/actions/pull/1383>`_
+
+        * - Bump awalsh128/cache-apt-pkgs-action from 1.6.0 to 1.6.1 in /_doc-build-linux in the doc-related-actions group across 1 directory
+          - `#1385 <https://github.com/ansys/actions/pull/1385>`_
+
+        * - Bump pypa/cibuildwheel from 4.0.0 to 4.1.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1386 <https://github.com/ansys/actions/pull/1386>`_
+
+        * - Bump https://github.com/ansys/pre-commit-hooks from v0.7.2 to 0.8.0 in the pre-commit-hooks group
+          - `#1393 <https://github.com/ansys/actions/pull/1393>`_
+
+        * - Bump prettytable from 3.17.0 to 3.18.0
+          - `#1395 <https://github.com/ansys/actions/pull/1395>`_
+
+        * - Bump the github-actions group across 2 directories with 2 updates
+          - `#1397 <https://github.com/ansys/actions/pull/1397>`_
+
+        * - Bump awalsh128/cache-apt-pkgs-action from 1.6.1 to 1.6.2 in /_doc-build-linux in the doc-related-actions group across 1 directory
+          - `#1398 <https://github.com/ansys/actions/pull/1398>`_
+
+        * - Bump the release-related-actions group across 2 directories with 1 update
+          - `#1399 <https://github.com/ansys/actions/pull/1399>`_, `#1421 <https://github.com/ansys/actions/pull/1421>`_
+
+        * - Bump https://github.com/python-jsonschema/check-jsonschema from 0.37.3 to 0.37.4 in the pre-commit-hooks group
+          - `#1403 <https://github.com/ansys/actions/pull/1403>`_
+
+        * - Bump the github-actions group across 2 directories with 1 update
+          - `#1404 <https://github.com/ansys/actions/pull/1404>`_, `#1453 <https://github.com/ansys/actions/pull/1453>`_
+
+        * - Bump awalsh128/cache-apt-pkgs-action from 1.6.2 to 1.6.3 in /_doc-build-linux in the doc-related-actions group across 1 directory
+          - `#1405 <https://github.com/ansys/actions/pull/1405>`_
+
+        * - Bump docker/setup-qemu-action from 4.1.0 to 4.2.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1406 <https://github.com/ansys/actions/pull/1406>`_
+
+        * - Bump actions/labeler from 6.1.0 to 6.2.0 in /.github/workflows in the github-actions group across 1 directory
+          - `#1414 <https://github.com/ansys/actions/pull/1414>`_
+
+        * - Bump docker/login-action from 4.2.0 to 4.4.0 in /.github/workflows in the test-related-actions group across 1 directory
+          - `#1415 <https://github.com/ansys/actions/pull/1415>`_
+
+        * - Bump ghapi from 1.0.14 to 2.0.1
+          - `#1419 <https://github.com/ansys/actions/pull/1419>`_
+
+        * - Bump fastcore from 1.14.5 to 2.1.0
+          - `#1420 <https://github.com/ansys/actions/pull/1420>`_
+
+        * - Bump zizmor from 1.26.1 to 1.28.0
+          - `#1429 <https://github.com/ansys/actions/pull/1429>`_
+
+        * - Bump the github-actions group across 19 directories with 4 updates
+          - `#1430 <https://github.com/ansys/actions/pull/1430>`_
+
+        * - Bump pypa/gh-action-pypi-publish from 1.14.0 to 1.14.1 in /.github/workflows in the release-related-actions group across 1 directory
+          - `#1432 <https://github.com/ansys/actions/pull/1432>`_
+
+        * - Bump tomlkit from 0.15.0 to 0.15.1
+          - `#1433 <https://github.com/ansys/actions/pull/1433>`_
+
+        * - Bump ghapi from 2.0.1 to 2.0.3
+          - `#1434 <https://github.com/ansys/actions/pull/1434>`_
+
+        * - Bump docker/login-action from 4.4.0 to 4.5.0 in /.github/workflows in the test-related-actions group across 1 directory
+          - `#1436 <https://github.com/ansys/actions/pull/1436>`_
+
+        * - Bump ansys-sphinx-theme from 1.9.0 to 1.10.0 in /requirements
+          - `#1447 <https://github.com/ansys/actions/pull/1447>`_
+
+        * - Bump https://github.com/astral-sh/ruff-pre-commit from v0.15.22 to 0.16.0 in the pre-commit-hooks group
+          - `#1448 <https://github.com/ansys/actions/pull/1448>`_
+
+        * - Bump click from 8.4.1 to 8.4.2
+          - `#1449 <https://github.com/ansys/actions/pull/1449>`_
+
+        * - Bump pre-commit from 4.6.0 to 4.6.1
+          - `#1450 <https://github.com/ansys/actions/pull/1450>`_
+
+        * - Bump twine from 6.2.0 to 7.0.0
+          - `#1451 <https://github.com/ansys/actions/pull/1451>`_
+
+        * - Bump prek from 0.4.5 to 0.4.11
+          - `#1452 <https://github.com/ansys/actions/pull/1452>`_
+
+        * - Bump docker/login-action from 4.5.0 to 4.6.0 in /.github/workflows in the test-related-actions group across 1 directory
+          - `#1454 <https://github.com/ansys/actions/pull/1454>`_
+
+        * - Bump pypa/cibuildwheel from 4.1.0 to 4.1.1 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1455 <https://github.com/ansys/actions/pull/1455>`_
+
+        * - Bump pypa/gh-action-pypi-publish from 1.14.1 to 1.14.2 in /.github/workflows in the release-related-actions group across 1 directory
+          - `#1456 <https://github.com/ansys/actions/pull/1456>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update CHANGELOG for v10.3.0
+          - `#1288 <https://github.com/ansys/actions/pull/1288>`_
+
+        * - Bump main branch version
+          - `#1289 <https://github.com/ansys/actions/pull/1289>`_
+
+        * - Add PSF license in full form to accepted licenses
+          - `#1298 <https://github.com/ansys/actions/pull/1298>`_
+
+        * - Update CHANGELOG for v10.3.1
+          - `#1311 <https://github.com/ansys/actions/pull/1311>`_
+
+        * - Pin actions dependencies
+          - `#1321 <https://github.com/ansys/actions/pull/1321>`_
+
+        * - Update CHANGELOG for v10.3.2
+          - `#1326 <https://github.com/ansys/actions/pull/1326>`_
+
+        * - Update how \`doc-style\` action calls \`vale-cli/vale-action\` behind the scenes
+          - `#1336 <https://github.com/ansys/actions/pull/1336>`_
+
+        * - Support Python 3.14
+          - `#1337 <https://github.com/ansys/actions/pull/1337>`_
+
+        * - Remove deprecation notes from safety scan output
+          - `#1341 <https://github.com/ansys/actions/pull/1341>`_
+
+        * - Update CHANGELOG for v10.3.3
+          - `#1388 <https://github.com/ansys/actions/pull/1388>`_
+
+        * - Pin zizmor version via requirements file
+          - `#1389 <https://github.com/ansys/actions/pull/1389>`_
+
+        * - Add ruff check and format
+          - `#1390 <https://github.com/ansys/actions/pull/1390>`_
+
+        * - Prettytable dependency pinning
+          - `#1400 <https://github.com/ansys/actions/pull/1400>`_
+
+        * - Ignore patch updates for uv package ecosystem
+          - `#1401 <https://github.com/ansys/actions/pull/1401>`_
+
+        * - Update CHANGELOG for v10.3.4
+          - `#1408 <https://github.com/ansys/actions/pull/1408>`_
+
+        * - Update release testing
+          - `#1409 <https://github.com/ansys/actions/pull/1409>`_
+
+        * - Improvement to release testing
+          - `#1412 <https://github.com/ansys/actions/pull/1412>`_
+
+        * - Update CHANGELOG for v10.3.5
+          - `#1417 <https://github.com/ansys/actions/pull/1417>`_
+
+        * - Update the handling of uv dependabot updates
+          - `#1425 <https://github.com/ansys/actions/pull/1425>`_
+
+        * - Update migration guide for \`v11\` release
+          - `#1426 <https://github.com/ansys/actions/pull/1426>`_
+
+        * - Add workflow to test uv lockfiles
+          - `#1439 <https://github.com/ansys/actions/pull/1439>`_
+
+        * - Update missing or outdated files
+          - `#1441 <https://github.com/ansys/actions/pull/1441>`_
+
+        * - Update CHANGELOG for v10.3.6
+          - `#1444 <https://github.com/ansys/actions/pull/1444>`_
+
+        * - Reorganize ci tests
+          - `#1466 <https://github.com/ansys/actions/pull/1466>`_
+
+        * - Update migration guide
+          - `#1467 <https://github.com/ansys/actions/pull/1467>`_
+
+        * - Revert \"build(uv): bump fastcore from 2.1.0 to 2.1.16 (#1461)\"
+          - `#1468 <https://github.com/ansys/actions/pull/1468>`_
+
+        * - Bump default python version
+          - `#1469 <https://github.com/ansys/actions/pull/1469>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update project+targets installation logic in check-licenses action
+          - `#1347 <https://github.com/ansys/actions/pull/1347>`_
+
+        * - Rm dead code and extend exception msg
+          - `#1349 <https://github.com/ansys/actions/pull/1349>`_
+
+        * - Updates to group/optional dependencies installation in doc-build action
+          - `#1350 <https://github.com/ansys/actions/pull/1350>`_
+
+        * - Fix default input value
+          - `#1359 <https://github.com/ansys/actions/pull/1359>`_
+
+        * - Split check licenses logic into separate steps
+          - `#1363 <https://github.com/ansys/actions/pull/1363>`_
+
+
+`10.3.6 <https://github.com/ansys/actions/releases/tag/v10.3.6>`_ - August 03, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pin the nltk version being installed
+          - `#1442 <https://github.com/ansys/actions/pull/1442>`_
+
+
+`10.3.5 <https://github.com/ansys/actions/releases/tag/v10.3.5>`_ - July 16, 2026
+=================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Avoid breaking change fragment due to HTML comments
+          - `#1356 <https://github.com/ansys/actions/pull/1356>`_
+
+        * - Allow multi colon in pr title
+          - `#1358 <https://github.com/ansys/actions/pull/1358>`_
+
+
+`10.3.4 <https://github.com/ansys/actions/releases/tag/v10.3.4>`_ - July 10, 2026
+=================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improvements to hk-migrate-fork-pr
+          - `#1402 <https://github.com/ansys/actions/pull/1402>`_
+
+
+`10.3.3 <https://github.com/ansys/actions/releases/tag/v10.3.3>`_ - June 29, 2026
+=================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Uv build rejecting builds when cache dir is enclosed
+          - `#1387 <https://github.com/ansys/actions/pull/1387>`_
+
+
+`10.3.2 <https://github.com/ansys/actions/releases/tag/v10.3.2>`_ - May 22, 2026
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow skipping python setup
+          - `#1310 <https://github.com/ansys/actions/pull/1310>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update input tomli-version default value to empty string
+          - `#1325 <https://github.com/ansys/actions/pull/1325>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update local usage of check vulnerabilities
+          - `#1313 <https://github.com/ansys/actions/pull/1313>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump fastcore from 1.12.44 to 1.12.45 in /hk-package-clean-except
+          - `#1315 <https://github.com/ansys/actions/pull/1315>`_
+
+        * - Bump fastcore from 1.12.44 to 1.12.45 in /hk-package-clean-untagged
+          - `#1316 <https://github.com/ansys/actions/pull/1316>`_
+
+        * - Bump fastcore from 1.12.45 to 1.12.47 in /hk-package-clean-except
+          - `#1318 <https://github.com/ansys/actions/pull/1318>`_
+
+        * - Bump fastcore from 1.12.45 to 1.12.47 in /hk-package-clean-untagged
+          - `#1319 <https://github.com/ansys/actions/pull/1319>`_
+
+        * - Bump fastcore from 1.12.47 to 1.13.0 in /hk-package-clean-except
+          - `#1322 <https://github.com/ansys/actions/pull/1322>`_
+
+        * - Bump fastcore from 1.12.47 to 1.13.0 in /hk-package-clean-untagged
+          - `#1323 <https://github.com/ansys/actions/pull/1323>`_
+
+        * - Bump the doc-related-actions group across 3 directories with 1 update
+          - `#1324 <https://github.com/ansys/actions/pull/1324>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump Syft version into v1.43.0
+          - `#1286 <https://github.com/ansys/actions/pull/1286>`_
+
+        * - Ignoring cookiecutter from vale
+          - `#1294 <https://github.com/ansys/actions/pull/1294>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Check-vulnerabilities to use sub process and avoid sys.argv manipulation
+          - `#1262 <https://github.com/ansys/actions/pull/1262>`_
+
+
+`10.3.1 <https://github.com/ansys/actions/releases/tag/v10.3.1>`_ - May 13, 2026
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - If miktex is available then make use of it
+          - `#1305 <https://github.com/ansys/actions/pull/1305>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#1290 <https://github.com/ansys/actions/pull/1290>`_
+
+        * - Bump dependabot/fetch-metadata from 3.0.0 to 3.1.0 in /hk-automerge-prs in the must-be-assigned-actions group across 1 directory
+          - `#1291 <https://github.com/ansys/actions/pull/1291>`_
+
+        * - Update click requirement from <9,>=8.3.2 to >=8.3.3,<9 in /check-vulnerabilities
+          - `#1295 <https://github.com/ansys/actions/pull/1295>`_
+
+        * - Bump fastcore from 1.12.40 to 1.12.42 in /hk-package-clean-except
+          - `#1296 <https://github.com/ansys/actions/pull/1296>`_
+
+        * - Bump fastcore from 1.12.40 to 1.12.42 in /hk-package-clean-untagged
+          - `#1297 <https://github.com/ansys/actions/pull/1297>`_
+
+        * - Bump fastcore from 1.12.42 to 1.12.43 in /hk-package-clean-except
+          - `#1299 <https://github.com/ansys/actions/pull/1299>`_
+
+        * - Bump packaging from 26.1 to 26.2 in /hk-package-clean-except
+          - `#1300 <https://github.com/ansys/actions/pull/1300>`_
+
+        * - Bump fastcore from 1.12.42 to 1.12.43 in /hk-package-clean-untagged
+          - `#1301 <https://github.com/ansys/actions/pull/1301>`_
+
+        * - Bump packaging from 26.1 to 26.2 in /hk-package-clean-untagged
+          - `#1302 <https://github.com/ansys/actions/pull/1302>`_
+
+        * - Bump wcwidth from 0.6.0 to 0.7.0 in /check-licenses
+          - `#1307 <https://github.com/ansys/actions/pull/1307>`_
+
+        * - Bump fastcore from 1.12.43 to 1.12.44 in /hk-package-clean-except
+          - `#1308 <https://github.com/ansys/actions/pull/1308>`_
+
+        * - Bump fastcore from 1.12.43 to 1.12.44 in /hk-package-clean-untagged
+          - `#1309 <https://github.com/ansys/actions/pull/1309>`_
+
+
+`10.3.0 <https://github.com/ansys/actions/releases/tag/v10.3.0>`_ - April 29, 2026
+==================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Breaking
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove checkout opt-in option
+          - `#1280 <https://github.com/ansys/actions/pull/1280>`_
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update license headers
+          - `#1102 <https://github.com/ansys/actions/pull/1102>`_
+
+        * - Check version match
+          - `#1111 <https://github.com/ansys/actions/pull/1111>`_
+
+        * - Update wheelhouse artifacts names
+          - `#1112 <https://github.com/ansys/actions/pull/1112>`_
+
+        * - Add breaking change section
+          - `#1117 <https://github.com/ansys/actions/pull/1117>`_
+
+        * - Use prek as pre-commit alternative
+          - `#1156 <https://github.com/ansys/actions/pull/1156>`_
+
+        * - \`hk-migrate-fork-pr\` action
+          - `#1168 <https://github.com/ansys/actions/pull/1168>`_
+
+        * - Order changelog tabs based on importance
+          - `#1198 <https://github.com/ansys/actions/pull/1198>`_
+
+        * - Add tag-repo action
+          - `#1217 <https://github.com/ansys/actions/pull/1217>`_
+
+        * - Sbom and wheelhouse filtering on GitHub release
+          - `#1260 <https://github.com/ansys/actions/pull/1260>`_
+
+        * - Use uv build when use-uv is true
+          - `#1268 <https://github.com/ansys/actions/pull/1268>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Do not let uv create the virtual environment
+          - `#1218 <https://github.com/ansys/actions/pull/1218>`_
+
+        * - Do not delete changelog fragments on pre-release
+          - `#1223 <https://github.com/ansys/actions/pull/1223>`_
+
+        * - Empty whitelist files
+          - `#1228 <https://github.com/ansys/actions/pull/1228>`_
+
+        * - Install MiKTeX at user level
+          - `#1233 <https://github.com/ansys/actions/pull/1233>`_
+
+        * - Ouch decompression
+          - `#1287 <https://github.com/ansys/actions/pull/1287>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Document minimum permissions required for each action
+          - `#1167 <https://github.com/ansys/actions/pull/1167>`_
+
+        * - Update \`\`CONTRIBUTORS.md\`\` with the latest contributors
+          - `#1221 <https://github.com/ansys/actions/pull/1221>`_
+
+        * - Documentation for v10.3
+          - `#1283 <https://github.com/ansys/actions/pull/1283>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump fastcore from 1.12.11 to 1.12.12 in /hk-package-clean-except
+          - `#1160 <https://github.com/ansys/actions/pull/1160>`_
+
+        * - Bump fastcore from 1.12.11 to 1.12.12 in /hk-package-clean-untagged
+          - `#1161 <https://github.com/ansys/actions/pull/1161>`_
+
+        * - Bump the build-related-actions group across 2 directories with 1 update
+          - `#1162 <https://github.com/ansys/actions/pull/1162>`_, `#1230 <https://github.com/ansys/actions/pull/1230>`_, `#1253 <https://github.com/ansys/actions/pull/1253>`_
+
+        * - Bump fastcore from 1.12.12 to 1.12.13 in /hk-package-clean-untagged
+          - `#1165 <https://github.com/ansys/actions/pull/1165>`_
+
+        * - Bump fastcore from 1.12.13 to 1.12.14 in /hk-package-clean-except
+          - `#1170 <https://github.com/ansys/actions/pull/1170>`_
+
+        * - Bump fastcore from 1.12.13 to 1.12.14 in /hk-package-clean-untagged
+          - `#1171 <https://github.com/ansys/actions/pull/1171>`_
+
+        * - Bump ansys-sphinx-theme from 1.7.0 to 1.7.1 in /requirements
+          - `#1175 <https://github.com/ansys/actions/pull/1175>`_
+
+        * - Bump fastcore from 1.12.14 to 1.12.15 in /hk-package-clean-except
+          - `#1179 <https://github.com/ansys/actions/pull/1179>`_
+
+        * - Bump fastcore from 1.12.14 to 1.12.15 in /hk-package-clean-untagged
+          - `#1180 <https://github.com/ansys/actions/pull/1180>`_
+
+        * - Bump fastcore from 1.12.15 to 1.12.16 in /hk-package-clean-except
+          - `#1183 <https://github.com/ansys/actions/pull/1183>`_
+
+        * - Bump fastcore from 1.12.15 to 1.12.16 in /hk-package-clean-untagged
+          - `#1184 <https://github.com/ansys/actions/pull/1184>`_
+
+        * - Bump fastcore from 1.12.16 to 1.12.18 in /hk-package-clean-except
+          - `#1189 <https://github.com/ansys/actions/pull/1189>`_
+
+        * - Bump fastcore from 1.12.16 to 1.12.18 in /hk-package-clean-untagged
+          - `#1190 <https://github.com/ansys/actions/pull/1190>`_
+
+        * - Bump the github-actions group across 6 directories with 1 update
+          - `#1191 <https://github.com/ansys/actions/pull/1191>`_, `#1229 <https://github.com/ansys/actions/pull/1229>`_
+
+        * - Bump ghapi from 1.0.10 to 1.0.13 in /hk-package-clean-except
+          - `#1194 <https://github.com/ansys/actions/pull/1194>`_
+
+        * - Bump fastcore from 1.12.18 to 1.12.22 in /hk-package-clean-except
+          - `#1195 <https://github.com/ansys/actions/pull/1195>`_
+
+        * - Bump fastcore from 1.12.18 to 1.12.22 in /hk-package-clean-untagged
+          - `#1196 <https://github.com/ansys/actions/pull/1196>`_
+
+        * - Bump the github-actions group across 7 directories with 2 updates
+          - `#1200 <https://github.com/ansys/actions/pull/1200>`_, `#1278 <https://github.com/ansys/actions/pull/1278>`_
+
+        * - Bump docker/login-action from 3.7.0 to 4.0.0 in /.github/workflows in the test-related-actions group across 1 directory
+          - `#1201 <https://github.com/ansys/actions/pull/1201>`_
+
+        * - Bump docker/setup-qemu-action from 3.7.0 to 4.0.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1202 <https://github.com/ansys/actions/pull/1202>`_
+
+        * - Bump fastcore from 1.12.22 to 1.12.23 in /hk-package-clean-except
+          - `#1206 <https://github.com/ansys/actions/pull/1206>`_
+
+        * - Bump fastcore from 1.12.22 to 1.12.23 in /hk-package-clean-untagged
+          - `#1207 <https://github.com/ansys/actions/pull/1207>`_
+
+        * - Bump tabulate from 0.9.0 to 0.10.0 in /requirements
+          - `#1208 <https://github.com/ansys/actions/pull/1208>`_
+
+        * - Bump fastcore from 1.12.23 to 1.12.24 in /hk-package-clean-except
+          - `#1209 <https://github.com/ansys/actions/pull/1209>`_
+
+        * - Bump fastcore from 1.12.23 to 1.12.24 in /hk-package-clean-untagged
+          - `#1210 <https://github.com/ansys/actions/pull/1210>`_
+
+        * - Bump pypa/cibuildwheel from 3.3.1 to 3.4.0 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1212 <https://github.com/ansys/actions/pull/1212>`_
+
+        * - Bump pyvista/setup-headless-display-action from 4.2 to 4.3 in /.github/workflows in the must-be-assigned-actions group across 1 directory
+          - `#1213 <https://github.com/ansys/actions/pull/1213>`_
+
+        * - Bump vimtor/action-zip from 1.2 to 1.3
+          - `#1220 <https://github.com/ansys/actions/pull/1220>`_
+
+        * - Bump fastcore from 1.12.24 to 1.12.26 in /hk-package-clean-except
+          - `#1224 <https://github.com/ansys/actions/pull/1224>`_
+
+        * - Bump fastcore from 1.12.24 to 1.12.26 in /hk-package-clean-untagged
+          - `#1225 <https://github.com/ansys/actions/pull/1225>`_
+
+        * - Bump the release-related-actions group across 2 directories with 1 update
+          - `#1231 <https://github.com/ansys/actions/pull/1231>`_, `#1279 <https://github.com/ansys/actions/pull/1279>`_
+
+        * - Bump fastcore from 1.12.26 to 1.12.29 in /hk-package-clean-except
+          - `#1238 <https://github.com/ansys/actions/pull/1238>`_
+
+        * - Bump fastcore from 1.12.26 to 1.12.29 in /hk-package-clean-untagged
+          - `#1239 <https://github.com/ansys/actions/pull/1239>`_
+
+        * - Bump actions/cache from 5.0.3 to 5.0.4 in /_doc-build-windows in the github-actions group across 1 directory
+          - `#1241 <https://github.com/ansys/actions/pull/1241>`_
+
+        * - Bump fastcore from 1.12.29 to 1.12.31 in /hk-package-clean-except
+          - `#1243 <https://github.com/ansys/actions/pull/1243>`_
+
+        * - Bump fastcore from 1.12.29 to 1.12.31 in /hk-package-clean-untagged
+          - `#1244 <https://github.com/ansys/actions/pull/1244>`_
+
+        * - Bump pip-licenses from 5.5.1 to 5.5.5 in /check-licenses
+          - `#1248 <https://github.com/ansys/actions/pull/1248>`_
+
+        * - Bump fastcore from 1.12.31 to 1.12.33 in /hk-package-clean-except
+          - `#1249 <https://github.com/ansys/actions/pull/1249>`_
+
+        * - Bump fastcore from 1.12.31 to 1.12.33 in /hk-package-clean-untagged
+          - `#1250 <https://github.com/ansys/actions/pull/1250>`_
+
+        * - Bump pypa/gh-action-pypi-publish from 1.13.0 to 1.14.0 in /.github/workflows in the release-related-actions group across 1 directory
+          - `#1254 <https://github.com/ansys/actions/pull/1254>`_
+
+        * - Bump dependabot/fetch-metadata from 2.5.0 to 3.0.0 in /hk-automerge-prs in the must-be-assigned-actions group across 1 directory
+          - `#1255 <https://github.com/ansys/actions/pull/1255>`_
+
+        * - Bump fastcore from 1.12.33 to 1.12.34 in /hk-package-clean-except
+          - `#1256 <https://github.com/ansys/actions/pull/1256>`_
+
+        * - Bump fastcore from 1.12.33 to 1.12.34 in /hk-package-clean-untagged
+          - `#1257 <https://github.com/ansys/actions/pull/1257>`_
+
+        * - Bump docker/login-action from 4.0.0 to 4.1.0 in /.github/workflows in the test-related-actions group across 1 directory
+          - `#1258 <https://github.com/ansys/actions/pull/1258>`_
+
+        * - Bump pypa/cibuildwheel from 3.4.0 to 3.4.1 in /build-ci-wheels in the build-related-actions group across 1 directory
+          - `#1259 <https://github.com/ansys/actions/pull/1259>`_
+
+        * - Bump fastcore from 1.12.34 to 1.12.36 in /hk-package-clean-except
+          - `#1263 <https://github.com/ansys/actions/pull/1263>`_
+
+        * - Bump fastcore from 1.12.34 to 1.12.36 in /hk-package-clean-untagged
+          - `#1264 <https://github.com/ansys/actions/pull/1264>`_
+
+        * - Bump fastcore from 1.12.36 to 1.12.38 in /hk-package-clean-except
+          - `#1266 <https://github.com/ansys/actions/pull/1266>`_
+
+        * - Bump fastcore from 1.12.36 to 1.12.38 in /hk-package-clean-untagged
+          - `#1267 <https://github.com/ansys/actions/pull/1267>`_
+
+        * - Bump fastcore from 1.12.38 to 1.12.39 in /hk-package-clean-except
+          - `#1270 <https://github.com/ansys/actions/pull/1270>`_
+
+        * - Bump fastcore from 1.12.38 to 1.12.39 in /hk-package-clean-untagged
+          - `#1271 <https://github.com/ansys/actions/pull/1271>`_
+
+        * - Update safety requirement from <4,>=2.3 to >=3.7.0,<4 in /check-vulnerabilities
+          - `#1272 <https://github.com/ansys/actions/pull/1272>`_
+
+        * - Update click requirement from <9,>=7.0 to >=8.3.2,<9 in /check-vulnerabilities
+          - `#1273 <https://github.com/ansys/actions/pull/1273>`_
+
+        * - Update bandit requirement from <2,>=1.7 to >=1.9.4,<2 in /check-vulnerabilities
+          - `#1274 <https://github.com/ansys/actions/pull/1274>`_
+
+        * - Update pygithub requirement from <3,>=1.59 to >=2.9.1,<3 in /check-vulnerabilities
+          - `#1275 <https://github.com/ansys/actions/pull/1275>`_
+
+        * - Bump packaging from 26.0 to 26.1 in /hk-package-clean-except
+          - `#1276 <https://github.com/ansys/actions/pull/1276>`_
+
+        * - Bump packaging from 26.0 to 26.1 in /hk-package-clean-untagged
+          - `#1277 <https://github.com/ansys/actions/pull/1277>`_
+
+        * - Bump fastcore from 1.12.39 to 1.12.40 in /hk-package-clean-except
+          - `#1284 <https://github.com/ansys/actions/pull/1284>`_
+
+        * - Bump fastcore from 1.12.39 to 1.12.40 in /hk-package-clean-untagged
+          - `#1285 <https://github.com/ansys/actions/pull/1285>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Chore: update CHANGELOG for v10.2.0
+          - `#1077 <https://github.com/ansys/actions/pull/1077>`_
+
+        * - Bump main branch version
+          - `#1078 <https://github.com/ansys/actions/pull/1078>`_
+
+        * - Update CHANGELOG for v10.2.1
+          - `#1084 <https://github.com/ansys/actions/pull/1084>`_
+
+        * - Update CHANGELOG for v10.2.2
+          - `#1086 <https://github.com/ansys/actions/pull/1086>`_
+
+        * - Update CHANGELOG for v10.2.3
+          - `#1092 <https://github.com/ansys/actions/pull/1092>`_
+
+        * - Update pr workflow for pydpf-composites
+          - `#1098 <https://github.com/ansys/actions/pull/1098>`_
+
+        * - Adding license headers to Python files
+          - `#1123 <https://github.com/ansys/actions/pull/1123>`_
+
+        * - Add missing permission in doc-deploy-dev
+          - `#1128 <https://github.com/ansys/actions/pull/1128>`_
+
+        * - Update CHANGELOG for v10.2.4
+          - `#1136 <https://github.com/ansys/actions/pull/1136>`_
+
+        * - Update CHANGELOG for v10.2.5
+          - `#1155 <https://github.com/ansys/actions/pull/1155>`_
+
+        * - Use geometry latest images rather than fixing the usage of 25R2
+          - `#1159 <https://github.com/ansys/actions/pull/1159>`_
+
+        * - Revert to original pip licenses
+          - `#1166 <https://github.com/ansys/actions/pull/1166>`_
+
+        * - Update CHANGELOG for v10.2.6
+          - `#1174 <https://github.com/ansys/actions/pull/1174>`_
+
+        * - Update CHANGELOG for v10.2.7
+          - `#1177 <https://github.com/ansys/actions/pull/1177>`_
+
+        * - Update CHANGELOG for v10.2.8
+          - `#1205 <https://github.com/ansys/actions/pull/1205>`_
+
+        * - Update CHANGELOG for v10.2.9
+          - `#1214 <https://github.com/ansys/actions/pull/1214>`_
+
+        * - Setting fail-fast to false
+          - `#1216 <https://github.com/ansys/actions/pull/1216>`_
+
+        * - Update CHANGELOG for v10.2.10
+          - `#1226 <https://github.com/ansys/actions/pull/1226>`_
+
+        * - Deprecate the check-environment-approval action
+          - `#1232 <https://github.com/ansys/actions/pull/1232>`_
+
+        * - Update CHANGELOG for v10.2.11
+          - `#1242 <https://github.com/ansys/actions/pull/1242>`_
+
+        * - Update CHANGELOG for v10.2.12
+          - `#1246 <https://github.com/ansys/actions/pull/1246>`_
+
+        * - Revert check-environment-approval action deprecation
+          - `#1251 <https://github.com/ansys/actions/pull/1251>`_
+
+        * - Bump zizmor version
+          - `#1252 <https://github.com/ansys/actions/pull/1252>`_
+
+        * - Add type checking
+          - `#1261 <https://github.com/ansys/actions/pull/1261>`_
+
+        * - Add \`cmocean\` to whitelist
+          - `#1282 <https://github.com/ansys/actions/pull/1282>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Clean up environment variables to use GH action path
+          - `#1182 <https://github.com/ansys/actions/pull/1182>`_
+
+        * - Switch \`doc-style\` and \`release-github\` actions to tomlkit from tomli
+          - `#1234 <https://github.com/ansys/actions/pull/1234>`_
+
+        * - Use actions/attest instead of actions/attest-build-provenance
+          - `#1247 <https://github.com/ansys/actions/pull/1247>`_
+
+        * - Doc deploy actions
+          - `#1265 <https://github.com/ansys/actions/pull/1265>`_
+
+
 `10.2.12 <https://github.com/ansys/actions/releases/tag/v10.2.12>`_ - March 30, 2026
 ====================================================================================
 

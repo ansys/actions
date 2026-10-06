@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -53,6 +53,13 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.approver-token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#auto-merge-pull-requests"
 
     - name: Verify allowed PRs (dependabot and pre-commit.ci)
       id: verify-allowed-prs
@@ -110,7 +117,7 @@ runs:
     - name: Dependabot metadata (if dependabot PR only)
       if: ${{ steps.verify-allowed-prs.outputs.SKIP_ACTION == '0' && steps.verify-allowed-prs.outputs.DEPENDABOT_PR == '1' }}
       id: metadata
-      uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2.5.0
+      uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
       with:
         github-token: ${{ inputs.approver-token }}
 

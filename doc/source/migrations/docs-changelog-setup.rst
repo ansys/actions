@@ -120,10 +120,10 @@ Include the release notes in your documentation
 
   This assumes the following code already exists in the ``doc/source/conf.py`` file:
 
-  .. code:: python
+  .. code::
 
       from ansys_sphinx_theme import get_version_match
-      from ansys.<product>.<library> import __version__
+      from ansys.<product>.<library>
 
       release = version = __version__
       switcher_version = get_version_match(version)

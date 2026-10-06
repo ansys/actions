@@ -1,28 +1,27 @@
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directories:
-      - "/requirements"
-      - "/check-vulnerabilities"
-      - "/hk-package-clean-except"
-      - "/hk-package-clean-untagged"
-      - "/check-licenses"
+  - package-ecosystem: "uv"
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
+      day: "wednesday"
     cooldown:
       default-days: 7
       include:
         - "*"  # Include all dependencies in cooldown
-      exclude:
-        - "ansys-sphinx-theme"
+    exclude-paths:
+      - "**/requirements*.txt"
     commit-message:
-      prefix: "build(pip)"
+      prefix: "build(uv)"
     labels:
       - "dependencies:requirements"
+    allow:
+      - dependency-type: "all"
 
   - package-ecosystem: "github-actions"
     directories:
       - ".github/workflows"
+      - "_check-environment-approval"
       - "_doc-build-linux"
       - "_doc-build-windows"
       - "_doc-gen-canonical"
@@ -59,7 +58,7 @@ updates:
       - "release-pypi-test"
       - "tests-pytest"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     cooldown:
       default-days: 7
@@ -74,6 +73,8 @@ updates:
       cicd-actions:
         patterns:
           - "micnncim/action-label-syncer"
+          - "pypa/gh-action-pypi-publish"
+          - "pyvista/setup-headless-display-action"
       # Github actions that are used in our composite actions
       github-actions:
         patterns:
@@ -92,7 +93,6 @@ updates:
       doc-related-actions:
         patterns:
           - "awalsh128/cache-apt-pkgs-action"
-          - "quarto-dev/quarto-actions/setup"
           - "peaceiris/actions-gh-pages"
           - "peter-evans/create-or-update-comment"
       # Actions associated to our tests composite actions
@@ -108,14 +108,32 @@ updates:
       # Actions associated to our release composite actions
       release-related-actions:
         patterns:
-          - "pypa/gh-action-pypi-publish"
           - "softprops/action-gh-release"
       # Missed non ansys actions that should by assigned to a group
       must-be-assigned-actions:
         patterns:
-          - peter-evans/find-comment
-          - pyvista/setup-headless-display-action
-          - vimtor/action-zip
-          - dependabot/fetch-metadata
+          - "peter-evans/find-comment"
+          - "vimtor/action-zip"
+          - "dependabot/fetch-metadata"
         exclude-patterns:
           - "ansys/actions*"
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "wednesday"
+    cooldown:
+      default-days: 7 # semver-* options are not applicable for pre-commit
+      include:
+        - "*"  # Include all dependencies in cooldown
+      exclude:
+        - "ansys/pre-commit-hooks/*"
+    labels:
+      - "dependencies:pre-commit"
+    commit-message:
+      prefix: "build(pre-commit)"
+    groups:
+      pre-commit-hooks:
+        patterns:
+          - "*"

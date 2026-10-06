@@ -1,6 +1,8 @@
 check-pr-title:
   name: "Check pull-request title follows conventional commits"
   runs-on: ubuntu-latest
+  permissions:
+    pull-requests: read  # Required to read pull request title
   steps:
     - uses: ansys/actions/check-pr-title@{{ version }}
       with:

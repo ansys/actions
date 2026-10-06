@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -25,8 +25,9 @@ name: |
 
 description: |
   Action actively checking for library and third party vulnerabilities by
-  means of the `bandit <https://bandit.readthedocs.io/en/latest/>`_ and
-  `safety <https://pyup.io/safety/>`_ Python packages. These packages
+  means of `bandit <https://bandit.readthedocs.io/en/latest/>`_,
+  `safety <https://pyup.io/safety/>`_ and (optionally)
+  `uv audit <https://docs.astral.sh/uv/reference/cli/#uv-audit>`_. These tools
   allow you to identify security issues and vulnerabilities inside your code.
 
   This action has two running modes:
@@ -208,7 +209,7 @@ inputs:
   python-version:
     description: |
       Desired Python version.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
@@ -219,9 +220,25 @@ inputs:
     required: false
     type: boolean
 
+  use-uv-audit:
+    description: |
+      Whether to run ``uv audit`` in addition to safety and bandit checks.
+      Default value is ``false``.
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
+
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "${{ inputs.create-issues == 'true' && 'contents: read, issues: write' || 'contents: read' }}"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/vulnerability-actions/index.html#check-vulnerabilities-action"
+
     - name: "Declare needed environment variables"
       shell: bash
       env:
@@ -243,15 +260,52 @@ runs:
         fi
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       if: ${{ inputs.checkout == 'true' }}
       with:
         repository: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
         persist-credentials: false
 
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f "uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - uses: $/_logging
+      if: ${{ inputs.use-uv-audit == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'false' }}
+      with:
+        level: "ERROR"
+        message: >
+          Input use-uv-audit is enabled but no uv.lock file was detected. Please, consider using uv lock files to manage your dependencies. Run 'uv lock' to generate one.
+
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - name: "Check if requirements.txt file exists"
+      id: check-exists-requirements-file
+      shell: bash
+      if: ${{ inputs.skip-install == 'true' }}
+      env:
+        EXTRA_TARGETS: ${{ inputs.extra-targets }}
+      run: |
+        echo "EXISTS_REQUIREMENTS=$(if [ -f requirements/requirements_${EXTRA_TARGETS}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+
+    - uses: $/_logging
+      if: ${{ inputs.skip-install == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true' }}
+      with:
+        level: "ERROR"
+        message: >
+          A uv.lock file was detected and a requirements file exists. Please, either use the
+          lock file or the requirements file, but not both.
+
+    # ------------------------------------------------------------------------
+
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -271,7 +325,7 @@ runs:
           echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
         fi
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -279,14 +333,14 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
           Set up python to check vulnerabilities.
 
     - name: "Set up Python ${{ inputs.python-version }}"
-      uses: ansys/actions/_setup-python@main
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: false
@@ -348,9 +402,20 @@ runs:
           echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/bin/activate')" >> ${GITHUB_OUTPUT}
         fi
 
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      run: |
+        if [[ -f ".python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          rm .python-version
+        else
+          echo ".python-version file not detected. No action required."
+        fi
+
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -376,10 +441,12 @@ runs:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
         EXTRA_TARGETS: ${{ inputs.extra-targets }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       # Note: we need to use an array to store the extra targets, otherwise
       # the shell expansion messes with the quotes in the poetry case.
       run: |
         ${ACTIVATE_VENV}
+        # 1. Define the extra targets to be installed based on the build backend and the provided input
         if [[ "${EXTRA_TARGETS}" != '' ]]; then
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
@@ -392,23 +459,22 @@ runs:
           echo "No extra targets to install"
           extra_targets=""
         fi
-
+        # 2. Trigger the installation command based on the build backend
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry install --extras "${extra_targets}"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install ."${extra_targets}"
+          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+            if [[ "${EXTRA_TARGETS}" != '' ]]; then
+              uv sync --frozen --extra "${EXTRA_TARGETS}" --no-default-groups
+            else
+              uv sync --frozen --no-default-groups
+            fi
+          else
+            uv pip install ."${extra_targets}"
+          fi
         else
           python -m pip install ."${extra_targets}"
         fi
-
-    - name: "Check if requirements.txt file exists"
-      id: check-exists-requirements-file
-      shell: bash
-      if: ${{ inputs.skip-install == 'true' }}
-      env:
-        EXTRA_TARGETS: ${{ inputs.extra-targets }}
-      run: |
-        echo "EXISTS_REQUIREMENTS=$(if [ -f requirements/requirements_${EXTRA_TARGETS}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
 
     - name: "Install dependencies from the requirements file"
       shell: bash
@@ -442,7 +508,7 @@ runs:
 
     # ------------------------------------------------------------------------
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -503,21 +569,21 @@ runs:
         echo "SAFETY_CONFIG_ERROR=${SAFETY_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
         echo "BANDIT_CONFIG_ERROR=${BANDIT_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ steps.validate-config-files.outputs.SAFETY_CONFIG_ERROR == 'true' }}
       with:
         level: "ERROR"
         message: >
           The provided safety policy file '${{ inputs.safety-configfile }}' does not exist in the repository.
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       if: ${{ steps.validate-config-files.outputs.BANDIT_CONFIG_ERROR == 'true' }}
       with:
         level: "ERROR"
         message: >
           The provided bandit config file '${{ inputs.bandit-configfile }}' does not exist in the repository.
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -540,10 +606,11 @@ runs:
           echo "Using custom safety policy file: ${SAFETY_POLICY_FILE}"
         fi
 
-        # Run safety vulnerability checks
-        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+        # Run safety vulnerability checks and strip safety scan deprecation notes from the output
+        safety check -o bare --save-json info_safety.json --continue-on-error --policy-file "${SAFETY_POLICY_FILE}" -r "${GITHUB_ACTION_PATH}/requirements-for-safety.txt" 2>&1 \
+        | grep -v -E '^\+==|^$|DEPRECATED:.*has been DEPRECATED|encourage switching to the new'
 
-    - uses: ansys/actions/_logging@main
+    - uses: $/_logging
       with:
         level: "INFO"
         message: >
@@ -570,6 +637,46 @@ runs:
         # Run bandit security checks
         bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
+    - uses: $/_logging
+      if: ${{ inputs.use-uv-audit == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Running uv audit security checks.
+
+    - name: "Detect uv audit malware-check config"
+      id: detect-uv-audit-malware-check
+      if: ${{ inputs.use-uv-audit == 'true' }}
+      shell: bash
+      run: |
+        python ${GITHUB_ACTION_PATH}/../python-utils/detect_uv_audit_malware_check.py
+
+    - uses: $/_logging
+      if: ${{ inputs.use-uv-audit == 'true' && steps.detect-uv-audit-malware-check.outputs.HAS_AUDIT_MALWARE_CHECK == 'false' }}
+      with:
+        level: "INFO"
+        message: >
+          Input use-uv-audit is enabled but malware-check is not set in pyproject.toml. A fallback UV_MALWARE_CHECK=1 will be used for uv audit. Consider adding malware-check to pyproject.toml to avoid this fallback.
+
+    - uses: $/_logging
+      if: ${{ inputs.use-uv-audit == 'true' && steps.detect-uv-audit-malware-check.outputs.AUDIT_MALWARE_CHECK_VALUE == 'false' }}
+      with:
+        level: "WARNING"
+        message: >
+          malware-check is set to false in pyproject.toml, consider changing it to true. UV_MALWARE_CHECK=1 will be forced for uv audit.
+
+    - name: "Run uv audit checks"
+      if: ${{ inputs.use-uv-audit == 'true' }}
+      id: run-uv-audit-checks
+      shell: bash
+      continue-on-error: true
+      env:
+        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+        UV_MALWARE_CHECK: 1
+      run: |
+        ${ACTIVATE_VENV}
+        uv audit --frozen --no-default-groups --preview-features audit-command > info_uv_audit.log 2>&1
+
     - name: "Run advisory checks"
       shell: bash
       env:
@@ -579,6 +686,7 @@ runs:
         DEPENDENCY_CHECK_PACKAGE_NAME: ${{ inputs.python-package-name }}
         DEPENDENCY_CHECK_REPOSITORY: ${{ inputs.repo-full-name == '' && github.repository || inputs.repo-full-name }}
         DEPENDENCY_CHECK_CREATE_ISSUES: ${{ inputs.create-issues == 'true' && '1' || '' }}
+        DEPENDENCY_CHECK_UV_AUDIT_ENABLED: ${{ inputs.use-uv-audit == 'true' && '1' || '' }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${HIDE_LOG}" == 'true' ]]; then
@@ -587,10 +695,12 @@ runs:
           python "${GITHUB_ACTION_PATH}/check_vulnerabilities.py"
         fi
 
-    - name: "Uploading safety and bandit results"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-      if: inputs.upload-reports == 'true' || ( failure() && inputs.upload-reports == 'true' )
+    - name: "Uploading results"
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ always() && inputs.upload-reports == 'true' }}
       with:
         name: vulnerability-results
-        path: ./info_*.json
+        path: |
+          ./info_*.json
+          ${{ inputs.use-uv-audit == 'true' && './info_uv_audit.log' || '' }}
         retention-days: 7

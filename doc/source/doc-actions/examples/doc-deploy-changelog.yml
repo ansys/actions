@@ -3,8 +3,8 @@ update-changelog:
   if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
   runs-on: ubuntu-latest
   permissions:
-    contents: write
-    pull-requests: write
+    contents: write  # Required to push commits, delete and create tags
+    pull-requests: write  # Required to create pull requests
   steps:
     - uses: ansys/actions/doc-deploy-changelog@{{ version }}
       with:

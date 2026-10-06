@@ -1,6 +1,8 @@
 hk-package-clean-untagged:
   name: "Perform untagged versions cleanup"
   runs-on: ubuntu-latest
+  permissions:
+    packages: delete  # Required to delete package versions from GitHub Container Registry (GHCR)
   steps:
     - name: "Perform untagged versions cleanup"
       uses: ansys/actions/hk-package-clean-untagged@{{ version }}

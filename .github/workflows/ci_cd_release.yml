@@ -30,7 +30,7 @@ jobs:
     steps:
 
     - name: "Checkout repository" # zizmor: ignore[artipacked] git credentials need to be persisted on this job
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-tags: true
         ref: ${{ github.ref }}
@@ -99,6 +99,8 @@ jobs:
         MAJOR: ${{ steps.current-branch-tag-validity.outputs.MAJOR }}
         MINOR: ${{ steps.tag-components.outputs.MINOR }}
       run: |
+        git tag -d v${MAJOR}.${MINOR} 2>/dev/null || true
+        git tag -d v${MAJOR} 2>/dev/null || true
         git tag v${MAJOR}.${MINOR}
         git tag v${MAJOR}
         git push origin v${MAJOR}.${MINOR}
@@ -112,7 +114,7 @@ jobs:
       pull-requests: write # Needed to create PR for changelog
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/doc-deploy-changelog@main
+      - uses: $/doc-deploy-changelog
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
@@ -122,8 +124,10 @@ jobs:
     name: "Code style"
     runs-on: ubuntu-latest
     needs: rolling-release
+    permissions:
+      contents: read
     steps:
-      - uses: ansys/actions/code-style@main
+      - uses: $/code-style
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -135,7 +139,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: ansys/actions/doc-style@main
+      - uses: $/doc-style
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -143,13 +147,16 @@ jobs:
     name: "Doc build"
     runs-on: ubuntu-latest
     needs: doc-style
+    permissions:
+      contents: read
     steps:
-      - uses: ansys/actions/doc-build@main
+      - uses: $/doc-build
         with:
-          skip-install: true
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          use-python-cache: false
+          group-dependencies-name: 'doc'
           needs-quarto: true
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          skip-install: true
+          use-python-cache: false
 
   tests:
     name: "Tests"
@@ -160,12 +167,12 @@ jobs:
     steps:
 
     - name: "Install Git and clone project"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
     - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+      uses: $/_setup-python
       with:
         python-version: ${{ env.MAIN_PYTHON_VERSION }}
         use-cache: false
@@ -185,7 +192,7 @@ jobs:
         python -m twine check .ci/${LIBRARY_NAME}/dist/**
 
     - name: "Upload distribution artifacts"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ env.LIBRARY_NAME }}-artifacts
         path: .ci/${{ env.LIBRARY_NAME }}/dist
@@ -237,7 +244,7 @@ jobs:
       run: ls -R
 
     - name: "Upload artifacts to test PyPI using trusted publisher"
-      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+      uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
       with:
         repository-url: "https://test.pypi.org/legacy/"
         print-hash: true
@@ -253,7 +260,7 @@ jobs:
         echo "LINK=${LINK}" >> $GITHUB_OUTPUT
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       with:
         body: >
           If you are migrating the actions of your project to a new major release, breaking changes can be expected.
@@ -273,7 +280,7 @@ jobs:
     permissions:
       contents: write # Needed to update files on the gh-pages branch
     steps:
-      - uses: ansys/actions/doc-deploy-stable@main
+      - uses: $/doc-deploy-stable
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,8 @@
 docker-style:
   name: "Docker style"
   runs-on: ubuntu-latest
+  permissions:
+    contents: read  # Required to checkout repository code when the repository is not public
   steps:
     - uses: ansys/actions/docker-style@{{ version }}
       with:

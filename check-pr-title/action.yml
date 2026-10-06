@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -59,6 +59,13 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "pull-requests: read"
+        token: ${{ inputs.token != '' && inputs.token || github.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#pull-request-title-action"
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' }}

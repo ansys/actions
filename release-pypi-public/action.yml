@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -28,6 +28,13 @@ description: |
   the token. Artifacts get downloaded from the CI/CD pipeline and are assumed to be
   named ``<library-name>-artifacts``. This file is expected to contain a wheel file
   and a source distribution file for the desired library.
+
+  .. error::
+
+      This action is deprecated starting with ``ansys/action@v11`` because publishing
+      to PyPI using tokens is no longer supported. Please contact the PyAnsys Core Team
+      at pyansys.core@ansys.com for enabling trusted publishing for your project and also
+      refer to :ref:`release_pypi_trusted_publisher`.
 
   .. attention::
 
@@ -98,45 +105,25 @@ inputs:
     default: false
     type: boolean
 
-  skip-existing:
-    description: |
-      Continue uploading files if one already exists. Only valid when uploading
-      to PyPI. Other implementations may not support this.
-    required: false
-    default: true
-    type: boolean
-
   python-version:
     description: |
       Python version for installing and using `twine
       <https://twine.readthedocs.io/en/stable/>`_.
     required: false
-    default: '3.11'
+    default: '3.12'
     type: string
 
 runs:
   using: "composite"
   steps:
 
-    # TODO: ansys/actions@v11 will enforce the use of trusted publishers
-    - name: "Warn user if not using trusted publishers"
-      if: ${{ inputs.use-trusted-publisher == 'false' }}
-      uses: ansys/actions/_logging@main
+    # TODO: The action file should be removed in ansys/actions@v12
+    - name: "Fail the action"
+      uses: $/_logging
       with:
-        level: "WARNING"
+        level: "ERROR"
         message: >
-          Ansys Actions v11 will remove support for releases using PyPI tokens.
-          Please contact the PyAnsys Core Team at pyansys.core@ansys.com for
-          enabling trusted publishers releases in your project.
-
-    - name: "Release to the public PyPI index"
-      uses: ansys/actions/_release-pypi@main
-      with:
-        library-name: ${{ inputs.library-name }}
-        index-name: "https://upload.pypi.org/legacy/"
-        twine-username: ${{ inputs.twine-username }}
-        twine-token: ${{ inputs.twine-token }}
-        python-version: ${{ inputs.python-version }}
-        dry-run: ${{ inputs.dry-run }}
-        skip-existing: ${{ inputs.skip-existing }}
-        use-trusted-publisher: ${{ inputs.use-trusted-publisher }}
+          This action is deprecated starting with ``ansys/action@v11`` because publishing
+          to public PyPI using tokens is no longer supported. Please contact the PyAnsys Core Team
+          at pyansys.core@ansys.com for enabling trusted publishing for your project and also
+          refer to :ref:`release_pypi_trusted_publisher`.

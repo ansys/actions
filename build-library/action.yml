@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -62,7 +62,7 @@ inputs:
   python-version:
     description: |
       Python version used for installing and execution of the build process.
-    default: '3.11'
+    default: '3.12'
     required: false
     type: string
 
@@ -82,6 +82,16 @@ inputs:
       be used unaltered. By default it is set to ``true``.
     required: false
     default: true
+    type: boolean
+
+  checkout-lfs:
+    description: |
+      Whether to download Git LFS-tracked files during the checkout step.
+      Enable this when the repository stores package data files tracked with
+      Git LFS that must be included in the built sdist/wheel. Only applies
+      when ``checkout`` is ``true``. Default value is ``false``.
+    required: false
+    default: false
     type: boolean
 
   validate-build:
@@ -121,16 +131,19 @@ inputs:
     required: false
     type: boolean
 
-  checkout-fetch-depth:
+  skip-python-setup:
     description: |
-      Set fetch-depth option for actions/checkout. Default value is ``1``.
-    required: false
-    default: '1'
-    type: string
+      Whether to skip the Python setup step performed by
+      ``ansys/actions/_setup-python``. If ``true``, the setup step is skipped
+      and the Python version already available in the environment is used.
+      This is useful when a specific Python installation is already on the
+      ``PATH`` and the setup step would override it.
 
-  checkout-fetch-tags:
-    description: |
-      Set fetch-tags option for actions/checkout. Default value is ``false``.
+      .. warning::
+
+          When this option is enabled, the ``python-version`` input is ignored.
+          The Python version already available in the environment is used as-is.
+
     required: false
     default: false
     type: boolean
@@ -139,23 +152,80 @@ runs:
   using: "composite"
   steps:
 
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "${{ inputs.attest-provenance == 'true' && 'contents: read, id-token: write, attestations: write' || 'contents: read' }}"
+        doc-url: "https://actions.docs.ansys.com/version/stable/build-actions/index.html#build-library-action"
+
     - name: "Install Git and clone project"
       if: ${{ inputs.checkout == 'true' }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
-        fetch-depth: ${{ inputs.checkout-fetch-depth }}
-        fetch-tags:  ${{ inputs.checkout-fetch-tags }}
+        lfs: ${{ inputs.checkout-lfs }}
 
-    - name: "Set up Python"
-      uses: ansys/actions/_setup-python@main
+    - name: "Set up Python ${{ inputs.python-version }}"
+      if: ${{ inputs.skip-python-setup == 'false' }}
+      uses: $/_setup-python
       with:
         python-version: ${{ inputs.python-version }}
         use-cache: ${{ inputs.use-python-cache }}
         provision-uv: ${{ inputs.use-uv }}
         prune-uv-cache: ${{ inputs.use-python-cache != 'true' }}
 
+    - uses: $/_logging
+      if: ${{ inputs.skip-python-setup == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Skipping Python setup to use system Python.
+
+    # --------------------------------------------------------
+    # Install package by leveraging uv lockfile if detected
+    # --------------------------------------------------------
+
+    - name: "Auto-detect uv lockfile"
+      id: auto-detect-uv-lockfile
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
+          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: "Suppress .python-version file for uv"
+      if: ${{ inputs.use-uv == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        if [[ -f "${WORKING_DIRECTORY}/.python-version" ]]; then
+          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
+          rm "${WORKING_DIRECTORY}/.python-version"
+        else
+          echo ".python-version file not detected. No action required."
+        fi
+
+    - name: "Install dependencies from uv lockfile"
+      if: ${{ inputs.use-uv == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' }}
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        cd ${WORKING_DIRECTORY}
+        uv sync --frozen --no-managed-python --no-default-groups
+
+    # ------------------------------------------------------------------------
+    # Install package without leveraging uv lockfile
+    # ------------------------------------------------------------------------
+
     - name: "Install library"
+      if: ${{ inputs.use-uv != 'true' || steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE != 'true' }}
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
@@ -169,8 +239,13 @@ runs:
       env:
         TAG_REF: ${{ github.ref_name }}
         LIBRARY_NAME: ${{ inputs.library-name }}
+        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
       run: |
-        LIBRARY_VERSION=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$LIBRARY_NAME'))")
+        if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
+          LIBRARY_VERSION=$(uv run python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$LIBRARY_NAME'))")
+        else
+          LIBRARY_VERSION=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$LIBRARY_NAME'))")
+        fi
         if [ -z "$LIBRARY_VERSION" ]; then
             echo "Problem getting the library version. Exiting with error."
             exit 1
@@ -191,15 +266,26 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        ${INSTALL_COMMAND} build twine
+        if [[ "${USE_UV}" == 'true' ]]; then
+          REQUIREMENTS_FILE="${GITHUB_ACTION_PATH}/requirements-uv.txt"
+        else
+          REQUIREMENTS_FILE="${GITHUB_ACTION_PATH}/requirements-pip.txt"
+        fi
+        ${INSTALL_COMMAND} -r ${REQUIREMENTS_FILE}
 
     - name: "Build distribution artifacts"
       shell: bash
       env:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        USE_UV: ${{ inputs.use-uv }}
       run: |
-        python -m build --outdir dist "${WORKING_DIRECTORY}"
+        if [ "${USE_UV}" == "true" ]; then
+          uv build --out-dir dist "${WORKING_DIRECTORY}"
+        else
+          python -m build --outdir dist "${WORKING_DIRECTORY}"
+        fi
 
     - name: "Check build health"
       shell: bash
@@ -208,7 +294,7 @@ runs:
         python -m twine check dist/*
 
     - name: "Upload distribution artifacts to GitHub artifacts"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.library-name }}-artifacts
         path: dist/
@@ -216,6 +302,6 @@ runs:
 
     - name: Generate build provenance attestation
       if: inputs.attest-provenance == 'true'
-      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
       with:
         subject-path: dist/

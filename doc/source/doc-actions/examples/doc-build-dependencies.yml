@@ -2,6 +2,8 @@ doc-build:
   name: "Installing additional system dependencies for building documentation"
   runs-on: ubuntu-latest
   needs: doc-style
+  permissions:
+    contents: read  # Required to checkout repository code when the repository is not public
   steps:
     - name: "Run Ansys documentation building action"
       uses: ansys/actions/doc-build@{{ version }}

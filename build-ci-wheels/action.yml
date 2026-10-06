@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,6 +29,12 @@ description: |
   files for every combination of operating system, build system, and Python
   version. The action uses the `cibuildwheel
   <https://github.com/pypa/cibuildwheel>`_ behind the scenes.
+
+  .. warning::
+
+      This action is deprecated starting with ``ansys/actions@v11``. Please use
+      `pypa/cibuildwheel <https://github.com/pypa/cibuildwheel>`_ directly in
+      your workflow. This action will be removed in ``ansys/actions@v12``.
 
   .. note::
 
@@ -92,20 +98,30 @@ runs:
   using: "composite"
   steps:
 
+    # TODO: The action file should be removed in ansys/actions@v12
+    - name: "Deprecation warning"
+      uses: $/_logging
+      with:
+        level: "WARNING"
+        message: >
+          The ``build-ci-wheels`` action is deprecated starting with ``ansys/actions@v11``.
+          Please use ``pypa/cibuildwheel`` directly in your workflow. This action will be
+          removed in ``ansys/actions@v12``.
+
     - name: "Install Git and clone project"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
     - name: "Set up QEMU"
       if: ${{ inputs.cibw-archs == 'aarch64' }}
-      uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+      uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
       with:
         platforms: arm64
 
     - name: "Build wheels for CPython ${{ inputs.python-version }}"
       if: ${{ inputs.requires-pypy == 'false' }}
-      uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
+      uses: pypa/cibuildwheel@e090b81e30c4d855ea63bf4b6e59204c09a101ae # v4.2.1
       env:
         CIBW_BUILD: ${{ inputs.cibw-build }}
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
@@ -114,14 +130,14 @@ runs:
 
     - name: "Build wheels for PyPy"
       if: ${{ inputs.requires-pypy == 'true' && inputs.cibw-archs != 'aarch64' }}
-      uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
+      uses: pypa/cibuildwheel@e090b81e30c4d855ea63bf4b6e59204c09a101ae # v4.2.1
       env:
         CIBW_BUILD: "pp39-*"
         CIBW_SKIP: ${{ inputs.cibw-skip }}
         CIBW_ARCHS: ${{ inputs.cibw-archs }}
 
     - name: "Upload wheel"
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.library-name }}-${{ inputs.operating-system }}-${{ inputs.python-version }}-wheels
         path: ./wheelhouse/*.whl

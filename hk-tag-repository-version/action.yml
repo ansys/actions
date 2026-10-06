@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,13 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
 name: Update latest vX and vX.Y tag
 
 description: |
 
   Custom action to create latest vX and vX.Y tag to point to the latest released version.
   A new branch 'release/vX.Y.Z' is also pushed to be used for hotfixes.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to create and update git tags and release branches
 
   .. note::
 
@@ -49,6 +52,14 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: write"
+        token: ${{ inputs.gh-token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#tag-repository-version"
+
     - name: Pick the input semantic version
       shell: bash
       id: pick_version

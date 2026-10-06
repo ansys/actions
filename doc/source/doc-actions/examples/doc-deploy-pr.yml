@@ -21,6 +21,9 @@ doc-deploy-pr:
   runs-on: ubuntu-latest
   needs: doc-build
   if: contains(github.event.pull_request.labels.*.name, 'deploy-pr-doc')
+  permissions:
+    contents: write  # Required to push documentation to the gh-pages branch
+    pull-requests: write  # Required to add comments on pull requests about documentation deployment
   steps:
     - uses: ansys/actions/doc-deploy-pr@{{ version }}
       with:

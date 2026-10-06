@@ -1,6 +1,8 @@
 build-library:
   name: "Build library basic example"
   runs-on: ubuntu-latest
+  permissions:
+    contents: read  # Required to checkout repository code when the repository is not public
   steps:
     - name: "Build library source and wheel artifacts"
       uses: ansys/actions/build-library@{{ version }}
