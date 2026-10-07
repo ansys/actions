@@ -12,4 +12,4 @@ pygments==2.20.0
     # via pytest
 pytest==9.0.3
     # via pytest-randomly
-pytest-randomly==4.1.0
+pytest-randomly==5.0.0
