@@ -241,7 +241,7 @@ release-github = [
     { name = "tomlkit", specifier = "<=0.16" },
 ]
 release-pypi = [{ name = "twine", specifier = "<=7.1" }]
-tests-pytest = [{ name = "pytest-randomly", specifier = "<=5.0.0" }]
+tests-pytest = [{ name = "pytest-randomly", specifier = "<=5.1" }]
 
 [[package]]
 name = "ansys-sphinx-theme"
