@@ -146,7 +146,8 @@ def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
     for tag in tag_lines:
         match = _TAG_PATTERN.match(tag.strip())
         if match:
-            return tuple(int(part) for part in match.groups())
+            major, minor, patch = match.groups()
+            return int(major), int(minor), int(patch)
     raise AutoReleaseError("No 'vX.Y.Z' tags found; cannot perform a patch release.")
 
 
