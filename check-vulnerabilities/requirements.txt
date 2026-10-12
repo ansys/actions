@@ -65,7 +65,7 @@ markdown-it-py==4.2.0
     # via rich
 markupsafe==3.0.3
     # via jinja2
-marshmallow==4.3.0
+marshmallow==4.3.1
     # via safety
 mdurl==0.1.2
     # via markdown-it-py
@@ -137,4 +137,4 @@ urllib3==2.7.0
     # via
     #   pygithub
     #   requests
-uv==0.12.10
+uv==0.12.18

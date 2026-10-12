@@ -24,6 +24,7 @@
 import os
 from pathlib import Path
 import re
+import secrets
 
 import tomlkit
 from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
@@ -45,11 +46,14 @@ def save_env_variable(env_var_name: str, env_var_value: str):
     # Save environment variable with its value
     with Path(github_env).open("a") as file:
         if "\n" in env_var_value or "\r" in env_var_value:
-            file.write(f"{env_var_name}<<EOF\n")
+            # A random delimiter to prevent random
+            # contents from closing the heredoc early
+            delimiter = f"ghadelim_{secrets.token_hex(16)}"
+            file.write(f"{env_var_name}<<{delimiter}\n")
             file.write(env_var_value)
-            file.write("\nEOF\n")
+            file.write(f"\n{delimiter}\n")
         else:
-            file.write(f"{env_var_name}={env_var_value}")
+            file.write(f"{env_var_name}={env_var_value}\n")
 
 
 def get_first_letter_case(pr_title: str):
