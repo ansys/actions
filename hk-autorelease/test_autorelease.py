@@ -194,3 +194,13 @@ def test_main_invalid_version_source_raises(monkeypatch):
     monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
     with pytest.raises(AutoReleaseError, match="Invalid version-source"):
         main()
+
+
+def test_main_missing_env_var_raises(monkeypatch):
+    monkeypatch.setenv("VERSION_SOURCE", "file")
+    monkeypatch.setenv("VERSION_LOCATION", "VERSION")
+    monkeypatch.setenv("MAIN_BRANCH", "main")
+    monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    monkeypatch.delenv("RELEASE_TYPE", raising=False)
+    with pytest.raises(AutoReleaseError, match="RELEASE_TYPE"):
+        main()

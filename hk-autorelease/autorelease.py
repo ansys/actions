@@ -197,7 +197,8 @@ def merge_main_into_release(main_branch: str, version_location: str) -> None:
     run_git("merge", "--abort", check=False)
     raise AutoReleaseError(
         "Merge conflicts detected outside of the version file: "
-        f"{', '.join(conflicted) or 'unknown'}. Please resolve manually."
+        f"{', '.join(conflicted) or 'unknown'}. Please resolve manually.\n"
+        f"git merge output:\n{result.stdout}\n{result.stderr}"
     )
 
 
@@ -257,13 +258,21 @@ _VALID_RELEASE_TYPES = ("patch", "minor", "major")
 _VALID_VERSION_SOURCES = ("file", "pyproject", "setup-py", "python-module")
 
 
+def require_env(name: str) -> str:
+    """Return the value of environment variable ``name``, or raise ``AutoReleaseError``."""
+    try:
+        return os.environ[name]
+    except KeyError:
+        raise AutoReleaseError(f"Missing required environment variable '{name}'.") from None
+
+
 def main() -> None:
     """Entry point: read inputs from the environment and perform the release."""
-    release_type = os.environ["RELEASE_TYPE"]
-    version_source = os.environ["VERSION_SOURCE"]
-    version_location = os.environ["VERSION_LOCATION"]
-    main_branch = os.environ["MAIN_BRANCH"]
-    branch_prefix = os.environ["RELEASE_BRANCH_PREFIX"]
+    release_type = require_env("RELEASE_TYPE")
+    version_source = require_env("VERSION_SOURCE")
+    version_location = require_env("VERSION_LOCATION")
+    main_branch = require_env("MAIN_BRANCH")
+    branch_prefix = require_env("RELEASE_BRANCH_PREFIX")
 
     if release_type not in _VALID_RELEASE_TYPES:
         raise AutoReleaseError(
