@@ -1,0 +1,20 @@
+hk-autorelease:
+  name: "Auto release"
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write  # Required to push commits, branches, and tags
+  steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+        token: ${{ '{{ secrets.MY_BOT_TOKEN }}' }}
+    - name: "Auto release"
+      uses: ansys/actions/hk-autorelease@{{ version }}
+      with:
+        release-type: ${{ '{{ github.event.inputs.release_type }}' }}
+        version-source: file
+        version-location: ansys/api/geometry/VERSION
+        token: ${{ '{{ secrets.MY_BOT_TOKEN }}' }}
+        bot-username: ${{ '{{ secrets.MY_BOT_USERNAME }}' }}
+        bot-email: ${{ '{{ secrets.MY_BOT_EMAIL }}' }}
