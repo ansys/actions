@@ -22,8 +22,11 @@
 
 """Automate patch/minor/major releases by bumping a version and pushing git tags."""
 
+import os
 from pathlib import Path
 import re
+import subprocess
+import sys
 
 from packaging.version import Version
 import tomlkit
@@ -152,3 +155,143 @@ def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
 def classify_merge_conflict(conflicted_files: list[str], version_location: str) -> bool:
     """Return ``True`` if the only conflicting file is ``version_location``."""
     return conflicted_files == [version_location]
+
+
+def run_git(*args: str, check: bool = True) -> str:
+    """Run a git command and return its stripped stdout."""
+    result = subprocess.run(["git", *args], capture_output=True, text=True)
+    if check and result.returncode != 0:
+        raise AutoReleaseError(f"git {' '.join(args)} failed:\n{result.stdout}\n{result.stderr}")
+    return result.stdout.strip()
+
+
+def export_output(name: str, value: str) -> None:
+    """Append a ``name=value`` entry to the ``GITHUB_OUTPUT`` file."""
+    github_output = os.environ["GITHUB_OUTPUT"]
+    with Path(github_output).open("a", encoding="utf-8") as file:
+        file.write(f"{name}={value}\n")
+
+
+def find_latest_release_tag() -> tuple[int, int, int]:
+    """Fetch tags and return the ``(major, minor, patch)`` of the latest release."""
+    run_git("fetch", "--tags")
+    output = run_git("tag", "--list", "v*", "--sort=-version:refname")
+    return parse_latest_release_tag(output.splitlines())
+
+
+def merge_main_into_release(main_branch: str, version_location: str) -> None:
+    """Merge ``main_branch`` into the current branch, auto-resolving version-only conflicts."""
+    result = subprocess.run(
+        ["git", "merge", main_branch, "--no-edit"], capture_output=True, text=True
+    )
+    if result.returncode == 0:
+        return
+
+    conflicted = run_git("diff", "--name-only", "--diff-filter=U").splitlines()
+    if classify_merge_conflict(conflicted, version_location):
+        run_git("checkout", "--ours", version_location)
+        run_git("add", version_location)
+        run_git("commit", "--no-edit")
+        return
+
+    run_git("merge", "--abort", check=False)
+    raise AutoReleaseError(
+        "Merge conflicts detected outside of the version file: "
+        f"{', '.join(conflicted) or 'unknown'}. Please resolve manually."
+    )
+
+
+def run_minor_major_release(release_type, version_source, version_location, main_branch, branch_prefix):
+    """Perform a minor or major release. Returns ``(release_version, dev_version, release_branch)``."""
+    run_git("checkout", main_branch)
+    run_git("pull")
+
+    current_dev_version = read_version(version_source, version_location)
+    release_version, dev_version, branch = bump_minor_major(
+        current_dev_version, release_type, branch_prefix
+    )
+
+    run_git("checkout", "-b", branch)
+    write_version(version_source, version_location, release_version)
+    run_git("add", version_location)
+    run_git("commit", "-m", f"release: v{release_version}")
+    run_git("push", "origin", branch)
+    run_git("tag", f"v{release_version}")
+    run_git("push", "origin", f"v{release_version}")
+
+    run_git("checkout", main_branch)
+    write_version(version_source, version_location, dev_version)
+    run_git("add", version_location)
+    run_git("commit", "-m", f"chore: bump dev version to v{dev_version}")
+    run_git("push", "origin", main_branch)
+
+    return release_version, dev_version, branch
+
+
+def run_patch_release(version_source, version_location, main_branch, branch_prefix):
+    """Perform a patch release. Returns ``(release_version, release_branch)``."""
+    run_git("checkout", main_branch)
+    run_git("pull")
+
+    major, minor, _patch = find_latest_release_tag()
+    branch = release_branch_name(branch_prefix, major, minor)
+
+    run_git("checkout", branch)
+    merge_main_into_release(main_branch, version_location)
+
+    current_version = read_version(version_source, version_location)
+    release_version = bump_patch(current_version)
+    write_version(version_source, version_location, release_version)
+    run_git("add", version_location)
+    run_git("commit", "-m", f"release: v{release_version}")
+    run_git("push", "origin", branch)
+    run_git("tag", f"v{release_version}")
+    run_git("push", "origin", f"v{release_version}")
+
+    run_git("checkout", main_branch)
+
+    return release_version, branch
+
+
+_VALID_RELEASE_TYPES = ("patch", "minor", "major")
+_VALID_VERSION_SOURCES = ("file", "pyproject", "setup-py", "python-module")
+
+
+def main() -> None:
+    """Entry point: read inputs from the environment and perform the release."""
+    release_type = os.environ["RELEASE_TYPE"]
+    version_source = os.environ["VERSION_SOURCE"]
+    version_location = os.environ["VERSION_LOCATION"]
+    main_branch = os.environ["MAIN_BRANCH"]
+    branch_prefix = os.environ["RELEASE_BRANCH_PREFIX"]
+
+    if release_type not in _VALID_RELEASE_TYPES:
+        raise AutoReleaseError(
+            f"Invalid release-type '{release_type}'. Must be one of {_VALID_RELEASE_TYPES}."
+        )
+    if version_source not in _VALID_VERSION_SOURCES:
+        raise AutoReleaseError(
+            f"Invalid version-source '{version_source}'. Must be one of {_VALID_VERSION_SOURCES}."
+        )
+
+    if release_type == "patch":
+        release_version, branch = run_patch_release(
+            version_source, version_location, main_branch, branch_prefix
+        )
+        dev_version = ""
+    else:
+        release_version, dev_version, branch = run_minor_major_release(
+            release_type, version_source, version_location, main_branch, branch_prefix
+        )
+
+    export_output("new-version", release_version)
+    export_output("new-dev-version", dev_version)
+    export_output("release-branch", branch)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except AutoReleaseError as error:
+        print(f"::error::{error}", file=sys.stderr)
+        sys.exit(1)

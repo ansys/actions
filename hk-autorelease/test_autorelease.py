@@ -29,6 +29,7 @@ from autorelease import (
     bump_minor_major,
     bump_patch,
     classify_merge_conflict,
+    main,
     parse_latest_release_tag,
     read_version,
     release_branch_name,
@@ -173,3 +174,23 @@ def test_classify_merge_conflict_other_files():
 
 def test_classify_merge_conflict_unrelated_file():
     assert classify_merge_conflict(["README.md"], "VERSION") is False
+
+
+def test_main_invalid_release_type_raises(monkeypatch):
+    monkeypatch.setenv("RELEASE_TYPE", "bogus")
+    monkeypatch.setenv("VERSION_SOURCE", "file")
+    monkeypatch.setenv("VERSION_LOCATION", "VERSION")
+    monkeypatch.setenv("MAIN_BRANCH", "main")
+    monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    with pytest.raises(AutoReleaseError, match="Invalid release-type"):
+        main()
+
+
+def test_main_invalid_version_source_raises(monkeypatch):
+    monkeypatch.setenv("RELEASE_TYPE", "patch")
+    monkeypatch.setenv("VERSION_SOURCE", "bogus")
+    monkeypatch.setenv("VERSION_LOCATION", "VERSION")
+    monkeypatch.setenv("MAIN_BRANCH", "main")
+    monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    with pytest.raises(AutoReleaseError, match="Invalid version-source"):
+        main()
