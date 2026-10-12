@@ -269,6 +269,7 @@ jobs:
         RELEASE_MAJOR: ${{ env.MAJOR }}
         RELEASE_MIGRATION_LINK: ${{ steps.link-migration-guide.outputs.LINK }}
       run: |
+        set -euo pipefail
         release_body="$(cat <<'EOF'
         If you are migrating the actions of your project to a new major release, breaking changes can be expected.
 
