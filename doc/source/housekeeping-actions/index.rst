@@ -67,12 +67,6 @@ Example standalone workflow file (``.github/workflows/autorelease.yml``):
         permissions:
           contents: write  # Required to push commits, branches, and tags
         steps:
-          - uses: actions/checkout@v6
-            with:
-              fetch-depth: 0
-              fetch-tags: true
-              token: ${{ secrets.MY_BOT_TOKEN }}
-
           - name: "Auto release"
             uses: ansys/actions/hk-autorelease@v11
             with:

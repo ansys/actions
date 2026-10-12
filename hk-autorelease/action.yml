@@ -48,9 +48,9 @@ description: |
 
   .. note::
 
-     This action does not check out the repository. The calling workflow
-     must do so beforehand with ``fetch-depth: 0`` and ``fetch-tags: true``,
-     using a token with permission to push to the branches involved.
+     This action checks out the repository itself (``main-branch``, full
+     history, and tags), so the calling workflow does not need an
+     ``actions/checkout`` step.
 
 inputs:
 
@@ -82,7 +82,8 @@ inputs:
 
   token:
     description: |
-      GitHub token used to verify repository permissions.
+      GitHub token used to verify repository permissions, check out the
+      repository, and push commits/branches/tags.
     required: true
     type: string
 
@@ -145,6 +146,15 @@ runs:
         permissions: "contents: write"
         token: ${{ inputs.token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#auto-release"
+
+    - name: "Checkout repository"
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.main-branch }}
+        token: ${{ inputs.token }}
+        fetch-depth: 0
+        fetch-tags: true
+        persist-credentials: true # zizmor: ignore[artipacked]
 
     - name: "Configure Git"
       shell: bash
