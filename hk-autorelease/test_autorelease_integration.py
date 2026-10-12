@@ -26,8 +26,6 @@ from pathlib import Path
 import subprocess
 from typing import NamedTuple
 
-import pytest
-
 from autorelease import (
     AutoReleaseError,
     read_version,
@@ -35,6 +33,7 @@ from autorelease import (
     run_patch_release,
     write_version,
 )
+import pytest
 
 # Starting content for each version-source kind, seeded with version "0.2.dev0".
 VERSION_SOURCE_CASES = {
@@ -89,6 +88,7 @@ def git_repo(tmp_path, monkeypatch, request):
 
 
 def test_run_minor_major_release_minor(git_repo):
+    """Test a minor release: tags the release branch, bumps main to the next dev version."""
     release_version, dev_version, branch = run_minor_major_release(
         "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )
@@ -104,6 +104,7 @@ def test_run_minor_major_release_minor(git_repo):
 
 
 def test_run_patch_release_clean_merge(git_repo):
+    """Test a patch release that merges cleanly into the existing release branch."""
     run_minor_major_release(
         "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )
@@ -120,6 +121,7 @@ def test_run_patch_release_clean_merge(git_repo):
 
 
 def test_run_patch_release_auto_resolves_version_only_conflict(git_repo):
+    """Test that a patch release auto-resolves a merge conflict limited to the version file."""
     run_minor_major_release(
         "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )
@@ -140,6 +142,7 @@ def test_run_patch_release_auto_resolves_version_only_conflict(git_repo):
 
 
 def test_run_patch_release_aborts_on_unrelated_conflict(git_repo):
+    """Test that a patch release aborts the merge when an unrelated file conflicts."""
     run_minor_major_release(
         "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )

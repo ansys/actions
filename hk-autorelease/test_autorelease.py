@@ -22,8 +22,6 @@
 
 """Tests for the hk-autorelease version read/write helpers."""
 
-import pytest
-
 from autorelease import (
     AutoReleaseError,
     bump_minor_major,
@@ -35,15 +33,18 @@ from autorelease import (
     release_branch_name,
     write_version,
 )
+import pytest
 
 
 def test_read_version_file(tmp_path):
+    """Test that read_version reads the whole file content for the 'file' source."""
     version_file = tmp_path / "VERSION"
     version_file.write_text("1.2.dev0\n")
     assert read_version("file", str(version_file)) == "1.2.dev0"
 
 
 def test_write_version_file(tmp_path):
+    """Test that write_version overwrites the whole file content for the 'file' source."""
     version_file = tmp_path / "VERSION"
     version_file.write_text("1.2.dev0\n")
     write_version("file", str(version_file), "1.2.0")
@@ -51,12 +52,14 @@ def test_write_version_file(tmp_path):
 
 
 def test_read_version_pyproject(tmp_path):
+    """Test that read_version extracts the project.version key from pyproject.toml."""
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text('[project]\nname = "demo"\nversion = "1.2.3"\n')
     assert read_version("pyproject", str(pyproject)) == "1.2.3"
 
 
 def test_write_version_pyproject_preserves_formatting(tmp_path):
+    """Test that write_version preserves comments when updating pyproject.toml."""
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text('[project]\nname = "demo"  # keep me\nversion = "1.2.3"\n')
     write_version("pyproject", str(pyproject), "1.3.0")
@@ -66,6 +69,7 @@ def test_write_version_pyproject_preserves_formatting(tmp_path):
 
 
 def test_read_version_setup_py(tmp_path):
+    """Test that read_version extracts the version= keyword argument from setup.py."""
     setup_py = tmp_path / "setup.py"
     setup_py.write_text(
         "from setuptools import setup\n\nsetup(\n    name='demo',\n    version='1.2.3',\n)\n"
@@ -74,6 +78,7 @@ def test_read_version_setup_py(tmp_path):
 
 
 def test_write_version_setup_py_preserves_quote_style(tmp_path):
+    """Test that write_version keeps the original quote style when updating setup.py."""
     setup_py = tmp_path / "setup.py"
     setup_py.write_text(
         "from setuptools import setup\n\nsetup(\n    name='demo',\n    version='1.2.3',\n)\n"
@@ -85,18 +90,21 @@ def test_write_version_setup_py_preserves_quote_style(tmp_path):
 
 
 def test_read_version_python_module(tmp_path):
+    """Test that read_version extracts __version__ from a python module."""
     module = tmp_path / "_version.py"
     module.write_text('__version__ = "1.2.3"\n')
     assert read_version("python-module", str(module)) == "1.2.3"
 
 
 def test_read_version_python_module_with_type_annotation(tmp_path):
+    """Test that read_version handles a type-annotated __version__ assignment."""
     module = tmp_path / "_version.py"
     module.write_text('__version__: str = "1.2.3"\n')
     assert read_version("python-module", str(module)) == "1.2.3"
 
 
 def test_write_version_python_module(tmp_path):
+    """Test that write_version replaces __version__ in a python module."""
     module = tmp_path / "_version.py"
     module.write_text('__version__ = "1.2.3"\n')
     write_version("python-module", str(module), "1.3.0")
@@ -104,11 +112,13 @@ def test_write_version_python_module(tmp_path):
 
 
 def test_read_version_missing_file_raises(tmp_path):
+    """Test that read_version raises when the version-location file doesn't exist."""
     with pytest.raises(AutoReleaseError, match="does not exist"):
         read_version("file", str(tmp_path / "missing"))
 
 
 def test_read_version_unparseable_setup_py_raises(tmp_path):
+    """Test that read_version raises when setup.py has no version= keyword argument."""
     setup_py = tmp_path / "setup.py"
     setup_py.write_text("from setuptools import setup\n\nsetup(name='demo')\n")
     with pytest.raises(AutoReleaseError, match="Could not find a version string"):
@@ -116,6 +126,7 @@ def test_read_version_unparseable_setup_py_raises(tmp_path):
 
 
 def test_read_version_unknown_source_raises(tmp_path):
+    """Test that read_version raises for an unrecognized version-source."""
     version_file = tmp_path / "VERSION"
     version_file.write_text("1.2.3\n")
     with pytest.raises(AutoReleaseError, match="Unknown version-source"):
@@ -123,10 +134,12 @@ def test_read_version_unknown_source_raises(tmp_path):
 
 
 def test_release_branch_name():
+    """Test that release_branch_name joins the prefix with major.minor."""
     assert release_branch_name("release/", 1, 2) == "release/1.2"
 
 
 def test_bump_minor_major_minor():
+    """Test that bump_minor_major computes the correct minor release and next dev version."""
     release_version, dev_version, branch = bump_minor_major("0.2.dev0", "minor", "release/")
     assert release_version == "0.2.0"
     assert dev_version == "0.3.dev0"
@@ -134,6 +147,7 @@ def test_bump_minor_major_minor():
 
 
 def test_bump_minor_major_major():
+    """Test that bump_minor_major computes the correct major release and next dev version."""
     release_version, dev_version, branch = bump_minor_major("0.2.dev0", "major", "release/")
     assert release_version == "1.0.0"
     assert dev_version == "1.1.dev0"
@@ -141,42 +155,51 @@ def test_bump_minor_major_major():
 
 
 def test_bump_minor_major_invalid_release_type_raises():
+    """Test that bump_minor_major rejects a release-type other than minor/major."""
     with pytest.raises(AutoReleaseError, match="does not support release-type"):
         bump_minor_major("0.2.dev0", "patch", "release/")
 
 
 def test_bump_patch():
+    """Test that bump_patch increments only the patch component."""
     assert bump_patch("0.2.0") == "0.2.1"
 
 
 def test_parse_latest_release_tag_picks_first_matching_tag():
+    """Test that parse_latest_release_tag returns the first vX.Y.Z tag in the list."""
     tag_lines = ["v1.3.0", "v1.2.1", "v1.2.0"]
     assert parse_latest_release_tag(tag_lines) == (1, 3, 0)
 
 
 def test_parse_latest_release_tag_skips_non_matching_tags():
+    """Test that parse_latest_release_tag skips tags that aren't vX.Y.Z."""
     tag_lines = ["not-a-version", "v2.0.0"]
     assert parse_latest_release_tag(tag_lines) == (2, 0, 0)
 
 
 def test_parse_latest_release_tag_raises_when_no_match():
+    """Test that parse_latest_release_tag raises when no tag matches vX.Y.Z."""
     with pytest.raises(AutoReleaseError, match="No 'vX.Y.Z' tags found"):
         parse_latest_release_tag([])
 
 
 def test_classify_merge_conflict_version_file_only():
+    """Test that classify_merge_conflict returns True when only the version file conflicts."""
     assert classify_merge_conflict(["VERSION"], "VERSION") is True
 
 
 def test_classify_merge_conflict_other_files():
+    """Test that classify_merge_conflict returns False when other files also conflict."""
     assert classify_merge_conflict(["VERSION", "README.md"], "VERSION") is False
 
 
 def test_classify_merge_conflict_unrelated_file():
+    """Test that classify_merge_conflict returns False when the version file isn't conflicted."""
     assert classify_merge_conflict(["README.md"], "VERSION") is False
 
 
 def test_main_invalid_release_type_raises(monkeypatch):
+    """Test that main raises AutoReleaseError for an invalid RELEASE_TYPE."""
     monkeypatch.setenv("RELEASE_TYPE", "bogus")
     monkeypatch.setenv("VERSION_SOURCE", "file")
     monkeypatch.setenv("VERSION_LOCATION", "VERSION")
@@ -187,6 +210,7 @@ def test_main_invalid_release_type_raises(monkeypatch):
 
 
 def test_main_invalid_version_source_raises(monkeypatch):
+    """Test that main raises AutoReleaseError for an invalid VERSION_SOURCE."""
     monkeypatch.setenv("RELEASE_TYPE", "patch")
     monkeypatch.setenv("VERSION_SOURCE", "bogus")
     monkeypatch.setenv("VERSION_LOCATION", "VERSION")
@@ -197,6 +221,7 @@ def test_main_invalid_version_source_raises(monkeypatch):
 
 
 def test_main_missing_env_var_raises(monkeypatch):
+    """Test that main raises AutoReleaseError (not KeyError) for a missing env var."""
     monkeypatch.setenv("VERSION_SOURCE", "file")
     monkeypatch.setenv("VERSION_LOCATION", "VERSION")
     monkeypatch.setenv("MAIN_BRANCH", "main")

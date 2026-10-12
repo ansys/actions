@@ -123,9 +123,7 @@ def bump_minor_major(current_dev_version: str, release_type: str, branch_prefix:
         dev_version = f"{major}.{minor + 1}.dev0"
         branch = release_branch_name(branch_prefix, major, minor)
     else:
-        raise AutoReleaseError(
-            f"bump_minor_major does not support release-type '{release_type}'."
-        )
+        raise AutoReleaseError(f"bump_minor_major does not support release-type '{release_type}'.")
 
     return release_version, dev_version, branch
 
@@ -202,8 +200,10 @@ def merge_main_into_release(main_branch: str, version_location: str) -> None:
     )
 
 
-def run_minor_major_release(release_type, version_source, version_location, main_branch, branch_prefix):
-    """Perform a minor or major release. Returns ``(release_version, dev_version, release_branch)``."""
+def run_minor_major_release(
+    release_type, version_source, version_location, main_branch, branch_prefix
+):
+    """Perform a minor or major release. Returns ``(release_version, dev_version, branch)``."""
     run_git("checkout", main_branch)
     run_git("pull")
 
