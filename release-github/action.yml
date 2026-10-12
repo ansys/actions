@@ -611,6 +611,8 @@ runs:
         RELEASE_NOTES_BODY: ${{ env.RELEASE_NOTES_BODY }}
         GENERATE_RELEASE_NOTES: ${{ inputs.generate-release-notes }}
         LIBRARY_NAME: ${{ inputs.library-name }}
+        ONLY_CODE: ${{ inputs.only-code }}
+        UPLOAD_DOCUMENTATION: ${{ inputs.upload-documentation }}
       if: inputs.dry-run == 'false'
       run: |
         set -euo pipefail
@@ -633,10 +635,20 @@ runs:
           dist/"${LIBRARY_NAME}"-artifacts/*.tar.gz
           dist/wheelhouse/**/*-wheelhouse-*.zip
           dist/sbom/**/*-sbom.spdx
-          dist/documentation/documentation-html.zip
-          dist/documentation/documentation-pdf.zip
-          dist/extra/**/*
         )
+
+        if [[ -d dist/extra ]]; then
+          while IFS= read -r -d '' artifact; do
+            artifacts+=("${artifact}")
+          done < <(find dist/extra -type f -print0)
+        fi
+
+        if [[ "${ONLY_CODE}" == "false" && "${UPLOAD_DOCUMENTATION}" == "true" ]]; then
+          artifacts+=(
+            dist/documentation/documentation-html.zip
+            dist/documentation/documentation-pdf.zip
+          )
+        fi
 
         if [ "${#artifacts[@]}" -gt 0 ]; then
           gh release upload "${TAG_NAME}" --repo "${REPOSITORY}" --clobber "${artifacts[@]}"
