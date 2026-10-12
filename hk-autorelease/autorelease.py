@@ -25,6 +25,7 @@
 from pathlib import Path
 import re
 
+from packaging.version import Version
 import tomlkit
 
 
@@ -91,3 +92,42 @@ def write_version(source: str, location: str, new_version: str) -> None:
         return
 
     raise AutoReleaseError(f"Unknown version-source '{source}'.")
+
+
+def release_branch_name(branch_prefix: str, major: int, minor: int) -> str:
+    """Compute the release branch name for a given ``major.minor`` version."""
+    return f"{branch_prefix}{major}.{minor}"
+
+
+def bump_minor_major(current_dev_version: str, release_type: str, branch_prefix: str):
+    """Compute the release version, next dev version, and release branch.
+
+    Returns
+    -------
+    tuple[str, str, str]
+        ``(release_version, dev_version, release_branch)``.
+    """
+    version = Version(current_dev_version)
+    major, minor = version.major, version.minor
+
+    if release_type == "major":
+        new_major = major + 1
+        release_version = f"{new_major}.0.0"
+        dev_version = f"{new_major}.1.dev0"
+        branch = release_branch_name(branch_prefix, new_major, 0)
+    elif release_type == "minor":
+        release_version = f"{major}.{minor}.0"
+        dev_version = f"{major}.{minor + 1}.dev0"
+        branch = release_branch_name(branch_prefix, major, minor)
+    else:
+        raise AutoReleaseError(
+            f"bump_minor_major does not support release-type '{release_type}'."
+        )
+
+    return release_version, dev_version, branch
+
+
+def bump_patch(current_release_version: str) -> str:
+    """Bump the patch component of ``current_release_version``."""
+    version = Version(current_release_version)
+    return f"{version.major}.{version.minor}.{version.micro + 1}"

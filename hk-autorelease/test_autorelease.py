@@ -24,7 +24,14 @@
 
 import pytest
 
-from autorelease import AutoReleaseError, read_version, write_version
+from autorelease import (
+    AutoReleaseError,
+    bump_minor_major,
+    bump_patch,
+    read_version,
+    release_branch_name,
+    write_version,
+)
 
 
 def test_read_version_file(tmp_path):
@@ -110,3 +117,30 @@ def test_read_version_unknown_source_raises(tmp_path):
     version_file.write_text("1.2.3\n")
     with pytest.raises(AutoReleaseError, match="Unknown version-source"):
         read_version("bogus", str(version_file))
+
+
+def test_release_branch_name():
+    assert release_branch_name("release/", 1, 2) == "release/1.2"
+
+
+def test_bump_minor_major_minor():
+    release_version, dev_version, branch = bump_minor_major("0.2.dev0", "minor", "release/")
+    assert release_version == "0.2.0"
+    assert dev_version == "0.3.dev0"
+    assert branch == "release/0.2"
+
+
+def test_bump_minor_major_major():
+    release_version, dev_version, branch = bump_minor_major("0.2.dev0", "major", "release/")
+    assert release_version == "1.0.0"
+    assert dev_version == "1.1.dev0"
+    assert branch == "release/1.0"
+
+
+def test_bump_minor_major_invalid_release_type_raises():
+    with pytest.raises(AutoReleaseError, match="does not support release-type"):
+        bump_minor_major("0.2.dev0", "patch", "release/")
+
+
+def test_bump_patch():
+    assert bump_patch("0.2.0") == "0.2.1"
