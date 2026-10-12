@@ -22,11 +22,38 @@
 
 """Integration tests for hk-autorelease git orchestration, using real temp git repos."""
 
+from pathlib import Path
 import subprocess
+from typing import NamedTuple
 
 import pytest
 
-from autorelease import AutoReleaseError, run_minor_major_release, run_patch_release
+from autorelease import (
+    AutoReleaseError,
+    read_version,
+    run_minor_major_release,
+    run_patch_release,
+    write_version,
+)
+
+# Starting content for each version-source kind, seeded with version "0.2.dev0".
+VERSION_SOURCE_CASES = {
+    "file": ("VERSION", "0.2.dev0\n"),
+    "pyproject": ("pyproject.toml", '[project]\nname = "demo"\nversion = "0.2.dev0"\n'),
+    "setup-py": (
+        "setup.py",
+        "from setuptools import setup\n\nsetup(\n    name='demo',\n    version='0.2.dev0',\n)\n",
+    ),
+    "python-module": ("_version.py", '__version__ = "0.2.dev0"\n'),
+}
+
+
+class GitRepo(NamedTuple):
+    """A working-tree git repo plus the version-source config used to seed it."""
+
+    path: Path
+    version_source: str
+    version_location: str
 
 
 def _run(*args, cwd):
@@ -35,9 +62,16 @@ def _run(*args, cwd):
     return result.stdout.strip()
 
 
-@pytest.fixture
-def git_repo(tmp_path, monkeypatch):
-    """Create a bare 'origin' repo and a clone with an initial VERSION file on main."""
+@pytest.fixture(params=sorted(VERSION_SOURCE_CASES))
+def git_repo(tmp_path, monkeypatch, request):
+    """Create a bare 'origin' repo and a clone with an initial version on main.
+
+    Parametrized across all four ``version-source`` kinds, so every test using
+    this fixture runs once per kind.
+    """
+    version_source = request.param
+    version_location, initial_content = VERSION_SOURCE_CASES[version_source]
+
     origin = tmp_path / "origin.git"
     work = tmp_path / "work"
     _run("init", "--bare", "--initial-branch=main", str(origin), cwd=tmp_path)
@@ -45,75 +79,85 @@ def git_repo(tmp_path, monkeypatch):
     _run("config", "user.email", "bot@example.com", cwd=work)
     _run("config", "user.name", "bot", cwd=work)
 
-    (work / "VERSION").write_text("0.2.dev0\n")
-    _run("add", "VERSION", cwd=work)
+    (work / version_location).write_text(initial_content)
+    _run("add", version_location, cwd=work)
     _run("commit", "-m", "chore: initial version", cwd=work)
     _run("push", "origin", "main", cwd=work)
 
     monkeypatch.chdir(work)
-    return work
+    return GitRepo(path=work, version_source=version_source, version_location=version_location)
 
 
 def test_run_minor_major_release_minor(git_repo):
     release_version, dev_version, branch = run_minor_major_release(
-        "minor", "file", "VERSION", "main", "release/"
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )
 
     assert release_version == "0.2.0"
     assert dev_version == "0.3.dev0"
     assert branch == "release/0.2"
-    assert (git_repo / "VERSION").read_text() == "0.3.dev0\n"
-    assert _run("tag", "--list", "v0.2.0", cwd=git_repo) == "v0.2.0"
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.3.dev0"
+    assert _run("tag", "--list", "v0.2.0", cwd=git_repo.path) == "v0.2.0"
 
-    _run("checkout", branch, cwd=git_repo)
-    assert (git_repo / "VERSION").read_text() == "0.2.0\n"
+    _run("checkout", branch, cwd=git_repo.path)
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.0"
 
 
 def test_run_patch_release_clean_merge(git_repo):
-    run_minor_major_release("minor", "file", "VERSION", "main", "release/")
+    run_minor_major_release(
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+    )
 
-    release_version, branch = run_patch_release("file", "VERSION", "main", "release/")
+    release_version, branch = run_patch_release(
+        git_repo.version_source, git_repo.version_location, "main", "release/"
+    )
 
     assert release_version == "0.2.1"
     assert branch == "release/0.2"
-    assert _run("tag", "--list", "v0.2.1", cwd=git_repo) == "v0.2.1"
-    _run("checkout", branch, cwd=git_repo)
-    assert (git_repo / "VERSION").read_text() == "0.2.1\n"
+    assert _run("tag", "--list", "v0.2.1", cwd=git_repo.path) == "v0.2.1"
+    _run("checkout", branch, cwd=git_repo.path)
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.1"
 
 
 def test_run_patch_release_auto_resolves_version_only_conflict(git_repo):
-    run_minor_major_release("minor", "file", "VERSION", "main", "release/")
+    run_minor_major_release(
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+    )
 
-    # Diverge main's VERSION further so merging it would otherwise conflict.
-    _run("checkout", "main", cwd=git_repo)
-    (git_repo / "VERSION").write_text("0.3.dev1\n")
-    _run("commit", "-am", "chore: tweak dev version", cwd=git_repo)
-    _run("push", "origin", "main", cwd=git_repo)
+    # Diverge main's version further so merging it would otherwise conflict.
+    _run("checkout", "main", cwd=git_repo.path)
+    write_version(git_repo.version_source, git_repo.version_location, "0.3.dev1")
+    _run("commit", "-am", "chore: tweak dev version", cwd=git_repo.path)
+    _run("push", "origin", "main", cwd=git_repo.path)
 
-    release_version, branch = run_patch_release("file", "VERSION", "main", "release/")
+    release_version, branch = run_patch_release(
+        git_repo.version_source, git_repo.version_location, "main", "release/"
+    )
 
     assert release_version == "0.2.1"
-    _run("checkout", branch, cwd=git_repo)
-    assert (git_repo / "VERSION").read_text() == "0.2.1\n"
+    _run("checkout", branch, cwd=git_repo.path)
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.1"
 
 
 def test_run_patch_release_aborts_on_unrelated_conflict(git_repo):
-    run_minor_major_release("minor", "file", "VERSION", "main", "release/")
+    run_minor_major_release(
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+    )
 
-    _run("checkout", "release/0.2", cwd=git_repo)
-    (git_repo / "README.md").write_text("release branch content\n")
-    _run("add", "README.md", cwd=git_repo)
-    _run("commit", "-m", "docs: release branch readme", cwd=git_repo)
-    _run("push", "origin", "release/0.2", cwd=git_repo)
+    _run("checkout", "release/0.2", cwd=git_repo.path)
+    (git_repo.path / "README.md").write_text("release branch content\n")
+    _run("add", "README.md", cwd=git_repo.path)
+    _run("commit", "-m", "docs: release branch readme", cwd=git_repo.path)
+    _run("push", "origin", "release/0.2", cwd=git_repo.path)
 
-    _run("checkout", "main", cwd=git_repo)
-    (git_repo / "README.md").write_text("main branch content\n")
-    _run("add", "README.md", cwd=git_repo)
-    _run("commit", "-m", "docs: main readme", cwd=git_repo)
-    _run("push", "origin", "main", cwd=git_repo)
+    _run("checkout", "main", cwd=git_repo.path)
+    (git_repo.path / "README.md").write_text("main branch content\n")
+    _run("add", "README.md", cwd=git_repo.path)
+    _run("commit", "-m", "docs: main readme", cwd=git_repo.path)
+    _run("push", "origin", "main", cwd=git_repo.path)
 
     with pytest.raises(AutoReleaseError, match="Merge conflicts detected") as exc_info:
-        run_patch_release("file", "VERSION", "main", "release/")
+        run_patch_release(git_repo.version_source, git_repo.version_location, "main", "release/")
 
     # These can only be present because of the appended `git merge` stdout/stderr:
     # "git merge output:" is our literal label, and "CONFLICT (" is text git itself
@@ -123,4 +167,4 @@ def test_run_patch_release_aborts_on_unrelated_conflict(git_repo):
     assert "CONFLICT (" in message
 
     # The merge must have been aborted, leaving a clean working tree.
-    assert _run("status", "--porcelain", cwd=git_repo) == ""
+    assert _run("status", "--porcelain", cwd=git_repo.path) == ""
