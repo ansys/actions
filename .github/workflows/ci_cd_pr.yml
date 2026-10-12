@@ -532,7 +532,7 @@ jobs:
 
       - name: "Install pytest"
         run: |
-          python -m pip install pytest
+          python -m pip install pytest -r doc-changelog/requirements.txt
 
       - name: "Run all python utilities tests"
         run: |

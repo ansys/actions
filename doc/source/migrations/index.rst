@@ -90,6 +90,13 @@ Version ``v11.1``
   building a release and verify that it includes the runtime dependencies and extras requested through
   ``target``.
 
+- **Remove symbols from pull request titles:** The ``doc-changelog`` action now fails when the pull
+  request title contains characters that could be interpreted as Markdown or reStructuredText syntax,
+  such as ``*``, backticks, ``[``, ``]``, ``#``, or ``|``. Allowed characters are letters, digits,
+  spaces, the symbols ``( ) ! : . , - / ' "`` and underscores placed between letters or digits. Each
+  invalid character is reported in the job logs and summary. Pull requests opened by GitHub Apps (for
+  example, Dependabot) or by the ``bot-user`` are not checked.
+
 Version ``v11``
 ---------------
 

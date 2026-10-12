@@ -29,6 +29,14 @@ description: |
 
   This action will only work on Linux/macOS runners.
 
+  The pull request title is rendered in the changelog, so it must not contain
+  characters that could be interpreted as Markdown or reStructuredText syntax.
+  Allowed characters are letters, digits, spaces, the symbols
+  ``( ) ! : . , - / ' "`` and underscores placed between letters or digits.
+  The action fails and reports each invalid character otherwise. Pull requests
+  opened by GitHub Apps (for example, Dependabot) or by the ``bot-user`` are
+  not checked.
+
   .. important:: **Required GitHub Permissions**
 
      - **contents**: ``write`` - Required to commit and push changelog fragments
@@ -209,6 +217,29 @@ runs:
       run: |
         ${INSTALL_COMMAND} --upgrade pip
         ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
+
+    - name: "Check pull-request title characters"
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
+        PR_AUTHOR_LOGIN: ${{ github.event.pull_request.user.login }}
+        BOT_USER: ${{ inputs.bot-user }}
+      shell: python
+      run: |
+        import os
+        import sys
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import check_pr_title_characters
+
+        check_pr_title_characters(
+            os.environ.get("PR_TITLE", ""),
+            os.environ.get("PR_AUTHOR_TYPE", ""),
+            os.environ.get("PR_AUTHOR_LOGIN", ""),
+            os.environ.get("BOT_USER", ""),
+        )
 
     - name: "Get first letter of conventional commit type"
       if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}

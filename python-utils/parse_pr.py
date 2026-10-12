@@ -25,9 +25,17 @@ import os
 from pathlib import Path
 import re
 import secrets
+import unicodedata
 
 import tomlkit
 from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
+
+# Underscores are handled separately because they are only allowed between letters or digits
+PR_TITLE_ALLOWED_SYMBOLS = frozenset(" ()!:.,-/'\"")
+PR_TITLE_ALLOWED_DESCRIPTION = (
+    "letters, digits, spaces, the symbols ( ) ! : . , - / ' \" "
+    "and underscores placed between letters or digits"
+)
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -88,6 +96,105 @@ def get_first_letter_case(pr_title: str):
         save_env_variable("FIRST_LETTER", "lowercase")
     else:
         save_env_variable("FIRST_LETTER", "uppercase")
+
+
+def find_invalid_title_characters(pr_title: str) -> list[tuple[str, list[int]]]:
+    """Find the characters of the pull request title that are not allowed.
+
+    Parameters
+    ----------
+    pr_title: str
+        The pull request title.
+
+    Returns
+    -------
+    list[tuple[str, list[int]]]
+        Each invalid character with its 0-based positions, in order of first appearance.
+    """
+    invalid_characters: dict[str, list[int]] = {}
+    last_index = len(pr_title) - 1
+    for index, char in enumerate(pr_title):
+        if char.isalnum() or char in PR_TITLE_ALLOWED_SYMBOLS:
+            continue
+        if (
+            char == "_"
+            and 0 < index < last_index
+            and pr_title[index - 1].isalnum()
+            and pr_title[index + 1].isalnum()
+        ):
+            continue
+        invalid_characters.setdefault(char, []).append(index)
+    return list(invalid_characters.items())
+
+
+def _escape_workflow_command_data(data: str) -> str:
+    """Escape data used in a GitHub workflow command message."""
+    return data.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def check_pr_title_characters(pr_title: str, author_type: str, author_login: str, bot_user: str):
+    """Fail if the pull request title contains characters that are not allowed.
+
+    Pull requests opened by GitHub Apps or by the CI bot user are skipped because
+    their titles are generated automatically.
+
+    Parameters
+    ----------
+    pr_title: str
+        The pull request title.
+    author_type: str
+        The account type of the pull request author, for example ``User`` or ``Bot``.
+    author_login: str
+        The login of the pull request author.
+    bot_user: str
+        The login of the CI bot user.
+    """
+    if author_type == "Bot" or (bot_user and author_login.lower() == bot_user.lower()):
+        print(f"Skipping pull request title character check for bot author {author_login}.")
+        return
+
+    invalid_characters = find_invalid_title_characters(pr_title)
+    if not invalid_characters:
+        print("Pull request title contains only allowed characters.")
+        return
+
+    # Prefix keeps the title from starting a line, which could be parsed as a workflow command
+    prefix = "Pull request title: "
+    markers = [" "] * len(pr_title)
+    summary_rows = []
+    for char, positions in invalid_characters:
+        code_point = f"U+{ord(char):04X}"
+        name = unicodedata.name(char, "UNKNOWN")
+        label = "position" if len(positions) == 1 else "positions"
+        positions_text = ", ".join(str(position) for position in positions)
+        note = " (underscores are only allowed between letters or digits)" if char == "_" else ""
+        message = f"{char!r} ({code_point} {name}) at {label} {positions_text}{note}"
+        print(
+            "::error title=Invalid characters in pull request title::"
+            f"{_escape_workflow_command_data(message)}"
+        )
+        summary_rows.append(f"| {code_point} | {name} | {positions_text} |")
+        for position in positions:
+            markers[position] = "^"
+
+    print(f"{prefix}{pr_title}")
+    print(f"{' ' * len(prefix)}{''.join(markers).rstrip()}")
+    print(f"Allowed characters are {PR_TITLE_ALLOWED_DESCRIPTION}.")
+
+    summary_file = os.getenv("GITHUB_STEP_SUMMARY")
+    if summary_file:
+        # The fence must be longer than any backtick run in the title to keep it as plain text
+        longest_backtick_run = max((len(run) for run in re.findall(r"`+", pr_title)), default=0)
+        fence = "`" * max(3, longest_backtick_run + 1)
+        with Path(summary_file).open("a", encoding="utf-8") as file:
+            file.write("## Invalid characters in pull request title\n\n")
+            file.write(f"{fence}text\n{pr_title}\n{fence}\n\n")
+            file.write("| Code point | Name | Positions |\n")
+            file.write("| --- | --- | --- |\n")
+            file.write("\n".join(summary_rows) + "\n\n")
+            file.write(f"Allowed characters are {PR_TITLE_ALLOWED_DESCRIPTION}.\n")
+
+    exit(1)
 
 
 def has_title_breaking_changes(pr_title: str) -> bool:
