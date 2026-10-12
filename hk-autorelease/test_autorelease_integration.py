@@ -115,7 +115,12 @@ def test_run_patch_release_aborts_on_unrelated_conflict(git_repo):
     with pytest.raises(AutoReleaseError, match="Merge conflicts detected") as exc_info:
         run_patch_release("file", "VERSION", "main", "release/")
 
-    assert "conflict" in str(exc_info.value).lower()
+    # These can only be present because of the appended `git merge` stdout/stderr:
+    # "git merge output:" is our literal label, and "CONFLICT (" is text git itself
+    # emits on stdout when a merge conflict occurs.
+    message = str(exc_info.value)
+    assert "git merge output:" in message
+    assert "CONFLICT (" in message
 
     # The merge must have been aborted, leaving a clean working tree.
     assert _run("status", "--porcelain", cwd=git_repo) == ""
