@@ -128,6 +128,8 @@ jobs:
       contents: read
     steps:
       - uses: $/code-style
+        # NOTE: Disable zizmor hook to avoid duplicate run from check-actions-security
+        # See https://github.com/pre-commit/pre-commit.com/blob/main/sections/advanced.md#temporarily-disabling-hooks
         env:
           SKIP: zizmor
         with:
