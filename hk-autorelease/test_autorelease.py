@@ -28,6 +28,8 @@ from autorelease import (
     AutoReleaseError,
     bump_minor_major,
     bump_patch,
+    classify_merge_conflict,
+    parse_latest_release_tag,
     read_version,
     release_branch_name,
     write_version,
@@ -144,3 +146,30 @@ def test_bump_minor_major_invalid_release_type_raises():
 
 def test_bump_patch():
     assert bump_patch("0.2.0") == "0.2.1"
+
+
+def test_parse_latest_release_tag_picks_first_matching_tag():
+    tag_lines = ["v1.3.0", "v1.2.1", "v1.2.0"]
+    assert parse_latest_release_tag(tag_lines) == (1, 3, 0)
+
+
+def test_parse_latest_release_tag_skips_non_matching_tags():
+    tag_lines = ["not-a-version", "v2.0.0"]
+    assert parse_latest_release_tag(tag_lines) == (2, 0, 0)
+
+
+def test_parse_latest_release_tag_raises_when_no_match():
+    with pytest.raises(AutoReleaseError, match="No 'vX.Y.Z' tags found"):
+        parse_latest_release_tag([])
+
+
+def test_classify_merge_conflict_version_file_only():
+    assert classify_merge_conflict(["VERSION"], "VERSION") is True
+
+
+def test_classify_merge_conflict_other_files():
+    assert classify_merge_conflict(["VERSION", "README.md"], "VERSION") is False
+
+
+def test_classify_merge_conflict_unrelated_file():
+    assert classify_merge_conflict(["README.md"], "VERSION") is False

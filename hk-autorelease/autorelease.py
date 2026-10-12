@@ -131,3 +131,24 @@ def bump_patch(current_release_version: str) -> str:
     """Bump the patch component of ``current_release_version``."""
     version = Version(current_release_version)
     return f"{version.major}.{version.minor}.{version.micro + 1}"
+
+
+_TAG_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+
+
+def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
+    """Return the ``(major, minor, patch)`` of the first ``vX.Y.Z`` tag in ``tag_lines``.
+
+    ``tag_lines`` is expected to already be sorted from newest to oldest, as
+    produced by ``git tag --list "v*" --sort=-version:refname``.
+    """
+    for tag in tag_lines:
+        match = _TAG_PATTERN.match(tag.strip())
+        if match:
+            return tuple(int(part) for part in match.groups())
+    raise AutoReleaseError("No 'vX.Y.Z' tags found; cannot perform a patch release.")
+
+
+def classify_merge_conflict(conflicted_files: list[str], version_location: str) -> bool:
+    """Return ``True`` if the only conflicting file is ``version_location``."""
+    return conflicted_files == [version_location]
