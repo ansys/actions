@@ -96,7 +96,8 @@ inputs:
   token:
     description: |
       GitHub token used to verify repository permissions, check out the
-      repository, and push commits/branches/tags.
+      repository, push commits/branches/tags, and open the dev-version
+      bump pull request.
     required: true
     type: string
 
