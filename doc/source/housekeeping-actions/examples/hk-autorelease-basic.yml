@@ -3,6 +3,7 @@ hk-autorelease:
   runs-on: ubuntu-latest
   permissions:
     contents: write  # Required to push commits, branches, and tags
+    pull-requests: write  # Required to open the dev-version-bump draft pull request
   steps:
     - name: "Auto release"
       uses: ansys/actions/hk-autorelease@{{ version }}

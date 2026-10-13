@@ -54,6 +54,16 @@ description: |
      history, and tags), so the calling workflow does not need an
      ``actions/checkout`` step.
 
+  .. note::
+
+     This action only manages version bumping and git branches/tags — it never builds or
+     publishes a package. Pair it with the ``release-github`` action (to create the GitHub
+     release) and ``release-pypi-public`` (or a trusted-publisher based workflow) to actually
+     publish the artifacts, typically triggered separately by the ``vX.Y.Z`` tag this action
+     pushes. Because the main-branch dev-version bump is opened as a **draft** pull request
+     (see the ``dev-version-pr-url`` output), merging it is a manual, separate step you should
+     only take once you've confirmed the release was published successfully.
+
 inputs:
 
   # Required inputs

@@ -43,6 +43,12 @@ Auto release
    ``pull_request``, ``schedule``, etc.) to that workflow file, since this
    action pushes commits, branches, and tags directly.
 
+This action only bumps versions and manages git branches/tags for the release — it does not
+build or publish anything. Use it alongside the ``release-github`` and ``release-pypi-public``
+actions (typically in a separate workflow triggered by the ``vX.Y.Z`` tag this action pushes) to
+actually publish the release. The main-branch version bump is opened as a **draft** pull request
+specifically so it isn't merged before you've confirmed that publishing succeeded.
+
 Example standalone workflow file (``.github/workflows/autorelease.yml``):
 
 .. code-block:: yaml
@@ -66,6 +72,7 @@ Example standalone workflow file (``.github/workflows/autorelease.yml``):
         runs-on: ubuntu-latest
         permissions:
           contents: write  # Required to push commits, branches, and tags
+          pull-requests: write  # Required to open the dev-version-bump draft pull request
         steps:
           - name: "Auto release"
             uses: ansys/actions/hk-autorelease@v11
