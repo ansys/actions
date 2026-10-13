@@ -111,6 +111,36 @@ def test_write_version_python_module(tmp_path):
     assert module.read_text() == '__version__ = "1.3.0"\n'
 
 
+def test_read_version_setup_py_ignores_unrelated_version_assignment(tmp_path):
+    """Test that read_version ignores a version= assignment outside the setup() call.
+
+    A plain regex search (unanchored) would incorrectly match this decoy assignment first,
+    since it appears earlier in the file than the real ``setup(version=...)`` keyword.
+    """
+    setup_py = tmp_path / "setup.py"
+    setup_py.write_text(
+        "from setuptools import setup\n\n"
+        "version = '9.9.9'  # leftover/unrelated module-level variable\n\n"
+        "setup(\n    name='demo',\n    version='1.2.3',\n)\n"
+    )
+    assert read_version("setup-py", str(setup_py)) == "1.2.3"
+
+
+def test_read_version_python_module_ignores_commented_out_assignment(tmp_path):
+    """Test that read_version ignores a commented-out __version__ assignment."""
+    module = tmp_path / "_version.py"
+    module.write_text('# __version__ = "0.0.0"\n__version__ = "1.2.3"\n')
+    assert read_version("python-module", str(module)) == "1.2.3"
+
+
+def test_write_version_python_module_with_type_annotation(tmp_path):
+    """Test that write_version replaces a type-annotated __version__ assignment."""
+    module = tmp_path / "_version.py"
+    module.write_text('__version__: str = "1.2.3"\n')
+    write_version("python-module", str(module), "1.3.0")
+    assert module.read_text() == '__version__: str = "1.3.0"\n'
+
+
 def test_read_version_missing_file_raises(tmp_path):
     """Test that read_version raises when the version-location file doesn't exist."""
     with pytest.raises(AutoReleaseError, match="does not exist"):
@@ -122,6 +152,14 @@ def test_read_version_unparseable_setup_py_raises(tmp_path):
     setup_py = tmp_path / "setup.py"
     setup_py.write_text("from setuptools import setup\n\nsetup(name='demo')\n")
     with pytest.raises(AutoReleaseError, match="Could not find a version string"):
+        read_version("setup-py", str(setup_py))
+
+
+def test_read_version_syntax_error_raises(tmp_path):
+    """Test that read_version raises AutoReleaseError (not SyntaxError) for invalid Python."""
+    setup_py = tmp_path / "setup.py"
+    setup_py.write_text("def broken(:\n")
+    with pytest.raises(AutoReleaseError, match="Could not parse"):
         read_version("setup-py", str(setup_py))
 
 

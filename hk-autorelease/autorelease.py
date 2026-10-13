@@ -22,6 +22,7 @@
 
 """Automate patch/minor/major releases by bumping a version and pushing git tags."""
 
+import ast
 import os
 from pathlib import Path
 import re
@@ -36,8 +37,69 @@ class AutoReleaseError(Exception):
     """Raised for a fatal, user-facing hk-autorelease failure."""
 
 
-_SETUP_PY_PATTERN = re.compile(r"(version\s*=\s*)(['\"])([^'\"]+)\2")
-_MODULE_PATTERN = re.compile(r"(__version__\s*(?::\s*\w+\s*)?=\s*)(['\"])([^'\"]+)\2")
+def _constant_str_value(node: ast.AST | None) -> str | None:
+    """Return the string value of an ``ast.Constant`` node, or ``None`` if not a str constant."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    return None
+
+
+def _find_setup_py_version_node(tree: ast.Module) -> ast.Constant | None:
+    """Find the ``version=`` keyword argument's string-constant node in a ``setup(...)`` call."""
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        is_setup_call = (isinstance(func, ast.Name) and func.id == "setup") or (
+            isinstance(func, ast.Attribute) and func.attr == "setup"
+        )
+        if not is_setup_call:
+            continue
+        for keyword in node.keywords:
+            if (
+                keyword.arg == "version"
+                and isinstance(keyword.value, ast.Constant)
+                and _constant_str_value(keyword.value) is not None
+            ):
+                return keyword.value
+    return None
+
+
+def _find_python_module_version_node(tree: ast.Module) -> ast.Constant | None:
+    """Find the top-level ``__version__`` assignment's string-constant node."""
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            targets = node.targets
+            value = node.value
+        elif isinstance(node, ast.AnnAssign):
+            targets = [node.target]
+            value = node.value
+        else:
+            continue
+        if any(isinstance(target, ast.Name) and target.id == "__version__" for target in targets):
+            if isinstance(value, ast.Constant) and _constant_str_value(value) is not None:
+                return value
+    return None
+
+
+def _parse_python_source(location: str, text: str) -> ast.Module:
+    """Parse ``text`` as Python, raising ``AutoReleaseError`` (not ``SyntaxError``) on failure."""
+    try:
+        return ast.parse(text)
+    except SyntaxError as error:
+        raise AutoReleaseError(f"Could not parse '{location}' as Python: {error}") from error
+
+
+def _splice_string_constant(text: str, node: ast.Constant, new_value: str) -> str:
+    """Replace the exact source span of a string-constant node with a new, same-quoted value."""
+    if node.lineno != node.end_lineno:
+        raise AutoReleaseError("Version string literal must be on a single line.")
+    lines = text.splitlines(keepends=True)
+    line = lines[node.lineno - 1]
+    quote = line[node.col_offset]
+    new_line = line[: node.col_offset] + f"{quote}{new_value}{quote}" + line[node.end_col_offset :]
+    lines[node.lineno - 1] = new_line
+    return "".join(lines)
 
 
 def read_version(source: str, location: str) -> str:
@@ -52,11 +114,13 @@ def read_version(source: str, location: str) -> str:
     elif source == "pyproject":
         version = tomlkit.parse(text).get("project", {}).get("version")
     elif source == "setup-py":
-        match = _SETUP_PY_PATTERN.search(text)
-        version = match.group(3) if match else None
+        tree = _parse_python_source(location, text)
+        node = _find_setup_py_version_node(tree)
+        version = node.value if node is not None else None
     elif source == "python-module":
-        match = _MODULE_PATTERN.search(text)
-        version = match.group(3) if match else None
+        tree = _parse_python_source(location, text)
+        node = _find_python_module_version_node(tree)
+        version = node.value if node is not None else None
     else:
         raise AutoReleaseError(f"Unknown version-source '{source}'.")
 
@@ -82,15 +146,19 @@ def write_version(source: str, location: str, new_version: str) -> None:
         return
 
     if source in ("setup-py", "python-module"):
-        pattern = _SETUP_PY_PATTERN if source == "setup-py" else _MODULE_PATTERN
         text = path.read_text(encoding="utf-8")
-        new_text, count = pattern.subn(
-            lambda m: f"{m.group(1)}{m.group(2)}{new_version}{m.group(2)}", text, count=1
+        tree = _parse_python_source(location, text)
+        finder = (
+            _find_setup_py_version_node
+            if source == "setup-py"
+            else _find_python_module_version_node
         )
-        if count == 0:
+        node = finder(tree)
+        if node is None:
             raise AutoReleaseError(
                 f"Could not find a version string in '{location}' (version-source: '{source}')."
             )
+        new_text = _splice_string_constant(text, node, new_version)
         path.write_text(new_text, encoding="utf-8")
         return
 
