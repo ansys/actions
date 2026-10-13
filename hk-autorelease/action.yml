@@ -42,11 +42,12 @@ description: |
 
   .. warning::
 
-     This action pushes directly to the main and release branches and
-     creates tags. It must be triggered **only** by ``workflow_dispatch``, in
-     a workflow file dedicated to this action. Do not add other triggers
-     (such as ``push``, ``pull_request``, or ``schedule``) to that workflow
-     file.
+     This action pushes directly to release branches and creates tags; it
+     never pushes directly to the main branch (the main-branch dev-version
+     bump is opened as a **draft** pull request instead). It must be
+     triggered **only** by ``workflow_dispatch``, in a workflow file
+     dedicated to this action. Do not add other triggers (such as
+     ``push``, ``pull_request``, or ``schedule``) to that workflow file.
 
   .. note::
 

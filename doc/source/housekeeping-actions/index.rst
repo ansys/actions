@@ -41,7 +41,9 @@ Auto release
    This action must be used in a dedicated workflow file triggered **only**
    by ``workflow_dispatch``. Do not add other triggers (``push``,
    ``pull_request``, ``schedule``, etc.) to that workflow file, since this
-   action pushes commits, branches, and tags directly.
+   action pushes commits and tags directly to release branches (the
+   main-branch dev-version bump is opened as a draft pull request instead
+   of a direct push).
 
 This action only bumps versions and manages git branches/tags for the release — it does not
 build or publish anything. Use it alongside the ``release-github`` and ``release-pypi-public``
