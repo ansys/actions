@@ -61,6 +61,16 @@ def _run(*args, cwd):
     return result.stdout.strip()
 
 
+def _fake_create_dev_version_bump_pr(calls):
+    """Return a stand-in for create_dev_version_bump_pr that records its call args."""
+
+    def _fake(main_branch, bump_branch, release_version, dev_version):
+        calls.append((main_branch, bump_branch, release_version, dev_version))
+        return "https://example.invalid/pr/1"
+
+    return _fake
+
+
 @pytest.fixture(params=sorted(VERSION_SOURCE_CASES))
 def git_repo(tmp_path, monkeypatch, request):
     """Create a bare 'origin' repo and a clone with an initial version on main.
@@ -87,24 +97,62 @@ def git_repo(tmp_path, monkeypatch, request):
     return GitRepo(path=work, version_source=version_source, version_location=version_location)
 
 
-def test_run_minor_major_release_minor(git_repo):
-    """Test a minor release: tags the release branch, bumps main to the next dev version."""
-    release_version, dev_version, branch = run_minor_major_release(
+def test_run_minor_major_release_minor(git_repo, monkeypatch):
+    """Test a minor release: tags the release branch, opens a draft dev-version-bump PR."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
+
+    release_version, dev_version, branch, pr_url = run_minor_major_release(
         "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )
 
     assert release_version == "0.2.0"
     assert dev_version == "0.3.dev0"
     assert branch == "release/0.2"
-    assert read_version(git_repo.version_source, git_repo.version_location) == "0.3.dev0"
+    assert pr_url == "https://example.invalid/pr/1"
+    assert calls == [("main", "chore/bump-dev-version-v0.3.dev0", "0.2.0", "0.3.dev0")]
+
+    _run("tag", "--list", "v0.2.0", cwd=git_repo.path)
     assert _run("tag", "--list", "v0.2.0", cwd=git_repo.path) == "v0.2.0"
+
+    # main itself must be untouched: still the original dev version.
+    _run("checkout", "main", cwd=git_repo.path)
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.dev0"
+
+    # the bump branch carries the new dev version.
+    _run("checkout", "chore/bump-dev-version-v0.3.dev0", cwd=git_repo.path)
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.3.dev0"
 
     _run("checkout", branch, cwd=git_repo.path)
     assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.0"
 
 
-def test_run_patch_release_clean_merge(git_repo):
+def test_run_minor_major_release_rejects_non_dev_version(git_repo, monkeypatch):
+    """Test that a minor/major release refuses to run if main doesn't hold a dev version."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
+    write_version(git_repo.version_source, git_repo.version_location, "0.2.0")
+    _run("commit", "-am", "chore: not a dev version", cwd=git_repo.path)
+    _run("push", "origin", "main", cwd=git_repo.path)
+
+    with pytest.raises(AutoReleaseError, match="Expected a development version"):
+        run_minor_major_release(
+            "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        )
+
+    assert calls == []
+
+
+def test_run_patch_release_clean_merge(git_repo, monkeypatch):
     """Test a patch release that merges cleanly into the existing release branch."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
     run_minor_major_release(
         "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )
@@ -120,8 +168,12 @@ def test_run_patch_release_clean_merge(git_repo):
     assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.1"
 
 
-def test_run_patch_release_auto_resolves_version_only_conflict(git_repo):
+def test_run_patch_release_auto_resolves_version_only_conflict(git_repo, monkeypatch):
     """Test that a patch release auto-resolves a merge conflict limited to the version file."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
     run_minor_major_release(
         "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )
@@ -141,8 +193,12 @@ def test_run_patch_release_auto_resolves_version_only_conflict(git_repo):
     assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.1"
 
 
-def test_run_patch_release_aborts_on_unrelated_conflict(git_repo):
+def test_run_patch_release_aborts_on_unrelated_conflict(git_repo, monkeypatch):
     """Test that a patch release aborts the merge when an unrelated file conflicts."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
     run_minor_major_release(
         "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
     )

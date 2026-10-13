@@ -196,6 +196,68 @@ def bump_minor_major(current_dev_version: str, release_type: str, branch_prefix:
     return release_version, dev_version, branch
 
 
+def require_dev_version(version: str, branch: str) -> None:
+    """Raise ``AutoReleaseError`` if ``version`` is not a development release."""
+    if not Version(version).is_devrelease:
+        raise AutoReleaseError(
+            f"Expected a development version (e.g. 'X.Y.devN') on branch '{branch}' before a "
+            f"minor/major release, but found '{version}'. Did a previous release already bump "
+            "this version?"
+        )
+
+
+def dev_version_bump_pr_title(dev_version: str) -> str:
+    """Return the pull request title for a dev-version-bump PR."""
+    return f"chore: bump dev version to v{dev_version}"
+
+
+def dev_version_bump_pr_body(release_version: str) -> str:
+    """Return the pull request body for a dev-version-bump PR."""
+    return (
+        f"Automated dev-version bump after cutting release `v{release_version}`.\n\n"
+        "> [!CAUTION]\n"
+        f"> Do not merge this pull request until the `v{release_version}` release has been "
+        "successfully published (for example via the `release-github`/`release-pypi-public` "
+        "actions). Merging it early will not break the release, but you should confirm the "
+        "release succeeded first.\n"
+    )
+
+
+def create_dev_version_bump_pr(
+    main_branch: str, bump_branch: str, release_version: str, dev_version: str
+) -> str:
+    """Open a draft pull request bumping the dev version on ``main_branch``.
+
+    Returns
+    -------
+    str
+        The URL of the created pull request.
+    """
+    result = subprocess.run(
+        [
+            "gh",
+            "pr",
+            "create",
+            "--draft",
+            "--title",
+            dev_version_bump_pr_title(dev_version),
+            "--body",
+            dev_version_bump_pr_body(release_version),
+            "--base",
+            main_branch,
+            "--head",
+            bump_branch,
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise AutoReleaseError(
+            f"Failed to create dev-version bump pull request:\n{result.stdout}\n{result.stderr}"
+        )
+    return result.stdout.strip()
+
+
 def bump_patch(current_release_version: str) -> str:
     """Bump the patch component of ``current_release_version``."""
     version = Version(current_release_version)
@@ -272,11 +334,18 @@ def merge_main_into_release(main_branch: str, version_location: str) -> None:
 def run_minor_major_release(
     release_type, version_source, version_location, main_branch, branch_prefix
 ):
-    """Perform a minor or major release. Returns ``(release_version, dev_version, branch)``."""
+    """Perform a minor or major release.
+
+    Returns
+    -------
+    tuple[str, str, str, str]
+        ``(release_version, dev_version, branch, dev_version_pr_url)``.
+    """
     run_git("checkout", main_branch)
     run_git("pull")
 
     current_dev_version = read_version(version_source, version_location)
+    require_dev_version(current_dev_version, main_branch)
     release_version, dev_version, branch = bump_minor_major(
         current_dev_version, release_type, branch_prefix
     )
@@ -290,12 +359,17 @@ def run_minor_major_release(
     run_git("push", "origin", f"v{release_version}")
 
     run_git("checkout", main_branch)
+    bump_branch = f"chore/bump-dev-version-v{dev_version}"
+    run_git("checkout", "-b", bump_branch)
     write_version(version_source, version_location, dev_version)
     run_git("add", version_location)
-    run_git("commit", "-m", f"chore: bump dev version to v{dev_version}")
-    run_git("push", "origin", main_branch)
+    run_git("commit", "-m", dev_version_bump_pr_title(dev_version))
+    run_git("push", "origin", bump_branch)
+    dev_version_pr_url = create_dev_version_bump_pr(
+        main_branch, bump_branch, release_version, dev_version
+    )
 
-    return release_version, dev_version, branch
+    return release_version, dev_version, branch, dev_version_pr_url
 
 
 def run_patch_release(version_source, version_location, main_branch, branch_prefix):
@@ -357,14 +431,16 @@ def main() -> None:
             version_source, version_location, main_branch, branch_prefix
         )
         dev_version = ""
+        dev_version_pr_url = ""
     else:
-        release_version, dev_version, branch = run_minor_major_release(
+        release_version, dev_version, branch, dev_version_pr_url = run_minor_major_release(
             release_type, version_source, version_location, main_branch, branch_prefix
         )
 
     export_output("new-version", release_version)
     export_output("new-dev-version", dev_version)
     export_output("release-branch", branch)
+    export_output("dev-version-pr-url", dev_version_pr_url)
 
 
 if __name__ == "__main__":

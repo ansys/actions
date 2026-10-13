@@ -27,10 +27,13 @@ from autorelease import (
     bump_minor_major,
     bump_patch,
     classify_merge_conflict,
+    dev_version_bump_pr_body,
+    dev_version_bump_pr_title,
     main,
     parse_latest_release_tag,
     read_version,
     release_branch_name,
+    require_dev_version,
     write_version,
 )
 import pytest
@@ -267,3 +270,27 @@ def test_main_missing_env_var_raises(monkeypatch):
     monkeypatch.delenv("RELEASE_TYPE", raising=False)
     with pytest.raises(AutoReleaseError, match="RELEASE_TYPE"):
         main()
+
+
+def test_require_dev_version_accepts_dev_version():
+    """Test that require_dev_version accepts a 'X.Y.devN' version."""
+    require_dev_version("0.2.dev0", "main")
+
+
+def test_require_dev_version_rejects_release_version():
+    """Test that require_dev_version rejects a plain release version."""
+    with pytest.raises(AutoReleaseError, match="Expected a development version"):
+        require_dev_version("0.2.0", "main")
+
+
+def test_dev_version_bump_pr_title():
+    """Test that dev_version_bump_pr_title names the target dev version."""
+    assert dev_version_bump_pr_title("0.3.dev0") == "chore: bump dev version to v0.3.dev0"
+
+
+def test_dev_version_bump_pr_body_mentions_release_and_caution():
+    """Test that dev_version_bump_pr_body references the release version and warns not to merge."""
+    body = dev_version_bump_pr_body("0.2.0")
+    assert "v0.2.0" in body
+    assert "[!CAUTION]" in body
+    assert "release-github" in body or "release-pypi" in body

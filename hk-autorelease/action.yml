@@ -37,6 +37,8 @@ description: |
   .. important:: **Required GitHub Permissions**
 
      - **contents**: ``write`` - Required to push commits, branches, and tags
+     - **pull-requests**: ``write`` - Required to open the draft pull request that bumps the
+       main branch's development version
 
   .. warning::
 
@@ -136,6 +138,12 @@ outputs:
       Name of the release branch used or created for this release.
     value: ${{ steps.autorelease.outputs.release-branch }}
 
+  dev-version-pr-url:
+    description: |
+      URL of the draft pull request opened to bump the main branch's development version.
+      Empty for ``patch`` releases (which don't touch the main branch).
+    value: ${{ steps.autorelease.outputs.dev-version-pr-url }}
+
 runs:
   using: "composite"
   steps:
@@ -143,7 +151,7 @@ runs:
     - name: "Check GitHub permissions"
       uses: $/_check-github-permissions
       with:
-        permissions: "contents: write"
+        permissions: "contents: write, pull-requests: write"
         token: ${{ inputs.token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#auto-release"
 
@@ -183,6 +191,7 @@ runs:
       id: autorelease
       shell: bash
       env:
+        GH_TOKEN: ${{ inputs.token }}
         RELEASE_TYPE: ${{ inputs.release-type }}
         VERSION_SOURCE: ${{ inputs.version-source }}
         VERSION_LOCATION: ${{ inputs.version-location }}
