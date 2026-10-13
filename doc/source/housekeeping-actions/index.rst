@@ -45,7 +45,7 @@ Auto release
    main-branch dev-version bump is opened as a draft pull request instead
    of a direct push).
 
-This action only bumps versions and manages git branches/tags for the release — it does not
+This action only bumps versions and manages git branches/tags for the release. It does not
 build or publish anything. Use it alongside the ``release-github`` and ``release-pypi-public``
 actions (typically in a separate workflow triggered by the ``vX.Y.Z`` tag this action pushes) to
 actually publish the release. The main-branch version bump is opened as a **draft** pull request
