@@ -603,31 +603,42 @@ runs:
         } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+      shell: bash
       env:
+        GH_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ github.event.repository.name }}
+        REPOSITORY: ${{ github.repository_owner }}/${{ github.event.repository.name }}
+        TAG_NAME: ${{ inputs.tag-name }}
+        RELEASE_NOTES_BODY: ${{ env.RELEASE_NOTES_BODY }}
+        GENERATE_RELEASE_NOTES: ${{ inputs.generate-release-notes }}
+        LIBRARY_NAME: ${{ inputs.library-name }}
       if: inputs.dry-run == 'false'
-      with:
-        fail_on_unmatched_files: false
-        generate_release_notes: ${{ inputs.generate-release-notes }}
-        body: ${{ env.RELEASE_NOTES_BODY }}
-        repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
-        tag_name: ${{ inputs.tag-name }}
-        token: ${{ inputs.token }}
-        files: |
-          # [COMMENT] Include wheel and source distribution artifacts
-          dist/${{ inputs.library-name }}-artifacts/*.whl
-          dist/${{ inputs.library-name }}-artifacts/*.tar.gz
+      run: |
+        set -euo pipefail
+        shopt -s nullglob globstar
 
-          # [COMMENT] Include wheelhouse artifacts
+        if gh release view "${TAG_NAME}" --repo "${REPOSITORY}" >/dev/null 2>&1; then
+          gh release edit "${TAG_NAME}" \
+            --repo "${REPOSITORY}" \
+            --notes "${RELEASE_NOTES_BODY}"
+        else
+          create_args=(release create "${TAG_NAME}" --repo "${REPOSITORY}" --notes "${RELEASE_NOTES_BODY}")
+          if [ "${GENERATE_RELEASE_NOTES}" = "true" ]; then
+            create_args+=(--generate-notes)
+          fi
+          gh "${create_args[@]}"
+        fi
+
+        artifacts=(
+          dist/"${LIBRARY_NAME}"-artifacts/*.whl
+          dist/"${LIBRARY_NAME}"-artifacts/*.tar.gz
           dist/wheelhouse/**/*-wheelhouse-*.zip
-
-          # [COMMENT] Include SBOM artifacts
           dist/sbom/**/*-sbom.spdx
-
-          # [COMMENT] Include HTML and PDF documentation artifacts
           dist/documentation/documentation-html.zip
           dist/documentation/documentation-pdf.zip
-
-          # [COMMENT] Include additional artifacts
           dist/extra/**/*
+        )
+
+        if [ "${#artifacts[@]}" -gt 0 ]; then
+          gh release upload "${TAG_NAME}" --repo "${REPOSITORY}" --clobber "${artifacts[@]}"
+        fi
