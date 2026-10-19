@@ -38,14 +38,37 @@ class AutoReleaseError(Exception):
 
 
 def _constant_str_value(node: ast.AST | None) -> str | None:
-    """Return the string value of an ``ast.Constant`` node, or ``None`` if not a str constant."""
+    """Return the string value of an ``ast.Constant`` node, or ``None`` if not a str constant.
+
+    Parameters
+    ----------
+    node : ast.AST | None
+        The AST node to inspect.
+
+    Returns
+    -------
+    str | None
+        The string value, or ``None`` if ``node`` isn't a string constant.
+    """
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         return node.value
     return None
 
 
 def _find_setup_py_version_node(tree: ast.Module) -> ast.Constant | None:
-    """Find the ``version=`` keyword argument's string-constant node in a ``setup(...)`` call."""
+    """Find the ``version=`` keyword argument's string-constant node in a ``setup(...)`` call.
+
+    Parameters
+    ----------
+    tree : ast.Module
+        The parsed AST of a ``setup.py`` file.
+
+    Returns
+    -------
+    ast.Constant | None
+        The string-constant node for the ``version=`` keyword argument, or ``None`` if no
+        ``setup(...)`` call with a string ``version=`` keyword argument was found.
+    """
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
@@ -66,7 +89,19 @@ def _find_setup_py_version_node(tree: ast.Module) -> ast.Constant | None:
 
 
 def _find_python_module_version_node(tree: ast.Module) -> ast.Constant | None:
-    """Find the top-level ``__version__`` assignment's string-constant node."""
+    """Find the top-level ``__version__`` assignment's string-constant node.
+
+    Parameters
+    ----------
+    tree : ast.Module
+        The parsed AST of a Python module.
+
+    Returns
+    -------
+    ast.Constant | None
+        The string-constant node assigned to ``__version__``, or ``None`` if no top-level
+        ``__version__`` assignment with a string value was found.
+    """
     for node in tree.body:
         if isinstance(node, ast.Assign):
             targets = node.targets
@@ -83,7 +118,20 @@ def _find_python_module_version_node(tree: ast.Module) -> ast.Constant | None:
 
 
 def _parse_python_source(location: str, text: str) -> ast.Module:
-    """Parse ``text`` as Python, raising ``AutoReleaseError`` (not ``SyntaxError``) on failure."""
+    """Parse ``text`` as Python, raising ``AutoReleaseError`` (not ``SyntaxError``) on failure.
+
+    Parameters
+    ----------
+    location : str
+        Path of the file ``text`` was read from, used only for the error message.
+    text : str
+        The Python source code to parse.
+
+    Returns
+    -------
+    ast.Module
+        The parsed AST.
+    """
     try:
         return ast.parse(text)
     except SyntaxError as error:
@@ -91,7 +139,22 @@ def _parse_python_source(location: str, text: str) -> ast.Module:
 
 
 def _splice_string_constant(text: str, node: ast.Constant, new_value: str) -> str:
-    """Replace the exact source span of a string-constant node with a new, same-quoted value."""
+    """Replace the exact source span of a string-constant node with a new, same-quoted value.
+
+    Parameters
+    ----------
+    text : str
+        The full source text containing ``node``.
+    node : ast.Constant
+        The string-constant AST node to replace.
+    new_value : str
+        The new string value to splice in, reusing ``node``'s original quote character.
+
+    Returns
+    -------
+    str
+        ``text`` with ``node``'s source span replaced.
+    """
     if node.lineno != node.end_lineno:
         raise AutoReleaseError("Version string literal must be on a single line.")
     lines = text.splitlines(keepends=True)
@@ -103,7 +166,21 @@ def _splice_string_constant(text: str, node: ast.Constant, new_value: str) -> st
 
 
 def read_version(source: str, location: str) -> str:
-    """Read the current version string from ``location`` using ``source`` rules."""
+    """Read the current version string from ``location`` using ``source`` rules.
+
+    Parameters
+    ----------
+    source : str
+        Where the version is stored: ``file``, ``pyproject``, ``setup-py``, or
+        ``python-module``.
+    location : str
+        Path to the file identified by ``source``.
+
+    Returns
+    -------
+    str
+        The current version string.
+    """
     path = Path(location)
     if not path.is_file():
         raise AutoReleaseError(f"version-location '{location}' does not exist.")
@@ -132,7 +209,18 @@ def read_version(source: str, location: str) -> str:
 
 
 def write_version(source: str, location: str, new_version: str) -> None:
-    """Write ``new_version`` to ``location`` using ``source`` rules."""
+    """Write ``new_version`` to ``location`` using ``source`` rules.
+
+    Parameters
+    ----------
+    source : str
+        Where the version is stored: ``file``, ``pyproject``, ``setup-py``, or
+        ``python-module``.
+    location : str
+        Path to the file identified by ``source``.
+    new_version : str
+        The new version string to write.
+    """
     path = Path(location)
 
     if source == "file":
@@ -166,12 +254,36 @@ def write_version(source: str, location: str, new_version: str) -> None:
 
 
 def release_branch_name(branch_prefix: str, major: int, minor: int) -> str:
-    """Compute the release branch name for a given ``major.minor`` version."""
+    """Compute the release branch name for a given ``major.minor`` version.
+
+    Parameters
+    ----------
+    branch_prefix : str
+        Prefix prepended to the computed branch name.
+    major : int
+        Major version component.
+    minor : int
+        Minor version component.
+
+    Returns
+    -------
+    str
+        The release branch name, ``<branch_prefix><major>.<minor>``.
+    """
     return f"{branch_prefix}{major}.{minor}"
 
 
 def bump_minor_major(current_dev_version: str, release_type: str, branch_prefix: str):
     """Compute the release version, next dev version, and release branch.
+
+    Parameters
+    ----------
+    current_dev_version : str
+        Current development version on the main branch, for example ``0.2.dev0``.
+    release_type : str
+        Either ``"minor"`` or ``"major"``.
+    branch_prefix : str
+        Prefix used to build the release branch name.
 
     Returns
     -------
@@ -197,7 +309,15 @@ def bump_minor_major(current_dev_version: str, release_type: str, branch_prefix:
 
 
 def require_dev_version(version: str, branch: str) -> None:
-    """Raise ``AutoReleaseError`` if ``version`` is not a development release."""
+    """Raise ``AutoReleaseError`` if ``version`` is not a development release.
+
+    Parameters
+    ----------
+    version : str
+        The version string to check.
+    branch : str
+        Name of the branch ``version`` was read from, used only for the error message.
+    """
     if not Version(version).is_devrelease:
         raise AutoReleaseError(
             f"Expected a development version (e.g. 'X.Y.devN') on branch '{branch}' before a "
@@ -207,12 +327,34 @@ def require_dev_version(version: str, branch: str) -> None:
 
 
 def dev_version_bump_pr_title(dev_version: str) -> str:
-    """Return the pull request title for a dev-version-bump PR."""
+    """Return the pull request title for a dev-version-bump PR.
+
+    Parameters
+    ----------
+    dev_version : str
+        The new development version being bumped to.
+
+    Returns
+    -------
+    str
+        The pull request title.
+    """
     return f"chore: bump dev version to v{dev_version}"
 
 
 def dev_version_bump_pr_body(release_version: str) -> str:
-    """Return the pull request body for a dev-version-bump PR."""
+    """Return the pull request body for a dev-version-bump PR.
+
+    Parameters
+    ----------
+    release_version : str
+        The release version that was just cut, referenced in the cautionary note.
+
+    Returns
+    -------
+    str
+        The pull request body, including a caution note about publishing order.
+    """
     return (
         f"Automated dev-version bump after cutting release `v{release_version}`.\n\n"
         "> [!CAUTION]\n"
@@ -227,6 +369,18 @@ def create_dev_version_bump_pr(
     main_branch: str, bump_branch: str, release_version: str, dev_version: str
 ) -> str:
     """Open a draft pull request bumping the dev version on ``main_branch``.
+
+    Parameters
+    ----------
+    main_branch : str
+        Name of the main development branch, used as the pull request's base.
+    bump_branch : str
+        Name of the branch carrying the dev-version bump commit, used as the pull request's
+        head.
+    release_version : str
+        The release version that was just cut.
+    dev_version : str
+        The new development version being bumped to.
 
     Returns
     -------
@@ -259,13 +413,35 @@ def create_dev_version_bump_pr(
 
 
 def bump_patch(current_release_version: str) -> str:
-    """Bump the patch component of ``current_release_version``."""
+    """Bump the patch component of ``current_release_version``.
+
+    Parameters
+    ----------
+    current_release_version : str
+        The current release version, for example ``0.2.0``.
+
+    Returns
+    -------
+    str
+        The version with its patch component incremented by one.
+    """
     version = Version(current_release_version)
     return f"{version.major}.{version.minor}.{version.micro + 1}"
 
 
 def ref_exists_on_remote(ref: str) -> bool:
-    """Return ``True`` if ``ref`` already exists on the ``origin`` remote."""
+    """Return ``True`` if ``ref`` already exists on the ``origin`` remote.
+
+    Parameters
+    ----------
+    ref : str
+        Full ref name to check, for example ``refs/heads/release/1.2`` or ``refs/tags/v1.2.0``.
+
+    Returns
+    -------
+    bool
+        ``True`` if ``ref`` exists on ``origin``.
+    """
     result = subprocess.run(
         ["git", "ls-remote", "--exit-code", "origin", ref], capture_output=True, text=True
     )
@@ -273,7 +449,13 @@ def ref_exists_on_remote(ref: str) -> bool:
 
 
 def require_refs_available(*refs: str) -> None:
-    """Raise ``AutoReleaseError`` if any of ``refs`` already exists on the ``origin`` remote."""
+    """Raise ``AutoReleaseError`` if any of ``refs`` already exists on the ``origin`` remote.
+
+    Parameters
+    ----------
+    *refs : str
+        Full ref names to check.
+    """
     existing = [ref for ref in refs if ref_exists_on_remote(ref)]
     if existing:
         raise AutoReleaseError(
@@ -288,6 +470,16 @@ def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
 
     ``tag_lines`` is expected to already be sorted from newest to oldest, as
     produced by ``git tag --list "v*" --sort=-version:refname``.
+
+    Parameters
+    ----------
+    tag_lines : list[str]
+        Tag names, newest first.
+
+    Returns
+    -------
+    tuple[int, int, int]
+        The ``(major, minor, patch)`` of the first matching tag.
     """
     tag_pattern = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
     for tag in tag_lines:
@@ -299,12 +491,38 @@ def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
 
 
 def classify_merge_conflict(conflicted_files: list[str], version_location: str) -> bool:
-    """Return ``True`` if the only conflicting file is ``version_location``."""
+    """Return ``True`` if the only conflicting file is ``version_location``.
+
+    Parameters
+    ----------
+    conflicted_files : list[str]
+        Paths reported as unmerged/conflicting by git.
+    version_location : str
+        Path to the version file.
+
+    Returns
+    -------
+    bool
+        ``True`` if ``conflicted_files`` contains exactly ``version_location``.
+    """
     return conflicted_files == [version_location]
 
 
 def run_git(*args: str, check: bool = True) -> str:
-    """Run a git command and return its stripped stdout."""
+    """Run a git command and return its stripped stdout.
+
+    Parameters
+    ----------
+    *args : str
+        Arguments passed to ``git``.
+    check : bool
+        If ``True`` (the default), raise ``AutoReleaseError`` when the command exits non-zero.
+
+    Returns
+    -------
+    str
+        The command's stripped stdout.
+    """
     result = subprocess.run(["git", *args], capture_output=True, text=True)
     if check and result.returncode != 0:
         raise AutoReleaseError(f"git {' '.join(args)} failed:\n{result.stdout}\n{result.stderr}")
@@ -312,21 +530,44 @@ def run_git(*args: str, check: bool = True) -> str:
 
 
 def export_output(name: str, value: str) -> None:
-    """Append a ``name=value`` entry to the ``GITHUB_OUTPUT`` file."""
+    """Append a ``name=value`` entry to the ``GITHUB_OUTPUT`` file.
+
+    Parameters
+    ----------
+    name : str
+        The output name.
+    value : str
+        The output value.
+    """
     github_output = os.environ["GITHUB_OUTPUT"]
     with Path(github_output).open("a", encoding="utf-8") as file:
         file.write(f"{name}={value}\n")
 
 
 def find_latest_release_tag() -> tuple[int, int, int]:
-    """Fetch tags and return the ``(major, minor, patch)`` of the latest release."""
+    """Fetch tags and return the ``(major, minor, patch)`` of the latest release.
+
+    Returns
+    -------
+    tuple[int, int, int]
+        The ``(major, minor, patch)`` of the latest ``vX.Y.Z`` tag.
+    """
     run_git("fetch", "--tags")
     output = run_git("tag", "--list", "v*", "--sort=-version:refname")
     return parse_latest_release_tag(output.splitlines())
 
 
 def merge_main_into_release(main_branch: str, version_location: str) -> None:
-    """Merge ``main_branch`` into the current branch, auto-resolving version-only conflicts."""
+    """Merge ``main_branch`` into the current branch, auto-resolving version-only conflicts.
+
+    Parameters
+    ----------
+    main_branch : str
+        Name of the branch to merge into the current branch.
+    version_location : str
+        Path to the version file; a conflict limited to this file is auto-resolved by keeping
+        the current branch's version.
+    """
     result = subprocess.run(
         ["git", "merge", main_branch, "--no-edit"], capture_output=True, text=True
     )
@@ -353,6 +594,14 @@ def cherry_pick_commits_into_release(commits: list[str], version_location: str) 
 
     Auto-resolves a conflict the same way ``merge_main_into_release`` does, if it's limited
     to ``version_location``; aborts with a clear error otherwise.
+
+    Parameters
+    ----------
+    commits : list[str]
+        Commit SHAs to cherry-pick, in order.
+    version_location : str
+        Path to the version file; a conflict limited to this file is auto-resolved by keeping
+        the current branch's version.
     """
     for commit in commits:
         result = subprocess.run(["git", "cherry-pick", commit], capture_output=True, text=True)
@@ -378,6 +627,20 @@ def run_minor_major_release(
     release_type, version_source, version_location, main_branch, branch_prefix
 ):
     """Perform a minor or major release.
+
+    Parameters
+    ----------
+    release_type : str
+        Either ``"minor"`` or ``"major"``.
+    version_source : str
+        Where the version is stored (``file``, ``pyproject``, ``setup-py``, or
+        ``python-module``).
+    version_location : str
+        Path to the file identified by ``version_source``.
+    main_branch : str
+        Name of the main development branch.
+    branch_prefix : str
+        Prefix used to compute the release branch name.
 
     Returns
     -------
@@ -470,6 +733,18 @@ def _finish_patch_release(
 def run_patch_release(version_source, version_location, main_branch, branch_prefix):
     """Perform a patch release by merging all of main into the release branch.
 
+    Parameters
+    ----------
+    version_source : str
+        Where the version is stored (``file``, ``pyproject``, ``setup-py``, or
+        ``python-module``).
+    version_location : str
+        Path to the file identified by ``version_source``.
+    main_branch : str
+        Name of the main development branch.
+    branch_prefix : str
+        Prefix used to compute the release branch name.
+
     Returns
     -------
     tuple[str, str]
@@ -491,6 +766,15 @@ def run_patch_cherry_pick_release(
 
     Parameters
     ----------
+    version_source : str
+        Where the version is stored (``file``, ``pyproject``, ``setup-py``, or
+        ``python-module``).
+    version_location : str
+        Path to the file identified by ``version_source``.
+    main_branch : str
+        Name of the main development branch.
+    branch_prefix : str
+        Prefix used to compute the release branch name.
     commits : list[str]
         Commit SHAs to cherry-pick, in order.
 
@@ -509,7 +793,18 @@ def run_patch_cherry_pick_release(
 
 
 def require_env(name: str) -> str:
-    """Return the value of environment variable ``name``, or raise ``AutoReleaseError``."""
+    """Return the value of environment variable ``name``, or raise ``AutoReleaseError``.
+
+    Parameters
+    ----------
+    name : str
+        The environment variable name.
+
+    Returns
+    -------
+    str
+        The environment variable's value.
+    """
     try:
         return os.environ[name]
     except KeyError:
