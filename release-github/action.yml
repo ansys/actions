@@ -40,17 +40,16 @@ description: |
 
     .. note:: **Immutable releases**
 
-       The release is created as a draft, every artifact is attached to it, and
-       the draft is published only once all the uploads succeeded. This is the
-       workflow recommended by GitHub for repositories with `immutable releases
+       Artifacts are attached to the release while it is still a draft, and the
+       draft is published only once every upload succeeded. This is the workflow
+       recommended by GitHub for repositories with `immutable releases
        <https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases>`_
        enabled, where the tag and the assets of a published release can no
        longer be modified. Enabling immutable releases is recommended for every
        repository using this action.
 
        Because a published release cannot be overwritten, the action fails when
-       a published release already exists for the tag. Drafts left behind by a
-       previous failed run are discarded and recreated.
+       a published release already exists for the tag.
 
     .. note:: **Optional GitHub Permissions**
 
@@ -653,29 +652,13 @@ runs:
         fi
 
         # Immutable releases lock the tag and the assets as soon as the release
-        # is published, so assets have to be attached while the release is still
-        # a draft. Publishing happens at the very end, once every asset is in
-        # place.
-        if release_state="$(gh release view "${TAG_NAME}" --repo "${REPOSITORY}" --json isDraft --jq .isDraft 2>/dev/null)"; then
-          if [[ "${release_state}" == "false" ]]; then
-            echo "::error::A published release already exists for tag '${TAG_NAME}'. Published releases are immutable, so they cannot be overwritten. Delete the release manually or use a different tag."
-            exit 1
-          fi
-
-          # A draft left behind by a previous failed run may hold stale assets,
-          # so it is discarded and rebuilt from scratch. The tag is preserved.
-          echo "Discarding the draft release left for tag '${TAG_NAME}' by a previous run."
-          gh release delete "${TAG_NAME}" --repo "${REPOSITORY}" --yes
-        fi
-
-        create_args=(release create "${TAG_NAME}" --repo "${REPOSITORY}" --draft --notes "${RELEASE_NOTES_BODY}")
+        # is published, so every asset must be attached before publication.
+        # Passing the files to 'gh release create' does exactly that: the
+        # release is held as a draft, the assets are uploaded, and the draft is
+        # published only when every upload succeeded. A failed upload deletes
+        # the draft, so a partial release is never published.
+        create_args=(release create "${TAG_NAME}" --repo "${REPOSITORY}" --notes "${RELEASE_NOTES_BODY}")
         if [ "${GENERATE_RELEASE_NOTES}" = "true" ]; then
           create_args+=(--generate-notes)
         fi
-        gh "${create_args[@]}"
-
-        if [ "${#artifacts[@]}" -gt 0 ]; then
-          gh release upload "${TAG_NAME}" --repo "${REPOSITORY}" --clobber "${artifacts[@]}"
-        fi
-
-        gh release edit "${TAG_NAME}" --repo "${REPOSITORY}" --draft=false --latest
+        gh "${create_args[@]}" "${artifacts[@]}"

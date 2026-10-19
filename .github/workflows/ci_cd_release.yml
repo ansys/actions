@@ -277,20 +277,12 @@ jobs:
         EOF
         )"
 
-        # Immutable releases lock the tag and the assets once the release is
-        # published, so the documentation archives are attached to a draft and
-        # the release is only published afterwards.
-        if release_state="$(gh release view "${TAG_NAME}" --json isDraft --jq .isDraft 2>/dev/null)"; then
-          if [[ "${release_state}" == "false" ]]; then
-            echo "::error::A published release already exists for tag '${TAG_NAME}'. Published releases are immutable, so they cannot be overwritten."
-            exit 1
-          fi
-          gh release delete "${TAG_NAME}" --yes
-        fi
-
-        gh release create "${TAG_NAME}" --draft --generate-notes --notes "${release_body}"
-        gh release upload "${TAG_NAME}" documentation-html.zip documentation-pdf.zip --clobber
-        gh release edit "${TAG_NAME}" --draft=false --latest
+        # Immutable releases lock the tag and the assets as soon as the release
+        # is published. Passing the files to 'gh release create' holds the
+        # release as a draft until every upload succeeded, so a partial release
+        # is never published.
+        gh release create "${TAG_NAME}" --generate-notes --notes "${release_body}" \
+          documentation-html.zip documentation-pdf.zip
 
   doc-deploy-stable:
     name: "Deploy stable documentation"
