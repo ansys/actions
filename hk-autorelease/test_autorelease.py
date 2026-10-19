@@ -22,6 +22,8 @@
 
 """Tests for the hk-autorelease version read/write helpers."""
 
+import subprocess
+
 from autorelease import (
     AutoReleaseError,
     bump_minor_major,
@@ -34,6 +36,7 @@ from autorelease import (
     read_version,
     release_branch_name,
     require_dev_version,
+    update_lock_file,
     write_version,
 )
 import pytest
@@ -317,3 +320,54 @@ def test_dev_version_bump_pr_body_mentions_release_and_caution():
     assert "v0.2.0" in body
     assert "[!CAUTION]" in body
     assert "release-github" in body or "release-pypi" in body
+
+
+def test_update_lock_file_none_returns_none():
+    """Test that update_lock_file is a no-op when lock-file-tool is 'none'."""
+    assert update_lock_file("none") is None
+
+
+def test_update_lock_file_unknown_tool_raises():
+    """Test that update_lock_file raises AutoReleaseError for an unrecognized tool."""
+    with pytest.raises(AutoReleaseError, match="Unknown lock-file-tool"):
+        update_lock_file("bogus")
+
+
+def test_update_lock_file_uv_runs_uv_lock(monkeypatch):
+    """Test that update_lock_file runs 'uv lock' and returns 'uv.lock' for tool 'uv'."""
+    calls = []
+
+    def _fake_run(command, capture_output, text):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+
+    assert update_lock_file("uv") == "uv.lock"
+    assert calls == [["uv", "lock"]]
+
+
+def test_update_lock_file_poetry_runs_poetry_lock_no_update(monkeypatch):
+    """Test that update_lock_file runs 'uvx poetry lock --no-update' for tool 'poetry'."""
+    calls = []
+
+    def _fake_run(command, capture_output, text):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+
+    assert update_lock_file("poetry") == "poetry.lock"
+    assert calls == [["uvx", "poetry", "lock", "--no-update"]]
+
+
+def test_update_lock_file_failure_raises_with_output(monkeypatch):
+    """Test that update_lock_file raises AutoReleaseError including stdout/stderr on failure."""
+
+    def _fake_run(command, capture_output, text):
+        return subprocess.CompletedProcess(command, 1, stdout="out", stderr="err")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+
+    with pytest.raises(AutoReleaseError, match="Failed to update 'uv.lock'"):
+        update_lock_file("uv")

@@ -254,6 +254,45 @@ def write_version(source: str, location: str, new_version: str) -> None:
     raise AutoReleaseError(f"Unknown version-source '{source}'.")
 
 
+def update_lock_file(lock_file_tool: str) -> str | None:
+    """Regenerate the dependency lock file for ``lock_file_tool``, without upgrading anything.
+
+    Parameters
+    ----------
+    lock_file_tool : str
+        Which lock file tooling to use: ``none``, ``uv``, or ``poetry``.
+
+    Returns
+    -------
+    str | None
+        Path to the lock file that was regenerated, or ``None`` if ``lock_file_tool`` is
+        ``"none"``.
+    """
+    if lock_file_tool == "none":
+        return None
+
+    commands = {
+        "uv": ["uv", "lock"],
+        "poetry": ["uvx", "poetry", "lock", "--no-update"],
+    }
+    lock_files = {
+        "uv": "uv.lock",
+        "poetry": "poetry.lock",
+    }
+    if lock_file_tool not in commands:
+        raise AutoReleaseError(f"Unknown lock-file-tool '{lock_file_tool}'.")
+
+    command = commands[lock_file_tool]
+    lock_file = lock_files[lock_file_tool]
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise AutoReleaseError(
+            f"Failed to update '{lock_file}' via '{' '.join(command)}':\n"
+            f"{result.stdout}\n{result.stderr}"
+        )
+    return lock_file
+
+
 def release_branch_name(branch_prefix: str, major: int, minor: int) -> str:
     """Compute the release branch name for a given ``major.minor`` version.
 
