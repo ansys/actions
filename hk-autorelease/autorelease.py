@@ -264,17 +264,15 @@ def bump_patch(current_release_version: str) -> str:
     return f"{version.major}.{version.minor}.{version.micro + 1}"
 
 
-_TAG_PATTERN = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
-
-
 def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
     """Return the ``(major, minor, patch)`` of the first ``vX.Y.Z`` tag in ``tag_lines``.
 
     ``tag_lines`` is expected to already be sorted from newest to oldest, as
     produced by ``git tag --list "v*" --sort=-version:refname``.
     """
+    tag_pattern = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
     for tag in tag_lines:
-        match = _TAG_PATTERN.match(tag.strip())
+        match = tag_pattern.match(tag.strip())
         if match:
             major, minor, patch = match.groups()
             return int(major), int(minor), int(patch)
@@ -397,10 +395,6 @@ def run_patch_release(version_source, version_location, main_branch, branch_pref
     return release_version, branch
 
 
-_VALID_RELEASE_TYPES = ("patch", "minor", "major")
-_VALID_VERSION_SOURCES = ("file", "pyproject", "setup-py", "python-module")
-
-
 def require_env(name: str) -> str:
     """Return the value of environment variable ``name``, or raise ``AutoReleaseError``."""
     try:
@@ -411,19 +405,22 @@ def require_env(name: str) -> str:
 
 def main() -> None:
     """Entry point: read inputs from the environment and perform the release."""
+    valid_release_types = ("patch", "minor", "major")
+    valid_version_sources = ("file", "pyproject", "setup-py", "python-module")
+
     release_type = require_env("RELEASE_TYPE")
     version_source = require_env("VERSION_SOURCE")
     version_location = require_env("VERSION_LOCATION")
     main_branch = require_env("MAIN_BRANCH")
     branch_prefix = require_env("RELEASE_BRANCH_PREFIX")
 
-    if release_type not in _VALID_RELEASE_TYPES:
+    if release_type not in valid_release_types:
         raise AutoReleaseError(
-            f"Invalid release-type '{release_type}'. Must be one of {_VALID_RELEASE_TYPES}."
+            f"Invalid release-type '{release_type}'. Must be one of {valid_release_types}."
         )
-    if version_source not in _VALID_VERSION_SOURCES:
+    if version_source not in valid_version_sources:
         raise AutoReleaseError(
-            f"Invalid version-source '{version_source}'. Must be one of {_VALID_VERSION_SOURCES}."
+            f"Invalid version-source '{version_source}'. Must be one of {valid_version_sources}."
         )
 
     if release_type == "patch":
