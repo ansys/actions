@@ -62,7 +62,7 @@ description: |
 
   .. note::
 
-     This action only manages version bumping and git branches/tags — it never builds or
+     This action only manages version bumping and git branches/tags—it never builds or
      publishes a package. Pair it with the ``release-github`` action (to create the GitHub
      release) and ``release-pypi-public`` (or a trusted-publisher based workflow) to actually
      publish the artifacts, typically triggered separately by the ``vX.Y.Z`` tag this action

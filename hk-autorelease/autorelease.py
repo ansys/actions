@@ -23,6 +23,7 @@
 """Automate patch/minor/major releases by bumping a version and pushing git tags."""
 
 import ast
+from collections.abc import Callable
 import os
 from pathlib import Path
 import re
@@ -273,7 +274,9 @@ def release_branch_name(branch_prefix: str, major: int, minor: int) -> str:
     return f"{branch_prefix}{major}.{minor}"
 
 
-def bump_minor_major(current_dev_version: str, release_type: str, branch_prefix: str):
+def bump_minor_major(
+    current_dev_version: str, release_type: str, branch_prefix: str
+) -> tuple[str, str, str]:
     """Compute the release version, next dev version, and release branch.
 
     Parameters
@@ -624,8 +627,12 @@ def cherry_pick_commits_into_release(commits: list[str], version_location: str) 
 
 
 def run_minor_major_release(
-    release_type, version_source, version_location, main_branch, branch_prefix
-):
+    release_type: str,
+    version_source: str,
+    version_location: str,
+    main_branch: str,
+    branch_prefix: str,
+) -> tuple[str, str, str, str]:
     """Perform a minor or major release.
 
     Parameters
@@ -682,8 +689,12 @@ def run_minor_major_release(
 
 
 def _finish_patch_release(
-    version_source, version_location, main_branch, branch_prefix, apply_changes
-):
+    version_source: str,
+    version_location: str,
+    main_branch: str,
+    branch_prefix: str,
+    apply_changes: Callable[[], None],
+) -> tuple[str, str]:
     """Shared tail end of a patch release, once the release-branch content is ready to bump.
 
     Parameters
@@ -730,7 +741,9 @@ def _finish_patch_release(
     return release_version, branch
 
 
-def run_patch_release(version_source, version_location, main_branch, branch_prefix):
+def run_patch_release(
+    version_source: str, version_location: str, main_branch: str, branch_prefix: str
+) -> tuple[str, str]:
     """Perform a patch release by merging all of main into the release branch.
 
     Parameters
@@ -760,8 +773,12 @@ def run_patch_release(version_source, version_location, main_branch, branch_pref
 
 
 def run_patch_cherry_pick_release(
-    version_source, version_location, main_branch, branch_prefix, commits
-):
+    version_source: str,
+    version_location: str,
+    main_branch: str,
+    branch_prefix: str,
+    commits: list[str],
+) -> tuple[str, str]:
     """Perform a patch release by cherry-picking specific commits onto the release branch.
 
     Parameters

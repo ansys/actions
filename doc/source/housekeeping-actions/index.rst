@@ -51,8 +51,8 @@ actions (typically in a separate workflow triggered by the ``vX.Y.Z`` tag this a
 actually publish the release. The main-branch version bump is opened as a **draft** pull request
 specifically so it isn't merged before you've confirmed that publishing succeeded.
 
-A plain ``patch`` release merges **all** commits from the main branch into the release branch —
-it is not a cherry-pick, so every commit merged to main since the last minor/major release is
+A plain ``patch`` release merges **all** commits from the main branch into the release branch—it
+is not a cherry-pick, so every commit merged to main since the last minor/major release is
 included. If you need to release only specific commits, use ``patch-cherry-pick`` with the
 ``cherry-pick-commits`` input instead.
 
