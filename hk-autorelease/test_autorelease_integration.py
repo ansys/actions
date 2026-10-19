@@ -147,6 +147,58 @@ def test_run_minor_major_release_rejects_non_dev_version(git_repo, monkeypatch):
     assert calls == []
 
 
+def test_run_minor_major_release_rejects_if_release_branch_already_exists(git_repo, monkeypatch):
+    """Test that a minor/major release refuses to run if the release branch already exists."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
+    _run("checkout", "-b", "release/0.2", cwd=git_repo.path)
+    _run("push", "origin", "release/0.2", cwd=git_repo.path)
+    _run("checkout", "main", cwd=git_repo.path)
+    # Delete the local branch so only 'origin' carries the leftover ref, as it would after a
+    # partially-failed run on a fresh checkout -- otherwise git's own local-branch-exists error
+    # would mask whether the new pre-flight guard actually fired.
+    _run("branch", "-D", "release/0.2", cwd=git_repo.path)
+    remote_ref_before = _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path)
+
+    with pytest.raises(AutoReleaseError, match="already exist"):
+        run_minor_major_release(
+            "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        )
+
+    assert calls == []
+    # main must be untouched.
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.dev0"
+    # the release branch on origin must be unchanged (never re-pushed with a new commit).
+    assert (
+        _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path)
+        == remote_ref_before
+    )
+
+
+def test_run_minor_major_release_rejects_if_tag_already_exists(git_repo, monkeypatch):
+    """Test that a minor/major release refuses to run if the release tag already exists."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
+    _run("tag", "v0.2.0", cwd=git_repo.path)
+    _run("push", "origin", "v0.2.0", cwd=git_repo.path)
+    # Delete the local tag so only 'origin' carries the leftover ref (see comment in the
+    # release-branch variant of this test, above).
+    _run("tag", "-d", "v0.2.0", cwd=git_repo.path)
+
+    with pytest.raises(AutoReleaseError, match="already exist"):
+        run_minor_major_release(
+            "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        )
+
+    assert calls == []
+    # the release branch must never have been pushed.
+    assert _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path) == ""
+
+
 def test_run_patch_release_clean_merge(git_repo, monkeypatch):
     """Test a patch release that merges cleanly into the existing release branch."""
     calls = []

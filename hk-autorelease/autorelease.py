@@ -264,6 +264,25 @@ def bump_patch(current_release_version: str) -> str:
     return f"{version.major}.{version.minor}.{version.micro + 1}"
 
 
+def ref_exists_on_remote(ref: str) -> bool:
+    """Return ``True`` if ``ref`` already exists on the ``origin`` remote."""
+    result = subprocess.run(
+        ["git", "ls-remote", "--exit-code", "origin", ref], capture_output=True, text=True
+    )
+    return result.returncode == 0
+
+
+def require_refs_available(*refs: str) -> None:
+    """Raise ``AutoReleaseError`` if any of ``refs`` already exists on the ``origin`` remote."""
+    existing = [ref for ref in refs if ref_exists_on_remote(ref)]
+    if existing:
+        raise AutoReleaseError(
+            "Refusing to start: the following refs already exist on 'origin': "
+            f"{', '.join(existing)}. This may be left over from a previous, partially-failed "
+            "run -- delete them manually once you've confirmed it's safe to retry."
+        )
+
+
 def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
     """Return the ``(major, minor, patch)`` of the first ``vX.Y.Z`` tag in ``tag_lines``.
 
@@ -347,6 +366,10 @@ def run_minor_major_release(
     release_version, dev_version, branch = bump_minor_major(
         current_dev_version, release_type, branch_prefix
     )
+    bump_branch = f"chore/bump-dev-version-v{dev_version}"
+    require_refs_available(
+        f"refs/heads/{branch}", f"refs/tags/v{release_version}", f"refs/heads/{bump_branch}"
+    )
 
     run_git("checkout", "-b", branch)
     write_version(version_source, version_location, release_version)
@@ -357,7 +380,6 @@ def run_minor_major_release(
     run_git("push", "origin", f"v{release_version}")
 
     run_git("checkout", main_branch)
-    bump_branch = f"chore/bump-dev-version-v{dev_version}"
     run_git("checkout", "-b", bump_branch)
     write_version(version_source, version_location, dev_version)
     run_git("add", version_location)
