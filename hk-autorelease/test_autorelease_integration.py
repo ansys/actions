@@ -30,6 +30,7 @@ from autorelease import (
     AutoReleaseError,
     read_version,
     run_minor_major_release,
+    run_patch_cherry_pick_release,
     run_patch_release,
     write_version,
 )
@@ -279,3 +280,98 @@ def test_run_patch_release_aborts_on_unrelated_conflict(git_repo, monkeypatch):
 
     # The merge must have been aborted, leaving a clean working tree.
     assert _run("status", "--porcelain", cwd=git_repo.path) == ""
+
+
+def test_run_patch_cherry_pick_release_only_picks_listed_commits(git_repo, monkeypatch):
+    """Test that patch-cherry-pick only brings in the listed commits, not all of main."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
+    run_minor_major_release(
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+    )
+
+    _run("checkout", "main", cwd=git_repo.path)
+    (git_repo.path / "a.txt").write_text("a\n")
+    _run("add", "a.txt", cwd=git_repo.path)
+    _run("commit", "-m", "feat: add a", cwd=git_repo.path)
+    commit_a = _run("rev-parse", "HEAD", cwd=git_repo.path)
+
+    (git_repo.path / "b.txt").write_text("b\n")
+    _run("add", "b.txt", cwd=git_repo.path)
+    _run("commit", "-m", "feat: add b (should NOT be cherry-picked)", cwd=git_repo.path)
+
+    (git_repo.path / "c.txt").write_text("c\n")
+    _run("add", "c.txt", cwd=git_repo.path)
+    _run("commit", "-m", "feat: add c", cwd=git_repo.path)
+    commit_c = _run("rev-parse", "HEAD", cwd=git_repo.path)
+    _run("push", "origin", "main", cwd=git_repo.path)
+
+    release_version, branch = run_patch_cherry_pick_release(
+        git_repo.version_source, git_repo.version_location, "main", "release/", [commit_a, commit_c]
+    )
+
+    assert release_version == "0.2.1"
+    _run("checkout", branch, cwd=git_repo.path)
+    assert (git_repo.path / "a.txt").exists()
+    assert not (git_repo.path / "b.txt").exists()
+    assert (git_repo.path / "c.txt").exists()
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.1"
+
+
+def test_run_patch_cherry_pick_release_aborts_on_unrelated_conflict(git_repo, monkeypatch):
+    """Test that patch-cherry-pick aborts the cherry-pick when an unrelated file conflicts."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
+    run_minor_major_release(
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+    )
+
+    _run("checkout", "release/0.2", cwd=git_repo.path)
+    (git_repo.path / "README.md").write_text("release branch content\n")
+    _run("add", "README.md", cwd=git_repo.path)
+    _run("commit", "-m", "docs: release branch readme", cwd=git_repo.path)
+    _run("push", "origin", "release/0.2", cwd=git_repo.path)
+
+    _run("checkout", "main", cwd=git_repo.path)
+    (git_repo.path / "README.md").write_text("main branch content\n")
+    _run("add", "README.md", cwd=git_repo.path)
+    _run("commit", "-m", "docs: main readme", cwd=git_repo.path)
+    commit = _run("rev-parse", "HEAD", cwd=git_repo.path)
+    _run("push", "origin", "main", cwd=git_repo.path)
+
+    with pytest.raises(AutoReleaseError, match="produced conflicts"):
+        run_patch_cherry_pick_release(
+            git_repo.version_source, git_repo.version_location, "main", "release/", [commit]
+        )
+
+    assert _run("status", "--porcelain", cwd=git_repo.path) == ""
+
+
+def test_run_patch_release_rejects_if_tag_already_exists(git_repo, monkeypatch):
+    """Test that a (merge-all) patch release refuses to run if the release tag already exists."""
+    calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
+    )
+    run_minor_major_release(
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+    )
+    _run("tag", "v0.2.1", cwd=git_repo.path)
+    _run("push", "origin", "v0.2.1", cwd=git_repo.path)
+    # Delete the local tag so only 'origin' carries the leftover ref (see comment in the
+    # release-branch variant of this test, above) -- otherwise the plain `git tag` command
+    # inside run_patch_release would itself fail locally with its own "already exists"
+    # message, which would also match this test's pattern and mask whether
+    # require_refs_available actually ran.
+    _run("tag", "-d", "v0.2.1", cwd=git_repo.path)
+
+    with pytest.raises(AutoReleaseError, match="already exist"):
+        run_patch_release(git_repo.version_source, git_repo.version_location, "main", "release/")
+
+    # The release branch must never have received the bump commit/push.
+    _run("checkout", "release/0.2", cwd=git_repo.path)
+    assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.0"

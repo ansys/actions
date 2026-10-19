@@ -348,6 +348,32 @@ def merge_main_into_release(main_branch: str, version_location: str) -> None:
     )
 
 
+def cherry_pick_commits_into_release(commits: list[str], version_location: str) -> None:
+    """Cherry-pick each of ``commits`` onto the current branch, in order.
+
+    Auto-resolves a conflict the same way ``merge_main_into_release`` does, if it's limited
+    to ``version_location``; aborts with a clear error otherwise.
+    """
+    for commit in commits:
+        result = subprocess.run(["git", "cherry-pick", commit], capture_output=True, text=True)
+        if result.returncode == 0:
+            continue
+
+        conflicted = run_git("diff", "--name-only", "--diff-filter=U").splitlines()
+        if classify_merge_conflict(conflicted, version_location):
+            run_git("checkout", "--ours", version_location)
+            run_git("add", version_location)
+            run_git("cherry-pick", "--continue")
+            continue
+
+        run_git("cherry-pick", "--abort", check=False)
+        raise AutoReleaseError(
+            f"Cherry-pick of commit '{commit}' produced conflicts outside of the version "
+            f"file: {', '.join(conflicted) or 'unknown'}. Please resolve manually.\n"
+            f"git cherry-pick output:\n{result.stdout}\n{result.stderr}"
+        )
+
+
 def run_minor_major_release(
     release_type, version_source, version_location, main_branch, branch_prefix
 ):
@@ -392,8 +418,31 @@ def run_minor_major_release(
     return release_version, dev_version, branch, dev_version_pr_url
 
 
-def run_patch_release(version_source, version_location, main_branch, branch_prefix):
-    """Perform a patch release. Returns ``(release_version, release_branch)``."""
+def _finish_patch_release(
+    version_source, version_location, main_branch, branch_prefix, apply_changes
+):
+    """Shared tail end of a patch release, once the release-branch content is ready to bump.
+
+    Parameters
+    ----------
+    version_source : str
+        Where the version is stored (``file``, ``pyproject``, ``setup-py``, or
+        ``python-module``).
+    version_location : str
+        Path to the file identified by ``version_source``.
+    main_branch : str
+        Name of the main development branch.
+    branch_prefix : str
+        Prefix used to compute the release branch name.
+    apply_changes : Callable[[], None]
+        Called with the release branch checked out, to bring in the desired changes (merge
+        all of main, or cherry-pick specific commits) before the version is bumped.
+
+    Returns
+    -------
+    tuple[str, str]
+        ``(release_version, release_branch)``.
+    """
     run_git("checkout", main_branch)
     run_git("pull")
 
@@ -401,10 +450,11 @@ def run_patch_release(version_source, version_location, main_branch, branch_pref
     branch = release_branch_name(branch_prefix, major, minor)
 
     run_git("checkout", branch)
-    merge_main_into_release(main_branch, version_location)
+    apply_changes()
 
     current_version = read_version(version_source, version_location)
     release_version = bump_patch(current_version)
+    require_refs_available(f"refs/tags/v{release_version}")
     write_version(version_source, version_location, release_version)
     run_git("add", version_location)
     run_git("commit", "-m", f"release: v{release_version}")
@@ -417,6 +467,47 @@ def run_patch_release(version_source, version_location, main_branch, branch_pref
     return release_version, branch
 
 
+def run_patch_release(version_source, version_location, main_branch, branch_prefix):
+    """Perform a patch release by merging all of main into the release branch.
+
+    Returns
+    -------
+    tuple[str, str]
+        ``(release_version, release_branch)``.
+    """
+    return _finish_patch_release(
+        version_source,
+        version_location,
+        main_branch,
+        branch_prefix,
+        lambda: merge_main_into_release(main_branch, version_location),
+    )
+
+
+def run_patch_cherry_pick_release(
+    version_source, version_location, main_branch, branch_prefix, commits
+):
+    """Perform a patch release by cherry-picking specific commits onto the release branch.
+
+    Parameters
+    ----------
+    commits : list[str]
+        Commit SHAs to cherry-pick, in order.
+
+    Returns
+    -------
+    tuple[str, str]
+        ``(release_version, release_branch)``.
+    """
+    return _finish_patch_release(
+        version_source,
+        version_location,
+        main_branch,
+        branch_prefix,
+        lambda: cherry_pick_commits_into_release(commits, version_location),
+    )
+
+
 def require_env(name: str) -> str:
     """Return the value of environment variable ``name``, or raise ``AutoReleaseError``."""
     try:
@@ -427,7 +518,7 @@ def require_env(name: str) -> str:
 
 def main() -> None:
     """Entry point: read inputs from the environment and perform the release."""
-    valid_release_types = ("patch", "minor", "major")
+    valid_release_types = ("patch", "patch-cherry-pick", "minor", "major")
     valid_version_sources = ("file", "pyproject", "setup-py", "python-module")
 
     release_type = require_env("RELEASE_TYPE")
@@ -448,6 +539,22 @@ def main() -> None:
     if release_type == "patch":
         release_version, branch = run_patch_release(
             version_source, version_location, main_branch, branch_prefix
+        )
+        dev_version = ""
+        dev_version_pr_url = ""
+    elif release_type == "patch-cherry-pick":
+        commits = [
+            commit.strip()
+            for commit in require_env("CHERRY_PICK_COMMITS").split(",")
+            if commit.strip()
+        ]
+        if not commits:
+            raise AutoReleaseError(
+                "release-type 'patch-cherry-pick' requires at least one commit SHA in "
+                "'cherry-pick-commits'."
+            )
+        release_version, branch = run_patch_cherry_pick_release(
+            version_source, version_location, main_branch, branch_prefix, commits
         )
         dev_version = ""
         dev_version_pr_url = ""

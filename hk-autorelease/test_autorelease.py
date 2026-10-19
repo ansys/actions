@@ -272,6 +272,29 @@ def test_main_missing_env_var_raises(monkeypatch):
         main()
 
 
+def test_main_patch_cherry_pick_requires_commits(monkeypatch):
+    """Test that main raises AutoReleaseError when patch-cherry-pick has no commits listed."""
+    monkeypatch.setenv("RELEASE_TYPE", "patch-cherry-pick")
+    monkeypatch.setenv("VERSION_SOURCE", "file")
+    monkeypatch.setenv("VERSION_LOCATION", "VERSION")
+    monkeypatch.setenv("MAIN_BRANCH", "main")
+    monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    monkeypatch.setenv("CHERRY_PICK_COMMITS", "   ")
+    with pytest.raises(AutoReleaseError, match="requires at least one commit"):
+        main()
+
+
+def test_main_invalid_release_type_still_rejects_bogus_value(monkeypatch):
+    """Test that main still rejects a release-type outside the known set, incl. the new one."""
+    monkeypatch.setenv("RELEASE_TYPE", "patch-cherry-picks")  # typo'd plural, invalid
+    monkeypatch.setenv("VERSION_SOURCE", "file")
+    monkeypatch.setenv("VERSION_LOCATION", "VERSION")
+    monkeypatch.setenv("MAIN_BRANCH", "main")
+    monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    with pytest.raises(AutoReleaseError, match="Invalid release-type"):
+        main()
+
+
 def test_require_dev_version_accepts_dev_version():
     """Test that require_dev_version accepts a 'X.Y.devN' version."""
     require_dev_version("0.2.dev0", "main")

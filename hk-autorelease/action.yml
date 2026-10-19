@@ -71,7 +71,9 @@ inputs:
 
   release-type:
     description: |
-      Type of release to perform. One of ``patch``, ``minor``, or ``major``.
+      Type of release to perform. One of ``patch`` (merges all commits from the main branch
+      into the release branch), ``patch-cherry-pick`` (cherry-picks only the commits listed
+      in ``cherry-pick-commits`` onto the release branch), ``minor``, or ``major``.
     required: true
     type: string
 
@@ -130,6 +132,14 @@ inputs:
       ``<release-branch-prefix><major>.<minor>``.
     required: false
     default: "release/"
+    type: string
+
+  cherry-pick-commits:
+    description: |
+      Comma-separated list of commit SHAs to cherry-pick into the release branch, in order.
+      Required when ``release-type`` is ``patch-cherry-pick``; ignored otherwise.
+    required: false
+    default: ""
     type: string
 
 outputs:
@@ -209,5 +219,6 @@ runs:
         VERSION_LOCATION: ${{ inputs.version-location }}
         MAIN_BRANCH: ${{ inputs.main-branch }}
         RELEASE_BRANCH_PREFIX: ${{ inputs.release-branch-prefix }}
+        CHERRY_PICK_COMMITS: ${{ inputs.cherry-pick-commits }}
       run: |
         python ${GITHUB_ACTION_PATH}/autorelease.py
