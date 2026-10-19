@@ -29,6 +29,33 @@ import secrets
 import tomlkit
 from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
 
+ALLOWED_TITLE_PUNCTUATION = ("!", "(", ")", ":", "-", "/", "_", ".")
+
+
+def get_invalid_title_characters(title: str) -> list[str]:
+    """Return the unique characters that are not allowed in a pull request title."""
+    return sorted(
+        {
+            character
+            for character in title
+            if not (
+                character.isalnum() or character == " " or character in ALLOWED_TITLE_PUNCTUATION
+            )
+        }
+    )
+
+
+def check_pull_request_title(title: str) -> None:
+    """Exit with an error if a pull request title contains unsupported characters."""
+    invalid_characters = get_invalid_title_characters(title)
+    if invalid_characters:
+        characters = ", ".join(repr(character) for character in invalid_characters)
+        print(
+            f"Pull request title contains unsupported character(s): {characters}. "
+            "Use only letters, digits, spaces, and ! ( ) : - / _ ."
+        )
+        raise SystemExit(1)
+
 
 def save_env_variable(env_var_name: str, env_var_value: str):
     """Save environment variable to the GITHUB_ENV file.
