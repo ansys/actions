@@ -70,6 +70,7 @@ Example standalone workflow file (``.github/workflows/autorelease.yml``):
             type: choice
             options:
               - patch
+              - patch-cherry-pick
               - minor
               - major
 
