@@ -28,8 +28,13 @@ description: |
   creates/updates ``<release-branch-prefix><major>.<minor>`` release branches,
   and pushes the corresponding ``vX.Y.Z`` git tag.
 
-  - ``patch``: finds the latest ``vX.Y.Z`` tag, merges the main branch into
-    the matching release branch, bumps the patch version, commits, and tags.
+  - ``patch``: finds the latest ``vX.Y.Z`` tag, merges **all** commits from the main branch
+    into the matching release branch (this is not a cherry-pick: every commit merged to main
+    since the last minor/major release is included), bumps the patch version, commits, and
+    tags.
+  - ``patch-cherry-pick``: like ``patch``, but instead of merging all of main, cherry-picks
+    only the commits listed in ``cherry-pick-commits`` (in the order given) onto the release
+    branch.
   - ``minor``/``major``: creates a new release branch off the main branch
     with the bumped release version, tags it, then bumps the main branch to
     the next development version (``X.Y.devN``).
