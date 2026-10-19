@@ -249,6 +249,7 @@ def test_main_invalid_release_type_raises(monkeypatch):
     monkeypatch.setenv("VERSION_LOCATION", "VERSION")
     monkeypatch.setenv("MAIN_BRANCH", "main")
     monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    monkeypatch.setenv("LOCK_FILE_TOOL", "none")
     with pytest.raises(AutoReleaseError, match="Invalid release-type"):
         main()
 
@@ -260,7 +261,20 @@ def test_main_invalid_version_source_raises(monkeypatch):
     monkeypatch.setenv("VERSION_LOCATION", "VERSION")
     monkeypatch.setenv("MAIN_BRANCH", "main")
     monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    monkeypatch.setenv("LOCK_FILE_TOOL", "none")
     with pytest.raises(AutoReleaseError, match="Invalid version-source"):
+        main()
+
+
+def test_main_invalid_lock_file_tool_raises(monkeypatch):
+    """Test that main raises AutoReleaseError for an invalid LOCK_FILE_TOOL."""
+    monkeypatch.setenv("RELEASE_TYPE", "patch")
+    monkeypatch.setenv("VERSION_SOURCE", "file")
+    monkeypatch.setenv("VERSION_LOCATION", "VERSION")
+    monkeypatch.setenv("MAIN_BRANCH", "main")
+    monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    monkeypatch.setenv("LOCK_FILE_TOOL", "bogus")
+    with pytest.raises(AutoReleaseError, match="Invalid lock-file-tool"):
         main()
 
 
@@ -270,6 +284,7 @@ def test_main_missing_env_var_raises(monkeypatch):
     monkeypatch.setenv("VERSION_LOCATION", "VERSION")
     monkeypatch.setenv("MAIN_BRANCH", "main")
     monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    monkeypatch.setenv("LOCK_FILE_TOOL", "none")
     monkeypatch.delenv("RELEASE_TYPE", raising=False)
     with pytest.raises(AutoReleaseError, match="RELEASE_TYPE"):
         main()
@@ -282,6 +297,7 @@ def test_main_patch_cherry_pick_requires_commits(monkeypatch):
     monkeypatch.setenv("VERSION_LOCATION", "VERSION")
     monkeypatch.setenv("MAIN_BRANCH", "main")
     monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    monkeypatch.setenv("LOCK_FILE_TOOL", "none")
     monkeypatch.setenv("CHERRY_PICK_COMMITS", "   ")
     with pytest.raises(AutoReleaseError, match="requires at least one commit"):
         main()
@@ -294,6 +310,7 @@ def test_main_invalid_release_type_still_rejects_bogus_value(monkeypatch):
     monkeypatch.setenv("VERSION_LOCATION", "VERSION")
     monkeypatch.setenv("MAIN_BRANCH", "main")
     monkeypatch.setenv("RELEASE_BRANCH_PREFIX", "release/")
+    monkeypatch.setenv("LOCK_FILE_TOOL", "none")
     with pytest.raises(AutoReleaseError, match="Invalid release-type"):
         main()
 

@@ -72,6 +72,17 @@ def _fake_create_dev_version_bump_pr(calls):
     return _fake
 
 
+def _fake_update_lock_file(calls, lock_file_name="fake.lock", content="fake-lock-content\n"):
+    """Return a stand-in for update_lock_file that records its arg and writes a fake lock file."""
+
+    def _fake(lock_file_tool):
+        calls.append(lock_file_tool)
+        Path(lock_file_name).write_text(content)
+        return lock_file_name
+
+    return _fake
+
+
 @pytest.fixture(params=sorted(VERSION_SOURCE_CASES))
 def git_repo(tmp_path, monkeypatch, request):
     """Create a bare 'origin' repo and a clone with an initial version on main.
@@ -106,7 +117,7 @@ def test_run_minor_major_release_minor(git_repo, monkeypatch):
     )
 
     release_version, dev_version, branch, pr_url = run_minor_major_release(
-        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
 
     assert release_version == "0.2.0"
@@ -142,7 +153,12 @@ def test_run_minor_major_release_rejects_non_dev_version(git_repo, monkeypatch):
 
     with pytest.raises(AutoReleaseError, match="Expected a development version"):
         run_minor_major_release(
-            "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+            "minor",
+            git_repo.version_source,
+            git_repo.version_location,
+            "main",
+            "release/",
+            "none",
         )
 
     assert calls == []
@@ -165,7 +181,12 @@ def test_run_minor_major_release_rejects_if_release_branch_already_exists(git_re
 
     with pytest.raises(AutoReleaseError, match="already exist"):
         run_minor_major_release(
-            "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+            "minor",
+            git_repo.version_source,
+            git_repo.version_location,
+            "main",
+            "release/",
+            "none",
         )
 
     assert calls == []
@@ -192,7 +213,12 @@ def test_run_minor_major_release_rejects_if_tag_already_exists(git_repo, monkeyp
 
     with pytest.raises(AutoReleaseError, match="already exist"):
         run_minor_major_release(
-            "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+            "minor",
+            git_repo.version_source,
+            git_repo.version_location,
+            "main",
+            "release/",
+            "none",
         )
 
     assert calls == []
@@ -207,11 +233,11 @@ def test_run_patch_release_clean_merge(git_repo, monkeypatch):
         "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
     )
     run_minor_major_release(
-        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
 
     release_version, branch = run_patch_release(
-        git_repo.version_source, git_repo.version_location, "main", "release/"
+        git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
 
     assert release_version == "0.2.1"
@@ -228,7 +254,7 @@ def test_run_patch_release_auto_resolves_version_only_conflict(git_repo, monkeyp
         "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
     )
     run_minor_major_release(
-        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
 
     # Diverge main's version further so merging it would otherwise conflict.
@@ -238,7 +264,7 @@ def test_run_patch_release_auto_resolves_version_only_conflict(git_repo, monkeyp
     _run("push", "origin", "main", cwd=git_repo.path)
 
     release_version, branch = run_patch_release(
-        git_repo.version_source, git_repo.version_location, "main", "release/"
+        git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
 
     assert release_version == "0.2.1"
@@ -253,7 +279,7 @@ def test_run_patch_release_aborts_on_unrelated_conflict(git_repo, monkeypatch):
         "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
     )
     run_minor_major_release(
-        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
 
     _run("checkout", "release/0.2", cwd=git_repo.path)
@@ -269,7 +295,9 @@ def test_run_patch_release_aborts_on_unrelated_conflict(git_repo, monkeypatch):
     _run("push", "origin", "main", cwd=git_repo.path)
 
     with pytest.raises(AutoReleaseError, match="Merge conflicts detected") as exc_info:
-        run_patch_release(git_repo.version_source, git_repo.version_location, "main", "release/")
+        run_patch_release(
+            git_repo.version_source, git_repo.version_location, "main", "release/", "none"
+        )
 
     # These can only be present because of the appended `git merge` stdout/stderr:
     # "git merge output:" is our literal label, and "CONFLICT (" is text git itself
@@ -289,7 +317,7 @@ def test_run_patch_cherry_pick_release_only_picks_listed_commits(git_repo, monke
         "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
     )
     run_minor_major_release(
-        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
 
     _run("checkout", "main", cwd=git_repo.path)
@@ -309,7 +337,12 @@ def test_run_patch_cherry_pick_release_only_picks_listed_commits(git_repo, monke
     _run("push", "origin", "main", cwd=git_repo.path)
 
     release_version, branch = run_patch_cherry_pick_release(
-        git_repo.version_source, git_repo.version_location, "main", "release/", [commit_a, commit_c]
+        git_repo.version_source,
+        git_repo.version_location,
+        "main",
+        "release/",
+        "none",
+        [commit_a, commit_c],
     )
 
     assert release_version == "0.2.1"
@@ -327,7 +360,7 @@ def test_run_patch_cherry_pick_release_aborts_on_unrelated_conflict(git_repo, mo
         "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
     )
     run_minor_major_release(
-        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
 
     _run("checkout", "release/0.2", cwd=git_repo.path)
@@ -345,7 +378,12 @@ def test_run_patch_cherry_pick_release_aborts_on_unrelated_conflict(git_repo, mo
 
     with pytest.raises(AutoReleaseError, match="produced conflicts"):
         run_patch_cherry_pick_release(
-            git_repo.version_source, git_repo.version_location, "main", "release/", [commit]
+            git_repo.version_source,
+            git_repo.version_location,
+            "main",
+            "release/",
+            "none",
+            [commit],
         )
 
     assert _run("status", "--porcelain", cwd=git_repo.path) == ""
@@ -358,7 +396,7 @@ def test_run_patch_release_rejects_if_tag_already_exists(git_repo, monkeypatch):
         "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(calls)
     )
     run_minor_major_release(
-        "minor", git_repo.version_source, git_repo.version_location, "main", "release/"
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
     )
     _run("tag", "v0.2.1", cwd=git_repo.path)
     _run("push", "origin", "v0.2.1", cwd=git_repo.path)
@@ -370,8 +408,59 @@ def test_run_patch_release_rejects_if_tag_already_exists(git_repo, monkeypatch):
     _run("tag", "-d", "v0.2.1", cwd=git_repo.path)
 
     with pytest.raises(AutoReleaseError, match="already exist"):
-        run_patch_release(git_repo.version_source, git_repo.version_location, "main", "release/")
+        run_patch_release(
+            git_repo.version_source, git_repo.version_location, "main", "release/", "none"
+        )
 
     # The release branch must never have received the bump commit/push.
     _run("checkout", "release/0.2", cwd=git_repo.path)
     assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.0"
+
+
+def test_run_minor_major_release_regenerates_lock_file(git_repo, monkeypatch):
+    """Test that a minor/major release regenerates and commits the lock file on both bumps."""
+    pr_calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(pr_calls)
+    )
+    lock_calls = []
+    monkeypatch.setattr("autorelease.update_lock_file", _fake_update_lock_file(lock_calls))
+
+    release_version, dev_version, branch, pr_url = run_minor_major_release(
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "uv"
+    )
+
+    # update_lock_file must be called once for the release-branch bump, once for the
+    # main-branch dev-version bump.
+    assert lock_calls == ["uv", "uv"]
+
+    _run("checkout", branch, cwd=git_repo.path)
+    assert _run("ls-files", "fake.lock", cwd=git_repo.path) == "fake.lock"
+    assert (git_repo.path / "fake.lock").read_text() == "fake-lock-content\n"
+
+    _run("checkout", "chore/bump-dev-version-v0.3.dev0", cwd=git_repo.path)
+    assert _run("ls-files", "fake.lock", cwd=git_repo.path) == "fake.lock"
+    assert (git_repo.path / "fake.lock").read_text() == "fake-lock-content\n"
+
+
+def test_run_patch_release_regenerates_lock_file(git_repo, monkeypatch):
+    """Test that a patch release regenerates and commits the lock file."""
+    pr_calls = []
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr(pr_calls)
+    )
+    lock_calls = []
+    monkeypatch.setattr("autorelease.update_lock_file", _fake_update_lock_file(lock_calls))
+    run_minor_major_release(
+        "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
+    )
+    lock_calls.clear()
+
+    release_version, branch = run_patch_release(
+        git_repo.version_source, git_repo.version_location, "main", "release/", "poetry"
+    )
+
+    assert lock_calls == ["poetry"]
+    _run("checkout", branch, cwd=git_repo.path)
+    assert _run("ls-files", "fake.lock", cwd=git_repo.path) == "fake.lock"
+    assert (git_repo.path / "fake.lock").read_text() == "fake-lock-content\n"

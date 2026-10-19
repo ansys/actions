@@ -671,6 +671,7 @@ def run_minor_major_release(
     version_location: str,
     main_branch: str,
     branch_prefix: str,
+    lock_file_tool: str,
 ) -> tuple[str, str, str, str]:
     """Perform a minor or major release.
 
@@ -687,6 +688,9 @@ def run_minor_major_release(
         Name of the main development branch.
     branch_prefix : str
         Prefix used to compute the release branch name.
+    lock_file_tool : str
+        Which lock file tooling to regenerate with after each version bump: ``none``, ``uv``,
+        or ``poetry``.
 
     Returns
     -------
@@ -708,7 +712,10 @@ def run_minor_major_release(
 
     run_git("checkout", "-b", branch)
     write_version(version_source, version_location, release_version)
+    lock_file = update_lock_file(lock_file_tool)
     run_git("add", version_location)
+    if lock_file:
+        run_git("add", lock_file)
     run_git("commit", "-m", f"release: v{release_version}")
     run_git("push", "origin", branch)
     run_git("tag", f"v{release_version}")
@@ -717,7 +724,10 @@ def run_minor_major_release(
     run_git("checkout", main_branch)
     run_git("checkout", "-b", bump_branch)
     write_version(version_source, version_location, dev_version)
+    lock_file = update_lock_file(lock_file_tool)
     run_git("add", version_location)
+    if lock_file:
+        run_git("add", lock_file)
     run_git("commit", "-m", dev_version_bump_pr_title(dev_version))
     run_git("push", "origin", bump_branch)
     dev_version_pr_url = create_dev_version_bump_pr(
@@ -732,6 +742,7 @@ def _finish_patch_release(
     version_location: str,
     main_branch: str,
     branch_prefix: str,
+    lock_file_tool: str,
     apply_changes: Callable[[], None],
 ) -> tuple[str, str]:
     """Shared tail end of a patch release, once the release-branch content is ready to bump.
@@ -747,6 +758,9 @@ def _finish_patch_release(
         Name of the main development branch.
     branch_prefix : str
         Prefix used to compute the release branch name.
+    lock_file_tool : str
+        Which lock file tooling to regenerate with after the version bump: ``none``, ``uv``,
+        or ``poetry``.
     apply_changes : Callable[[], None]
         Called with the release branch checked out, to bring in the desired changes (merge
         all of main, or cherry-pick specific commits) before the version is bumped.
@@ -769,7 +783,10 @@ def _finish_patch_release(
     release_version = bump_patch(current_version)
     require_refs_available(f"refs/tags/v{release_version}")
     write_version(version_source, version_location, release_version)
+    lock_file = update_lock_file(lock_file_tool)
     run_git("add", version_location)
+    if lock_file:
+        run_git("add", lock_file)
     run_git("commit", "-m", f"release: v{release_version}")
     run_git("push", "origin", branch)
     run_git("tag", f"v{release_version}")
@@ -781,7 +798,11 @@ def _finish_patch_release(
 
 
 def run_patch_release(
-    version_source: str, version_location: str, main_branch: str, branch_prefix: str
+    version_source: str,
+    version_location: str,
+    main_branch: str,
+    branch_prefix: str,
+    lock_file_tool: str,
 ) -> tuple[str, str]:
     """Perform a patch release by merging all of main into the release branch.
 
@@ -796,6 +817,9 @@ def run_patch_release(
         Name of the main development branch.
     branch_prefix : str
         Prefix used to compute the release branch name.
+    lock_file_tool : str
+        Which lock file tooling to regenerate with after the version bump: ``none``, ``uv``,
+        or ``poetry``.
 
     Returns
     -------
@@ -807,6 +831,7 @@ def run_patch_release(
         version_location,
         main_branch,
         branch_prefix,
+        lock_file_tool,
         lambda: merge_main_into_release(main_branch, version_location),
     )
 
@@ -816,6 +841,7 @@ def run_patch_cherry_pick_release(
     version_location: str,
     main_branch: str,
     branch_prefix: str,
+    lock_file_tool: str,
     commits: list[str],
 ) -> tuple[str, str]:
     """Perform a patch release by cherry-picking specific commits onto the release branch.
@@ -831,6 +857,9 @@ def run_patch_cherry_pick_release(
         Name of the main development branch.
     branch_prefix : str
         Prefix used to compute the release branch name.
+    lock_file_tool : str
+        Which lock file tooling to regenerate with after the version bump: ``none``, ``uv``,
+        or ``poetry``.
     commits : list[str]
         Commit SHAs to cherry-pick, in order.
 
@@ -844,6 +873,7 @@ def run_patch_cherry_pick_release(
         version_location,
         main_branch,
         branch_prefix,
+        lock_file_tool,
         lambda: cherry_pick_commits_into_release(commits, version_location),
     )
 
@@ -871,12 +901,14 @@ def main() -> None:
     """Entry point: read inputs from the environment and perform the release."""
     valid_release_types = ("patch", "patch-cherry-pick", "minor", "major")
     valid_version_sources = ("file", "pyproject", "setup-py", "python-module")
+    valid_lock_file_tools = ("none", "uv", "poetry")
 
     release_type = require_env("RELEASE_TYPE")
     version_source = require_env("VERSION_SOURCE")
     version_location = require_env("VERSION_LOCATION")
     main_branch = require_env("MAIN_BRANCH")
     branch_prefix = require_env("RELEASE_BRANCH_PREFIX")
+    lock_file_tool = require_env("LOCK_FILE_TOOL")
 
     if release_type not in valid_release_types:
         raise AutoReleaseError(
@@ -886,10 +918,14 @@ def main() -> None:
         raise AutoReleaseError(
             f"Invalid version-source '{version_source}'. Must be one of {valid_version_sources}."
         )
+    if lock_file_tool not in valid_lock_file_tools:
+        raise AutoReleaseError(
+            f"Invalid lock-file-tool '{lock_file_tool}'. Must be one of {valid_lock_file_tools}."
+        )
 
     if release_type == "patch":
         release_version, branch = run_patch_release(
-            version_source, version_location, main_branch, branch_prefix
+            version_source, version_location, main_branch, branch_prefix, lock_file_tool
         )
         dev_version = ""
         dev_version_pr_url = ""
@@ -905,13 +941,18 @@ def main() -> None:
                 "'cherry-pick-commits'."
             )
         release_version, branch = run_patch_cherry_pick_release(
-            version_source, version_location, main_branch, branch_prefix, commits
+            version_source, version_location, main_branch, branch_prefix, lock_file_tool, commits
         )
         dev_version = ""
         dev_version_pr_url = ""
     else:
         release_version, dev_version, branch, dev_version_pr_url = run_minor_major_release(
-            release_type, version_source, version_location, main_branch, branch_prefix
+            release_type,
+            version_source,
+            version_location,
+            main_branch,
+            branch_prefix,
+            lock_file_tool,
         )
 
     export_output("new-version", release_version)
