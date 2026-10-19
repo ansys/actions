@@ -147,6 +147,16 @@ inputs:
     default: ""
     type: string
 
+  lock-file-tool:
+    description: |
+      Lock file tooling to regenerate alongside each version bump. One of ``none`` (default,
+      skip lock file regeneration), ``uv`` (runs ``uv lock``), or ``poetry`` (runs ``uvx poetry
+      lock --no-update``). Neither command upgrades dependencies; they only re-resolve the lock
+      file against the already-bumped project metadata.
+    required: false
+    default: "none"
+    type: string
+
 outputs:
 
   new-version:
@@ -225,5 +235,6 @@ runs:
         MAIN_BRANCH: ${{ inputs.main-branch }}
         RELEASE_BRANCH_PREFIX: ${{ inputs.release-branch-prefix }}
         CHERRY_PICK_COMMITS: ${{ inputs.cherry-pick-commits }}
+        LOCK_FILE_TOOL: ${{ inputs.lock-file-tool }}
       run: |
         python ${GITHUB_ACTION_PATH}/autorelease.py

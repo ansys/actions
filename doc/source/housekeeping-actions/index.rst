@@ -56,6 +56,11 @@ is not a cherry-pick, so every commit merged to main since the last minor/major 
 included. If you need to release only specific commits, use ``patch-cherry-pick`` with the
 ``cherry-pick-commits`` input instead.
 
+If your project uses a ``uv`` or ``poetry`` lock file, set ``lock-file-tool`` to regenerate it
+(via a plain ``uv lock`` or ``uvx poetry lock --no-update``) alongside each version bump, so the
+lock file always reflects the just-bumped version. Neither command upgrades dependencies; they
+only re-resolve the lock file against the already-bumped project metadata.
+
 Example standalone workflow file (``.github/workflows/autorelease.yml``):
 
 .. code-block:: yaml
