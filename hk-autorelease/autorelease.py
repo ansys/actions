@@ -38,6 +38,11 @@ class AutoReleaseError(Exception):
     """Raised for a fatal, user-facing hk-autorelease failure."""
 
 
+def log_progress(message: str) -> None:
+    """Print a progress message immediately so it is visible in CI logs."""
+    print(f"[hk-autorelease] {message}", flush=True)
+
+
 def _constant_str_value(node: ast.AST | None) -> str | None:
     """Return the string value of an ``ast.Constant`` node, or ``None`` if not a str constant.
 
@@ -275,6 +280,7 @@ def update_lock_file(lock_file_tool: str, version_location: str) -> str | None:
         ``None`` if ``lock_file_tool`` is ``"none"``.
     """
     if lock_file_tool == "none":
+        log_progress("Skipping lock file regeneration (lock-file-tool: none).")
         return None
 
     commands = {
@@ -300,6 +306,7 @@ def update_lock_file(lock_file_tool: str, version_location: str) -> str | None:
 
     command = commands[lock_file_tool]
     lock_file = (project_dir / lock_files[lock_file_tool]).relative_to(repo_root).as_posix()
+    log_progress(f"Regenerating '{lock_file}' using {lock_file_tool} in '{project_dir}'.")
     result = subprocess.run(command, capture_output=True, text=True, cwd=project_dir)
     if result.returncode != 0:
         raise AutoReleaseError(
@@ -514,6 +521,7 @@ def require_refs_available(*refs: str) -> None:
     *refs : str
         Full ref names to check.
     """
+    log_progress(f"Checking that release refs are available on origin: {', '.join(refs)}.")
     existing = [ref for ref in refs if ref_exists_on_remote(ref)]
     if existing:
         raise AutoReleaseError(
@@ -580,6 +588,7 @@ def keep_ours_in_conflicts(path: str) -> None:
     path : str
         Path to a file containing git conflict markers.
     """
+    log_progress(f"Resolving conflicts in '{path}' by keeping the release branch's hunks.")
     file = Path(path)
     kept = []
     side = None
@@ -642,9 +651,12 @@ def find_latest_release_tag() -> tuple[int, int, int]:
     tuple[int, int, int]
         The ``(major, minor, patch)`` of the latest ``vX.Y.Z`` tag.
     """
+    log_progress("Fetching tags to find the latest release.")
     run_git("fetch", "--tags")
     output = run_git("tag", "--list", "v*", "--sort=-version:refname")
-    return parse_latest_release_tag(output.splitlines())
+    version = parse_latest_release_tag(output.splitlines())
+    log_progress(f"Latest release tag: v{version[0]}.{version[1]}.{version[2]}.")
+    return version
 
 
 def merge_main_into_release(main_branch: str, version_location: str) -> None:
@@ -658,6 +670,7 @@ def merge_main_into_release(main_branch: str, version_location: str) -> None:
         Path to the version file; conflicting hunks in it (and in lock files) are resolved
         by keeping the current branch's side.
     """
+    log_progress(f"Merging '{main_branch}' into the release branch.")
     result = subprocess.run(
         ["git", "merge", main_branch, "--no-edit"], capture_output=True, text=True
     )
@@ -671,6 +684,7 @@ def merge_main_into_release(main_branch: str, version_location: str) -> None:
         run_git("commit", "--no-edit")
         return
 
+    log_progress("Aborting merge because conflicts could not be automatically resolved.")
     run_git("merge", "--abort", check=False)
     raise AutoReleaseError(
         "Merge conflicts detected outside of the version file: "
@@ -694,6 +708,7 @@ def cherry_pick_commits_into_release(commits: list[str], version_location: str) 
         by keeping the current branch's side.
     """
     for commit in commits:
+        log_progress(f"Cherry-picking commit '{commit}'.")
         result = subprocess.run(["git", "cherry-pick", commit], capture_output=True, text=True)
         if result.returncode == 0:
             continue
@@ -706,6 +721,9 @@ def cherry_pick_commits_into_release(commits: list[str], version_location: str) 
             run_git("commit", "--no-edit")
             continue
 
+        log_progress(
+            f"Aborting cherry-pick of '{commit}' because conflicts require manual resolution."
+        )
         run_git("cherry-pick", "--abort", check=False)
         raise AutoReleaseError(
             f"Cherry-pick of commit '{commit}' produced conflicts outside of the version "
@@ -746,42 +764,54 @@ def run_minor_major_release(
     tuple[str, str, str, str]
         ``(release_version, dev_version, branch, dev_version_pr_url)``.
     """
+    log_progress(f"Synchronizing main branch '{main_branch}'.")
     run_git("checkout", main_branch)
     run_git("pull")
 
     current_dev_version = read_version(version_source, version_location)
+    log_progress(f"Current version in '{version_location}': {current_dev_version}.")
     require_dev_version(current_dev_version, main_branch)
     release_version, dev_version, branch = bump_minor_major(
         current_dev_version, release_type, branch_prefix
     )
+    log_progress(f"Target release: v{release_version}; next development version: {dev_version}.")
     bump_branch = f"chore/bump-dev-version-v{dev_version}"
     require_refs_available(
         f"refs/heads/{branch}", f"refs/tags/v{release_version}", f"refs/heads/{bump_branch}"
     )
 
+    log_progress(f"Creating release branch '{branch}'.")
     run_git("checkout", "-b", branch)
+    log_progress(f"Writing release version {release_version} to '{version_location}'.")
     write_version(version_source, version_location, release_version)
     lock_file = update_lock_file(lock_file_tool, version_location)
     run_git("add", version_location)
     if lock_file:
         run_git("add", lock_file)
     run_git("commit", "-m", f"release: v{release_version}")
+    log_progress(f"Pushing release branch '{branch}'.")
     run_git("push", "origin", branch)
     run_git("tag", f"v{release_version}")
+    log_progress(f"Pushing tag 'v{release_version}'.")
     run_git("push", "origin", f"v{release_version}")
 
+    log_progress(f"Preparing development-version bump on '{bump_branch}'.")
     run_git("checkout", main_branch)
     run_git("checkout", "-b", bump_branch)
+    log_progress(f"Writing development version {dev_version} to '{version_location}'.")
     write_version(version_source, version_location, dev_version)
     lock_file = update_lock_file(lock_file_tool, version_location)
     run_git("add", version_location)
     if lock_file:
         run_git("add", lock_file)
     run_git("commit", "-m", dev_version_bump_pr_title(dev_version))
+    log_progress(f"Pushing development-version branch '{bump_branch}'.")
     run_git("push", "origin", bump_branch)
+    log_progress("Creating draft development-version pull request.")
     dev_version_pr_url = create_dev_version_bump_pr(
         main_branch, bump_branch, release_version, dev_version
     )
+    log_progress(f"Draft development-version pull request created: {dev_version_pr_url}")
 
     return release_version, dev_version, branch, dev_version_pr_url
 
@@ -819,28 +849,38 @@ def _finish_patch_release(
     tuple[str, str]
         ``(release_version, release_branch)``.
     """
+    log_progress(f"Synchronizing main branch '{main_branch}'.")
     run_git("checkout", main_branch)
     run_git("pull")
 
     major, minor, _patch = find_latest_release_tag()
     branch = release_branch_name(branch_prefix, major, minor)
 
+    log_progress(f"Checking out release branch '{branch}'.")
     run_git("checkout", branch)
     apply_changes()
 
     current_version = read_version(version_source, version_location)
     release_version = bump_patch(current_version)
+    log_progress(
+        f"Current version in '{version_location}': {current_version}; "
+        f"target release: v{release_version}."
+    )
     require_refs_available(f"refs/tags/v{release_version}")
+    log_progress(f"Writing release version {release_version} to '{version_location}'.")
     write_version(version_source, version_location, release_version)
     lock_file = update_lock_file(lock_file_tool, version_location)
     run_git("add", version_location)
     if lock_file:
         run_git("add", lock_file)
     run_git("commit", "-m", f"release: v{release_version}")
+    log_progress(f"Pushing release branch '{branch}'.")
     run_git("push", "origin", branch)
     run_git("tag", f"v{release_version}")
+    log_progress(f"Pushing tag 'v{release_version}'.")
     run_git("push", "origin", f"v{release_version}")
 
+    log_progress(f"Returning to main branch '{main_branch}'.")
     run_git("checkout", main_branch)
 
     return release_version, branch
@@ -972,6 +1012,11 @@ def main() -> None:
             f"Invalid lock-file-tool '{lock_file_tool}'. Must be one of {valid_lock_file_tools}."
         )
 
+    log_progress(
+        f"Starting {release_type} release "
+        f"(version-source: {version_source}, version-location: '{version_location}')."
+    )
+
     if release_type == "patch":
         release_version, branch = run_patch_release(
             version_source, version_location, main_branch, branch_prefix, lock_file_tool
@@ -1008,11 +1053,12 @@ def main() -> None:
     export_output("new-dev-version", dev_version)
     export_output("release-branch", branch)
     export_output("dev-version-pr-url", dev_version_pr_url)
+    log_progress(f"Release complete: v{release_version} on '{branch}'. Action outputs exported.")
 
 
 if __name__ == "__main__":
     try:
         main()
     except AutoReleaseError as error:
-        print(f"::error::{error}", file=sys.stderr)
+        print(f"::error::{error}", file=sys.stderr, flush=True)
         sys.exit(1)

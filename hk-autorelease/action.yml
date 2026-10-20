@@ -56,6 +56,13 @@ description: |
 
   .. note::
 
+     Progress messages are flushed immediately to the workflow logs with an
+     ``[hk-autorelease]`` prefix. They report version changes, branch/tag pushes,
+     lock file regeneration, merge/cherry-pick operations, automatic conflict
+     resolution, and the draft development-version pull request URL.
+
+  .. note::
+
      This action checks out the repository itself (``main-branch``, full
      history, and tags), so the calling workflow does not need an
      ``actions/checkout`` step.

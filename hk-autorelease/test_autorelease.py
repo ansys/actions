@@ -24,7 +24,9 @@
 
 from pathlib import Path
 import subprocess
+from unittest.mock import Mock
 
+import autorelease
 from autorelease import (
     AutoReleaseError,
     bump_minor_major,
@@ -41,6 +43,58 @@ from autorelease import (
     write_version,
 )
 import pytest
+
+
+def test_log_progress_flushes_stdout(monkeypatch):
+    """Progress messages must reach CI stdout immediately."""
+    printer = Mock()
+    monkeypatch.setattr("builtins.print", printer)
+
+    autorelease.log_progress("Starting release.")
+
+    printer.assert_called_once_with("[hk-autorelease] Starting release.", flush=True)
+
+
+@pytest.mark.parametrize("returncode", [0, 1])
+def test_lock_progress_precedes_command(tmp_path, monkeypatch, capsys, returncode):
+    """Report lock regeneration before waiting, without claiming success on failure."""
+    (tmp_path / "pyproject.toml").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    def run(command, **kwargs):
+        output = capsys.readouterr().out
+        assert "[hk-autorelease] Regenerating 'uv.lock' using uv" in output
+        return subprocess.CompletedProcess(command, returncode, stdout="", stderr="lock failed")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    if returncode:
+        with pytest.raises(AutoReleaseError, match="lock failed"):
+            update_lock_file("uv", "pyproject.toml")
+    else:
+        assert update_lock_file("uv", "pyproject.toml") == "uv.lock"
+    assert "Release complete" not in capsys.readouterr().out
+
+
+def test_main_failure_does_not_log_completion(monkeypatch, capsys):
+    """A failed release must show its current operation, not a completion message."""
+    for name, value in {
+        "RELEASE_TYPE": "minor",
+        "VERSION_SOURCE": "file",
+        "VERSION_LOCATION": "VERSION",
+        "MAIN_BRANCH": "main",
+        "RELEASE_BRANCH_PREFIX": "release/",
+        "LOCK_FILE_TOOL": "none",
+    }.items():
+        monkeypatch.setenv(name, value)
+
+    def run(command, **kwargs):
+        assert "Synchronizing main branch 'main'" in capsys.readouterr().out
+        return subprocess.CompletedProcess(command, 1, stdout="", stderr="checkout failed")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    with pytest.raises(AutoReleaseError, match="checkout failed"):
+        main()
+    assert "Release complete" not in capsys.readouterr().out
 
 
 def test_read_version_file(tmp_path):

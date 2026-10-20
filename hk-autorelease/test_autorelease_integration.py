@@ -28,6 +28,7 @@ from typing import NamedTuple
 
 from autorelease import (
     AutoReleaseError,
+    main,
     read_version,
     run_minor_major_release,
     run_patch_cherry_pick_release,
@@ -108,6 +109,60 @@ def git_repo(tmp_path, monkeypatch, request):
 
     monkeypatch.chdir(work)
     return GitRepo(path=work, version_source=version_source, version_location=version_location)
+
+
+@pytest.mark.parametrize("release_type", ["minor", "major", "patch", "patch-cherry-pick"])
+def test_main_logs_release_progress(git_repo, monkeypatch, capsys, tmp_path, release_type):
+    """Every release path reports its progress while preserving action outputs."""
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr([])
+    )
+    if release_type.startswith("patch"):
+        run_minor_major_release(
+            "minor", git_repo.version_source, git_repo.version_location, "main", "release/", "none"
+        )
+        _run("checkout", "main", cwd=git_repo.path)
+        (git_repo.path / "fix.txt").write_text("fix\n")
+        _run("add", "fix.txt", cwd=git_repo.path)
+        _run("commit", "-m", "fix: example", cwd=git_repo.path)
+        commit = _run("rev-parse", "HEAD", cwd=git_repo.path)
+        _run("push", "origin", "main", cwd=git_repo.path)
+        monkeypatch.setenv("CHERRY_PICK_COMMITS", commit)
+    capsys.readouterr()
+    output_file = tmp_path / "outputs"
+    for name, value in {
+        "RELEASE_TYPE": release_type,
+        "VERSION_SOURCE": git_repo.version_source,
+        "VERSION_LOCATION": git_repo.version_location,
+        "MAIN_BRANCH": "main",
+        "RELEASE_BRANCH_PREFIX": "release/",
+        "LOCK_FILE_TOOL": "none",
+        "GITHUB_OUTPUT": str(output_file),
+        "GH_TOKEN": "secret-must-not-be-logged",
+    }.items():
+        monkeypatch.setenv(name, value)
+
+    main()
+
+    version = {"minor": "0.2.0", "major": "1.0.0"}.get(release_type, "0.2.1")
+    branch = "release/1.0" if release_type == "major" else "release/0.2"
+    output = capsys.readouterr().out
+    assert f"[hk-autorelease] Starting {release_type} release" in output
+    assert "Synchronizing main branch 'main'" in output
+    assert git_repo.version_location in output
+    assert f"Pushing release branch '{branch}'" in output
+    assert f"Pushing tag 'v{version}'" in output
+    assert f"Release complete: v{version}" in output
+    if release_type == "patch":
+        assert "Merging 'main' into the release branch" in output
+    elif release_type == "patch-cherry-pick":
+        assert f"Cherry-picking commit '{commit}'" in output
+    else:
+        assert "Creating draft development-version pull request" in output
+        assert "https://example.invalid/pr/1" in output
+    assert "secret-must-not-be-logged" not in output
+    assert f"new-version={version}\n" in output_file.read_text()
+    assert f"release-branch={branch}\n" in output_file.read_text()
 
 
 def test_run_minor_major_release_minor(git_repo, monkeypatch):
@@ -248,7 +303,7 @@ def test_run_patch_release_clean_merge(git_repo, monkeypatch):
     assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.1"
 
 
-def test_run_patch_release_auto_resolves_version_only_conflict(git_repo, monkeypatch):
+def test_run_patch_release_auto_resolves_version_only_conflict(git_repo, monkeypatch, capsys):
     """Test that a patch release auto-resolves a merge conflict limited to the version file."""
     calls = []
     monkeypatch.setattr(
@@ -269,6 +324,10 @@ def test_run_patch_release_auto_resolves_version_only_conflict(git_repo, monkeyp
     )
 
     assert release_version == "0.2.1"
+    assert (
+        f"Resolving conflicts in '{git_repo.version_location}' by keeping the release branch"
+        in capsys.readouterr().out
+    )
     _run("checkout", branch, cwd=git_repo.path)
     assert read_version(git_repo.version_source, git_repo.version_location) == "0.2.1"
 
