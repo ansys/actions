@@ -51,7 +51,7 @@ actions (typically in a separate workflow triggered by the ``vX.Y.Z`` tag this a
 actually publish the release. The main-branch version bump is opened as a **draft** pull request
 specifically so it isn't merged before you've confirmed that publishing succeeded.
 
-A plain ``patch`` release merges **all** commits from the main branch into the release branch — it
+A plain ``patch`` release merges **all** commits from the main branch into the release branch. It
 is not a cherry-pick, so every commit merged to main since the last minor/major release is
 included. If you need to release only specific commits, use ``patch-cherry-pick`` with the
 ``cherry-pick-commits`` input instead.
@@ -60,7 +60,7 @@ If your project uses a ``uv`` or ``poetry`` lock file, set ``lock-file-tool`` to
 (via a plain ``uv lock`` or ``uvx poetry lock --no-update``) alongside each version bump, so the
 lock file always reflects the just-bumped version. Neither command upgrades dependencies; they
 only re-resolve the lock file against the already-bumped project metadata. The command runs in
-the directory of the nearest ``pyproject.toml`` at or above ``version-location``, so the lock
+the directory of the nearest ``pyproject.toml`` at or containing ``version-location``, so the lock
 file is regenerated next to that ``pyproject.toml`` rather than at the repository root.
 
 Example standalone workflow file (``.github/workflows/autorelease.yml``):
