@@ -45,6 +45,42 @@ from autorelease import (
 import pytest
 
 
+@pytest.mark.parametrize(
+    ("returncode", "expected"),
+    [(0, True), (2, False)],
+)
+def test_ref_exists_on_remote_distinguishes_missing_ref_from_remote_error(
+    monkeypatch, returncode, expected
+):
+    """A failed remote query must not be interpreted as an unused ref."""
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], returncode, stdout="", stderr="remote query failed"
+        ),
+    )
+
+    if expected:
+        assert autorelease.ref_exists_on_remote("refs/tags/v1.2.3")
+    else:
+        assert not autorelease.ref_exists_on_remote("refs/tags/v1.2.3")
+
+
+def test_ref_exists_on_remote_raises_on_remote_error(monkeypatch):
+    """A transport or permission failure must stop release-ref preflight."""
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], 128, stdout="", stderr="remote query failed"
+        ),
+    )
+
+    with pytest.raises(AutoReleaseError, match="remote query failed"):
+        autorelease.ref_exists_on_remote("refs/tags/v1.2.3")
+
+
 def test_log_progress_flushes_stdout(monkeypatch):
     """Progress messages must reach CI stdout immediately."""
     printer = Mock()

@@ -26,6 +26,7 @@ from pathlib import Path
 import subprocess
 from typing import NamedTuple
 
+import autorelease
 from autorelease import (
     AutoReleaseError,
     cherry_pick_commits_into_release,
@@ -525,6 +526,132 @@ def test_run_patch_release_regenerates_lock_file(git_repo, monkeypatch):
     _run("checkout", branch, cwd=git_repo.path)
     assert _run("ls-files", "fake.lock", cwd=git_repo.path) == "fake.lock"
     assert (git_repo.path / "fake.lock").read_text() == "fake-lock-content\n"
+
+
+@pytest.mark.parametrize("git_repo", ["file"], indirect=True)
+def test_run_minor_major_release_rolls_back_when_pr_creation_fails(git_repo, monkeypatch):
+    """A PR creation failure must undo both pushed branches and the local release tag."""
+
+    def _fail_create_pr(*args):
+        raise AutoReleaseError("gh pr create failed")
+
+    monkeypatch.setattr("autorelease.create_dev_version_bump_pr", _fail_create_pr)
+
+    with pytest.raises(AutoReleaseError, match="gh pr create failed") as exc_info:
+        run_minor_major_release("minor", "file", "VERSION", "main", "release/", "none")
+
+    message = str(exc_info.value)
+    assert "rolled back: delete branch 'chore/bump-dev-version-v0.3.dev0'" in message
+    assert "rolled back: delete branch 'release/0.2'" in message
+    assert _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path) == ""
+    assert (
+        _run(
+            "ls-remote",
+            "origin",
+            "refs/heads/chore/bump-dev-version-v0.3.dev0",
+            cwd=git_repo.path,
+        )
+        == ""
+    )
+    assert _run("ls-remote", "origin", "refs/tags/v0.2.0", cwd=git_repo.path) == ""
+    assert _run("tag", "--list", "v0.2.0", cwd=git_repo.path) == ""
+
+
+@pytest.mark.parametrize("git_repo", ["file"], indirect=True)
+def test_run_patch_release_rolls_back_after_tag_push(git_repo, monkeypatch):
+    """A failure after a successful tag push restores only refs created by this run."""
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr([])
+    )
+    run_minor_major_release("minor", "file", "VERSION", "main", "release/", "none")
+    previous_branch = _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path)
+    previous_tag = _run("ls-remote", "origin", "refs/tags/v0.2.0", cwd=git_repo.path)
+    push_tag = autorelease.ReleaseJournal.push_tag
+
+    def _push_tag_then_fail(self, tag):
+        push_tag(self, tag)
+        raise AutoReleaseError("failure after tag push")
+
+    monkeypatch.setattr("autorelease.ReleaseJournal.push_tag", _push_tag_then_fail)
+
+    with pytest.raises(AutoReleaseError, match="failure after tag push") as exc_info:
+        run_patch_release("file", "VERSION", "main", "release/", "none")
+
+    assert "rolled back: reset branch 'release/0.2'" in str(exc_info.value)
+    assert _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path) == (
+        previous_branch
+    )
+    assert _run("ls-remote", "origin", "refs/tags/v0.2.0", cwd=git_repo.path) == previous_tag
+    assert _run("ls-remote", "origin", "refs/tags/v0.2.1", cwd=git_repo.path) == ""
+    assert _run("tag", "--list", "v0.2.1", cwd=git_repo.path) == ""
+
+
+@pytest.mark.parametrize("git_repo", ["file"], indirect=True)
+def test_run_minor_major_release_rolls_back_push_with_ambiguous_result(git_repo, monkeypatch):
+    """Test that a push accepted remotely before a client error is still rolled back."""
+    run_git = autorelease.run_git
+    push_reported_failure = False
+
+    def _push_then_fail(*args, **kwargs):
+        nonlocal push_reported_failure
+        result = run_git(*args, **kwargs)
+        if (
+            not push_reported_failure
+            and args[0] == "push"
+            and (args[-1] == "release/0.2" or args[-1].endswith("refs/heads/release/0.2"))
+        ):
+            push_reported_failure = True
+            raise AutoReleaseError("connection lost after push")
+        return result
+
+    monkeypatch.setattr("autorelease.run_git", _push_then_fail)
+
+    with pytest.raises(AutoReleaseError, match="connection lost after push") as exc_info:
+        run_minor_major_release("minor", "file", "VERSION", "main", "release/", "none")
+
+    assert "rolled back: delete branch 'release/0.2'" in str(exc_info.value)
+    assert _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path) == ""
+    assert _run("ls-remote", "origin", "refs/tags/v0.2.0", cwd=git_repo.path) == ""
+    assert _run("tag", "--list", "v0.2.0", cwd=git_repo.path) == ""
+
+
+@pytest.mark.parametrize("git_repo", ["file"], indirect=True)
+def test_run_patch_release_does_not_delete_tag_changed_after_push(git_repo, monkeypatch, tmp_path):
+    """Test rollback preserves a tag ref that another actor changed after this run pushed it."""
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr([])
+    )
+    run_minor_major_release("minor", "file", "VERSION", "main", "release/", "none")
+    before = _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path)
+    remote = tmp_path / "origin.git"
+    push_tag = autorelease.ReleaseJournal.push_tag
+    changed_sha = _run("rev-parse", "refs/heads/main", cwd=git_repo.path)
+    previous_tag = _run("ls-remote", "origin", "refs/tags/v0.2.0", cwd=git_repo.path)
+
+    def _push_then_change_tag(self, tag):
+        push_tag(self, tag)
+        _run(
+            "--git-dir",
+            str(remote),
+            "update-ref",
+            f"refs/tags/{tag}",
+            changed_sha,
+            cwd=git_repo.path,
+        )
+        raise AutoReleaseError("failure after tag push")
+
+    monkeypatch.setattr("autorelease.ReleaseJournal.push_tag", _push_then_change_tag)
+
+    with pytest.raises(AutoReleaseError, match="failure after tag push") as exc_info:
+        run_patch_release("file", "VERSION", "main", "release/", "none")
+
+    assert "FAILED to delete tag 'v0.2.1'" in str(exc_info.value)
+    assert _run("ls-remote", "origin", "refs/heads/release/0.2", cwd=git_repo.path) == before
+    assert _run("ls-remote", "origin", "refs/tags/v0.2.0", cwd=git_repo.path) == previous_tag
+    assert _run("ls-remote", "origin", "refs/tags/v0.2.1", cwd=git_repo.path).split("\t")[0] == (
+        changed_sha
+    )
+    assert _run("tag", "--list", "v0.2.1", cwd=git_repo.path) == ""
 
 
 def _fake_uv_lock(lock_file_tool, version_location):

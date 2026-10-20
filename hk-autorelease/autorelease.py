@@ -23,7 +23,8 @@
 """Automate patch/minor/major releases by bumping a version and pushing git tags."""
 
 import ast
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 import os
 from pathlib import Path
 import re
@@ -472,7 +473,9 @@ def create_dev_version_bump_pr(
     )
     if result.returncode != 0:
         raise AutoReleaseError(
-            f"Failed to create dev-version bump pull request:\n{result.stdout}\n{result.stderr}"
+            f"Failed to create dev-version bump pull request:\n{result.stdout}\n{result.stderr}\n"
+            "The request may have succeeded remotely despite this error; verify whether the "
+            "pull request exists before retrying."
         )
     return result.stdout.strip()
 
@@ -510,7 +513,11 @@ def ref_exists_on_remote(ref: str) -> bool:
     result = subprocess.run(
         ["git", "ls-remote", "--exit-code", "origin", ref], capture_output=True, text=True
     )
-    return result.returncode == 0
+    if result.returncode == 0:
+        return True
+    if result.returncode == 2:
+        return False
+    raise AutoReleaseError(f"git ls-remote origin {ref} failed:\n{result.stdout}\n{result.stderr}")
 
 
 def require_refs_available(*refs: str) -> None:
@@ -529,6 +536,156 @@ def require_refs_available(*refs: str) -> None:
             f"{', '.join(existing)}. This may be left over from a previous, partially-failed "
             "run -- delete them manually once you've confirmed it's safe to retry."
         )
+
+
+def _remote_ref_sha(ref: str) -> str:
+    """Return the SHA of ``ref`` on origin, or an empty string if it is absent."""
+    result = run_git("ls-remote", "origin", ref)
+    return result.split("\t", 1)[0] if result else ""
+
+
+class ReleaseJournal:
+    """Record remote writes so they can be safely compensated if release processing fails."""
+
+    def __init__(self) -> None:
+        self._undo_steps: list[tuple[str, Callable[[], None]]] = []
+
+    def push_branch(self, branch: str) -> None:
+        """Push a branch with a lease and record a guarded restoration before the write."""
+        ref = f"refs/heads/{branch}"
+        if _remote_ref_sha(ref):
+            run_git("fetch", "--no-tags", "origin", ref)
+        previous = _remote_ref_sha(ref)
+        new_sha = run_git("rev-parse", branch)
+
+        if previous:
+            ancestor = subprocess.run(
+                ["git", "merge-base", "--is-ancestor", previous, new_sha],
+                capture_output=True,
+                text=True,
+            )
+            if ancestor.returncode != 0:
+                raise AutoReleaseError(
+                    f"Refusing to update remote branch '{branch}': local commit {new_sha} is "
+                    f"not a descendant of remote commit {previous}."
+                )
+
+        self._undo_steps.append(
+            (
+                (
+                    f"reset branch '{branch}' to {previous}"
+                    if previous
+                    else f"delete branch '{branch}'"
+                ),
+                lambda: self._restore_branch(ref, branch, previous, new_sha),
+            )
+        )
+        run_git(
+            "push",
+            f"--force-with-lease={ref}:{previous}",
+            "origin",
+            f"{branch}:{ref}",
+        )
+
+    @staticmethod
+    def _restore_branch(ref: str, branch: str, previous: str, new_sha: str) -> None:
+        current = _remote_ref_sha(ref)
+        if current == previous:
+            return
+        if current != new_sha:
+            raise AutoReleaseError(
+                f"Remote branch '{branch}' is now at {current or 'no ref'}, not this run's "
+                f"commit {new_sha}; preserving the remote change."
+            )
+        refspec = f"{previous}:{ref}" if previous else f":{ref}"
+        run_git(
+            "push",
+            f"--force-with-lease={ref}:{new_sha}",
+            "origin",
+            refspec,
+        )
+
+    def push_tag(self, tag: str) -> None:
+        """Push a new tag and record conditional deletion of only this run's tag."""
+        ref = f"refs/tags/{tag}"
+        if _remote_ref_sha(ref):
+            raise AutoReleaseError(f"Refusing to overwrite existing remote tag '{tag}'.")
+        new_sha = run_git("rev-parse", ref)
+        self._undo_steps.append(
+            (f"delete tag '{tag}'", lambda: self._delete_tag(ref, tag, new_sha))
+        )
+        run_git("push", f"--force-with-lease={ref}:", "origin", f"{ref}:{ref}")
+
+    def record_local_tag(self, tag: str) -> None:
+        """Record deletion of this run's local tag if it still points to the same object."""
+        ref = f"refs/tags/{tag}"
+        tag_sha = run_git("rev-parse", ref)
+
+        def delete() -> None:
+            result = subprocess.run(
+                ["git", "rev-parse", "--verify", ref], capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                return
+            if result.stdout.strip() != tag_sha:
+                raise AutoReleaseError(
+                    f"Local tag '{tag}' changed after this run created it; preserving the tag."
+                )
+            run_git("tag", "-d", tag)
+
+        self._undo_steps.append((f"delete local tag '{tag}'", delete))
+
+    @staticmethod
+    def _delete_tag(ref: str, tag: str, new_sha: str) -> None:
+        current = _remote_ref_sha(ref)
+        if not current:
+            return
+        if current != new_sha:
+            raise AutoReleaseError(
+                f"Remote tag '{tag}' is now at {current}, not this run's tag {new_sha}; "
+                "preserving the remote tag."
+            )
+        run_git(
+            "push",
+            f"--force-with-lease={ref}:{new_sha}",
+            "origin",
+            f":{ref}",
+        )
+
+    def record_pull_request(self, url: str) -> None:
+        """Record a successfully created pull request so it can be closed."""
+
+        def close() -> None:
+            result = subprocess.run(["gh", "pr", "close", url], capture_output=True, text=True)
+            if result.returncode != 0:
+                raise AutoReleaseError(f"{result.stdout}\n{result.stderr}")
+
+        self._undo_steps.append((f"close pull request {url}", close))
+
+    def rollback(self) -> str:
+        """Undo recorded writes newest-first and report every success or failure."""
+        report = []
+        for description, undo in reversed(self._undo_steps):
+            try:
+                undo()
+                report.append(f"- rolled back: {description} (or already in its original state)")
+            except Exception as error:
+                report.append(f"- FAILED to {description} (fix manually): {error}")
+        self._undo_steps.clear()
+        return "Rollback report:\n" + "\n".join(report) if report else ""
+
+
+@contextmanager
+def rollback_on_failure() -> Iterator[ReleaseJournal]:
+    """Compensate for recorded remote writes when release processing fails."""
+    journal = ReleaseJournal()
+    try:
+        yield journal
+    except Exception as error:
+        report = journal.rollback()
+        if not report:
+            raise
+        raise AutoReleaseError(f"{error}\n\n{report}") from error
 
 
 def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
@@ -787,38 +944,43 @@ def run_minor_major_release(
         f"refs/heads/{branch}", f"refs/tags/v{release_version}", f"refs/heads/{bump_branch}"
     )
 
-    log_progress(f"Creating release branch '{branch}'.")
-    run_git("checkout", "-b", branch)
-    log_progress(f"Writing release version {release_version} to '{version_location}'.")
-    write_version(version_source, version_location, release_version)
-    lock_file = update_lock_file(lock_file_tool, version_location)
-    run_git("add", version_location)
-    if lock_file:
-        run_git("add", lock_file)
-    run_git("commit", "-m", f"release: v{release_version}")
-    log_progress(f"Pushing release branch '{branch}'.")
-    run_git("push", "origin", branch)
-    run_git("tag", f"v{release_version}")
-    log_progress(f"Pushing tag 'v{release_version}'.")
-    run_git("push", "origin", f"v{release_version}")
+    with rollback_on_failure() as journal:
+        log_progress(f"Creating release branch '{branch}'.")
+        run_git("checkout", "-b", branch)
+        log_progress(f"Writing release version {release_version} to '{version_location}'.")
+        write_version(version_source, version_location, release_version)
+        lock_file = update_lock_file(lock_file_tool, version_location)
+        run_git("add", version_location)
+        if lock_file:
+            run_git("add", lock_file)
+        run_git("commit", "-m", f"release: v{release_version}")
+        run_git("tag", f"v{release_version}", branch)
+        journal.record_local_tag(f"v{release_version}")
+        log_progress(f"Pushing release branch '{branch}'.")
+        journal.push_branch(branch)
 
-    log_progress(f"Preparing development-version bump on '{bump_branch}'.")
-    run_git("checkout", main_branch)
-    run_git("checkout", "-b", bump_branch)
-    log_progress(f"Writing development version {dev_version} to '{version_location}'.")
-    write_version(version_source, version_location, dev_version)
-    lock_file = update_lock_file(lock_file_tool, version_location)
-    run_git("add", version_location)
-    if lock_file:
-        run_git("add", lock_file)
-    run_git("commit", "-m", dev_version_bump_pr_title(dev_version))
-    log_progress(f"Pushing development-version branch '{bump_branch}'.")
-    run_git("push", "origin", bump_branch)
-    log_progress("Creating draft development-version pull request.")
-    dev_version_pr_url = create_dev_version_bump_pr(
-        main_branch, bump_branch, release_version, dev_version
-    )
-    log_progress(f"Draft development-version pull request created: {dev_version_pr_url}")
+        log_progress(f"Preparing development-version bump on '{bump_branch}'.")
+        run_git("checkout", main_branch)
+        run_git("checkout", "-b", bump_branch)
+        log_progress(f"Writing development version {dev_version} to '{version_location}'.")
+        write_version(version_source, version_location, dev_version)
+        lock_file = update_lock_file(lock_file_tool, version_location)
+        run_git("add", version_location)
+        if lock_file:
+            run_git("add", lock_file)
+        run_git("commit", "-m", dev_version_bump_pr_title(dev_version))
+        log_progress(f"Pushing development-version branch '{bump_branch}'.")
+        journal.push_branch(bump_branch)
+        log_progress("Creating draft development-version pull request.")
+        dev_version_pr_url = create_dev_version_bump_pr(
+            main_branch, bump_branch, release_version, dev_version
+        )
+        journal.record_pull_request(dev_version_pr_url)
+        log_progress(f"Draft development-version pull request created: {dev_version_pr_url}")
+
+        # The tag is the final remote write; removing it cannot undo triggered workflows.
+        log_progress(f"Pushing tag 'v{release_version}'.")
+        journal.push_tag(f"v{release_version}")
 
     return release_version, dev_version, branch, dev_version_pr_url
 
@@ -881,14 +1043,15 @@ def _finish_patch_release(
     if lock_file:
         run_git("add", lock_file)
     run_git("commit", "-m", f"release: v{release_version}")
-    log_progress(f"Pushing release branch '{branch}'.")
-    run_git("push", "origin", branch)
-    run_git("tag", f"v{release_version}")
-    log_progress(f"Pushing tag 'v{release_version}'.")
-    run_git("push", "origin", f"v{release_version}")
-
     log_progress(f"Returning to main branch '{main_branch}'.")
     run_git("checkout", main_branch)
+    with rollback_on_failure() as journal:
+        run_git("tag", f"v{release_version}", branch)
+        journal.record_local_tag(f"v{release_version}")
+        log_progress(f"Pushing release branch '{branch}'.")
+        journal.push_branch(branch)
+        log_progress(f"Pushing tag 'v{release_version}'.")
+        journal.push_tag(f"v{release_version}")
 
     return release_version, branch
 

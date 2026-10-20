@@ -36,8 +36,17 @@ description: |
     only the commits listed in ``cherry-pick-commits`` (in the order given) onto the release
     branch.
   - ``minor``/``major``: creates a new release branch off the main branch
-    with the bumped release version, tags it, then opens a draft pull request
-    to bump the main branch to the next development version (``X.Y.devN``).
+    with the bumped release version, opens a draft pull request to bump the main branch to
+    the next development version (``X.Y.devN``), then tags the release branch.
+
+  The release tag is the final remote write. If release processing fails, the action attempts
+  to undo its remote writes in reverse order: new branches are deleted, updated release
+  branches are restored only if their remote ref still matches this run's commit, created
+  pull requests are closed, and a tag created by this run is deleted only if its remote ref
+  still matches. Rollback is best-effort; tag-triggered workflows and other external effects
+  cannot be undone, and any rollback failure is included in the error. If a remote command
+  reports an error after its write may have succeeded (for example, PR creation during a
+  connection failure), verify the remote state before retrying.
 
   Conflicts limited to the version file and lock files are resolved by keeping the release
   branch's conflicting hunks while retaining non-conflicting changes. If this leaves a
