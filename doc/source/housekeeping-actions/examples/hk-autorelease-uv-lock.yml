@@ -1,0 +1,18 @@
+hk-autorelease:
+  name: "Release regenerating a uv lockfile in a subdirectory"
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write
+    pull-requests: write
+  steps:
+    - name: "Release and regenerate packages/example/uv.lock"
+      uses: ansys/actions/hk-autorelease@{{ version }}
+      with:
+        release-type: ${{ '{{ inputs.release_type }}' }}
+        cherry-pick-commits: ${{ '{{ inputs.cherry_pick_commits }}' }}
+        version-source: pyproject
+        version-location: packages/example/pyproject.toml
+        lock-file-tool: uv
+        token: ${{ '{{ secrets.MY_BOT_TOKEN }}' }}
+        bot-username: ${{ '{{ secrets.MY_BOT_USERNAME }}' }}
+        bot-email: ${{ '{{ secrets.MY_BOT_EMAIL }}' }}

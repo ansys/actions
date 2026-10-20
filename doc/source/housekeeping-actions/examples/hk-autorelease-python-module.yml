@@ -1,0 +1,17 @@
+hk-autorelease:
+  name: "Release from a Python module's __version__"
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write
+    pull-requests: write
+  steps:
+    - name: "Auto release"
+      uses: ansys/actions/hk-autorelease@{{ version }}
+      with:
+        release-type: ${{ '{{ inputs.release_type }}' }}
+        cherry-pick-commits: ${{ '{{ inputs.cherry_pick_commits }}' }}
+        version-source: python-module
+        version-location: src/ansys/example/_version.py
+        token: ${{ '{{ secrets.MY_BOT_TOKEN }}' }}
+        bot-username: ${{ '{{ secrets.MY_BOT_USERNAME }}' }}
+        bot-email: ${{ '{{ secrets.MY_BOT_EMAIL }}' }}

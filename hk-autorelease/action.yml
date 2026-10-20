@@ -36,8 +36,13 @@ description: |
     only the commits listed in ``cherry-pick-commits`` (in the order given) onto the release
     branch.
   - ``minor``/``major``: creates a new release branch off the main branch
-    with the bumped release version, tags it, then bumps the main branch to
-    the next development version (``X.Y.devN``).
+    with the bumped release version, tags it, then opens a draft pull request
+    to bump the main branch to the next development version (``X.Y.devN``).
+
+  Conflicts limited to the version file and lock files are resolved by keeping the release
+  branch's conflicting hunks while retaining non-conflicting changes. If this leaves a
+  cherry-picked commit with no changes, the action logs that it is skipping the commit and
+  continues with the remaining selected commits.
 
   .. important:: **Required GitHub Permissions**
 
@@ -53,6 +58,32 @@ description: |
      triggered **only** by ``workflow_dispatch``, in a workflow file
      dedicated to this action. Do not add other triggers (such as
      ``push``, ``pull_request``, or ``schedule``) to that workflow file.
+     The examples below are job definitions to place under ``jobs:`` in that
+     dedicated workflow. Each example supports all four release types through
+     the dispatch inputs below. Select the release type when running the workflow;
+     for ``patch-cherry-pick``, also provide comma-separated commit SHAs in the
+     order they should be applied.
+
+     .. code-block:: yaml
+
+        on:
+          workflow_dispatch:
+            inputs:
+              release_type:
+                description: "Type of release"
+                type: choice
+                required: true
+                default: minor
+                options:
+                  - minor
+                  - major
+                  - patch
+                  - patch-cherry-pick
+              cherry_pick_commits:
+                description: "Comma-separated commit SHAs, required for patch-cherry-pick"
+                type: string
+                required: false
+                default: ""
 
   .. note::
 
