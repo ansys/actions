@@ -243,6 +243,13 @@ def test_classify_merge_conflict_unrelated_file():
     assert classify_merge_conflict(["README.md"], "VERSION") is False
 
 
+def test_classify_merge_conflict_version_and_lock_file():
+    """Test that classify_merge_conflict accepts the version file plus lock files."""
+    assert classify_merge_conflict(["pkg/pyproject.toml", "pkg/uv.lock"], "pkg/pyproject.toml")
+    assert classify_merge_conflict(["pkg/poetry.lock"], "pkg/pyproject.toml")
+    assert not classify_merge_conflict([], "pkg/pyproject.toml")
+
+
 def test_main_invalid_release_type_raises(monkeypatch):
     """Test that main raises AutoReleaseError for an invalid RELEASE_TYPE."""
     monkeypatch.setenv("RELEASE_TYPE", "bogus")

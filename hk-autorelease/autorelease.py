@@ -549,7 +549,7 @@ def parse_latest_release_tag(tag_lines: list[str]) -> tuple[int, int, int]:
 
 
 def classify_merge_conflict(conflicted_files: list[str], version_location: str) -> bool:
-    """Return ``True`` if the only conflicting file is ``version_location``.
+    """Return ``True`` if the conflicts are limited to the version file and/or lock files.
 
     Parameters
     ----------
@@ -561,9 +561,41 @@ def classify_merge_conflict(conflicted_files: list[str], version_location: str) 
     Returns
     -------
     bool
-        ``True`` if ``conflicted_files`` contains exactly ``version_location``.
+        ``True`` if ``conflicted_files`` is non-empty and only contains ``version_location``
+        and/or ``uv.lock``/``poetry.lock`` files.
     """
-    return conflicted_files == [version_location]
+    return bool(conflicted_files) and all(
+        path == version_location or Path(path).name in ("uv.lock", "poetry.lock")
+        for path in conflicted_files
+    )
+
+
+def keep_ours_in_conflicts(path: str) -> None:
+    """Resolve each conflict hunk in ``path`` by keeping the current branch's side, then stage it.
+
+    Non-conflicting changes already merged into the file are left untouched.
+
+    Parameters
+    ----------
+    path : str
+        Path to a file containing git conflict markers.
+    """
+    file = Path(path)
+    kept = []
+    side = None
+    for line in file.read_text(encoding="utf-8").splitlines(keepends=True):
+        if line.startswith("<<<<<<<"):
+            side = "ours"
+        elif side and line.startswith("|||||||"):
+            side = "base"
+        elif side and line.startswith("======="):
+            side = "theirs"
+        elif side and line.startswith(">>>>>>>"):
+            side = None
+        elif side in (None, "ours"):
+            kept.append(line)
+    file.write_text("".join(kept), encoding="utf-8", newline="")
+    run_git("add", path)
 
 
 def run_git(*args: str, check: bool = True) -> str:
@@ -616,15 +648,15 @@ def find_latest_release_tag() -> tuple[int, int, int]:
 
 
 def merge_main_into_release(main_branch: str, version_location: str) -> None:
-    """Merge ``main_branch`` into the current branch, auto-resolving version-only conflicts.
+    """Merge ``main_branch`` into the current branch, auto-resolving version/lock conflicts.
 
     Parameters
     ----------
     main_branch : str
         Name of the branch to merge into the current branch.
     version_location : str
-        Path to the version file; a conflict limited to this file is auto-resolved by keeping
-        the current branch's version.
+        Path to the version file; conflicting hunks in it (and in lock files) are resolved
+        by keeping the current branch's side.
     """
     result = subprocess.run(
         ["git", "merge", main_branch, "--no-edit"], capture_output=True, text=True
@@ -634,8 +666,8 @@ def merge_main_into_release(main_branch: str, version_location: str) -> None:
 
     conflicted = run_git("diff", "--name-only", "--diff-filter=U").splitlines()
     if classify_merge_conflict(conflicted, version_location):
-        run_git("checkout", "--ours", version_location)
-        run_git("add", version_location)
+        for path in conflicted:
+            keep_ours_in_conflicts(path)
         run_git("commit", "--no-edit")
         return
 
@@ -650,16 +682,16 @@ def merge_main_into_release(main_branch: str, version_location: str) -> None:
 def cherry_pick_commits_into_release(commits: list[str], version_location: str) -> None:
     """Cherry-pick each of ``commits`` onto the current branch, in order.
 
-    Auto-resolves a conflict the same way ``merge_main_into_release`` does, if it's limited
-    to ``version_location``; aborts with a clear error otherwise.
+    Auto-resolves conflicts the same way ``merge_main_into_release`` does, if they're limited
+    to the version file and/or lock files; aborts with a clear error otherwise.
 
     Parameters
     ----------
     commits : list[str]
         Commit SHAs to cherry-pick, in order.
     version_location : str
-        Path to the version file; a conflict limited to this file is auto-resolved by keeping
-        the current branch's version.
+        Path to the version file; conflicting hunks in it (and in lock files) are resolved
+        by keeping the current branch's side.
     """
     for commit in commits:
         result = subprocess.run(["git", "cherry-pick", commit], capture_output=True, text=True)
@@ -668,9 +700,10 @@ def cherry_pick_commits_into_release(commits: list[str], version_location: str) 
 
         conflicted = run_git("diff", "--name-only", "--diff-filter=U").splitlines()
         if classify_merge_conflict(conflicted, version_location):
-            run_git("checkout", "--ours", version_location)
-            run_git("add", version_location)
-            run_git("cherry-pick", "--continue")
+            for path in conflicted:
+                keep_ours_in_conflicts(path)
+            # `cherry-pick --continue` would open an editor in non-interactive CI.
+            run_git("commit", "--no-edit")
             continue
 
         run_git("cherry-pick", "--abort", check=False)

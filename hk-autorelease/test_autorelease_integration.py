@@ -35,6 +35,7 @@ from autorelease import (
     write_version,
 )
 import pytest
+import tomlkit
 
 # Starting content for each version-source kind, seeded with version "0.2.dev0".
 VERSION_SOURCE_CASES = {
@@ -464,3 +465,85 @@ def test_run_patch_release_regenerates_lock_file(git_repo, monkeypatch):
     _run("checkout", branch, cwd=git_repo.path)
     assert _run("ls-files", "fake.lock", cwd=git_repo.path) == "fake.lock"
     assert (git_repo.path / "fake.lock").read_text() == "fake-lock-content\n"
+
+
+def _fake_uv_lock(lock_file_tool, version_location):
+    """Stand-in for update_lock_file that writes a uv.lock embedding the project's version."""
+    project = tomlkit.parse(Path(version_location).read_text())["project"]
+    Path("uv.lock").write_text(
+        f'version = "{project["version"]}"\n'
+        "# separates the version and dependencies hunks\n"
+        f'dependencies = "{",".join(project["dependencies"])}"\n'
+    )
+    return "uv.lock"
+
+
+def _setup_uv_project_with_diverged_main(git_repo, monkeypatch):
+    """Cut release/0.2, then land the dev-version bump and a new dependency on main.
+
+    Returns the ``(dev_bump_commit, dependency_commit)`` SHAs on main.
+    """
+    monkeypatch.setattr(
+        "autorelease.create_dev_version_bump_pr", _fake_create_dev_version_bump_pr([])
+    )
+    monkeypatch.setattr("autorelease.update_lock_file", _fake_uv_lock)
+
+    pyproject = git_repo.path / "pyproject.toml"
+    pyproject.write_text(
+        '[project]\nname = "demo"\nversion = "0.2.dev0"\ndescription = "demo"\ndependencies = []\n'
+    )
+    _fake_uv_lock("uv", "pyproject.toml")
+    _run("add", "pyproject.toml", "uv.lock", cwd=git_repo.path)
+    _run("commit", "-m", "chore: add uv.lock", cwd=git_repo.path)
+    _run("push", "origin", "main", cwd=git_repo.path)
+
+    run_minor_major_release("minor", "pyproject", "pyproject.toml", "main", "release/", "uv")
+
+    _run("checkout", "main", cwd=git_repo.path)
+    _run("merge", "--ff-only", "chore/bump-dev-version-v0.3.dev0", cwd=git_repo.path)
+    dev_bump_commit = _run("rev-parse", "HEAD", cwd=git_repo.path)
+    pyproject.write_text(pyproject.read_text().replace("[]", '["requests"]'))
+    _fake_uv_lock("uv", "pyproject.toml")
+    _run("commit", "-am", "feat: add requests", cwd=git_repo.path)
+    dependency_commit = _run("rev-parse", "HEAD", cwd=git_repo.path)
+    _run("push", "origin", "main", cwd=git_repo.path)
+    return dev_bump_commit, dependency_commit
+
+
+def _assert_release_keeps_version_and_gets_dependency(git_repo, branch):
+    _run("checkout", branch, cwd=git_repo.path)
+    assert read_version("pyproject", "pyproject.toml") == "0.2.1"
+    assert '["requests"]' in (git_repo.path / "pyproject.toml").read_text()
+    assert (git_repo.path / "uv.lock").read_text() == (
+        'version = "0.2.1"\n'
+        "# separates the version and dependencies hunks\n"
+        'dependencies = "requests"\n'
+    )
+
+
+@pytest.mark.parametrize("git_repo", ["pyproject"], indirect=True)
+def test_run_patch_release_auto_resolves_pyproject_and_lock_file_conflict(git_repo, monkeypatch):
+    """Test that a patch release keeps the release side of conflicting pyproject/lock hunks."""
+    _setup_uv_project_with_diverged_main(git_repo, monkeypatch)
+
+    release_version, branch = run_patch_release(
+        "pyproject", "pyproject.toml", "main", "release/", "uv"
+    )
+
+    assert release_version == "0.2.1"
+    _assert_release_keeps_version_and_gets_dependency(git_repo, branch)
+
+
+@pytest.mark.parametrize("git_repo", ["pyproject"], indirect=True)
+def test_run_patch_cherry_pick_release_auto_resolves_pyproject_and_lock_file_conflict(
+    git_repo, monkeypatch
+):
+    """Test that patch-cherry-pick keeps the release side of conflicting pyproject/lock hunks."""
+    commits = _setup_uv_project_with_diverged_main(git_repo, monkeypatch)
+
+    release_version, branch = run_patch_cherry_pick_release(
+        "pyproject", "pyproject.toml", "main", "release/", "uv", list(commits)
+    )
+
+    assert release_version == "0.2.1"
+    _assert_release_keeps_version_and_gets_dependency(git_repo, branch)
