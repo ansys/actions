@@ -697,7 +697,8 @@ def cherry_pick_commits_into_release(commits: list[str], version_location: str) 
     """Cherry-pick each of ``commits`` onto the current branch, in order.
 
     Auto-resolves conflicts the same way ``merge_main_into_release`` does, if they're limited
-    to the version file and/or lock files; aborts with a clear error otherwise.
+    to the version file and/or lock files; skips commits emptied by that resolution and
+    aborts with a clear error for other conflicts.
 
     Parameters
     ----------
@@ -717,8 +718,14 @@ def cherry_pick_commits_into_release(commits: list[str], version_location: str) 
         if classify_merge_conflict(conflicted, version_location):
             for path in conflicted:
                 keep_ours_in_conflicts(path)
-            # `cherry-pick --continue` would open an editor in non-interactive CI.
-            run_git("commit", "--no-edit")
+            if run_git("diff", "--cached", "--name-only"):
+                # `cherry-pick --continue` would open an editor in non-interactive CI.
+                run_git("commit", "--no-edit")
+            else:
+                log_progress(
+                    f"Skipping commit '{commit}': no changes remain after conflict resolution."
+                )
+                run_git("cherry-pick", "--skip")
             continue
 
         log_progress(

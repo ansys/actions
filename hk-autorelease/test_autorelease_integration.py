@@ -28,6 +28,7 @@ from typing import NamedTuple
 
 from autorelease import (
     AutoReleaseError,
+    cherry_pick_commits_into_release,
     main,
     read_version,
     run_minor_major_release,
@@ -591,6 +592,31 @@ def test_run_patch_release_auto_resolves_pyproject_and_lock_file_conflict(git_re
 
     assert release_version == "0.2.1"
     _assert_release_keeps_version_and_gets_dependency(git_repo, branch)
+
+
+@pytest.mark.parametrize("git_repo", ["pyproject"], indirect=True)
+@pytest.mark.parametrize("commit_count", [1, 2])
+def test_cherry_pick_skips_commit_emptied_by_conflict_resolution(
+    git_repo, monkeypatch, capsys, commit_count
+):
+    """Skip a version-only pick without losing subsequent non-conflicting changes."""
+    commits = _setup_uv_project_with_diverged_main(git_repo, monkeypatch)
+    _run("checkout", "release/0.2", cwd=git_repo.path)
+    original_head = _run("rev-parse", "HEAD", cwd=git_repo.path)
+
+    cherry_pick_commits_into_release(list(commits[:commit_count]), "pyproject.toml")
+
+    assert read_version("pyproject", "pyproject.toml") == "0.2.0"
+    assert not (git_repo.path / ".git" / "CHERRY_PICK_HEAD").exists()
+    assert _run("status", "--porcelain", cwd=git_repo.path) == ""
+    assert f"Skipping commit '{commits[0]}'" in capsys.readouterr().out
+    if commit_count == 1:
+        assert _run("rev-parse", "HEAD", cwd=git_repo.path) == original_head
+    else:
+        assert _run("rev-list", "--count", f"{original_head}..HEAD", cwd=git_repo.path) == "1"
+        project = tomlkit.parse((git_repo.path / "pyproject.toml").read_text())["project"]
+        assert project["dependencies"] == ["requests"]
+        assert 'dependencies = "requests"' in (git_repo.path / "uv.lock").read_text()
 
 
 @pytest.mark.parametrize("git_repo", ["pyproject"], indirect=True)
