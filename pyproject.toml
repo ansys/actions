@@ -23,9 +23,6 @@ check-licenses = [
     "prettytable<=3.18",
     "wcwidth<=0.9",
 ]
-check-pr-title = [
-    "tomlkit<=0.16",
-]
 check-vulnerabilities = [
     "bandit>=1.9,<2",
     "click>=8.4,<9",

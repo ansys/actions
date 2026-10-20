@@ -249,14 +249,12 @@ runs:
       uses: $/check-pr-title
       with:
         token: ${{ inputs.token }}
-        python-version: ${{ inputs.python-version }}
 
     - name: "Check pull-request title follows conventional commits style with upper case"
       if: ${{ (steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true') && (env.FIRST_LETTER == 'uppercase') }}
       uses: $/check-pr-title
       with:
         token: ${{ inputs.token }}
-        python-version: ${{ inputs.python-version }}
         use-upper-case: true
 
     - name: "Get conventional commit type"

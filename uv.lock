@@ -77,9 +77,6 @@ check-licenses = [
     { name = "prettytable" },
     { name = "wcwidth" },
 ]
-check-pr-title = [
-    { name = "tomlkit" },
-]
 check-vulnerabilities = [
     { name = "bandit" },
     { name = "click" },
@@ -177,7 +174,6 @@ check-licenses = [
     { name = "prettytable", specifier = "<=3.18" },
     { name = "wcwidth", specifier = "<=0.9" },
 ]
-check-pr-title = [{ name = "tomlkit", specifier = "<=0.16" }]
 check-vulnerabilities = [
     { name = "bandit", specifier = ">=1.9,<2" },
     { name = "click", specifier = ">=8.4,<9" },

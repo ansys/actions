@@ -532,7 +532,7 @@ jobs:
 
       - name: "Install pytest"
         run: |
-          python -m pip install pytest -r check-pr-title/requirements.txt
+          python -m pip install pytest
 
       - name: "Run all python utilities tests"
         run: |

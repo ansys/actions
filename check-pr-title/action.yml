@@ -45,13 +45,6 @@ inputs:
     required: false
     type: string
 
-  python-version:
-    description: |
-      Python version used for setting up Python.
-    default: '3.12'
-    required: false
-    type: string
-
   use-upper-case:
     description: |
       Use of uppercase letters in the "type" field of the commit.
@@ -75,21 +68,6 @@ runs:
         permissions: "pull-requests: read"
         token: ${{ inputs.token != '' && inputs.token || github.token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#pull-request-title-action"
-
-    - name: "Set up Python ${{ inputs.python-version }}"
-      if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' }}
-      uses: $/_setup-python
-      with:
-        python-version: ${{ inputs.python-version }}
-        use-cache: false
-        provision-uv: false
-        prune-uv-cache: false
-
-    - name: "Install tomlkit"
-      if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' }}
-      shell: bash
-      run: |
-        python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Check pull-request title characters"
       if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' }}
