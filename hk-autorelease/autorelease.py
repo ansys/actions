@@ -254,19 +254,25 @@ def write_version(source: str, location: str, new_version: str) -> None:
     raise AutoReleaseError(f"Unknown version-source '{source}'.")
 
 
-def update_lock_file(lock_file_tool: str) -> str | None:
+def update_lock_file(lock_file_tool: str, version_location: str) -> str | None:
     """Regenerate the dependency lock file for ``lock_file_tool``, without upgrading anything.
+
+    The lock command runs in the directory of the nearest ``pyproject.toml`` found at or above
+    ``version_location``'s directory (without going above the repository root), so the lock
+    file is regenerated next to that ``pyproject.toml``.
 
     Parameters
     ----------
     lock_file_tool : str
         Which lock file tooling to use: ``none``, ``uv``, or ``poetry``.
+    version_location : str
+        Path, relative to the repository root, to the file holding the version.
 
     Returns
     -------
     str | None
-        Path to the lock file that was regenerated, or ``None`` if ``lock_file_tool`` is
-        ``"none"``.
+        Path, relative to the repository root, to the lock file that was regenerated, or
+        ``None`` if ``lock_file_tool`` is ``"none"``.
     """
     if lock_file_tool == "none":
         return None
@@ -282,9 +288,19 @@ def update_lock_file(lock_file_tool: str) -> str | None:
     if lock_file_tool not in commands:
         raise AutoReleaseError(f"Unknown lock-file-tool '{lock_file_tool}'.")
 
+    repo_root = Path.cwd().resolve()
+    project_dir = (repo_root / version_location).parent.resolve()
+    while not (project_dir / "pyproject.toml").is_file():
+        if project_dir == repo_root or project_dir == project_dir.parent:
+            raise AutoReleaseError(
+                f"Could not find a 'pyproject.toml' at or above '{version_location}' to "
+                f"regenerate the '{lock_file_tool}' lock file."
+            )
+        project_dir = project_dir.parent
+
     command = commands[lock_file_tool]
-    lock_file = lock_files[lock_file_tool]
-    result = subprocess.run(command, capture_output=True, text=True)
+    lock_file = (project_dir / lock_files[lock_file_tool]).relative_to(repo_root).as_posix()
+    result = subprocess.run(command, capture_output=True, text=True, cwd=project_dir)
     if result.returncode != 0:
         raise AutoReleaseError(
             f"Failed to update '{lock_file}' via '{' '.join(command)}':\n"
@@ -712,7 +728,7 @@ def run_minor_major_release(
 
     run_git("checkout", "-b", branch)
     write_version(version_source, version_location, release_version)
-    lock_file = update_lock_file(lock_file_tool)
+    lock_file = update_lock_file(lock_file_tool, version_location)
     run_git("add", version_location)
     if lock_file:
         run_git("add", lock_file)
@@ -724,7 +740,7 @@ def run_minor_major_release(
     run_git("checkout", main_branch)
     run_git("checkout", "-b", bump_branch)
     write_version(version_source, version_location, dev_version)
-    lock_file = update_lock_file(lock_file_tool)
+    lock_file = update_lock_file(lock_file_tool, version_location)
     run_git("add", version_location)
     if lock_file:
         run_git("add", lock_file)
@@ -783,7 +799,7 @@ def _finish_patch_release(
     release_version = bump_patch(current_version)
     require_refs_available(f"refs/tags/v{release_version}")
     write_version(version_source, version_location, release_version)
-    lock_file = update_lock_file(lock_file_tool)
+    lock_file = update_lock_file(lock_file_tool, version_location)
     run_git("add", version_location)
     if lock_file:
         run_git("add", lock_file)

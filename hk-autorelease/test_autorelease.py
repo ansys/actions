@@ -22,6 +22,7 @@
 
 """Tests for the hk-autorelease version read/write helpers."""
 
+from pathlib import Path
 import subprocess
 
 from autorelease import (
@@ -341,50 +342,89 @@ def test_dev_version_bump_pr_body_mentions_release_and_caution():
 
 def test_update_lock_file_none_returns_none():
     """Test that update_lock_file is a no-op when lock-file-tool is 'none'."""
-    assert update_lock_file("none") is None
+    assert update_lock_file("none", "pyproject.toml") is None
 
 
 def test_update_lock_file_unknown_tool_raises():
     """Test that update_lock_file raises AutoReleaseError for an unrecognized tool."""
     with pytest.raises(AutoReleaseError, match="Unknown lock-file-tool"):
-        update_lock_file("bogus")
+        update_lock_file("bogus", "pyproject.toml")
 
 
-def test_update_lock_file_uv_runs_uv_lock(monkeypatch):
+def _record_lock_runs(monkeypatch, returncode=0):
+    """Patch subprocess.run to record ``(command, cwd)`` pairs and return ``returncode``."""
+    calls = []
+
+    def _fake_run(command, capture_output, text, cwd):
+        calls.append((command, Path(cwd)))
+        return subprocess.CompletedProcess(command, returncode, stdout="out", stderr="err")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    return calls
+
+
+def test_update_lock_file_uv_runs_uv_lock(tmp_path, monkeypatch):
     """Test that update_lock_file runs 'uv lock' and returns 'uv.lock' for tool 'uv'."""
-    calls = []
+    (tmp_path / "pyproject.toml").write_text("")
+    monkeypatch.chdir(tmp_path)
+    calls = _record_lock_runs(monkeypatch)
 
-    def _fake_run(command, capture_output, text):
-        calls.append(command)
-        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
-
-    monkeypatch.setattr(subprocess, "run", _fake_run)
-
-    assert update_lock_file("uv") == "uv.lock"
-    assert calls == [["uv", "lock"]]
+    assert update_lock_file("uv", "pyproject.toml") == "uv.lock"
+    assert calls == [(["uv", "lock"], tmp_path.resolve())]
 
 
-def test_update_lock_file_poetry_runs_poetry_lock_no_update(monkeypatch):
+def test_update_lock_file_poetry_runs_poetry_lock_no_update(tmp_path, monkeypatch):
     """Test that update_lock_file runs 'uvx poetry lock --no-update' for tool 'poetry'."""
-    calls = []
+    (tmp_path / "pyproject.toml").write_text("")
+    monkeypatch.chdir(tmp_path)
+    calls = _record_lock_runs(monkeypatch)
 
-    def _fake_run(command, capture_output, text):
-        calls.append(command)
-        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
-
-    monkeypatch.setattr(subprocess, "run", _fake_run)
-
-    assert update_lock_file("poetry") == "poetry.lock"
-    assert calls == [["uvx", "poetry", "lock", "--no-update"]]
+    assert update_lock_file("poetry", "pyproject.toml") == "poetry.lock"
+    assert calls == [(["uvx", "poetry", "lock", "--no-update"], tmp_path.resolve())]
 
 
-def test_update_lock_file_failure_raises_with_output(monkeypatch):
+def test_update_lock_file_runs_next_to_pyproject_in_subdirectory(tmp_path, monkeypatch):
+    """Test that the lock file is regenerated next to a pyproject.toml in a subdirectory."""
+    project = tmp_path / "pkg"
+    project.mkdir()
+    (project / "pyproject.toml").write_text("")
+    monkeypatch.chdir(tmp_path)
+    calls = _record_lock_runs(monkeypatch)
+
+    assert update_lock_file("uv", "pkg/pyproject.toml") == "pkg/uv.lock"
+    assert calls == [(["uv", "lock"], project.resolve())]
+
+
+def test_update_lock_file_walks_up_to_nearest_pyproject(tmp_path, monkeypatch):
+    """Test that a version file nested below the project uses the nearest pyproject.toml."""
+    project = tmp_path / "pkg"
+    module_dir = project / "src" / "mod"
+    module_dir.mkdir(parents=True)
+    (project / "pyproject.toml").write_text("")
+    (tmp_path / "pyproject.toml").write_text("")
+    monkeypatch.chdir(tmp_path)
+    calls = _record_lock_runs(monkeypatch)
+
+    assert update_lock_file("uv", "pkg/src/mod/__init__.py") == "pkg/uv.lock"
+    assert calls == [(["uv", "lock"], project.resolve())]
+
+
+def test_update_lock_file_without_pyproject_raises(tmp_path, monkeypatch):
+    """Test that update_lock_file raises if no pyproject.toml exists up to the repo root."""
+    (tmp_path / "pkg").mkdir()
+    monkeypatch.chdir(tmp_path)
+    calls = _record_lock_runs(monkeypatch)
+
+    with pytest.raises(AutoReleaseError, match="Could not find a 'pyproject.toml'"):
+        update_lock_file("uv", "pkg/VERSION")
+    assert calls == []
+
+
+def test_update_lock_file_failure_raises_with_output(tmp_path, monkeypatch):
     """Test that update_lock_file raises AutoReleaseError including stdout/stderr on failure."""
-
-    def _fake_run(command, capture_output, text):
-        return subprocess.CompletedProcess(command, 1, stdout="out", stderr="err")
-
-    monkeypatch.setattr(subprocess, "run", _fake_run)
+    (tmp_path / "pyproject.toml").write_text("")
+    monkeypatch.chdir(tmp_path)
+    _record_lock_runs(monkeypatch, returncode=1)
 
     with pytest.raises(AutoReleaseError, match="Failed to update 'uv.lock'"):
-        update_lock_file("uv")
+        update_lock_file("uv", "pyproject.toml")

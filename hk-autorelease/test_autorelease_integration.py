@@ -75,7 +75,7 @@ def _fake_create_dev_version_bump_pr(calls):
 def _fake_update_lock_file(calls, lock_file_name="fake.lock", content="fake-lock-content\n"):
     """Return a stand-in for update_lock_file that records its arg and writes a fake lock file."""
 
-    def _fake(lock_file_tool):
+    def _fake(lock_file_tool, version_location):
         calls.append(lock_file_tool)
         Path(lock_file_name).write_text(content)
         return lock_file_name

@@ -59,7 +59,9 @@ included. If you need to release only specific commits, use ``patch-cherry-pick`
 If your project uses a ``uv`` or ``poetry`` lock file, set ``lock-file-tool`` to regenerate it
 (via a plain ``uv lock`` or ``uvx poetry lock --no-update``) alongside each version bump, so the
 lock file always reflects the just-bumped version. Neither command upgrades dependencies; they
-only re-resolve the lock file against the already-bumped project metadata.
+only re-resolve the lock file against the already-bumped project metadata. The command runs in
+the directory of the nearest ``pyproject.toml`` at or above ``version-location``, so the lock
+file is regenerated next to that ``pyproject.toml`` rather than at the repository root.
 
 Example standalone workflow file (``.github/workflows/autorelease.yml``):
 

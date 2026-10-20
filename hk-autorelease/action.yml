@@ -152,7 +152,9 @@ inputs:
       Lock file tooling to regenerate alongside each version bump. One of ``none`` (default,
       skip lock file regeneration), ``uv`` (runs ``uv lock``), or ``poetry`` (runs ``uvx poetry
       lock --no-update``). Neither command upgrades dependencies; they only re-resolve the lock
-      file against the already-bumped project metadata.
+      file against the already-bumped project metadata. The command runs in the directory of
+      the nearest ``pyproject.toml`` at or above ``version-location``, so the lock file is
+      regenerated next to that ``pyproject.toml`` rather than at the repository root.
     required: false
     default: "none"
     type: string
