@@ -10,7 +10,39 @@ have been updated.
 Version ``v11.1``
 -----------------
 
+**Breaking Changes:**
+
+- **Character limits for pull request titles:** The ``check-pr-title`` and ``doc-changelog`` actions
+  now check the characters in the pull request title. A title can contain only letters, digits,
+  spaces, and these characters: ``! ( ) : - / _ .``. If the title contains a different character,
+  the action fails and shows the unsupported characters. This check prevents formatting errors in
+  the changelog and in the GitHub release notes.
+
 **New Features:**
+
+- **Same-workflow releases:** The ``doc-deploy-changelog`` action has a new ``same-workflow`` input
+  (default: ``false``). By default, the action stops the workflow after it updates the changelog and
+  recreates the release tag. The new tag then starts a second workflow run. When ``same-workflow`` is
+  ``true``, the release jobs continue in the workflow run of the user who pushed the tag. Use this
+  mode with protected GitHub environments, for example when **Prevent self-review** is set.
+  Related changes:
+
+  - The new ``release-commit-sha`` output of ``doc-deploy-changelog`` gives the commit of the final
+    release tag.
+  - The ``release-github`` action has a new ``tag-name`` input (default: ``''``). The action checks
+    out this tag and attaches the release to it. When the input is empty, the action uses
+    ``github.ref_name``.
+  - The ``doc-deploy-stable`` action has a new ``ref`` input (default: ``''``). The action checks out
+    this reference before it deploys the documentation. When the input is empty, the action uses
+    the commit that started the workflow.
+
+  The default values keep the previous behavior. For a complete workflow, see
+  :ref:`same_workflow_release`.
+
+- **Permission checks:** All actions now check the permissions of the GitHub token when they start.
+  If a permission is missing, the action shows a ``Missing permission`` warning with a link to the
+  action documentation. The check does not stop the job. The check uses only read operations. Thus,
+  it cannot confirm write permissions.
 
 - **Optional uv audit vulnerability scanning:** The ``check-vulnerabilities`` action has a new
   ``use-uv-audit`` input (default: ``false``). When enabled, ``uv audit`` runs in addition to Safety
@@ -59,12 +91,17 @@ Version ``v11.1``
   .. code:: yaml
 
     - name: "Release to GitHub"
-      uses: ansys/actions/release-github@{{ version }}
+      uses: ansys/actions/release-github@v11.1
       with:
         library-name: "ansys-<product>-<library>"
         token: ${{ secrets.GITHUB_TOKEN }}
         changelog-release-notes: false
         release-notes-file: "doc/release_notes.md"
+
+- **Command-line options for the local vulnerability script:** The ``check_vulnerabilities.py``
+  script now accepts command line options, for example ``--package``, ``--repository``, and
+  ``--uv-audit``. Each option also has a ``DEPENDENCY_CHECK_*`` environment variable. Thus, the
+  previous environment variables continue to work. For more information, see :ref:`pyansys_check_vulnerabilities`.
 
 **Migration Steps:**
 
@@ -81,14 +118,17 @@ Version ``v11.1``
         python-package-name: ansys-example-library
         use-uv-audit: true
 
+  To also do the malware scan when you run ``uv audit`` locally, add this setting to the
+  ``pyproject.toml`` file:
+
   .. code:: toml
 
     [tool.uv.audit]
     malware-check = true
 
-- **Review lock files used to build wheelhouses:** If the project commits ``uv.lock``, update it before
-  building a release and verify that it includes the runtime dependencies and extras requested through
-  ``target``.
+- **Update lock files before you build wheelhouses:** If the project commits a ``uv.lock`` file,
+  update this file before you build a release. Make sure that the file contains the runtime
+  dependencies and the extras that you set in ``target``.
 
 Version ``v11``
 ---------------
@@ -152,7 +192,9 @@ Version ``v11``
     (``--no-dev``). If your tests or docs rely on dev-only dependencies, move them to a dedicated group
     or extras target and reference it through the relevant action input. Starting with ``v11.1``,
     ``code-style`` is an exception and installs the default groups so that development tools are
-    available to style hooks.
+    available to style hooks. Also starting with ``v11.1``, the other actions exclude all default
+    groups (``--no-default-groups``). See the *Review uv default groups* migration step in the
+    ``v11.1`` section.
   - Projects that do not commit a ``uv.lock`` are unaffected; behavior falls back to using ``uv`` to
     install project dependencies.
 
