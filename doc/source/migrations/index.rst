@@ -192,9 +192,7 @@ Version ``v11``
     (``--no-dev``). If your tests or docs rely on dev-only dependencies, move them to a dedicated group
     or extras target and reference it through the relevant action input. Starting with ``v11.1``,
     ``code-style`` is an exception and installs the default groups so that development tools are
-    available to style hooks. Also starting with ``v11.1``, the other actions exclude all default
-    groups (``--no-default-groups``). See the *Review uv default groups* migration step in the
-    ``v11.1`` section.
+    available to style hooks.
   - Projects that do not commit a ``uv.lock`` are unaffected; behavior falls back to using ``uv`` to
     install project dependencies.
 
