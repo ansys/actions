@@ -231,25 +231,26 @@ runs:
           echo "DEPLOYMENT_COUNT=$(ls pull/ | wc -l)" >> ${GITHUB_OUTPUT}
         fi
 
-    - name: "Detect if deployment rejection comment had been previously added to the same PR"
-      if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
-      id: find-comment
-      uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
-      with:
-        issue-number: ${{ github.event.pull_request.number }}
-        body-includes: Pull request documentation preview limit
-
     - name: "Make a PR comment stating reason for not deploying pr documentation"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) > fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
-      with:
-        token: ${{ inputs.token }}
-        issue-number: ${{ github.event.pull_request.number }}
-        comment-id: ${{ steps.find-comment.outputs.comment-id }}
-        edit-mode: replace
-        body: >
-          Pull request documentation preview limit (${{ inputs.maximum-pr-doc-deployments }})
-          reached: skipping documentation deployment for this pull request.
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        MAXIMUM_PR_DOC_DEPLOYMENTS: ${{ inputs.maximum-pr-doc-deployments }}
+      run: |
+        COMMENT_BODY="Pull request documentation preview limit (${MAXIMUM_PR_DOC_DEPLOYMENTS}) reached: skipping documentation deployment for this pull request."
+        COMMENT_ID="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+          --paginate \
+          --jq '.[] | select(.body | contains("Pull request documentation preview limit")) | .id' \
+          | head -n 1 || true)"
+
+        if [ -n "${COMMENT_ID}" ]; then
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" \
+            -f body="${COMMENT_BODY}"
+        else
+          gh pr comment "${PR_NUMBER}" --body "${COMMENT_BODY}"
+        fi
 
     - name: "Download the pr documentation artifact"
       if: ${{ fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
@@ -366,14 +367,13 @@ runs:
 
     - name: "Make a PR comment the first time a PR documentation is deployed"
       if: ${{ steps.create-pull-directory.outputs.FIRST_TIME_DEPLOYMENT == 'true' && fromJSON(steps.create-pull-directory.outputs.DEPLOYMENT_COUNT) <= fromJSON(inputs.maximum-pr-doc-deployments) }}
-      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
-      with:
-        token: ${{ inputs.token }}
-        issue-number: ${{ github.event.pull_request.number }}
-        body: >
-          The documentation for this pull request will be available at
-          [https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}](https://${{ inputs.cname }}/pull/${{ github.event.pull_request.number }}).
-          Please allow some time for the documentation to be deployed.
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        CNAME: ${{ inputs.cname }}
+      run: |
+        gh pr comment "${PR_NUMBER}" --body "The documentation for this pull request will be available at [https://${CNAME}/pull/${PR_NUMBER}](https://${CNAME}/pull/${PR_NUMBER}). Please allow some time for the documentation to be deployed."
 
     - name: "Check directory structure"
       shell: bash
