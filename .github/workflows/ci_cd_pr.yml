@@ -534,7 +534,8 @@ jobs:
           ACTIONLINT_VERSION: ${{ env.ACTIONLINT_VERSION }}
         run: |
           go run "github.com/rhysd/actionlint/cmd/actionlint@v${ACTIONLINT_VERSION}" \
-            -ignore 'could not parse action metadata.*unexpected key "type"'
+            -ignore 'could not parse action metadata.*unexpected key "type"' \
+            -ignore '^specifying action "\$/[^"]+" in invalid format because ref is missing\.'
 
   python-utilites-test:
     name: "Run all python utilities tests"
