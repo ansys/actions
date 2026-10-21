@@ -31,7 +31,11 @@ compliant with the project style, its code integrity, and that it is capable of
 successfully generating all the desired library artifacts.
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 30, "rankSpacing": 50}}}%%
 graph LR
+    accTitle: Pull Request Validation Workflow
+    accDescr: Labels precedes all style checks and the changelog fragment check. Doc style precedes Doc build, and Code style precedes Tests. Build library depends on Doc build, Tests, and Actions style.
+
     A(Labels) --> B(Doc style) & C(Code style) & D(Actions style)
     A --> E(Changelog fragment)
     B --> F(Doc build)
@@ -39,8 +43,9 @@ graph LR
     D ---> H
     F & G --> H(Build library)
 
-    classDef green fill:green, fill-opacity:0.5, stroke:green, stroke-width:2
+    classDef green fill:#e6f4ea,color:#173b24,stroke:#2e7d32,stroke-width:1.5px
     class A,B,C,D,E,F,G,H green
+    linkStyle default stroke:#64748b,stroke-width:1.5px
 ```
 
 ### Recommended workflow when merging a new commit to the main branch of a repository
