@@ -32,15 +32,15 @@ successfully generating all the desired library artifacts.
 
 ```mermaid
 graph LR
-    A(Doc style) --> B(Doc build)
-    C(Code style) --> D(Tests)
-    B & D --> E(Build library) --> F(Release library) & H(Doc deploy dev)
-    F --> G(Doc deploy stable)
+    A(Labels) --> B(Doc style) & C(Code style) & D(Actions style)
+    A --> E(Changelog fragment)
+    B --> F(Doc build)
+    C --> G(Tests)
+    D ---> H
+    F & G --> H(Build library)
 
     classDef green fill:green, fill-opacity:0.5, stroke:green, stroke-width:2
-    class A,B,C,D,E green
-    classDef blue fill:lightblue, fill-opacity:0.5, stroke:lightblue
-    class F,H,G blue
+    class A,B,C,D,E,F,G,H green
 ```
 
 ### Recommended workflow when merging a new commit to the main branch of a repository
