@@ -184,7 +184,7 @@ runs:
         else
             pattern="/Dockerfile"
         fi
-        fmt_directory_array=($fmt_directory)
+        read -r -a fmt_directory_array <<< "${fmt_directory//$'\n'/ }"
         for i in "${!fmt_directory_array[@]}"; do
           fmt_directory_array[i]="${fmt_directory_array[i]}${pattern}"
         done

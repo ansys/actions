@@ -353,7 +353,7 @@ runs:
         sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd version/"${VERSION}"
+        cd version/"${VERSION}" || exit 1
         compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
         mkdir _decomp
         ouch decompress "$compressed_artifact" --dir _decomp --yes
@@ -449,11 +449,11 @@ runs:
       env:
         LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
       run: |
-        for version_dir in $( ls version | \
-                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
-                          grep -v "${LATEST_STABLE_VERSION}" | \
-                          sort -r --version-sort ); do
-            find version/"$version_dir" -type d -not \( -path "*/_*" -type d -prune \) -exec cp announcement.html {} \;
+        for version_dir in version/*; do
+          version_name=${version_dir##*/}
+          if [[ -d "$version_dir" && "$version_name" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ && ! "$version_name" =~ $LATEST_STABLE_VERSION ]]; then
+            find "$version_dir" -type d -not \( -path "*/_*" -type d -prune \) -exec cp announcement.html {} \;
+          fi
         done
 
     - name: "Delete the 'announcement.html' file used as template"

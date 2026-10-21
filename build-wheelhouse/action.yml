@@ -341,7 +341,7 @@ runs:
       shell: bash
       run: |
         ${ACTIVATE_VENV}
-        cd "${WORKING_DIRECTORY}"
+        cd "${WORKING_DIRECTORY}" || exit 1
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry_options=()
           if [[ -n "${TARGET}" ]]; then
@@ -394,7 +394,7 @@ runs:
         TAG_REF: ${{ github.ref_name }}
       run: |
         ${ACTIVATE_VENV}
-        if [[ v${LIBRARY_VERSION} == $TAG_REF ]]; then
+        if [[ v${LIBRARY_VERSION} == "$TAG_REF" ]]; then
           echo "Tag version matches metadata version. Proceeding with the build."
         else
           echo "Tag version does not match metadata version. Exiting with error."
@@ -492,7 +492,7 @@ runs:
         TARGET: ${{ inputs.target }}
       run: |
         ${ACTIVATE_VENV}
-        cd "${WORKING_DIRECTORY}"
+        cd "${WORKING_DIRECTORY}" || exit 1
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
           pip wheel -w "${GITHUB_WORKSPACE}"/wheelhouse -r wheel_reqs.txt

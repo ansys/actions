@@ -96,13 +96,13 @@ runs:
       run: |
 
         # Move inside of the version folder
-        cd version
+        cd version || exit 1
 
         # Create an array of folder names in reversed order
-        folders=($(find . -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort -r))
-
-        # Get the absolute path of the current directory
-        abs_path=$(pwd)
+        folders=()
+        while IFS= read -r -d '' folder; do
+          folders+=("$folder")
+        done < <(find . -maxdepth 1 -mindepth 1 -type d -printf '%f\0' | sort -zr)
 
         # Start building the HTML table
         table="<table class='table'><thead><tr><th>Version</th><th>URL</th></tr></thead><tbody>"

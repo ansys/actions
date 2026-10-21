@@ -566,12 +566,12 @@ runs:
         attested_file=""
 
         # Standard release artifacts: wheels, sdist, wheelhouse, SBOM.
-        for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
+        while IFS= read -r -d '' artifact; do
           if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             attested_file="$(basename "$artifact")"
             break
           fi
-        done
+        done < <(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \) -print0)
 
         # If none found yet, also try files from additional-artifacts.
         if [[ -z "${attested_file}" && -n "${ADDITIONAL_ARTIFACTS}" ]]; then

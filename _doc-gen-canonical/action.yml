@@ -71,7 +71,6 @@ runs:
 
         add_canonical_tag() {
             local file=$1
-            local filename=$(basename "$file")
             local relative_path=${file#*version/*/}
             local stable_target="${VERSION_DIRECTORY}/stable/${relative_path}"
             if [[ ! -f "$stable_target" ]]; then

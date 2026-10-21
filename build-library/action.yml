@@ -217,7 +217,7 @@ runs:
       env:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        cd "${WORKING_DIRECTORY}"
+        cd "${WORKING_DIRECTORY}" || exit 1
         uv sync --frozen --no-managed-python --no-default-groups
 
     # ------------------------------------------------------------------------
@@ -253,7 +253,7 @@ runs:
             echo "The library version is: $LIBRARY_VERSION";
         fi
 
-        if [[ v${LIBRARY_VERSION} == $TAG_REF ]]; then
+        if [[ v${LIBRARY_VERSION} == "$TAG_REF" ]]; then
           echo "Tag version matches metadata version. Proceeding with the build."
         else
           echo "Tag version does not match metadata version. Exiting with error."

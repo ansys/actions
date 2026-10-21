@@ -439,10 +439,10 @@ runs:
           # Update changelog with the tag version
           if [[ "${IS_PRE_RELEASE}" == "true" ]]; then
             echo "Creating CHANGELOG section for pre-release version ${TAG_VERSION}"
-            buildcmd=$(towncrier build --keep --name "${TOWNCRIER_NAME}" --version "${TAG_VERSION}" --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+            towncrier build --keep --name "${TOWNCRIER_NAME}" --version "${TAG_VERSION}" --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true
           else
             echo "Creating CHANGELOG section for version ${TAG_VERSION}"
-            buildcmd=$(towncrier build --yes --name "${TOWNCRIER_NAME}" --version "${TAG_VERSION}" --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+            towncrier build --yes --name "${TOWNCRIER_NAME}" --version "${TAG_VERSION}" --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true
           fi
 
           cat builderr.txt
@@ -520,7 +520,7 @@ runs:
         # Create a new $pr_branch
         git checkout -b "$pr_branch"
 
-        cherrypick=$(git cherry-pick "${COMMIT_SHA}" >> cherrypickerr.txt 2>&1 || true)
+        git cherry-pick "${COMMIT_SHA}" >> cherrypickerr.txt 2>&1 || true
         cat cherrypickerr.txt
         conflict=$(grep "CONFLICT" cherrypickerr.txt || true)
 

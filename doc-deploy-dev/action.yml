@@ -241,7 +241,7 @@ runs:
         sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd version/dev
+        cd version/dev || exit 1
         compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
         mkdir _decomp
         ouch decompress "$compressed_artifact" --dir _decomp --yes

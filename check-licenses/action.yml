@@ -451,15 +451,15 @@ runs:
       shell: bash
       run: |
         # Load accepted licenses
-        mapfile licenses_from_txt < accepted-licenses.txt
+        mapfile -t licenses_from_txt < accepted-licenses.txt
         accepted_licenses='Accepted licenses:\n'
-        for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\n"; done
+        for license in "${licenses_from_txt[@]}"; do accepted_licenses+="$license\n"; done
         echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> "${GITHUB_OUTPUT}"
 
         # Load accepted packages
-        mapfile ignored_packages_from_txt < ignored-packages.txt
+        mapfile -t ignored_packages_from_txt < ignored-packages.txt
         ignored_packages='Ignored packages:\n'
-        for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg\n"; done
+        for pckg in "${ignored_packages_from_txt[@]}"; do ignored_packages+="$pckg\n"; done
         echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> "${GITHUB_OUTPUT}"
 
     - name: Log ignored packages and accepted licenses
@@ -483,9 +483,13 @@ runs:
         ${ACTIVATE_VENV_PIP_LICENSES}
 
         # Load accepted licenses
-        mapfile licenses_from_txt < accepted-licenses.txt
+        mapfile -t licenses_from_txt < accepted-licenses.txt
         accepted_licenses=''
-        for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\|"; done
+        for license in "${licenses_from_txt[@]}"; do
+          if [[ -n "$license" ]]; then
+            accepted_licenses+="$license\|"
+          fi
+        done
         accepted_licenses=${accepted_licenses::-2}
 
         # Load accepted packages
