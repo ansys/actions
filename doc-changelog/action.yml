@@ -181,7 +181,7 @@ runs:
         USE_CONVENTIONAL_COMMITS: ${{ inputs.use-conventional-commits }}
         USE_PULL_REQUEST_TITLE: ${{ inputs.use-pull-request-title }}
       run: |
-        if [ ! -z "$USE_CONVENTIONAL_COMMITS" ]; then
+        if [ -n "$USE_CONVENTIONAL_COMMITS" ]; then
           echo "USE_PULL_REQUEST_TITLE=${USE_CONVENTIONAL_COMMITS}" >> "$GITHUB_OUTPUT"
         else
           echo "USE_PULL_REQUEST_TITLE=${USE_PULL_REQUEST_TITLE}" >> "$GITHUB_OUTPUT"
@@ -457,10 +457,10 @@ runs:
         git add .
 
         # Check if file was modified
-        modified=`git diff HEAD --name-only`
+        modified=$(git diff HEAD --name-only)
 
         # If the file was modified, commit & push it to the branch
-        if [ ! -z "$modified" ]; then
+        if [ -n "$modified" ]; then
           echo "modified: $modified"
           # Commit and push fragment
           git commit -m "chore: adding changelog file $fragment [dependabot-skip]"

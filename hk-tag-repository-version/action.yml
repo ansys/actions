@@ -88,9 +88,11 @@ runs:
         echo "Major version: $MAJOR_VERSION"
         echo "Minor version: $MINOR_VERSION"
         echo "Patch version: $PATCH_VERSION"
-        echo "MAJOR_VERSION=$MAJOR_VERSION" >> "$GITHUB_OUTPUT"
-        echo "MINOR_VERSION=$MINOR_VERSION" >> "$GITHUB_OUTPUT"
-        echo "PATCH_VERSION=$PATCH_VERSION" >> "$GITHUB_OUTPUT"
+        {
+          echo "MAJOR_VERSION=$MAJOR_VERSION"
+          echo "MINOR_VERSION=$MINOR_VERSION"
+          echo "PATCH_VERSION=$PATCH_VERSION"
+        } >> "$GITHUB_OUTPUT"
 
     - name: Update SemVer tag
       shell: bash

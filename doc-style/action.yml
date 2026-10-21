@@ -192,7 +192,7 @@ runs:
       run: |
         version="${VALE_VERSION}"
         vale_major_version=$( echo "$version" | cut -d '.' -f 1)
-        echo "VALE_MAJOR_VERSION=$(echo "$vale_major_version")" >> "${GITHUB_OUTPUT}"
+        echo "VALE_MAJOR_VERSION=$vale_major_version" >> "${GITHUB_OUTPUT}"
         echo "VALE_MAJOR_VERSION set to $vale_major_version"  # Add this line for debugging
 
     - name: "Verify Vale's configuration layout according to selected version"

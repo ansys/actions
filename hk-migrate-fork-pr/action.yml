@@ -359,16 +359,12 @@ runs:
           echo "pr-base-branch=chore/migrate-fork-pr-${PR_NUMBER}"
           echo "pr-author=${AUTHOR}"
           echo "migration-branch=chore/migrate-fork-pr-${PR_NUMBER}"
-        } >> "$GITHUB_OUTPUT"
 
-        # Use delimiter for multiline values (title and body may contain special chars)
-        {
+          # Use delimiter for multiline values (title and body may contain special chars)
           echo "pr-title<<GHEOF"
           echo "${TITLE}"
           echo "GHEOF"
-        } >> "$GITHUB_OUTPUT"
 
-        {
           echo "pr-body<<GHEOF"
           echo "${BODY}"
           echo "GHEOF"

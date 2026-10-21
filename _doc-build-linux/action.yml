@@ -173,9 +173,9 @@ runs:
       shell: bash
       run: |
         if [[ "$REQUIRES_XVFB" == 'true' ]]; then
-          echo "NEEDED_DEPS=$(echo "$DEPENDENCIES xvfb")" >> "$GITHUB_OUTPUT"
+          echo "NEEDED_DEPS=$DEPENDENCIES xvfb" >> "$GITHUB_OUTPUT"
         else
-          echo "NEEDED_DEPS=$(echo "$DEPENDENCIES")" >> "$GITHUB_OUTPUT"
+          echo "NEEDED_DEPS=$DEPENDENCIES" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Cache apt packages needed"
@@ -248,14 +248,14 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> "$GITHUB_OUTPUT"
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> "$GITHUB_OUTPUT"
+          echo "BUILD_BACKEND=poetry" >> "$GITHUB_OUTPUT"
+          echo "SPHINX_BUILD_MAKE=poetry run -- make" >> "$GITHUB_OUTPUT"
         elif [[ "$USE_UV" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> "$GITHUB_OUTPUT"
-          echo "SPHINX_BUILD_MAKE=$(echo 'uv run --no-sync -- make')" >> "$GITHUB_OUTPUT"
+          echo "BUILD_BACKEND=uv" >> "$GITHUB_OUTPUT"
+          echo "SPHINX_BUILD_MAKE=uv run --no-sync -- make" >> "$GITHUB_OUTPUT"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> "$GITHUB_OUTPUT"
-          echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> "$GITHUB_OUTPUT"
+          echo "BUILD_BACKEND=pip" >> "$GITHUB_OUTPUT"
+          echo "SPHINX_BUILD_MAKE=make" >> "$GITHUB_OUTPUT"
         fi
 
     - uses: $/_logging
@@ -565,7 +565,7 @@ runs:
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
       shell: bash
       run: |
-        echo "EXPECTED_DOWNLOAD_DIR=$(echo "${EXPECTED_BUILD_DIR}/html/_static/assets/download")" >> "${GITHUB_OUTPUT}"
+        echo "EXPECTED_DOWNLOAD_DIR=${EXPECTED_BUILD_DIR}/html/_static/assets/download" >> "${GITHUB_OUTPUT}"
 
     - name: Check expected download directory
       id: check-expected-download-directory

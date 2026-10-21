@@ -318,11 +318,11 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> "${GITHUB_OUTPUT}"
+          echo "BUILD_BACKEND=poetry" >> "${GITHUB_OUTPUT}"
         elif [[ "${USE_UV}" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> "${GITHUB_OUTPUT}"
+          echo "BUILD_BACKEND=uv" >> "${GITHUB_OUTPUT}"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> "${GITHUB_OUTPUT}"
+          echo "BUILD_BACKEND=pip" >> "${GITHUB_OUTPUT}"
         fi
 
     - uses: $/_logging
@@ -395,11 +395,11 @@ runs:
       shell: bash
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> "${GITHUB_OUTPUT}"
-          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/scripts/activate')" >> "${GITHUB_OUTPUT}"
+          echo "ACTIVATE_VENV=source .venv/scripts/activate" >> "${GITHUB_OUTPUT}"
+          echo "ACTIVATE_VENV_BANDIT_SAFETY=source .venv_bandit_safety/scripts/activate" >> "${GITHUB_OUTPUT}"
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> "${GITHUB_OUTPUT}"
-          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/bin/activate')" >> "${GITHUB_OUTPUT}"
+          echo "ACTIVATE_VENV=source .venv/bin/activate" >> "${GITHUB_OUTPUT}"
+          echo "ACTIVATE_VENV_BANDIT_SAFETY=source .venv_bandit_safety/bin/activate" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Suppress .python-version file for uv"

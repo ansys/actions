@@ -229,11 +229,11 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> "${GITHUB_OUTPUT}"
+          echo "BUILD_BACKEND=poetry" >> "${GITHUB_OUTPUT}"
         elif [[ "${USE_UV}" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> "${GITHUB_OUTPUT}"
+          echo "BUILD_BACKEND=uv" >> "${GITHUB_OUTPUT}"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> "${GITHUB_OUTPUT}"
+          echo "BUILD_BACKEND=pip" >> "${GITHUB_OUTPUT}"
         fi
 
     # NOTE: Installation of poetry in a separate environment to the project to
@@ -291,11 +291,11 @@ runs:
           echo "PYTHON_VENV=$(which python)" >> "$GITHUB_OUTPUT"
         else
           if [[ ${RUNNER_OS} == 'Windows' ]]; then
-            echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> "$GITHUB_OUTPUT"
-            echo "PYTHON_VENV=$(echo '.venv/Scripts/python.exe')" >> "$GITHUB_OUTPUT"
+            echo "ACTIVATE_VENV=source .venv/scripts/activate" >> "$GITHUB_OUTPUT"
+            echo "PYTHON_VENV=.venv/Scripts/python.exe" >> "$GITHUB_OUTPUT"
           else
-            echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> "$GITHUB_OUTPUT"
-            echo "PYTHON_VENV=$(echo '.venv/bin/python')" >> "$GITHUB_OUTPUT"
+            echo "ACTIVATE_VENV=source .venv/bin/activate" >> "$GITHUB_OUTPUT"
+            echo "PYTHON_VENV=.venv/bin/python" >> "$GITHUB_OUTPUT"
           fi
         fi
 
@@ -327,9 +327,9 @@ runs:
       run: |
         python -m venv .venv-pip-licenses
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV_PIP_LICENSES=$(echo 'source .venv-pip-licenses/scripts/activate')" >> "$GITHUB_OUTPUT"
+          echo "ACTIVATE_VENV_PIP_LICENSES=source .venv-pip-licenses/scripts/activate" >> "$GITHUB_OUTPUT"
         else
-          echo "ACTIVATE_VENV_PIP_LICENSES=$(echo 'source .venv-pip-licenses/bin/activate')" >> "$GITHUB_OUTPUT"
+          echo "ACTIVATE_VENV_PIP_LICENSES=source .venv-pip-licenses/bin/activate" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Update pip in project virtual environment"
@@ -496,7 +496,7 @@ runs:
         done < ignored-packages.txt
 
         # Verify if the Python environment contains invalid licenses
-        if [[ -z $(pip-licenses --ignore-packages "${ignored_packages[@]}" --python "$PYTHON_VENV" | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v "$accepted_licenses") ]]; then
+        if ! pip-licenses --ignore-packages "${ignored_packages[@]}" --python "$PYTHON_VENV" | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v "$accepted_licenses" > /dev/null; then
           echo "All licenses are valid."
         else
           echo -e "\nInvalid licenses found:\n"

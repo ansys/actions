@@ -193,11 +193,11 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> "$GITHUB_OUTPUT"
+          echo "BUILD_BACKEND=poetry" >> "$GITHUB_OUTPUT"
         elif [[ "$USE_UV" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> "$GITHUB_OUTPUT"
+          echo "BUILD_BACKEND=uv" >> "$GITHUB_OUTPUT"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> "$GITHUB_OUTPUT"
+          echo "BUILD_BACKEND=pip" >> "$GITHUB_OUTPUT"
         fi
 
     - uses: $/_logging
@@ -301,9 +301,9 @@ runs:
       shell: bash
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> "$GITHUB_OUTPUT"
+          echo "ACTIVATE_VENV=source .venv/scripts/activate" >> "$GITHUB_OUTPUT"
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> "$GITHUB_OUTPUT"
+          echo "ACTIVATE_VENV=source .venv/bin/activate" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Auto-detect uv lockfile"
@@ -466,11 +466,11 @@ runs:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
-          echo "PYTEST_RUN=$(echo 'poetry run pytest')" >> "$GITHUB_OUTPUT"
+          echo "PYTEST_RUN=poetry run pytest" >> "$GITHUB_OUTPUT"
         elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          echo "PYTEST_RUN=$(echo 'uv run --no-sync pytest')" >> "$GITHUB_OUTPUT"
+          echo "PYTEST_RUN=uv run --no-sync pytest" >> "$GITHUB_OUTPUT"
         else
-          echo "PYTEST_RUN=$(echo 'python -m pytest')" >> "$GITHUB_OUTPUT"
+          echo "PYTEST_RUN=python -m pytest" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Randomize the order of the tests"
