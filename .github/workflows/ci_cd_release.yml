@@ -128,6 +128,10 @@ jobs:
       contents: read
     steps:
       - uses: $/code-style
+        # NOTE: Disable zizmor hook to avoid duplicate run from check-actions-security
+        # See https://github.com/pre-commit/pre-commit.com/blob/main/sections/advanced.md#temporarily-disabling-hooks
+        env:
+          SKIP: zizmor
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
@@ -260,18 +264,29 @@ jobs:
         echo "LINK=${LINK}" >> $GITHUB_OUTPUT
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-      with:
-        body: >
-          If you are migrating the actions of your project to a new major release, breaking changes can be expected.
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG_NAME: ${{ github.ref_name }}
+        RELEASE_MAJOR: ${{ env.MAJOR }}
+        RELEASE_MIGRATION_LINK: ${{ steps.link-migration-guide.outputs.LINK }}
+      run: |
+        set -euo pipefail
+        release_body="$(cat <<EOF
+        If you are migrating the actions of your project to a new major release, breaking changes can be expected.
 
-          To make sure everything is compatible with your current workflow, refer to the
-          [Migration Guide for v${{ env.MAJOR }}](${{ steps.link-migration-guide.outputs.LINK }}) to find out more
-          about new features and potential breaking changes.
-        generate_release_notes: true
-        files: |
-          documentation-html.zip
-          documentation-pdf.zip
+        To make sure everything is compatible with your current workflow, refer to the
+        [Migration Guide for v${RELEASE_MAJOR}](${RELEASE_MIGRATION_LINK}) to find out more
+        about new features and potential breaking changes.
+        EOF
+        )"
+
+        # Immutable releases lock the tag and the assets as soon as the release
+        # is published. Passing the files to 'gh release create' holds the
+        # release as a draft until every upload succeeded, so a partial release
+        # is never published.
+        gh release create "${TAG_NAME}" --generate-notes --notes "${release_body}" \
+          documentation-html.zip documentation-pdf.zip
 
   doc-deploy-stable:
     name: "Deploy stable documentation"
