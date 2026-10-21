@@ -93,7 +93,6 @@ updates:
         patterns:
           - "awalsh128/cache-apt-pkgs-action"
           - "peaceiris/actions-gh-pages"
-          - "peter-evans/create-or-update-comment"
       # Actions associated to our tests composite actions
       test-related-actions:
         patterns:
@@ -104,14 +103,9 @@ updates:
           - "docker/setup-qemu-action"
           - "pypa/cibuildwheel"
           - "astral-sh/setup-uv"
-      # Actions associated to our release composite actions
-      release-related-actions:
-        patterns:
-          - "softprops/action-gh-release"
       # Missed non ansys actions that should by assigned to a group
       must-be-assigned-actions:
         patterns:
-          - "peter-evans/find-comment"
           - "vimtor/action-zip"
           - "dependabot/fetch-metadata"
         exclude-patterns:
