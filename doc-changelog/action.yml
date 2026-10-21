@@ -209,7 +209,7 @@ runs:
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
       run: |
-        ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
+        ${INSTALL_COMMAND} -r "${GITHUB_ACTION_PATH}"/requirements.txt
 
     - name: "Check pull-request title characters"
       env:
@@ -286,11 +286,11 @@ runs:
       shell: bash
       run: |
         # Get the labels in the pull request
-        pr_labels=$(gh api repos/${GITHUB_REPOSITORY_OWNER}/${REPO_NAME}/pulls/${GH_EVENT_NUMBER} --jq '.labels.[].name')
+        pr_labels=$(gh api "repos/${GITHUB_REPOSITORY_OWNER}/${REPO_NAME}/pulls/${GH_EVENT_NUMBER}" --jq '[.labels.[].name] | join(" ")')
 
         # Save the labels to an environment variable
         # For example, LABELS="enhancement maintenance"
-        echo LABELS='"'$pr_labels'"' >> ${GITHUB_OUTPUT}
+        echo "LABELS=\"${pr_labels}\"" >> "${GITHUB_OUTPUT}"
 
     - name: "Set CHANGELOG category based on conventional commit type"
       if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
@@ -331,13 +331,7 @@ runs:
       run: |
         # Find files containing the PR number
         # For example, 20.*.md
-        file=`find . -type f -name "${GH_EVENT_NUMBER}.*.md"`
-
-        # If the fragment file exists, then delete the file
-        if [ ! -z "$file" ]; then
-          echo "Removing $file"
-          rm $file
-        fi
+        find . -type f -name "${GH_EVENT_NUMBER}.*.md" -print -delete
 
     - name: "Clean PR title"
       env:
@@ -453,7 +447,7 @@ runs:
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "${CLEAN_TITLE}" $fragment
+        towncrier create -c "${CLEAN_TITLE}" "$fragment"
 
         # Configure git username & email
         git config user.name "${BOT_USER}"

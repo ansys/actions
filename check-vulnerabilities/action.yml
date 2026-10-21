@@ -247,16 +247,16 @@ runs:
         DEV_MODE: ${{ inputs.dev-mode }}
       run: |  # zizmor: ignore[github-env]
         if [[ "${DRY_RUN}" == 'true' ]]; then
-          echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
+          echo "DEPENDENCY_CHECK_DRY_RUN=1" >> "$GITHUB_ENV"
         fi
 
         if [[ "${EXIT_WITH_ERROR_ON_NEW_ADVISORY}" == 'true' ]]; then
-          echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
+          echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> "$GITHUB_ENV"
         fi
 
         if [[ "${DEV_MODE}" == 'true' ]]; then
-          echo "DEPENDENCY_CHECK_DRY_RUN=1" >> $GITHUB_ENV
-          echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> $GITHUB_ENV
+          echo "DEPENDENCY_CHECK_DRY_RUN=1" >> "$GITHUB_ENV"
+          echo "DEPENDENCY_CHECK_ERROR_EXIT=1" >> "$GITHUB_ENV"
         fi
 
     - name: "Install Git and clone project"
@@ -272,9 +272,9 @@ runs:
       shell: bash
       run: |
         if [[ -f "uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=true" >> "${GITHUB_OUTPUT}"
         else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=false" >> "${GITHUB_OUTPUT}"
         fi
 
     - uses: $/_logging
@@ -293,7 +293,7 @@ runs:
       env:
         EXTRA_TARGETS: ${{ inputs.extra-targets }}
       run: |
-        echo "EXISTS_REQUIREMENTS=$(if [ -f requirements/requirements_${EXTRA_TARGETS}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+        echo "EXISTS_REQUIREMENTS=$(if [ -f requirements/requirements_"${EXTRA_TARGETS}".txt ]; then echo 'true'; else echo 'false'; fi)" >> "$GITHUB_OUTPUT"
 
     - uses: $/_logging
       if: ${{ inputs.skip-install == 'true' && steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_REQUIREMENTS == 'true' }}
@@ -318,11 +318,11 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> "${GITHUB_OUTPUT}"
         elif [[ "${USE_UV}" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=$(echo 'uv')" >> "${GITHUB_OUTPUT}"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=$(echo 'pip')" >> "${GITHUB_OUTPUT}"
         fi
 
     - uses: $/_logging
@@ -354,7 +354,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${RUNNER_TEMP}/pipx/bin" >> ${GITHUB_PATH} # zizmor: ignore[github-env] no workaround for this
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> "${GITHUB_PATH}" # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -362,7 +362,7 @@ runs:
     - name: "Set poetry environment variable(s)"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> "$GITHUB_ENV"
 
     # NOTE: Install pipx in a location that can be used in following CICD jobs
     # but ensure that poetry is installed in a temporary folder cleaned before
@@ -395,11 +395,11 @@ runs:
       shell: bash
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
-          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/scripts/activate')" >> ${GITHUB_OUTPUT}
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> "${GITHUB_OUTPUT}"
+          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/scripts/activate')" >> "${GITHUB_OUTPUT}"
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
-          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/bin/activate')" >> ${GITHUB_OUTPUT}
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> "${GITHUB_OUTPUT}"
+          echo "ACTIVATE_VENV_BANDIT_SAFETY=$(echo 'source .venv_bandit_safety/bin/activate')" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Suppress .python-version file for uv"
@@ -445,18 +445,18 @@ runs:
         if [[ "${EXTRA_TARGETS}" != '' ]]; then
           if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
             echo "Installing extra targets with poetry: ${EXTRA_TARGETS}"
-            extra_targets=${EXTRA_TARGETS}
+            installation_extras=${EXTRA_TARGETS}
           else
             echo "Installing extra targets with pip: ${EXTRA_TARGETS}"
-            extra_targets=[${EXTRA_TARGETS}]
+            installation_extras=[${EXTRA_TARGETS}]
           fi
         else
           echo "No extra targets to install"
-          extra_targets=""
+          installation_extras=""
         fi
         # 2. Trigger the installation command based on the build backend
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install --extras "${extra_targets}"
+          poetry install --extras "${installation_extras}"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
           if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
             if [[ "${EXTRA_TARGETS}" != '' ]]; then
@@ -465,10 +465,10 @@ runs:
               uv sync --frozen --no-default-groups
             fi
           else
-            uv pip install ."${extra_targets}"
+            uv pip install ."${installation_extras}"
           fi
         else
-          python -m pip install ."${extra_targets}"
+          python -m pip install ."${installation_extras}"
         fi
 
     - name: "Install dependencies from the requirements file"
@@ -481,9 +481,9 @@ runs:
       run: |
         $ACTIVATE_VENV
         if [[ "$USE_UV" == 'true' ]]; then
-          uv pip install -r requirements/requirements_${EXTRA_TARGETS}.txt
+          uv pip install -r requirements/requirements_"${EXTRA_TARGETS}".txt
         else
-          python -m pip install -r requirements/requirements_${EXTRA_TARGETS}.txt
+          python -m pip install -r requirements/requirements_"${EXTRA_TARGETS}".txt
         fi
 
     - name: "Save installed packages"
@@ -557,8 +557,8 @@ runs:
         fi
 
         # Set outputs
-        echo "SAFETY_CONFIG_ERROR=${SAFETY_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
-        echo "BANDIT_CONFIG_ERROR=${BANDIT_CONFIG_ERROR}" >> ${GITHUB_OUTPUT}
+        echo "SAFETY_CONFIG_ERROR=${SAFETY_CONFIG_ERROR}" >> "${GITHUB_OUTPUT}"
+        echo "BANDIT_CONFIG_ERROR=${BANDIT_CONFIG_ERROR}" >> "${GITHUB_OUTPUT}"
 
     - uses: $/_logging
       if: ${{ steps.validate-config-files.outputs.SAFETY_CONFIG_ERROR == 'true' }}
@@ -618,15 +618,15 @@ runs:
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         # Set the bandit config file to use
         if [[ "${BANDIT_CONFIGFILE}" == "" ]]; then
-          CONFIGFILE=""
+          CONFIGFILE=()
           echo "Using default bandit configuration"
         else
-          CONFIGFILE="-c ${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}"
+          CONFIGFILE=(-c "${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}")
           echo "Using custom bandit config file: ${GITHUB_WORKSPACE}/${BANDIT_CONFIGFILE}"
         fi
 
         # Run bandit security checks
-        bandit ${CONFIGFILE} -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
+        bandit "${CONFIGFILE[@]}" -r "${SOURCE_DIRECTORY}" -o info_bandit.json -f json --exit-zero
 
     - uses: $/_logging
       if: ${{ inputs.use-uv-audit == 'true' }}
@@ -640,7 +640,7 @@ runs:
       if: ${{ inputs.use-uv-audit == 'true' }}
       shell: bash
       run: |
-        python ${GITHUB_ACTION_PATH}/../python-utils/detect_uv_audit_malware_check.py
+        python "${GITHUB_ACTION_PATH}"/../python-utils/detect_uv_audit_malware_check.py
 
     - uses: $/_logging
       if: ${{ inputs.use-uv-audit == 'true' && steps.detect-uv-audit-malware-check.outputs.HAS_AUDIT_MALWARE_CHECK == 'false' }}

@@ -60,15 +60,14 @@ runs:
       env:
         PYTHON_VERSION: ${{ inputs.python-version }}
       run: |
-        python_version="${PYTHON_VERSION}"
-        minor_python_version=$(echo "$python_version" | awk -F "." '{print $2}')
-        major_python_version=$(echo "$python_version" | awk -F "." '{print $1}')
+        minor_python_version=$(echo "$PYTHON_VERSION" | awk -F "." '{print $2}')
+        major_python_version=$(echo "$PYTHON_VERSION" | awk -F "." '{print $1}')
         if (( $(( $major_python_version == 3 )) )) && (( $(( $minor_python_version < 10 )) )); then
-          echo "python_version_supported=false" >> ${GITHUB_OUTPUT}
+          echo "python_version_supported=false" >> "${GITHUB_OUTPUT}"
         elif (( $(( $major_python_version < 3 )) )); then
-          echo "python_version_supported=false" >> ${GITHUB_OUTPUT}
+          echo "python_version_supported=false" >> "${GITHUB_OUTPUT}"
         else
-          echo "python_version_supported=true" >> ${GITHUB_OUTPUT}
+          echo "python_version_supported=true" >> "${GITHUB_OUTPUT}"
         fi
 
     - uses: $/_logging

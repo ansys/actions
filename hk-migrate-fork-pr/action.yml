@@ -408,23 +408,27 @@ runs:
 
         # Add fork as remote and fetch its branch
         echo "Adding fork as remote: ${PR_HEAD_REPO}"
-        git remote add head_repo https://x-access-token:${GITHUB_TOKEN}@github.com/${PR_HEAD_REPO}.git
+        git remote add head_repo https://x-access-token:"${GITHUB_TOKEN}"@github.com/"${PR_HEAD_REPO}".git
 
         echo "Fetching '${PR_HEAD_BRANCH}' from '${PR_HEAD_REPO}'"
-        git fetch head_repo ${PR_HEAD_BRANCH}
+        git fetch head_repo "${PR_HEAD_BRANCH}"
 
         # Fetch the migration branch from origin if it already exists
-        git fetch origin ${PR_BASE_BRANCH} || true
+        git fetch origin "${PR_BASE_BRANCH}" || true
 
         # Divergence guard: if main has been merged into the migration branch
         # but not into the fork branch, a mirror sync would lose those commits.
         # Block and ask the contributor to merge main into their fork branch first.
-        if git rev-parse --verify origin/${PR_BASE_BRANCH} > /dev/null 2>&1; then
+        if git rev-parse --verify origin/"${PR_BASE_BRANCH}" > /dev/null 2>&1; then
           MAIN_IN_MIGRATION=false
           MAIN_IN_FORK=false
 
-          git merge-base --is-ancestor origin/main origin/${PR_BASE_BRANCH} && MAIN_IN_MIGRATION=true || true
-          git merge-base --is-ancestor origin/main head_repo/${PR_HEAD_BRANCH} && MAIN_IN_FORK=true || true
+          if git merge-base --is-ancestor origin/main origin/"${PR_BASE_BRANCH}"; then
+            MAIN_IN_MIGRATION=true
+          fi
+          if git merge-base --is-ancestor origin/main head_repo/"${PR_HEAD_BRANCH}"; then
+            MAIN_IN_FORK=true
+          fi
 
           echo "main in migration branch: ${MAIN_IN_MIGRATION}"
           echo "main in fork branch: ${MAIN_IN_FORK}"
@@ -450,11 +454,11 @@ runs:
 
         # Mirror the fork branch onto the migration branch
         echo "Checking out '${PR_BASE_BRANCH}' from 'head_repo/${PR_HEAD_BRANCH}'"
-        git checkout -b ${PR_BASE_BRANCH} head_repo/${PR_HEAD_BRANCH}
+        git checkout -b "${PR_BASE_BRANCH}" head_repo/"${PR_HEAD_BRANCH}"
 
         echo "Pushing mirror to '${ORGANIZATION}/${REPOSITORY}'"
-        git push origin ${PR_BASE_BRANCH} --force-with-lease || \
-          (git fetch --all && git push origin ${PR_BASE_BRANCH} --force-with-lease) || \
+        git push origin "${PR_BASE_BRANCH}" --force-with-lease || \
+          (git fetch --all && git push origin "${PR_BASE_BRANCH}" --force-with-lease) || \
           { echo "::error::Push failed. Aborting."; exit 1; }
 
     - name: "Create pull request"
@@ -601,14 +605,14 @@ runs:
         NEW_PR_NUMBER: ${{ steps.create-pr.outputs.new-pr-number }}
       run: |
         if [ "${CONTINUE}" == "true" ] && [ "${SKIP}" != "true" ] && [ -n "${NEW_PR_NUMBER}" ]; then
-          echo "migration-successful=true" >> $GITHUB_OUTPUT
-          echo "skip-migration=false" >> $GITHUB_OUTPUT
+          echo "migration-successful=true" >> "$GITHUB_OUTPUT"
+          echo "skip-migration=false" >> "$GITHUB_OUTPUT"
         elif [ "${CONTINUE}" == "false" ] || [ "${SKIP}" == "true" ]; then
-          echo "migration-successful=false" >> $GITHUB_OUTPUT
-          echo "skip-migration=true" >> $GITHUB_OUTPUT
+          echo "migration-successful=false" >> "$GITHUB_OUTPUT"
+          echo "skip-migration=true" >> "$GITHUB_OUTPUT"
         else
-          echo "migration-successful=false" >> $GITHUB_OUTPUT
-          echo "skip-migration=false" >> $GITHUB_OUTPUT
+          echo "migration-successful=false" >> "$GITHUB_OUTPUT"
+          echo "skip-migration=false" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Log completion"

@@ -159,9 +159,9 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "${INPUT_REPOSITORY}" == "current" ]]; then
-          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> "${GITHUB_OUTPUT}"
         else
-          echo "REPOSITORY=${INPUT_REPOSITORY}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY=${INPUT_REPOSITORY}" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
@@ -279,7 +279,7 @@ runs:
             sudo apt-get install -y moreutils jq
             echo '[]' > versions.json
             url_dev="https://${CNAME}/version/dev/"
-            jq --arg url $url_dev '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
+            jq --arg url "$url_dev" '. += [{"name": "dev", "version": "dev", "url": $url}]' versions.json | sponge versions.json
         fi
         cat versions.json
 
@@ -422,9 +422,9 @@ runs:
       shell: bash
       run: |
         if [[ -d "version/stable" ]]; then
-          echo "VERSION_STABLE_EXISTS=true" >> ${GITHUB_OUTPUT}
+          echo "VERSION_STABLE_EXISTS=true" >> "${GITHUB_OUTPUT}"
         else
-          echo "VERSION_STABLE_EXISTS=false" >> ${GITHUB_OUTPUT}
+          echo "VERSION_STABLE_EXISTS=false" >> "${GITHUB_OUTPUT}"
         fi
 
     - uses: $/_logging

@@ -179,11 +179,11 @@ runs:
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> "${GITHUB_OUTPUT}"
         elif [[ "${USE_UV}" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=$(echo 'uv')" >> "${GITHUB_OUTPUT}"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=$(echo 'pip')" >> "${GITHUB_OUTPUT}"
         fi
 
     - uses: $/_logging
@@ -215,7 +215,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env]
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> "$GITHUB_PATH" # zizmor: ignore[github-env]
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -223,7 +223,7 @@ runs:
     - name: "Set poetry environment variable(s)"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> "$GITHUB_ENV"
 
     # NOTE: Install pipx in a location that can be used in following CICD jobs
     # but ensure that poetry is installed in a temporary folder cleaned before
@@ -254,9 +254,9 @@ runs:
       shell: bash
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> ${GITHUB_OUTPUT}
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> "${GITHUB_OUTPUT}"
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> ${GITHUB_OUTPUT}
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> "${GITHUB_OUTPUT}"
         fi
 
     # ------------------------------------------------------------------------
@@ -267,9 +267,9 @@ runs:
       shell: bash
       run: |
         if [[ -f "uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=true" >> "${GITHUB_OUTPUT}"
         else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=false" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Suppress .python-version file for uv"
@@ -336,9 +336,9 @@ runs:
           done
           poetry install
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install -r ${REQUIREMENTS_FILE}
+          uv pip install -r "${REQUIREMENTS_FILE}"
         else
-          pip install -r ${REQUIREMENTS_FILE}
+          pip install -r "${REQUIREMENTS_FILE}"
         fi
 
     - name: "Run pre-commit"

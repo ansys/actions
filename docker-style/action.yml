@@ -115,9 +115,9 @@ runs:
       shell: bash
       run: |
         if [ -d "${GITHUB_WORKSPACE}/docker" ]; then
-          echo "HAS_DOCKER_DIR=true" >> $GITHUB_OUTPUT
+          echo "HAS_DOCKER_DIR=true" >> "$GITHUB_OUTPUT"
         else
-          echo "HAS_DOCKER_DIR=false" >> $GITHUB_OUTPUT
+          echo "HAS_DOCKER_DIR=false" >> "$GITHUB_OUTPUT"
         fi
 
     # ------------------------------------------------------------------------
@@ -148,18 +148,19 @@ runs:
       run: |
         EXISTING_DIRS=""
         NON_EXISTING_DIRS=""
-        for directory in ${DIRECTORY}
+        read -r -a input_paths <<< "${DIRECTORY//$'\n'/ }"
+        for candidate in "${input_paths[@]}"
         do
-          if [ -d "${GITHUB_WORKSPACE}/$directory" ]; then
-            EXISTING_DIRS+="$directory "
+          if [ -d "${GITHUB_WORKSPACE}/$candidate" ]; then
+            EXISTING_DIRS+="$candidate "
           else
-            NON_EXISTING_DIRS+="$directory "
+            NON_EXISTING_DIRS+="$candidate "
           fi
         done
         EXISTING_DIRS=$(echo -n "$EXISTING_DIRS" | xargs)
-        echo "EXISTING_DIRS=${EXISTING_DIRS}" >> ${GITHUB_OUTPUT}
+        echo "EXISTING_DIRS=${EXISTING_DIRS}" >> "${GITHUB_OUTPUT}"
         NON_EXISTING_DIRS=$(echo -n "$NON_EXISTING_DIRS" | xargs)
-        echo "NON_EXISTING_DIRS=${NON_EXISTING_DIRS}" >> ${GITHUB_OUTPUT}
+        echo "NON_EXISTING_DIRS=${NON_EXISTING_DIRS}" >> "${GITHUB_OUTPUT}"
 
     # ------------------------------------------------------------------------
 
@@ -188,7 +189,7 @@ runs:
           fmt_directory_array[i]="${fmt_directory_array[i]}${pattern}"
         done
         fmt_directory="${fmt_directory_array[*]}"
-        echo "FORMATED_HADOLINT_DOCKERFILE_INPUT=$fmt_directory" >> $GITHUB_OUTPUT
+        echo "FORMATED_HADOLINT_DOCKERFILE_INPUT=$fmt_directory" >> "$GITHUB_OUTPUT"
 
     - name: "Run Hadolint"
       if: ${{ !!steps.filter-input-directory.outputs.EXISTING_DIRS }}

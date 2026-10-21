@@ -182,9 +182,9 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "${INPUT_REPOSITORY}" == "current" ]]; then
-          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> "${GITHUB_OUTPUT}"
         else
-          echo "REPOSITORY=${INPUT_REPOSITORY}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY=${INPUT_REPOSITORY}" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"

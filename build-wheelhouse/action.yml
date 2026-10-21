@@ -223,9 +223,9 @@ runs:
       shell: bash
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=$(echo 'poetry')" >> "${GITHUB_OUTPUT}"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=$(echo 'pip')" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Check if specific target is requested"
@@ -236,11 +236,11 @@ runs:
         BUILD_BACKEND: ${{ steps.build-system.outputs.BUILD_BACKEND }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '' || echo "--with ${TARGET}")" >> ${GITHUB_OUTPUT}
+          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo '' || echo "--with ${TARGET}")" >> "${GITHUB_OUTPUT}"
         else
-          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "." || echo ".[${TARGET}]")" >> ${GITHUB_OUTPUT}
+          echo "install_target=$( [[ "${TARGET}" == '' ]] && echo "." || echo ".[${TARGET}]")" >> "${GITHUB_OUTPUT}"
         fi
-        echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> ${GITHUB_OUTPUT}
+        echo "wheelhouse_target=$( [[ "${TARGET}" == '' ]] && echo 'wheelhouse' || echo "${TARGET}-wheelhouse")" >> "${GITHUB_OUTPUT}"
 
     # NOTE: Installation of poetry in a separate environment to the project to
     # avoid situations in which both poetry and the project have shared
@@ -249,7 +249,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> "$GITHUB_PATH" # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -257,7 +257,7 @@ runs:
     - name: "Set poetry environment variable(s)"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> "$GITHUB_ENV"
 
     # NOTE: Install pipx in a location that can be used in following CICD jobs
     # but ensure that poetry is installed in a temporary folder cleaned before
@@ -289,9 +289,9 @@ runs:
       shell: bash
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> "$GITHUB_OUTPUT"
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Update pip"
@@ -310,9 +310,9 @@ runs:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
         if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=true" >> "${GITHUB_OUTPUT}"
         else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=false" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Suppress .python-version file for uv"
@@ -341,18 +341,26 @@ runs:
       shell: bash
       run: |
         ${ACTIVATE_VENV}
-        cd ${WORKING_DIRECTORY}
+        cd "${WORKING_DIRECTORY}"
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install --only main ${INSTALL_TARGET}
+          poetry_options=()
+          if [[ -n "${TARGET}" ]]; then
+            poetry_options=(--with "${TARGET}")
+          fi
+          poetry install --only main "${poetry_options[@]}"
         elif [[ "${USE_UV}" == 'true' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
-          SYNC_OPTIONS="--no-default-groups"
-          SYNC_OPTIONS+=$( [[ "${TARGET}" != '' ]] && echo " --extra ${TARGET}" || echo "" )
+          SYNC_OPTIONS=(--no-default-groups)
+          if [[ -n "${TARGET}" ]]; then
+            SYNC_OPTIONS+=(--extra "${TARGET}")
+          fi
           # NOTE: --active is only needed when the working directory is not the root of the repository.
           # This is because uv sync works with the project environment path and since the virtual
           # environment is created in the root of the repository, uv sync needs to be told to use the
           # active environment when the working directory is not the root.
-          SYNC_OPTIONS+=$( [[ "${WORKING_DIRECTORY}" != '.' ]] && echo " --active" || echo "" )
-          uv sync --frozen $SYNC_OPTIONS
+          if [[ "${WORKING_DIRECTORY}" != '.' ]]; then
+            SYNC_OPTIONS+=(--active)
+          fi
+          uv sync --frozen "${SYNC_OPTIONS[@]}"
         else
            ${INSTALL_COMMAND} "${INSTALL_TARGET}"
         fi
@@ -368,16 +376,14 @@ runs:
         PYTHON_COMMAND: ${{ inputs.use-uv == 'true' && 'uv python' || 'python' }}
       run: |
         ${ACTIVATE_VENV}
-        library_name="${LIBRARY_NAME}"
-
-        version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('$library_name'))")
+        version=$(python -c "import importlib.metadata as importlib_metadata; print(importlib_metadata.version('${LIBRARY_NAME}'))")
         if [ -z "$version" ]; then
             echo "Problem getting the library version"
             exit 1;
         else
             echo "The library version is: $version";
         fi;
-        echo "library_version=${version}" >> ${GITHUB_OUTPUT}
+        echo "library_version=${version}" >> "${GITHUB_OUTPUT}"
 
     - name: "Ensure tag version matches metadata version when triggered by push of tags"
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
@@ -404,7 +410,7 @@ runs:
       shell: bash
       run: |
         ${ACTIVATE_VENV}
-        python ${GITHUB_ACTION_PATH}/smoke_test.py ${LIBRARY_NAME}
+        python "${GITHUB_ACTION_PATH}"/smoke_test.py "${LIBRARY_NAME}"
 
     - name: "Sanitize library name"
       id: sanitize
@@ -431,7 +437,7 @@ runs:
         if ! command -v syft > /dev/null; then
           echo "Syft not found, installation of v${SYFT_VERSION} in progress..."
           mkdir -p ~/.local/bin
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/${SYFT_GIT_SHA}/install.sh | sh -s -- -b ~/.local/bin v${SYFT_VERSION}
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/"${SYFT_GIT_SHA}"/install.sh | sh -s -- -b ~/.local/bin v"${SYFT_VERSION}"
         else
           echo "Syft installation found"
         fi
@@ -471,7 +477,7 @@ runs:
           done
           poetry install
         else
-          $INSTALL_COMMAND -r ${GITHUB_ACTION_PATH}/requirements.txt
+          $INSTALL_COMMAND -r "${GITHUB_ACTION_PATH}"/requirements.txt
         fi
 
     - name: "Generate the wheelhouse"
@@ -486,18 +492,20 @@ runs:
         TARGET: ${{ inputs.target }}
       run: |
         ${ACTIVATE_VENV}
-        cd ${WORKING_DIRECTORY}
+        cd "${WORKING_DIRECTORY}"
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry export --without-hashes --format=requirements.txt --output=wheel_reqs.txt
-          pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
+          pip wheel -w "${GITHUB_WORKSPACE}"/wheelhouse -r wheel_reqs.txt
         else
           if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-            EXPORT_OPTIONS="--format=requirements.txt --no-hashes --no-default-groups"
-            EXPORT_OPTIONS+=$( [[ "${TARGET}" != '' ]] && echo " --extra ${TARGET}" || echo "" )
-            uv export $EXPORT_OPTIONS --output-file=wheel_reqs.txt --frozen
-            python -m pip wheel -w ${GITHUB_WORKSPACE}/wheelhouse -r wheel_reqs.txt
+            EXPORT_OPTIONS=(--format=requirements.txt --no-hashes --no-default-groups)
+            if [[ -n "${TARGET}" ]]; then
+              EXPORT_OPTIONS+=(--extra "${TARGET}")
+            fi
+            uv export "${EXPORT_OPTIONS[@]}" --output-file=wheel_reqs.txt --frozen
+            python -m pip wheel -w "${GITHUB_WORKSPACE}"/wheelhouse -r wheel_reqs.txt
           else
-            python -m pip wheel "${INSTALL_TARGET}" -w ${GITHUB_WORKSPACE}/wheelhouse
+            python -m pip wheel "${INSTALL_TARGET}" -w "${GITHUB_WORKSPACE}"/wheelhouse
           fi
         fi
 
