@@ -295,7 +295,7 @@ runs:
       id: save-tag-version
       shell: bash
       run: |
-        # /refs/tags/v0.1.0 -> 0.1.0
+        # Strip the tag ref prefix: refs/tags/v0.1.0 -> 0.1.0
         tag_version=${GITHUB_REF##*/v}
         echo "TAG_VERSION=$tag_version" >> "${GITHUB_OUTPUT}"
 

@@ -471,7 +471,9 @@ runs:
         CNAME: ${{ inputs.cname }}
       run: |
         if [[ -d "pull/" ]]; then
-            for pr_number in $(ls pull/); do
+            for pr_directory in pull/*; do
+              [[ -d "$pr_directory" ]] || continue
+              pr_number=${pr_directory##*/}
               if ! closed=$(gh pr view "${pr_number}" --json closed --jq .closed 2>&1); then
                 echo "Warning: could not read PR #${pr_number} state; skipping cleanup for this PR."
                 continue
