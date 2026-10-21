@@ -520,7 +520,7 @@ jobs:
           checkout: false
 
       - name: "Run ShellCheck on composite actions"
-        uses: saleor/shellcheck-gha@566bb6932997a64bd5da0bc46c0b5ce8aeb332b6
+        uses: saleor/shellcheck-gha@b85557d2e8b078120f0c43ede63236e9525731c7 # v0.1.2
         with:
           scan-directory-path: .
 
