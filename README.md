@@ -40,7 +40,7 @@ graph LR
     A --> E(Changelog fragment)
     B --> F(Doc build)
     C --> G(Tests)
-    D ---> H
+    D --> H
     F & G --> H(Build library)
 
     classDef green fill:#e6f4ea,color:#173b24,stroke:#2e7d32,stroke-width:1.5px
