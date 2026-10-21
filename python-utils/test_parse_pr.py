@@ -33,6 +33,8 @@ import pytest
         "docs: Update installation/setup instructions",
         "fix: Handle _download_file in PyMAPDL",
         "fix: Update the ansys.mapdl.core import path",
+        "build(pip): update click requirement from <9,>=8.3.3 to >=8.4.0,<9",
+        'Revert "feat: Add support for Python 3.14"',
     ],
 )
 def test_allowed_title(title):
@@ -40,7 +42,7 @@ def test_allowed_title(title):
     assert get_invalid_title_characters(title) == []
 
 
-@pytest.mark.parametrize("character", ["*", "`", "[", "]", ">", "#", "\\", "@", "+", ","])
+@pytest.mark.parametrize("character", ["*", "`", "[", "]", "#", "\\", "@", "+", "|"])
 def test_rejects_unsupported_characters(character):
     """Test that rich text and other unsupported characters are rejected."""
     assert get_invalid_title_characters(f"fix: title {character}") == [character]

@@ -28,7 +28,7 @@ description: |
   `conventional commits standard
   <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
   Titles can contain letters, digits, spaces, and the following characters:
-  ``! ( ) : - / _ .``. Other characters are not allowed.
+  ``! ( ) : - / _ . , < > = "``. Other characters are not allowed.
 
   .. important:: **Required GitHub Permissions**
 

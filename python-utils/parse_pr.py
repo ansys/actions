@@ -26,7 +26,7 @@ from pathlib import Path
 import re
 import secrets
 
-ALLOWED_TITLE_PUNCTUATION = ("!", "(", ")", ":", "-", "/", "_", ".")
+ALLOWED_TITLE_PUNCTUATION = ("!", "(", ")", ":", "-", "/", "_", ".", ",", "<", ">", "=", '"')
 
 
 def get_invalid_title_characters(title: str) -> list[str]:
@@ -47,9 +47,10 @@ def check_pull_request_title(title: str) -> None:
     invalid_characters = get_invalid_title_characters(title)
     if invalid_characters:
         characters = ", ".join(repr(character) for character in invalid_characters)
+        allowed_punctuation = " ".join(ALLOWED_TITLE_PUNCTUATION)
         print(
             f"Pull request title contains unsupported character(s): {characters}. "
-            "Use only letters, digits, spaces, and ! ( ) : - / _ ."
+            f"Use only letters, digits, spaces, and {allowed_punctuation}"
         )
         raise SystemExit(1)
 
