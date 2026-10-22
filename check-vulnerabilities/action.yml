@@ -422,7 +422,6 @@ runs:
           Install package and save installed packages in requirements-for-safety.txt
 
     - name: "Update pip"
-      if: inputs.use-uv == 'false'
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
@@ -511,7 +510,6 @@ runs:
           Install and run security tools without installing the library.
 
     - name: "Update pip"
-      if: inputs.use-uv == 'false'
       shell: bash
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
@@ -524,6 +522,7 @@ runs:
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        UV_EXCLUDE_NEWER: "false"
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then

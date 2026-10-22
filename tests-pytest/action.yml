@@ -354,7 +354,6 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
-      if: inputs.use-uv == 'false'
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}

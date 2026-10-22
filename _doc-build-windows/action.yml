@@ -381,7 +381,6 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
-      if: inputs.use-uv == 'false'
       shell: powershell
       run: |
         .venv\Scripts\Activate.ps1

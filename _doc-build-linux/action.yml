@@ -338,7 +338,6 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: "Update pip"
-      if: inputs.use-uv == 'false'
       shell: bash
       run: |
         source .venv/bin/activate
