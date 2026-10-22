@@ -38,6 +38,19 @@ description: |
 
        - **contents**: ``write`` - Required to create GitHub releases and upload release assets
 
+    .. note:: **Immutable releases**
+
+       Artifacts are attached to the release while it is still a draft, and the
+       draft is published only once every upload succeeded. This is the workflow
+       recommended by GitHub for repositories with `immutable releases
+       <https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases>`_
+       enabled, where the tag and the assets of a published release can no
+       longer be modified. Enabling immutable releases is recommended for every
+       repository using this action.
+
+       Because a published release cannot be overwritten, the action fails when
+       a published release already exists for the tag.
+
     .. note:: **Optional GitHub Permissions**
 
        - **attestations**: ``read`` - Recommended if using the attestation features to include an example of attested artifacts in the release notes.
@@ -179,8 +192,7 @@ inputs:
   tag-name:
     description: |
       Git tag to associate with the GitHub release. When omitted, the tag defaults
-      to ``github.ref_name``, matching the default behavior of underlying
-      ``softprops/action-gh-release`` action.
+      to ``github.ref_name``.
     default: ''
     required: false
     type: string
@@ -273,7 +285,7 @@ runs:
           directory containing the final artifacts to be published in GitHub.
 
     - name: "Download all artifacts that got generated in the CI/CD"
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         path: /tmp/artifacts
 
@@ -603,31 +615,50 @@ runs:
         } >> "$GITHUB_ENV"
 
     - name: "Release to GitHub"
-      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+      shell: bash
       env:
+        GH_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ github.event.repository.name }}
+        REPOSITORY: ${{ github.repository_owner }}/${{ github.event.repository.name }}
+        TAG_NAME: ${{ inputs.tag-name || github.ref_name }}
+        RELEASE_NOTES_BODY: ${{ env.RELEASE_NOTES_BODY }}
+        GENERATE_RELEASE_NOTES: ${{ inputs.generate-release-notes }}
+        LIBRARY_NAME: ${{ inputs.library-name }}
+        ONLY_CODE: ${{ inputs.only-code }}
+        UPLOAD_DOCUMENTATION: ${{ inputs.upload-documentation }}
       if: inputs.dry-run == 'false'
-      with:
-        fail_on_unmatched_files: false
-        generate_release_notes: ${{ inputs.generate-release-notes }}
-        body: ${{ env.RELEASE_NOTES_BODY }}
-        repository: ${{ github.repository_owner }}/${{ env.REPO_NAME }}
-        tag_name: ${{ inputs.tag-name }}
-        token: ${{ inputs.token }}
-        files: |
-          # [COMMENT] Include wheel and source distribution artifacts
-          dist/${{ inputs.library-name }}-artifacts/*.whl
-          dist/${{ inputs.library-name }}-artifacts/*.tar.gz
+      run: |
+        set -euo pipefail
+        shopt -s nullglob globstar
 
-          # [COMMENT] Include wheelhouse artifacts
+        artifacts=(
+          dist/"${LIBRARY_NAME}"-artifacts/*.whl
+          dist/"${LIBRARY_NAME}"-artifacts/*.tar.gz
           dist/wheelhouse/**/*-wheelhouse-*.zip
-
-          # [COMMENT] Include SBOM artifacts
           dist/sbom/**/*-sbom.spdx
+        )
 
-          # [COMMENT] Include HTML and PDF documentation artifacts
-          dist/documentation/documentation-html.zip
-          dist/documentation/documentation-pdf.zip
+        if [[ -d dist/extra ]]; then
+          while IFS= read -r -d '' artifact; do
+            artifacts+=("${artifact}")
+          done < <(find dist/extra -type f -print0)
+        fi
 
-          # [COMMENT] Include additional artifacts
-          dist/extra/**/*
+        if [[ "${ONLY_CODE}" == "false" && "${UPLOAD_DOCUMENTATION}" == "true" ]]; then
+          artifacts+=(
+            dist/documentation/documentation-html.zip
+            dist/documentation/documentation-pdf.zip
+          )
+        fi
+
+        # Immutable releases lock the tag and the assets as soon as the release
+        # is published, so every asset must be attached before publication.
+        # Passing the files to 'gh release create' does exactly that: the
+        # release is held as a draft, the assets are uploaded, and the draft is
+        # published only when every upload succeeded. A failed upload deletes
+        # the draft, so a partial release is never published.
+        create_args=(release create "${TAG_NAME}" --repo "${REPOSITORY}" --notes "${RELEASE_NOTES_BODY}")
+        if [ "${GENERATE_RELEASE_NOTES}" = "true" ]; then
+          create_args+=(--generate-notes)
+        fi
+        gh "${create_args[@]}" "${artifacts[@]}"
