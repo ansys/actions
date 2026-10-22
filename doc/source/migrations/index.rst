@@ -10,6 +10,17 @@ have been updated.
 Version ``v11.1``
 -----------------
 
+**Breaking Changes:**
+
+- **Python 3.10 minimum:** Actions using the shared Python setup no longer support Python 3.9.
+  Update the ``python-version`` input and workflow matrices to Python 3.10 or newer.
+  The shared setup installs pip 26.2.2, which requires Python 3.10 or newer, to remove trust
+  in the compromised emSign CA.
+
+- **Minimum uv version:** The shared Python setup now provisions uv 0.13.4 or newer.
+  Update any ``required-version`` setting in ``uv.toml`` or ``[tool.uv]`` that excludes
+  these versions.
+
 **New Features:**
 
 - **Optional uv audit vulnerability scanning:** The ``check-vulnerabilities`` action has a new
