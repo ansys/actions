@@ -24,7 +24,7 @@ Version ``v11.1``
   (default: ``false``). By default, the action stops the workflow after it updates the changelog and
   recreates the release tag. The new tag then starts a second workflow run. When ``same-workflow`` is
   ``true``, the release jobs continue in the workflow run of the user who pushed the tag. Use this
-  mode with protected GitHub environments, for example when **Prevent self-review** is set.
+  mode with protected GitHub environments, for example when the **Prevent self-review** rule is set.
   Related changes:
 
   - The new ``release-commit-sha`` output of ``doc-deploy-changelog`` gives the commit of the final
