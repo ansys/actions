@@ -481,8 +481,8 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        UV_EXCLUDE_NEWER: "false"
       run: |
-        ${INSTALL_COMMAND} --upgrade pip
         ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Filter SBOM or wheelhouse files (if needed)"
