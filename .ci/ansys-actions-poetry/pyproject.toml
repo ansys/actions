@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "ansys-actions-poetry"
-version = "11.1.0"
+version = "11.1.1"
 description = "A demo library for testing Ansys actions (uses poetry as the build backend)"
 readme = "README.rst"
 license = "MIT"
