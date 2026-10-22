@@ -111,6 +111,7 @@ ansys-sphinx-theme = false
 certifi = false
 uv = false
 prek = false
+virtualenv = false
 
 [tool.towncrier]
 package = "ansys.actions.core"
