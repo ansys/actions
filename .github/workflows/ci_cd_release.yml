@@ -285,7 +285,7 @@ jobs:
         # is published. Passing the files to 'gh release create' holds the
         # release as a draft until every upload succeeded, so a partial release
         # is never published.
-        gh release create "${TAG_NAME}" --generate-notes --notes "${release_body}" \
+        gh release create "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" --generate-notes --notes "${release_body}" \
           documentation-html.zip documentation-pdf.zip
 
   doc-deploy-stable:
