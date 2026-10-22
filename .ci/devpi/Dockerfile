@@ -1,6 +1,15 @@
 FROM python:3.12-slim
 
-RUN pip install --no-cache-dir devpi-server devpi-client
+# Refresh the system CA bundle in the base image.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# https://discuss.python.org/t/information-for-python-users-regarding-emudhra-emsign-ca-certificate-security-incident/109576
+RUN python -m pip --disable-pip-version-check install --no-cache-dir --no-deps \
+    "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
+
+RUN python -m pip install --no-cache-dir devpi-server devpi-client "certifi>=2026.10.19"
 
 RUN addgroup --system --gid 1000 devpi \
     && adduser --disabled-password --system --uid 1000 \
