@@ -267,6 +267,10 @@ runs:
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         USE_UV: ${{ inputs.use-uv }}
+        # The action's requirements are pinned and shouldn't inherit the caller's
+        # rolling uv exclude-newer policy (e.g. for security-critical certifi pins).
+        # This is a temporary fix to be updated in a week
+        UV_EXCLUDE_NEWER: "false"
       run: |
         if [[ "${USE_UV}" == 'true' ]]; then
           REQUIREMENTS_FILE="${GITHUB_ACTION_PATH}/requirements-uv.txt"
