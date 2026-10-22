@@ -38,11 +38,11 @@ code-style-prek = [
 ]
 doc-changelog = [
     "tomlkit<=0.16",
-    "towncrier<=26.9.0",
+    "towncrier<=27.0",
 ]
 doc-deploy-changelog = [
     "tomlkit<=0.16",
-    "towncrier<=26.9.0",
+    "towncrier<=27.0",
 ]
 doc-deploy-stable = [
     "packaging<=26.3",

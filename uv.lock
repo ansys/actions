@@ -210,11 +210,11 @@ doc = [
 ]
 doc-changelog = [
     { name = "tomlkit", specifier = "<=0.16" },
-    { name = "towncrier", specifier = "<=26.9.0" },
+    { name = "towncrier", specifier = "<=27.0" },
 ]
 doc-deploy-changelog = [
     { name = "tomlkit", specifier = "<=0.16" },
-    { name = "towncrier", specifier = "<=26.9.0" },
+    { name = "towncrier", specifier = "<=27.0" },
 ]
 doc-deploy-stable = [{ name = "packaging", specifier = "<=26.3" }]
 doc-style = [
