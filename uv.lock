@@ -194,7 +194,7 @@ dev = [
     { name = "sphinx-design", specifier = "==0.7.0" },
     { name = "sphinx-jinja", specifier = ">=2.0" },
     { name = "tabulate", specifier = "==0.10.0" },
-    { name = "tox", specifier = ">=4.65.5" },
+    { name = "tox", specifier = ">=4.65" },
     { name = "tox-uv", specifier = ">=1.36" },
     { name = "ty", specifier = "<=0.0.77" },
 ]
