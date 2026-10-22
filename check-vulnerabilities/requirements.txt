@@ -9,7 +9,7 @@ anyio==4.13.0
 authlib==1.7.2
     # via safety
 bandit==1.9.4
-certifi==2026.4.22
+certifi==2026.10.19
     # via
     #   httpcore
     #   httpx
@@ -139,4 +139,4 @@ urllib3==2.7.0
     # via
     #   pygithub
     #   requests
-uv==0.12.18
+uv==0.13.4
