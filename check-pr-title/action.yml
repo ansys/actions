@@ -27,6 +27,8 @@ description: |
   Action that checks if the title of the pull request is following the
   `conventional commits standard
   <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
+  Titles can contain letters, digits, spaces, and the following characters:
+  ``! ( ) : - / _ . , < > = "``. Other characters are not allowed.
 
   .. important:: **Required GitHub Permissions**
 
@@ -66,6 +68,22 @@ runs:
         permissions: "pull-requests: read"
         token: ${{ inputs.token != '' && inputs.token || github.token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#pull-request-title-action"
+
+    - name: "Check pull-request title characters"
+      if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' }}
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      shell: python
+      run: |
+        import os
+        import sys
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import check_pull_request_title
+
+        check_pull_request_title(os.environ.get("PR_TITLE"))
 
     - name: "Check pull-request title follows conventional commits style"
       if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'pull_request' }}

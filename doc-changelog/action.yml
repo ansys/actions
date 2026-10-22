@@ -25,7 +25,9 @@ name: |
 
 description: |
   Adds a newsfragment to the target repository using ``towncrier``
-  containing the title and number of the pull request.
+  containing the title and number of the pull request. The pull request
+  title can contain letters, digits, spaces, and the following characters:
+  ``! ( ) : - / _ . , < > = "``. Other characters are not allowed.
 
   This action will only work on Linux/macOS runners.
 
@@ -209,6 +211,21 @@ runs:
       run: |
         ${INSTALL_COMMAND} --upgrade pip
         ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
+
+    - name: "Check pull-request title characters"
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      shell: python
+      run: |
+        import os
+        import sys
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f'{github_action_path}/../python-utils/')
+
+        from parse_pr import check_pull_request_title
+
+        check_pull_request_title(os.environ.get("PR_TITLE"))
 
     - name: "Get first letter of conventional commit type"
       if: ${{ steps.use-pull-request.outputs.USE_PULL_REQUEST_TITLE == 'true' }}
@@ -413,15 +430,16 @@ runs:
 
     - name: "Make PR comment if template rewritten"
       if: ${{ env.TEMPLATE_STATUS == 'True' }}
-      uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
-      with:
-        issue-number: ${{ github.event.number }}
-        body: |
-          The towncrier template has been successfully rewritten with the default template.
-          Please ensure that `sphinx-design` is included as a dependency in your project's documentation requirements.
-          Additionally, add `sphinx-design` to the extensions list in your `conf.py` file.
-          For more information, please refer to the migration guide at:
-          https://actions.docs.ansys.com/version/stable/migrations/index.html#migration-guide
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        ISSUE_NUMBER: ${{ github.event.number }}
+      run: |
+        gh issue comment "${ISSUE_NUMBER}" --body "The towncrier template has been successfully rewritten with the default template.
+        Please ensure that \`sphinx-design\` is included as a dependency in your project's documentation requirements.
+        Additionally, add \`sphinx-design\` to the extensions list in your \`conf.py\` file.
+        For more information, please refer to the migration guide at:
+        https://actions.docs.ansys.com/version/stable/migrations/index.html#migration-guide"
 
     - name: "Create and commit towncrier fragment"
       shell: bash

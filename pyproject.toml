@@ -38,11 +38,11 @@ code-style-prek = [
 ]
 doc-changelog = [
     "tomlkit<=0.16",
-    "towncrier<=25.8",
+    "towncrier<=27.0",
 ]
 doc-deploy-changelog = [
     "tomlkit<=0.16",
-    "towncrier<=25.8",
+    "towncrier<=27.0",
 ]
 doc-deploy-stable = [
     "packaging<=26.3",
@@ -78,7 +78,7 @@ tests-pytest = [
 # These groups are defined to develop and maintain this artificial project #
 # ######################################################################## #
 dev = [
-    "tox>=4.60",
+    "tox>=4.65",
     "tox-uv>=1.36",
     { include-group = "doc" },
     { include-group = "quality" },
