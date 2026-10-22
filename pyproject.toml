@@ -51,6 +51,10 @@ doc-style = [
     "docutils<=0.23",
     "tomlkit<=0.16",
 ]
+hk-autorelease = [
+    "packaging<=26.3",
+    "tomlkit<=0.16",
+]
 hk-package-clean-except = [
     "fastcore<=2.3",
     "ghapi<=2.2",
