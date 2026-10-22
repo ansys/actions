@@ -324,6 +324,10 @@ runs:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
         SKIP_INSTALL: ${{ inputs.skip-install }}
         USE_PREK: ${{ inputs.use-prek }}
+        # The action's requirements are pinned and shouldn't inherit the caller's
+        # rolling uv exclude-newer policy (e.g. for security-critical certifi pins).
+        # This is a temporary fix to be updated in a week
+        UV_EXCLUDE_NEWER: "false"
       run: |
         ${ACTIVATE_VENV}
         if [[ "${USE_PREK}" == 'true' ]]; then
