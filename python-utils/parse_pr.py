@@ -26,8 +26,33 @@ from pathlib import Path
 import re
 import secrets
 
-import tomlkit
-from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
+ALLOWED_TITLE_PUNCTUATION = ("!", "(", ")", ":", "-", "/", "_", ".", ",", "<", ">", "=", '"')
+
+
+def get_invalid_title_characters(title: str) -> list[str]:
+    """Return the unique characters that are not allowed in a pull request title."""
+    return sorted(
+        {
+            character
+            for character in title
+            if not (
+                character.isalnum() or character == " " or character in ALLOWED_TITLE_PUNCTUATION
+            )
+        }
+    )
+
+
+def check_pull_request_title(title: str) -> None:
+    """Exit with an error if a pull request title contains unsupported characters."""
+    invalid_characters = get_invalid_title_characters(title)
+    if invalid_characters:
+        characters = ", ".join(repr(character) for character in invalid_characters)
+        allowed_punctuation = " ".join(ALLOWED_TITLE_PUNCTUATION)
+        print(
+            f"Pull request title contains unsupported character(s): {characters}. "
+            f"Use only letters, digits, spaces, and {allowed_punctuation}"
+        )
+        raise SystemExit(1)
 
 
 def save_env_variable(env_var_name: str, env_var_value: str):
@@ -315,6 +340,8 @@ def add_towncrier_config(org_name: str, repo_name: str, default_config: bool):
     default_config: bool
         Whether or not to use the default towncrier configuration for the pyproject.toml file.
     """
+    import tomlkit
+
     pyproject_file = Path("pyproject.toml")
     towncrier_file = Path("towncrier.toml")
 
@@ -464,6 +491,9 @@ def write_missing_types(config: dict, changelog_sections: list):
     changelog_sections: list
         List containing changelog sections under each release.
     """
+    import tomlkit
+    from tomlkit.items import AoT, Array
+
     # Ensure the [tool.towncrier] section exists in the config dict
     config.setdefault("tool", {}).setdefault("towncrier", {})
     towncrier_section = config["tool"]["towncrier"]
@@ -508,6 +538,9 @@ def sort_towncrier_types(config: dict, changelog_sections: list):
     changelog_sections: list
         The full ordered list of canonical changelog section names.
     """
+    import tomlkit
+    from tomlkit.items import AoT, Array, Null, _ArrayItemGroup
+
     towncrier_section = config.get("tool", {}).get("towncrier", {})
     types = towncrier_section.get("type")
 
@@ -592,6 +625,8 @@ def get_towncrier_config_value(category: str, pyproject_path: str | Path = "pypr
         The category value. If the category does not exist under [tool.towncrier], the string
         is empty.
     """
+    import tomlkit
+
     # Get path to pyproject.toml
     pyproject_toml = Path(pyproject_path)
     # Set the category value to an empty string
