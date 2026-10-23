@@ -9,6 +9,22 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.1.2 <https://github.com/ansys/actions/releases/tag/v11.1.2>`_ - October 23, 2026
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - MacOS compatibility issues in GH permission checker
+          - `#1618 <https://github.com/ansys/actions/pull/1618>`_
+
+
 `11.1.1 <https://github.com/ansys/actions/releases/tag/v11.1.1>`_ - October 22, 2026
 ====================================================================================
 
