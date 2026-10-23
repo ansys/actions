@@ -94,6 +94,18 @@ def get_versions_list(exclude_prereleases: bool = False) -> list[Version]:
     return version_list
 
 
+def remove_version_folders(versions: list[Version]) -> None:
+    """Remove the documentation folder of each given version.
+
+    Parameters
+    ----------
+    versions: list[Version]
+        Versions whose folder in the 'version' directory must be removed.
+    """
+    for version in versions:
+        shutil.rmtree(Path("version") / str(version))
+
+
 def export_to_github_output(var_name: str, var_value: str) -> None:
     """Save environment variable to the GITHUB_OUTPUT file.
 
@@ -180,8 +192,9 @@ def set_version_variable() -> None:
     If the tag or branch name does not match the expected pattern, an error message is printed
     and the script exits with a non-zero status.
 
-    If it is a normal release, it removes all existing pre-releases for that major.minor.patch
-    version.
+    If it is a normal release, it removes all pre-releases lower than the release version.
+    This includes stale pre-releases of earlier patches, for example when the stable
+    documentation of an earlier release was never deployed.
     """
     independent_patch_release = (
         True if os.getenv("INDEPENDENT_PATCH_RELEASE_DOCS") == "true" else False
@@ -233,9 +246,7 @@ def set_version_variable() -> None:
             if valid_prerelease:
                 # Keep a maximum of 3 pre-releases
                 pre_releases_to_remove = sorted(existing_prereleases, reverse=True)[2:]
-                for prerel in pre_releases_to_remove:
-                    prerel_path = Path(f"version/{prerel}")
-                    shutil.rmtree(prerel_path)
+                remove_version_folders(pre_releases_to_remove)
                 export_to_github_output("VERSION", str(current_version))
                 export_to_github_output("PRE_RELEASE", "true")
             else:
@@ -245,10 +256,12 @@ def set_version_variable() -> None:
                 )
                 exit(1)
         else:
-            # All existing pre-releases must be removed before the normal release.
-            for prerel in existing_prereleases:
-                prerel_path = Path(f"version/{prerel}")
-                shutil.rmtree(prerel_path)
+            stale_prereleases = [
+                prerelease
+                for prerelease in versions_list
+                if prerelease.is_prerelease and prerelease < current_version
+            ]
+            remove_version_folders(stale_prereleases)
 
             if independent_patch_release:
                 export_to_github_output("VERSION", str(current_version))
