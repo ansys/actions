@@ -36,7 +36,8 @@ description: |
   .. note::
 
       Pre-releases are not supported prior to ``ansys/actions/v10.1``. `See the migration guide <https://actions.docs.ansys.com/version/stable/migrations/index.html>`_
-      for information on supported pre-releases.
+      for information on supported pre-releases. A normal release removes all
+      pre-releases lower than its version.
 
   .. important:: **Required GitHub Permissions**
 
