@@ -191,8 +191,8 @@ runs:
         VALE_VERSION: ${{ inputs.vale-version }}
       run: |
         version="${VALE_VERSION}"
-        vale_major_version=$( echo $version | cut -d '.' -f 1)
-        echo "VALE_MAJOR_VERSION=$(echo $vale_major_version)" >> ${GITHUB_OUTPUT}
+        vale_major_version=$( echo "$version" | cut -d '.' -f 1)
+        echo "VALE_MAJOR_VERSION=$vale_major_version" >> "${GITHUB_OUTPUT}"
         echo "VALE_MAJOR_VERSION set to $vale_major_version"  # Add this line for debugging
 
     - name: "Verify Vale's configuration layout according to selected version"
@@ -205,7 +205,7 @@ runs:
           exit 1
         fi
 
-        if [ $VALE_MAJOR_VERSION -ge 3 ]; then
+        if [ "$VALE_MAJOR_VERSION" -ge 3 ]; then
           if [ ! -d ./doc/styles/config/vocabularies ]; then
             echo "Projects using Vale >=v3 require a doc/styles/config/vocabularies directory."
             echo "See migration guide https://actions.docs.ansys.com/version/stable/migrations/docs-style-vale-version-update.html"
@@ -244,18 +244,22 @@ runs:
       shell: bash
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          # shellcheck source=/dev/null
           source .venv/Scripts/activate
         else
+          # shellcheck source=/dev/null
           source .venv/bin/activate
         fi
         python -m pip --disable-pip-version-check install --no-cache-dir --force-reinstall "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
-        python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+        python -m pip install -r "${GITHUB_ACTION_PATH}"/requirements.txt
 
     - name: "Expose rst2html on PATH"
       shell: bash
+      env:
+        PYTHON_LOCATION: ${{ env.pythonLocation }}
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          cp "${GITHUB_WORKSPACE}/.venv/Scripts/rst2html.exe" "${pythonLocation}/Scripts/rst2html.exe"
+          cp "${GITHUB_WORKSPACE}/.venv/Scripts/rst2html.exe" "${PYTHON_LOCATION}/Scripts/rst2html.exe"
         else
           sudo ln -sf "${GITHUB_WORKSPACE}/.venv/bin/rst2html" /usr/local/bin/rst2html
         fi
@@ -264,8 +268,10 @@ runs:
       shell: bash
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
+          # shellcheck source=/dev/null
           source .venv/Scripts/activate
         else
+          # shellcheck source=/dev/null
           source .venv/bin/activate
         fi
         python <<'EOF'
@@ -302,9 +308,9 @@ runs:
       run: |
         # If changelog.d is ignored and the TOWNCRIER_DIR exists in pyproject.toml, add the ignore glob
         if [[ "${IGNORE_CHANGELOGD}" == 'true' ]] && [[ -n "${TOWNCRIER_DIR}" ]]; then
-          echo VALE_FLAGS="--config=${VALE_CONFIG} --glob=!${TOWNCRIER_DIR}/*.md" >> ${GITHUB_OUTPUT}
+          echo VALE_FLAGS="--config=${VALE_CONFIG} --glob=!${TOWNCRIER_DIR}/*.md" >> "${GITHUB_OUTPUT}"
         else
-          echo VALE_FLAGS="--config=${VALE_CONFIG}" >> ${GITHUB_OUTPUT}
+          echo VALE_FLAGS="--config=${VALE_CONFIG}" >> "${GITHUB_OUTPUT}"
         fi
 
     # WARNING: This step is not meant to be executed and is here to track changes

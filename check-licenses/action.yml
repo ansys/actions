@@ -229,11 +229,11 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=poetry" >> "${GITHUB_OUTPUT}"
         elif [[ "${USE_UV}" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=uv" >> "${GITHUB_OUTPUT}"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> ${GITHUB_OUTPUT}
+          echo "BUILD_BACKEND=pip" >> "${GITHUB_OUTPUT}"
         fi
 
     # NOTE: Installation of poetry in a separate environment to the project to
@@ -243,7 +243,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry' && inputs.skip-install == 'false'
       shell: bash
-      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> "$GITHUB_PATH" # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -251,7 +251,7 @@ runs:
     - name: "Set poetry environment variable(s)"
       if: steps.build-system.outputs.BUILD_BACKEND == 'poetry' && inputs.skip-install == 'false'
       shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> "$GITHUB_ENV"
 
     # NOTE: Install pipx in a location that can be used in following CICD jobs
     # but ensure that poetry is installed in a temporary folder cleaned before
@@ -287,15 +287,15 @@ runs:
       run: |
         if [[ -n ${ACTIVATE_VENV} ]]; then
           ${ACTIVATE_VENV}
-          echo "ACTIVATE_VENV=${ACTIVATE_VENV}" >> $GITHUB_OUTPUT
-          echo "PYTHON_VENV=$(which python)" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=${ACTIVATE_VENV}" >> "$GITHUB_OUTPUT"
+          echo "PYTHON_VENV=$(which python)" >> "$GITHUB_OUTPUT"
         else
           if [[ ${RUNNER_OS} == 'Windows' ]]; then
-            echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
-            echo "PYTHON_VENV=$(echo '.venv/Scripts/python.exe')" >> $GITHUB_OUTPUT
+            echo "ACTIVATE_VENV=source .venv/scripts/activate" >> "$GITHUB_OUTPUT"
+            echo "PYTHON_VENV=.venv/Scripts/python.exe" >> "$GITHUB_OUTPUT"
           else
-            echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
-            echo "PYTHON_VENV=$(echo '.venv/bin/python')" >> $GITHUB_OUTPUT
+            echo "ACTIVATE_VENV=source .venv/bin/activate" >> "$GITHUB_OUTPUT"
+            echo "PYTHON_VENV=.venv/bin/python" >> "$GITHUB_OUTPUT"
           fi
         fi
 
@@ -305,9 +305,9 @@ runs:
       shell: bash
       run: |
         if [[ -f "uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=true" >> "${GITHUB_OUTPUT}"
         else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=false" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Suppress .python-version file for uv"
@@ -327,9 +327,9 @@ runs:
       run: |
         python -m venv .venv-pip-licenses
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV_PIP_LICENSES=$(echo 'source .venv-pip-licenses/scripts/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV_PIP_LICENSES=source .venv-pip-licenses/scripts/activate" >> "$GITHUB_OUTPUT"
         else
-          echo "ACTIVATE_VENV_PIP_LICENSES=$(echo 'source .venv-pip-licenses/bin/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV_PIP_LICENSES=source .venv-pip-licenses/bin/activate" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Update pip in project virtual environment"
@@ -369,11 +369,11 @@ runs:
             if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
               uv sync --frozen --extra "${TARGET}" --no-default-groups --no-managed-python
             else
-              uv pip install --no-managed-python .[${TARGET}]
+              uv pip install --no-managed-python ".[${TARGET}]"
             fi
           else
             echo "Installing extra targets with pip: ${TARGET}"
-            python -m pip install .[${TARGET}]
+            python -m pip install ".[${TARGET}]"
           fi
         else
           echo "No extra targets to install"
@@ -401,9 +401,9 @@ runs:
       run: |
         ${ACTIVATE_VENV_PIP_LICENSES}
         if [[ "${USE_UV}" == 'true' ]]; then
-          uv pip install --no-managed-python -r ${GITHUB_ACTION_PATH}/requirements.txt
+          uv pip install --no-managed-python -r "${GITHUB_ACTION_PATH}"/requirements.txt
         else
-          python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+          python -m pip install -r "${GITHUB_ACTION_PATH}"/requirements.txt
         fi
 
     - name:  "Install wget on Windows"
@@ -451,16 +451,16 @@ runs:
       shell: bash
       run: |
         # Load accepted licenses
-        mapfile licenses_from_txt < accepted-licenses.txt
+        mapfile -t licenses_from_txt < accepted-licenses.txt
         accepted_licenses='Accepted licenses:\n'
-        for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\n"; done
-        echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> ${GITHUB_OUTPUT}
+        for license in "${licenses_from_txt[@]}"; do accepted_licenses+="$license\n"; done
+        echo "LOG_ACCEPTED_LICENSES=$accepted_licenses" >> "${GITHUB_OUTPUT}"
 
         # Load accepted packages
-        mapfile ignored_packages_from_txt < ignored-packages.txt
+        mapfile -t ignored_packages_from_txt < ignored-packages.txt
         ignored_packages='Ignored packages:\n'
-        for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg\n"; done
-        echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> ${GITHUB_OUTPUT}
+        for pckg in "${ignored_packages_from_txt[@]}"; do ignored_packages+="$pckg\n"; done
+        echo "LOG_IGNORED_PACKAGES=$ignored_packages" >> "${GITHUB_OUTPUT}"
 
     - name: Log ignored packages and accepted licenses
       uses: $/_logging
@@ -483,25 +483,30 @@ runs:
         ${ACTIVATE_VENV_PIP_LICENSES}
 
         # Load accepted licenses
-        mapfile licenses_from_txt < accepted-licenses.txt
+        mapfile -t licenses_from_txt < accepted-licenses.txt
         accepted_licenses=''
-        for license in ${licenses_from_txt[*]}; do accepted_licenses+="$license\|"; done
+        for license in "${licenses_from_txt[@]}"; do
+          if [[ -n "$license" ]]; then
+            accepted_licenses+="$license\|"
+          fi
+        done
         accepted_licenses=${accepted_licenses::-2}
 
         # Load accepted packages
-        mapfile ignored_packages_from_txt < ignored-packages.txt
-        ignored_packages=''
-        for pckg in ${ignored_packages_from_txt[*]}; do ignored_packages+="$pckg "; done
-        ignored_packages_from_txt=${ignored_packages_from_txt::-1}
+        ignored_packages=()
+        while IFS= read -r line || [[ -n "$line" ]]; do
+          read -r -a packages <<< "$line"
+          ignored_packages+=("${packages[@]}")
+        done < ignored-packages.txt
 
         # Verify if the Python environment contains invalid licenses
-        if [[ -z $(pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses) ]]; then
+        if ! pip-licenses --ignore-packages "${ignored_packages[@]}" --python "$PYTHON_VENV" | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v "$accepted_licenses" > /dev/null; then
           echo "All licenses are valid."
         else
           echo -e "\nInvalid licenses found:\n"
-          pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v $accepted_licenses | awk '{ for (i=3; i<=NF; i++) license = license $i (i==NF ? "" : " "); print $1 " " $2 " has " license; license="" }'
+          pip-licenses --ignore-packages "${ignored_packages[@]}" --python "$PYTHON_VENV" | awk 'NR>1 && NF >= 3 && $2 ~ /^[0-9]+(\.[0-9]+)*$/' | grep -v "$accepted_licenses" | awk '{ for (i=3; i<=NF; i++) license = license $i (i==NF ? "" : " "); print $1 " " $2 " has " license; license="" }'
           # print all packages
           echo -e "\n\n"
-          pip-licenses --ignore-packages $ignored_packages --python $PYTHON_VENV
+          pip-licenses --ignore-packages "${ignored_packages[@]}" --python "$PYTHON_VENV"
           exit 1
         fi
