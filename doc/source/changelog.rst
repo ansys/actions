@@ -9,6 +9,32 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.1.3 <https://github.com/ansys/actions/releases/tag/v11.1.3>`_ - October 23, 2026
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Improve robustness of prerelease documentation cleanups
+          - `#1620 <https://github.com/ansys/actions/pull/1620>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove stale fragment files
+          - `#1621 <https://github.com/ansys/actions/pull/1621>`_
+
+
 `11.1.2 <https://github.com/ansys/actions/releases/tag/v11.1.2>`_ - October 23, 2026
 ====================================================================================
 
