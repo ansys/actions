@@ -95,23 +95,22 @@ runs:
           return 0
         }
 
-        # Define the probe endpoint for each permission scope
-        declare -A endpoints=(
-          [contents]="repos/${REPO}/contents/"
-          [pull-requests]="repos/${REPO}/pulls?per_page=1"
-          [issues]="repos/${REPO}/issues?per_page=1"
-          [actions]="repos/${REPO}/actions/runs?per_page=1"
-          [packages]="repos/${REPO}/packages?package_type=container"
-          [pages]="repos/${REPO}/pages"
-        )
-
         IFS=',' read -ra PERMS <<< "${PERMISSIONS}"
         for perm in "${PERMS[@]}"; do
           perm=$(echo "${perm}" | xargs)
           scope=$(echo "${perm}" | cut -d: -f1 | xargs)
 
-          if [[ -n "${endpoints[$scope]:-}" ]]; then
-            probe "${endpoints[$scope]}" || \
+          case "${scope}" in
+            contents) endpoint="repos/${REPO}/contents/" ;;
+            pull-requests) endpoint="repos/${REPO}/pulls?per_page=1" ;;
+            issues) endpoint="repos/${REPO}/issues?per_page=1" ;;
+            actions) endpoint="repos/${REPO}/actions/runs?per_page=1" ;;
+            packages) endpoint="repos/${REPO}/packages?package_type=container" ;;
+            pages) endpoint="repos/${REPO}/pages" ;;
+            *) endpoint="" ;;
+          esac
+          if [[ -n "${endpoint}" ]]; then
+            probe "${endpoint}" || \
               echo "::warning::Missing permission '${perm}'. Add it to your workflow's permissions block. See ${DOC_URL} for details."
           elif [[ "${scope}" == "id-token" ]]; then
             if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
