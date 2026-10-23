@@ -484,6 +484,38 @@ def test_prerelease_versions_persist_during_older_release_patch(test_environment
     assert remaining_versions == expected_result
 
 
+STALE_PRERELEASE_DATA = [
+    {
+        "ref_type": "tag",
+        "ref_name": "v11.1.2",
+        "independent_patch_release": "false",
+        "versions": ["11.0", "11.1", "11.1.0rc0"],
+        "expected_versions": ["11.0", "11.1"],
+        "create_versions_directories": True,
+        "create_github_output_file": True,
+    },
+    {
+        "ref_type": "tag",
+        "ref_name": "v0.5.1",
+        "independent_patch_release": "false",
+        "versions": ["0.4", "0.5", "0.4.0rc0", "0.5.0b0", "0.5.1rc0", "0.6.0a0"],
+        "expected_versions": ["0.4", "0.5", "0.6.0a0"],
+        "create_versions_directories": True,
+        "create_github_output_file": True,
+    },
+]
+
+
+@pytest.mark.parametrize("test_environment_setup", STALE_PRERELEASE_DATA, indirect=True)
+def test_stale_prereleases_clear_during_normal_release(test_environment_setup):
+    """Test that pre-releases lower than a normal release are cleared, including stale ones."""
+    set_version_variable()
+    remaining_versions = sorted(get_versions_list())
+
+    expected_versions = test_environment_setup["expected_versions"]
+    assert remaining_versions == sorted(Version(version) for version in expected_versions)
+
+
 SPECIAL_TEST_DATA_FOUR = [
     {
         "ref_type": "tag",
