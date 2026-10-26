@@ -134,6 +134,10 @@ doc-style = [
     { name = "docutils" },
     { name = "tomlkit" },
 ]
+hk-autorelease = [
+    { name = "packaging" },
+    { name = "tomlkit" },
+]
 hk-package-clean-except = [
     { name = "fastcore" },
     { name = "ghapi" },
@@ -223,6 +227,10 @@ doc-deploy-changelog = [
 doc-deploy-stable = [{ name = "packaging", specifier = "<=26.3" }]
 doc-style = [
     { name = "docutils", specifier = "<=0.23" },
+    { name = "tomlkit", specifier = "<=0.16" },
+]
+hk-autorelease = [
+    { name = "packaging", specifier = "<=26.3" },
     { name = "tomlkit", specifier = "<=0.16" },
 ]
 hk-package-clean-except = [

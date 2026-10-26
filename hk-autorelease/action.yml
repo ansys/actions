@@ -1,0 +1,289 @@
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: "Auto release"
+
+description: |
+  Automates patch, minor, and major releases: bumps a version recorded in a
+  ``VERSION`` file, ``pyproject.toml``, ``setup.py``, or a Python module,
+  creates/updates ``<release-branch-prefix><major>.<minor>`` release branches,
+  and pushes the corresponding ``vX.Y.Z`` git tag.
+
+  - ``patch``: finds the latest ``vX.Y.Z`` tag, merges **all** commits from the main branch
+    into the matching release branch (this is not a cherry-pick: every commit merged to main
+    since the last minor/major release is included), bumps the patch version, commits, and
+    tags.
+  - ``patch-cherry-pick``: like ``patch``, but instead of merging all of main, cherry-picks
+    only the commits listed in ``cherry-pick-commits`` (in the order given) onto the release
+    branch.
+  - ``minor``/``major``: creates a new release branch off the main branch
+    with the bumped release version, opens a draft pull request to bump the main branch to
+    the next development version (``X.Y.devN``), then tags the release branch.
+
+  The release tag is the final remote write. If release processing fails, the action attempts
+  to undo its remote writes in reverse order: new branches are deleted, updated release
+  branches are restored only if their remote ref still matches this run's commit, created
+  pull requests are closed, and a tag created by this run is deleted only if its remote ref
+  still matches. Rollback is best-effort; tag-triggered workflows and other external effects
+  cannot be undone, and any rollback failure is included in the error. If a remote command
+  reports an error after its write may have succeeded (for example, PR creation during a
+  connection failure), verify the remote state before retrying.
+
+  Conflicts limited to the version file and lock files are resolved by keeping the release
+  branch's conflicting hunks while retaining non-conflicting changes. If this leaves a
+  cherry-picked commit with no changes, the action logs that it is skipping the commit and
+  continues with the remaining selected commits.
+
+  .. important:: **Required GitHub Permissions**
+
+     - **contents**: ``write`` - Required to push commits, branches, and tags
+     - **pull-requests**: ``write`` - Required to open the draft pull request that bumps the
+       main branch's development version
+
+  .. warning::
+
+     This action pushes directly to release branches and creates tags; it
+     never pushes directly to the main branch (the main-branch dev-version
+     bump is opened as a **draft** pull request instead). It must be
+     triggered **only** by ``workflow_dispatch``, in a workflow file
+     dedicated to this action. Do not add other triggers (such as
+     ``push``, ``pull_request``, or ``schedule``) to that workflow file.
+     The examples below are job definitions to place under ``jobs:`` in that
+     dedicated workflow. Each example supports all four release types through
+     the dispatch inputs below. Select the release type when running the workflow;
+     for ``patch-cherry-pick``, also provide comma-separated commit SHAs in the
+     order they should be applied.
+
+     .. code-block:: yaml
+
+        on:
+          workflow_dispatch:
+            inputs:
+              release_type:
+                description: "Type of release"
+                type: choice
+                required: true
+                default: minor
+                options:
+                  - minor
+                  - major
+                  - patch
+                  - patch-cherry-pick
+              cherry_pick_commits:
+                description: "Comma-separated commit SHAs, required for patch-cherry-pick"
+                type: string
+                required: false
+                default: ""
+
+  .. note::
+
+     Progress messages are flushed immediately to the workflow logs with an
+     ``[hk-autorelease]`` prefix. They report version changes, branch/tag pushes,
+     lock file regeneration, merge/cherry-pick operations, automatic conflict
+     resolution, and the draft development-version pull request URL.
+
+  .. note::
+
+     This action checks out the repository itself (``main-branch``, full
+     history, and tags), so the calling workflow does not need an
+     ``actions/checkout`` step.
+
+  .. note::
+
+     This action only manages version bumping and git branches/tags — it never builds or
+     publishes a package. Pair it with the ``release-github`` action (to create the GitHub
+     release) and ``release-pypi-public`` (or a trusted-publisher based workflow) to actually
+     publish the artifacts, typically triggered separately by the ``vX.Y.Z`` tag this action
+     pushes. Because the main-branch dev-version bump is opened as a **draft** pull request
+     (see the ``dev-version-pr-url`` output), merging it is a manual, separate step you should
+     only take once you've confirmed the release was published successfully.
+
+inputs:
+
+  # Required inputs
+
+  release-type:
+    description: |
+      Type of release to perform. One of ``patch`` (merges all commits from the main branch
+      into the release branch), ``patch-cherry-pick`` (cherry-picks only the commits listed
+      in ``cherry-pick-commits`` onto the release branch), ``minor``, or ``major``.
+    required: true
+    type: string
+
+  version-source:
+    description: |
+      Where the version is stored. One of ``file`` (a plain text file whose
+      entire content is the version, e.g. a ``VERSION`` file), ``pyproject``
+      (the ``project.version`` key of a ``pyproject.toml`` file),
+      ``setup-py`` (the ``version=`` keyword argument in a ``setup.py``
+      file), or ``python-module`` (a ``__version__ = "..."`` assignment in a
+      Python module).
+    required: true
+    type: string
+
+  version-location:
+    description: |
+      Path, relative to the repository root, to the file identified by
+      ``version-source``.
+    required: true
+    type: string
+
+  token:
+    description: |
+      GitHub token used to verify repository permissions, check out the
+      repository, push commits/branches/tags, and open the dev-version
+      bump pull request.
+    required: true
+    type: string
+
+  bot-username:
+    description: |
+      Username used as the git commit author for release and version bump
+      commits.
+    required: true
+    type: string
+
+  bot-email:
+    description: |
+      Email used as the git commit author for release and version bump
+      commits.
+    required: true
+    type: string
+
+  # Optional inputs
+
+  main-branch:
+    description: |
+      Name of the main development branch.
+    required: false
+    default: "main"
+    type: string
+
+  release-branch-prefix:
+    description: |
+      Prefix used to compute release branch names:
+      ``<release-branch-prefix><major>.<minor>``.
+    required: false
+    default: "release/"
+    type: string
+
+  cherry-pick-commits:
+    description: |
+      Comma-separated list of commit SHAs to cherry-pick into the release branch, in order.
+      Required when ``release-type`` is ``patch-cherry-pick``; ignored otherwise.
+    required: false
+    default: ""
+    type: string
+
+  lock-file-tool:
+    description: |
+      Lock file tooling to regenerate alongside each version bump. One of ``none`` (default,
+      skip lock file regeneration), ``uv`` (runs ``uv lock``), or ``poetry`` (runs ``uvx poetry
+      lock --no-update``). Neither command upgrades dependencies; they only re-resolve the lock
+      file against the already-bumped project metadata. The command runs in the directory of
+      the nearest ``pyproject.toml`` at or above ``version-location``, so the lock file is
+      regenerated next to that ``pyproject.toml`` rather than at the repository root.
+    required: false
+    default: "none"
+    type: string
+
+outputs:
+
+  new-version:
+    description: |
+      Version just released, for example ``1.2.0``.
+    value: ${{ steps.autorelease.outputs.new-version }}
+
+  new-dev-version:
+    description: |
+      New development version set on the main branch, for example
+      ``1.3.dev0``. Empty for ``patch`` releases.
+    value: ${{ steps.autorelease.outputs.new-dev-version }}
+
+  release-branch:
+    description: |
+      Name of the release branch used or created for this release.
+    value: ${{ steps.autorelease.outputs.release-branch }}
+
+  dev-version-pr-url:
+    description: |
+      URL of the draft pull request opened to bump the main branch's development version.
+      Empty for ``patch`` releases (which don't touch the main branch).
+    value: ${{ steps.autorelease.outputs.dev-version-pr-url }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Check GitHub permissions"
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: write, pull-requests: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/housekeeping-actions/index.html#auto-release"
+
+    - name: "Checkout repository"
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.main-branch }}
+        token: ${{ inputs.token }}
+        fetch-depth: 0
+        fetch-tags: true
+        persist-credentials: true # zizmor: ignore[artipacked]
+
+    - name: "Configure Git"
+      shell: bash
+      env:
+        BOT_USERNAME: ${{ inputs.bot-username }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+      run: |
+        git config --global user.name "${BOT_USERNAME}"
+        git config --global user.email "${BOT_EMAIL}"
+
+    - name: "Set up Python 3.14"
+      uses: $/_setup-python
+      with:
+        python-version: '3.14'
+        use-cache: false
+        provision-uv: true
+        prune-uv-cache: true
+
+    - name: "Install required packages"
+      shell: bash
+      run: |
+        uv pip install --no-managed-python --system --upgrade pip
+        uv pip install --no-managed-python --system --no-deps -r ${GITHUB_ACTION_PATH}/requirements.txt
+
+    - name: "Run auto release"
+      id: autorelease
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        RELEASE_TYPE: ${{ inputs.release-type }}
+        VERSION_SOURCE: ${{ inputs.version-source }}
+        VERSION_LOCATION: ${{ inputs.version-location }}
+        MAIN_BRANCH: ${{ inputs.main-branch }}
+        RELEASE_BRANCH_PREFIX: ${{ inputs.release-branch-prefix }}
+        CHERRY_PICK_COMMITS: ${{ inputs.cherry-pick-commits }}
+        LOCK_FILE_TOOL: ${{ inputs.lock-file-tool }}
+      run: |
+        python ${GITHUB_ACTION_PATH}/autorelease.py
