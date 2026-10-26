@@ -78,8 +78,9 @@ runs:
 
     - name: "Install required packages"
       shell: bash
+      env:
+        UV_EXCLUDE_NEWER: "false"
       run: |
-        uv pip install --no-managed-python --system --upgrade pip
         uv pip install --no-managed-python --system --no-deps -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Run package cleanup"

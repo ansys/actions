@@ -9,7 +9,7 @@ anyio==4.13.0
 authlib==1.7.2
     # via safety
 bandit==1.9.4
-certifi==2026.4.22
+certifi==2026.10.19
     # via
     #   httpcore
     #   httpx
@@ -26,6 +26,8 @@ click==8.4.2
     #   nltk
     #   safety
     #   typer
+cloudpickle==3.1.2
+    # via joblib
 colorama==0.4.6 ; sys_platform == 'win32'
     # via
     #   bandit
@@ -57,7 +59,7 @@ idna==3.19
     #   requests
 jinja2==3.1.6
     # via safety
-joblib==1.5.3
+joblib==1.6.0
     # via nltk
 joserfc==1.6.8
     # via authlib
@@ -137,4 +139,4 @@ urllib3==2.7.0
     # via
     #   pygithub
     #   requests
-uv==0.12.18
+uv==0.13.4

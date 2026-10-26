@@ -425,14 +425,9 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        USE_UV: ${{ inputs.use-uv }}
       run: |
         ${ACTIVATE_VENV}
-        if [[ "${USE_UV}" == 'true' ]]; then
-          uv pip install -U pip
-        else
-          python -m pip install -U pip
-        fi
+        python -m pip --disable-pip-version-check install --no-cache-dir --force-reinstall "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
 
     - name: "Install library"
       shell: bash
@@ -518,20 +513,16 @@ runs:
       shell: bash
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
-        USE_UV: ${{ inputs.use-uv }}
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
-        if [[ "${USE_UV}" == 'true' ]]; then
-          uv pip install -U pip
-        else
-          python -m pip install -U pip
-        fi
+        python -m pip --disable-pip-version-check install --no-cache-dir --force-reinstall "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
 
     - name: "Install action requirements"
       shell: bash
       env:
         ACTIVATE_VENV_BANDIT_SAFETY: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV_BANDIT_SAFETY }}
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        UV_EXCLUDE_NEWER: "false"
       run: |
         ${ACTIVATE_VENV_BANDIT_SAFETY}
         if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
@@ -696,7 +687,7 @@ runs:
         fi
 
     - name: "Uploading results"
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: ${{ always() && inputs.upload-reports == 'true' }}
       with:
         name: vulnerability-results

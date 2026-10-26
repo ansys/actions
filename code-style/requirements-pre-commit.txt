@@ -2,7 +2,7 @@
 #    uv export --format requirements.txt --group code-style-pre-commit --output-file code-style/requirements-pre-commit.txt --no-hashes --no-default-groups
 cfgv==3.5.0
     # via pre-commit
-distlib==0.4.0
+distlib==0.4.3
     # via virtualenv
 filelock==3.29.0
     # via
@@ -12,12 +12,14 @@ identify==2.6.19
     # via pre-commit
 nodeenv==1.10.0
     # via pre-commit
+packaging==26.3
+    # via virtualenv
 platformdirs==4.9.6
     # via virtualenv
 pre-commit==4.6.2
-python-discovery==1.5.1
+python-discovery==1.6.2
     # via virtualenv
 pyyaml==6.0.3
     # via pre-commit
-virtualenv==21.3.3
+virtualenv==21.14.12
     # via pre-commit

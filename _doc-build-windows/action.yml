@@ -387,15 +387,9 @@ runs:
 
     - name: "Update pip"
       shell: powershell
-      env:
-        USE_UV: ${{ inputs.use-uv }}
       run: |
         .venv\Scripts\Activate.ps1
-        if ($env:USE_UV -eq "true") {
-          uv pip install -U pip
-        } else {
-          python -m pip install -U pip
-        }
+        python -m pip --disable-pip-version-check install --no-cache-dir --force-reinstall "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
 
     - name: "Check if requirements.txt file exists"
       id: check-exists-requirements-file
@@ -704,7 +698,7 @@ runs:
           Upload HTML and PDF
 
     - name: Upload HTML documentation artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
@@ -712,7 +706,7 @@ runs:
 
     - name: Upload PDF documentation artifact
       if: ${{ inputs.build-pdf == 'true' }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf

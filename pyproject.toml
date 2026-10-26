@@ -3,7 +3,7 @@
 
 [project]
 name = "ansys-actions-ci-dependencies"
-version = "11.1.dev0"
+version = "11.2.dev0"
 requires-python = ">=3.12"
 
 [dependency-groups]
@@ -38,17 +38,21 @@ code-style-prek = [
 ]
 doc-changelog = [
     "tomlkit<=0.16",
-    "towncrier<=25.8",
+    "towncrier<=27.0",
 ]
 doc-deploy-changelog = [
     "tomlkit<=0.16",
-    "towncrier<=25.8",
+    "towncrier<=27.0",
 ]
 doc-deploy-stable = [
     "packaging<=26.3",
 ]
 doc-style = [
     "docutils<=0.23",
+    "tomlkit<=0.16",
+]
+hk-autorelease = [
+    "packaging<=26.3",
     "tomlkit<=0.16",
 ]
 hk-package-clean-except = [
@@ -78,7 +82,7 @@ tests-pytest = [
 # These groups are defined to develop and maintain this artificial project #
 # ######################################################################## #
 dev = [
-    "tox>=4.60",
+    "tox>=4.65",
     "tox-uv>=1.36",
     { include-group = "doc" },
     { include-group = "quality" },
@@ -105,6 +109,13 @@ exclude-newer = "1 week"
 
 [tool.uv.exclude-newer-package]
 ansys-sphinx-theme = false
+# NOTE: Temporary override to allow the certifi release fixing the eMudhra/emSign CA incident
+# (GHSA-6q48-6c7w-9gw2) despite the rolling exclude-newer window.
+# TODO: Remove this line after 2026-10-26, once "1 week" covers certifi 2026.10.19, then run `uv lock`.
+certifi = false
+uv = false
+prek = false
+virtualenv = false
 
 [tool.towncrier]
 package = "ansys.actions.core"
