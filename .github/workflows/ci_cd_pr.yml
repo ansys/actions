@@ -39,4 +39,4 @@ jobs:
           python -m venv .venv 
           . .venv/bin/activate
           python -m pip --version
-          python -m pip show certifi
+          # python -m pip show certifi
