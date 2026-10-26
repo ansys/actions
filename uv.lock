@@ -58,7 +58,7 @@ wheels = [
 
 [[package]]
 name = "ansys-actions-ci-dependencies"
-version = "11.1.dev0"
+version = "11.2.dev0"
 source = { virtual = "." }
 
 [package.dev-dependencies]
@@ -132,6 +132,10 @@ doc-deploy-stable = [
 ]
 doc-style = [
     { name = "docutils" },
+    { name = "tomlkit" },
+]
+hk-autorelease = [
+    { name = "packaging" },
     { name = "tomlkit" },
 ]
 hk-package-clean-except = [
@@ -223,6 +227,10 @@ doc-deploy-changelog = [
 doc-deploy-stable = [{ name = "packaging", specifier = "<=26.3" }]
 doc-style = [
     { name = "docutils", specifier = "<=0.23" },
+    { name = "tomlkit", specifier = "<=0.16" },
+]
+hk-autorelease = [
+    { name = "packaging", specifier = "<=26.3" },
     { name = "tomlkit", specifier = "<=0.16" },
 ]
 hk-package-clean-except = [

@@ -36,10 +36,8 @@ description: |
   documentation is contained in the ``doc/`` directory of a project. Depending
   on the operating system, the action locates the ``doc/Makefile``
   (resp. ``doc/make.bat``) file for Linux (resp. Windows) and runs the
-  ``make html`` (resp. ``make.bat html``) and ``make pdf``
-  (resp. ``make.bat pdf``) commands. If desired, the ``make json`` (resp.
-  ``make.bat json``) command can also be executed to generate JSON
-  documentation.
+  ``make html`` (resp. ``make.bat html``) command. PDF generation can be
+  disabled for non-tag builds using the ``build-pdf`` input.
 
   .. important:: **Required GitHub Permissions**
 
@@ -248,6 +246,15 @@ inputs:
     default: false
     type: boolean
 
+  build-pdf:
+    description: |
+      Whether to build and upload the PDF documentation. Default value is ``true``.
+      This input cannot be ``false`` when the workflow is triggered by a Git tag,
+      because release builds must include the PDF documentation.
+    required: false
+    default: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -257,6 +264,24 @@ runs:
       with:
         permissions: "contents: read"
         doc-url: "https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-build-action"
+
+    - name: "Require PDF documentation for tag builds"
+      if: ${{ github.ref_type == 'tag' && inputs.build-pdf == 'false' }}
+      uses: $/_logging
+      with:
+        level: "ERROR"
+        message: >
+          PDF documentation cannot be disabled when building a release.
+          Release builds must include the PDF artifact.
+
+    - name: "Require PDF when adding documentation assets"
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' && inputs.build-pdf == 'false' }}
+      uses: $/_logging
+      with:
+        level: "ERROR"
+        message: >
+          The ``add-pdf-html-docs-as-assets`` input requires PDF generation.
+          Set ``build-pdf`` to ``true`` or disable ``add-pdf-html-docs-as-assets``.
 
     # --------------- Common to linux and windows doc-build ----------------
 
@@ -328,6 +353,7 @@ runs:
         group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
         uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
         skip-latex-install: ${{ inputs.skip-latex-install }}
+        build-pdf: ${{ inputs.build-pdf }}
 
     # ------------------------------------------------------------------------
 
@@ -356,3 +382,4 @@ runs:
         group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
         uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
         skip-latex-install: ${{ inputs.skip-latex-install }}
+        build-pdf: ${{ inputs.build-pdf }}

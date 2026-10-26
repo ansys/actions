@@ -553,10 +553,10 @@ jobs:
           provision-uv: false
           prune-uv-cache: false
 
-      - name: "Install pytest"
+      - name: "Install test dependencies"
         run: |
-          python -m pip install pytest
+          python -m pip install pytest packaging tomlkit
 
-      - name: "Run all python utilities tests"
+      - name: "Run all python utilities and action script tests"
         run: |
-          pytest -vv python-utils
+          pytest -vv python-utils hk-autorelease

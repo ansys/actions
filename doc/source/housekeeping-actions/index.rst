@@ -32,3 +32,9 @@ Tag repository version
 
 .. jinja:: hk-tag-repository-version
     :file: _templates/action.rst.jinja
+
+Auto release
+------------
+
+.. jinja:: hk-autorelease
+    :file: _templates/action.rst.jinja
