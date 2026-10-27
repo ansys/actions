@@ -27,7 +27,7 @@ description: |
   Adds a newsfragment to the target repository using ``towncrier``
   containing the title and number of the pull request. The pull request
   title can contain letters, digits, spaces, and the following characters:
-  ``! ( ) : - / _ . , < > = "``. Other characters are not allowed.
+  ``! ( ) : - / _ . , < > = "``, and backticks in matching pairs. Other characters are not allowed.
 
   This action will only work on Linux/macOS runners.
 
