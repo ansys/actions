@@ -344,6 +344,8 @@ def add_towncrier_config(
     config_file: str
         Towncrier configuration file to use.
     """
+    import tomlkit
+
     towncrier_config = Path(config_file)
     if not towncrier_config.exists():
         print(f"Towncrier configuration file '{towncrier_config}' was not found.")
