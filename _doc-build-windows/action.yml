@@ -33,8 +33,8 @@ description: |
   after installing the documentation dependencies, the action uses it
   to generate documentation from the source. It requires that all the
   documentation is contained in the ``doc\`` directory of a project. The
-  action locates the ``doc\make.bat`` and runs the ``make.bat html`` and
-  ``make.bat pdf`` commands.
+  action locates the ``doc\make.bat`` and runs the ``make.bat html`` command.
+  PDF generation is controlled by the ``build-pdf`` input.
 
 inputs:
 
@@ -153,6 +153,11 @@ inputs:
     required: true
     type: boolean
 
+  build-pdf:
+    description: Whether to build and upload the PDF documentation.
+    required: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -207,7 +212,7 @@ runs:
         choco install $packages -y
 
     - name: Install MiKTeX and update PATH with MiKTeX binaries
-      if: ${{ inputs.skip-latex-install == 'false' }}
+      if: ${{ inputs.build-pdf == 'true' && inputs.skip-latex-install == 'false' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
         # NOTE: Declared at script scope so it can be accessed inside function
@@ -382,15 +387,9 @@ runs:
 
     - name: "Update pip"
       shell: powershell
-      env:
-        USE_UV: ${{ inputs.use-uv }}
       run: |
         .venv\Scripts\Activate.ps1
-        if ($env:USE_UV -eq "true") {
-          uv pip install -U pip
-        } else {
-          python -m pip install -U pip
-        }
+        python -m pip --disable-pip-version-check install --no-cache-dir --force-reinstall "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
 
     - name: "Check if requirements.txt file exists"
       id: check-exists-requirements-file
@@ -506,35 +505,42 @@ runs:
       with:
         level: "INFO"
         message: >
-          Build HTML and PDF documentation.
+          Build HTML and, when enabled, PDF documentation.
 
-    - name: Build HTML and PDF documentation
+    - name: Build HTML and optional PDF documentation
       shell: powershell
       env:
         BUILD_BACKEND: ${{ steps.determine-environment-variables.outputs.BUILD_BACKEND }}
         CHECK_LINKS: ${{ inputs.check-links }}
+        BUILD_PDF: ${{ inputs.build-pdf }}
         SPHINXOPTS: ${{ inputs.sphinxopts }}
       run: |
         .venv\Scripts\Activate.ps1
         cd doc
         if ($env:BUILD_BACKEND -eq "poetry") {
           poetry run -- make.bat html SPHINXOPTS="$env:SPHINXOPTS"
-          poetry run -- make.bat pdf
+          if ($env:BUILD_PDF -eq 'true') {
+            poetry run -- make.bat pdf SPHINXOPTS="$env:SPHINXOPTS"
+          }
           if ($env:CHECK_LINKS -eq 'true') {
-            poetry run -- make.bat pdf linkcheck SPHINXOPTS="$env:SPHINXOPTS"
+            poetry run -- make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
           }
         }
         else {
           if ($env:BUILD_BACKEND -eq "uv") {
             uv run --no-sync -- .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
-            uv run --no-sync -- .\make.bat pdf
+            if ($env:BUILD_PDF -eq 'true') {
+              uv run --no-sync -- .\make.bat pdf SPHINXOPTS="$env:SPHINXOPTS"
+            }
             if ($env:CHECK_LINKS -eq 'true') {
               uv run --no-sync -- .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
             }
           }
           else {
             .\make.bat html SPHINXOPTS="$env:SPHINXOPTS"
-            .\make.bat pdf
+            if ($env:BUILD_PDF -eq 'true') {
+              .\make.bat pdf SPHINXOPTS="$env:SPHINXOPTS"
+            }
             if ($env:CHECK_LINKS -eq 'true') {
               .\make.bat linkcheck SPHINXOPTS="$env:SPHINXOPTS"
             }
@@ -640,6 +646,7 @@ runs:
       shell: powershell
       env:
         EXPECTED_BUILD_DIR: ${{ steps.set-expected-build-directory.outputs.EXPECTED_BUILD_DIR }}
+        BUILD_PDF: ${{ inputs.build-pdf }}
       run: |
         # Check if the HTML files have been generated
         if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\html\index.html") {
@@ -647,11 +654,13 @@ runs:
         } else {
           Write-Error "Documentation has not been generated properly"
         }
-        # Check if the PDF files have been generated
-        if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}") {
-          Write-Host "PDF file has been generated successfully"
-        } else {
-          Write-Error "PDF file has not been generated properly"
+        if ($env:BUILD_PDF -eq 'true') {
+          # Check if the PDF files have been generated
+          if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}") {
+            Write-Host "PDF file has been generated successfully"
+          } else {
+            Write-Error "PDF file has not been generated properly"
+          }
         }
 
     # ------------------------------------------------------------------------
@@ -689,14 +698,15 @@ runs:
           Upload HTML and PDF
 
     - name: Upload HTML documentation artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: Upload PDF documentation artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ inputs.build-pdf == 'true' }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf

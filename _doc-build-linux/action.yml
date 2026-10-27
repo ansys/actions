@@ -33,8 +33,8 @@ description: |
   after installing the documentation dependencies, the action uses it
   to generate documentation from the source. It requires that all the
   documentation is contained in the ``doc/`` directory of a project. The
-  action locates the ``doc/Makefile`` and runs the ``make html`` and
-  ``make pdf`` commands.
+  action locates the ``doc/Makefile`` and runs the ``make html`` command.
+  PDF generation is controlled by the ``build-pdf`` input.
 
 inputs:
 
@@ -161,6 +161,11 @@ inputs:
     required: true
     type: boolean
 
+  build-pdf:
+    description: Whether to build and upload the PDF documentation.
+    required: true
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -198,7 +203,7 @@ runs:
         sudo apt-get install -y $NEEDED_DEPS
 
     - name: "Install LaTeX"
-      if: ${{ inputs.skip-latex-install == 'false' }}
+      if: ${{ inputs.build-pdf == 'true' && inputs.skip-latex-install == 'false' }}
       shell: bash
       run: |
         sudo apt-get install -y texlive-latex-extra latexmk
@@ -339,15 +344,9 @@ runs:
 
     - name: "Update pip"
       shell: bash
-      env:
-        USE_UV: ${{ inputs.use-uv }}
       run: |
         source .venv/bin/activate
-        if [[ "$USE_UV" == 'true' ]]; then
-          uv pip install -U pip
-        else
-          python -m pip install -U pip
-        fi
+        python -m pip --disable-pip-version-check install --no-cache-dir --force-reinstall "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
 
     - name: "Check if requirements.txt file exists"
       id: check-exists-requirements-file
@@ -458,22 +457,25 @@ runs:
       with:
         level: "INFO"
         message: >
-          Build HTML and PDF
+          Build HTML and, when enabled, PDF
 
-    - name: "Build HTML and PDF"
+    - name: "Build HTML and optional PDF"
       if: inputs.requires-xvfb == 'false'
       env:
         SPHINXOPTS: ${{ inputs.sphinxopts }}
         CHECK_LINKS: ${{ inputs.check-links }}
+        BUILD_PDF: ${{ inputs.build-pdf }}
         SPHINX_BUILD_MAKE: ${{ steps.environment-variables.outputs.SPHINX_BUILD_MAKE }}
       shell: bash
       run: |
         source .venv/bin/activate
         ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINXOPTS}"
-        ${SPHINX_BUILD_MAKE} -C doc pdf
+        if [[ "${BUILD_PDF}" == 'true' ]]; then
+          ${SPHINX_BUILD_MAKE} -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
+        fi
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
+          ${SPHINX_BUILD_MAKE} -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
         fi
 
     - name: "Build HTML and PDF documentation using xvfb"
@@ -481,15 +483,18 @@ runs:
       env:
         SPHINXOPTS: ${{ inputs.sphinxopts }}
         CHECK_LINKS: ${{ inputs.check-links }}
+        BUILD_PDF: ${{ inputs.build-pdf }}
         SPHINX_BUILD_MAKE: ${{ steps.environment-variables.outputs.SPHINX_BUILD_MAKE }}
       shell: bash
       run: |
         source .venv/bin/activate
         xvfb-run ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINXOPTS}"
-        xvfb-run ${SPHINX_BUILD_MAKE} -C doc pdf
+        if [[ "${BUILD_PDF}" == 'true' ]]; then
+          xvfb-run ${SPHINX_BUILD_MAKE} -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
+        fi
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          xvfb-run $SPHINX_BUILD_MAKE -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
+          xvfb-run ${SPHINX_BUILD_MAKE} -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
         fi
 
     # ------------------------------------------------------------------------
@@ -623,14 +628,15 @@ runs:
     # ------------------------------------------------------------------------
 
     - name: "Upload HTML documentation artifact"
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-html
         path: doc/_build/html
         retention-days: 7
 
     - name: "Upload PDF documentation artifact"
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ inputs.build-pdf == 'true' }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
         path: doc/_build/latex/*.pdf

@@ -1,0 +1,17 @@
+hk-autorelease:
+  name: "Release from a VERSION file"
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write  # Required to push commits, branches, and tags
+    pull-requests: write  # Required to open the dev-version-bump draft pull request
+  steps:
+    - name: "Auto release"
+      uses: ansys/actions/hk-autorelease@{{ version }}
+      with:
+        release-type: ${{ '{{ inputs.release_type }}' }}
+        cherry-pick-commits: ${{ '{{ inputs.cherry_pick_commits }}' }}
+        version-source: file
+        version-location: ansys/api/geometry/VERSION
+        token: ${{ '{{ secrets.MY_BOT_TOKEN }}' }}
+        bot-username: ${{ '{{ secrets.MY_BOT_USERNAME }}' }}
+        bot-email: ${{ '{{ secrets.MY_BOT_EMAIL }}' }}

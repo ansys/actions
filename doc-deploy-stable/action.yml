@@ -36,7 +36,8 @@ description: |
   .. note::
 
       Pre-releases are not supported prior to ``ansys/actions/v10.1``. `See the migration guide <https://actions.docs.ansys.com/version/stable/migrations/index.html>`_
-      for information on supported pre-releases.
+      for information on supported pre-releases. A normal release removes all
+      pre-releases lower than its version.
 
   .. important:: **Required GitHub Permissions**
 
@@ -255,8 +256,8 @@ runs:
       shell: bash
       env:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
+        UV_EXCLUDE_NEWER: "false"
       run: |
-        ${INSTALL_COMMAND} --upgrade pip
         ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Ensure that the desired branch exists"
@@ -333,7 +334,7 @@ runs:
         rm -rf version/${VERSION} && mkdir -p version/${VERSION}
 
     - name: "Download the stable documentation artifact"
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: ${{ inputs.doc-artifact-name }}
         path: version/${{ steps.version-number.outputs.VERSION }}
