@@ -369,13 +369,19 @@ runs:
     - name: "Get towncrier directory and template"
       shell: python
       env:
-        TOWNCRIER_CONFIG_FILE: ${{ inputs.config-file }}
+        CONFIG_FILE_INPUT: ${{ inputs.config-file }}
       run: |
         import pathlib
         import os
         import tomlkit
 
-        towncrier_config = pathlib.Path(os.environ.get("TOWNCRIER_CONFIG_FILE", "pyproject.toml"))
+        config_file = os.environ.get("CONFIG_FILE_INPUT") or "pyproject.toml"
+        towncrier_config = pathlib.Path(config_file)
+
+        # Keep supporting repositories that only have a towncrier.toml file
+        if config_file == "pyproject.toml" and not towncrier_config.exists():
+            towncrier_config = pathlib.Path("towncrier.toml")
+
         if not towncrier_config.exists():
             print(f"Towncrier configuration file '{towncrier_config}' was not found.")
             exit(1)
@@ -397,12 +403,12 @@ runs:
         with open(github_env, "a") as f:
             f.write(f"TEMPLATE={template}\n")
             f.write(f"FILENAME={filename}\n")
+            f.write(f"TOWNCRIER_CONFIG_FILE={towncrier_config}\n")
 
     - name: "Append towncrier categories to pyproject.toml"
       env:
         REPO_NAME: ${{ github.event.repository.name }}
         USE_DEFAULT_TOWNCRIER_CONFIG: ${{ inputs.use-default-towncrier-config }}
-        TOWNCRIER_CONFIG_FILE: ${{ inputs.config-file }}
       shell: python
       run: |
         import os
