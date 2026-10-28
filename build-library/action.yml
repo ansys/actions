@@ -193,9 +193,9 @@ runs:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
         if [[ -f "${WORKING_DIRECTORY}/uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=true" >> "${GITHUB_OUTPUT}"
         else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=false" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Suppress .python-version file for uv"
@@ -217,7 +217,7 @@ runs:
       env:
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        cd ${WORKING_DIRECTORY}
+        cd "${WORKING_DIRECTORY}" || exit 1
         uv sync --frozen --no-managed-python --no-default-groups
 
     # ------------------------------------------------------------------------
@@ -231,7 +231,7 @@ runs:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
-        ${INSTALL_COMMAND} ${WORKING_DIRECTORY}
+        ${INSTALL_COMMAND} "${WORKING_DIRECTORY}"
 
     - name: "Ensure tag version matches metadata version when triggered by push of tags"
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
@@ -253,7 +253,7 @@ runs:
             echo "The library version is: $LIBRARY_VERSION";
         fi
 
-        if [[ v${LIBRARY_VERSION} == $TAG_REF ]]; then
+        if [[ v${LIBRARY_VERSION} == "$TAG_REF" ]]; then
           echo "Tag version matches metadata version. Proceeding with the build."
         else
           echo "Tag version does not match metadata version. Exiting with error."
@@ -277,7 +277,7 @@ runs:
         else
           REQUIREMENTS_FILE="${GITHUB_ACTION_PATH}/requirements-pip.txt"
         fi
-        ${INSTALL_COMMAND} -r ${REQUIREMENTS_FILE}
+        ${INSTALL_COMMAND} -r "${REQUIREMENTS_FILE}"
 
     - name: "Build distribution artifacts"
       shell: bash

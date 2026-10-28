@@ -318,11 +318,11 @@ runs:
         GRP_DEPS: ${{ inputs.group-dependencies-name }}
       run: |
         if [[ -z "$OPT_DEPS" && -z "$GRP_DEPS" ]]; then
-          echo "resolved-optional=doc" >> $GITHUB_OUTPUT
-          echo "resolved-group=" >> $GITHUB_OUTPUT
+          echo "resolved-optional=doc" >> "$GITHUB_OUTPUT"
+          echo "resolved-group=" >> "$GITHUB_OUTPUT"
         else
-          echo "resolved-optional=$OPT_DEPS" >> $GITHUB_OUTPUT
-          echo "resolved-group=$GRP_DEPS" >> $GITHUB_OUTPUT
+          echo "resolved-optional=$OPT_DEPS" >> "$GITHUB_OUTPUT"
+          echo "resolved-group=$GRP_DEPS" >> "$GITHUB_OUTPUT"
         fi
 
     - uses: $/_logging

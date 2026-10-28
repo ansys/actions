@@ -221,9 +221,9 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "$INPUT_REPOSITORY" == "current" ]]; then
-          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> $GITHUB_OUTPUT
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> "$GITHUB_OUTPUT"
         else
-          echo "REPOSITORY=${INPUT_REPOSITORY}" >> $GITHUB_OUTPUT
+          echo "REPOSITORY=${INPUT_REPOSITORY}" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
@@ -258,7 +258,7 @@ runs:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         UV_EXCLUDE_NEWER: "false"
       run: |
-        ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
+        ${INSTALL_COMMAND} -r "${GITHUB_ACTION_PATH}"/requirements.txt
 
     - name: "Ensure that the desired branch exists"
       shell: bash
@@ -331,7 +331,7 @@ runs:
       env:
         VERSION: ${{ steps.version-number.outputs.VERSION }}
       run: |
-        rm -rf version/${VERSION} && mkdir -p version/${VERSION}
+        rm -rf version/"${VERSION}" && mkdir -p version/"${VERSION}"
 
     - name: "Download the stable documentation artifact"
       uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -353,7 +353,7 @@ runs:
         sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd version/${VERSION}
+        cd version/"${VERSION}" || exit 1
         compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
         mkdir _decomp
         ouch decompress "$compressed_artifact" --dir _decomp --yes
@@ -370,7 +370,7 @@ runs:
       env:
         VERSION: ${{ steps.version-number.outputs.VERSION }}
       run: |
-        ls -R version/${VERSION}
+        ls -R version/"${VERSION}"
 
     # ------------------------------------------------------------------------
 
@@ -409,7 +409,7 @@ runs:
       env:
         LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
       run: |
-        rm -rf version/stable && cp -r version/${LATEST_STABLE_VERSION} version/stable
+        rm -rf version/stable && cp -r version/"${LATEST_STABLE_VERSION}" version/stable
 
     # ------------------------------------------------------------------------
 
@@ -439,9 +439,8 @@ runs:
         CNAME: ${{ inputs.cname }}
       shell: bash
       run: |
-        latest_stable_version=${LATEST_STABLE_VERSION}
         stable_url="https://${CNAME}/version/stable/"
-        sed -i "s|LATEST_STABLE_VERSION|$latest_stable_version|g" announcement.html
+        sed -i "s|LATEST_STABLE_VERSION|$LATEST_STABLE_VERSION|g" announcement.html
         sed -i "s|STABLE_URL|$stable_url|g" announcement.html
 
     - name: "Place the 'announcement.html' file in every public folder of all the outdated versions"
@@ -450,11 +449,11 @@ runs:
       env:
         LATEST_STABLE_VERSION: ${{ steps.versions-json-file.outputs.LATEST_STABLE_VERSION }}
       run: |
-        for version_dir in $( ls version | \
-                          grep -E "^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$" | \
-                          grep -v "${LATEST_STABLE_VERSION}" | \
-                          sort -r --version-sort ); do
-            find version/$version_dir -type d -not \( -path "*/_*" -type d -prune \) -exec cp announcement.html {} \;
+        for version_dir in version/*; do
+          version_name=${version_dir##*/}
+          if [[ -d "$version_dir" && "$version_name" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\..*)?$ && ! "$version_name" =~ $LATEST_STABLE_VERSION ]]; then
+            find "$version_dir" -type d -not \( -path "*/_*" -type d -prune \) -exec cp announcement.html {} \;
+          fi
         done
 
     - name: "Delete the 'announcement.html' file used as template"

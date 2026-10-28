@@ -7,6 +7,7 @@ env:
   MAIN_PYTHON_VERSION: '3.14'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
+  ACTIONLINT_VERSION: '1.7.2'
 
 permissions:
   contents: read
@@ -151,13 +152,15 @@ jobs:
 
       - name: Install dependencies
         run: |
+          # shellcheck source=/dev/null
           source .venv/bin/activate
           uv sync --frozen --only-group quality --no-install-project
 
       - name: Run ty
         run: |
+          # shellcheck source=/dev/null
           source .venv/bin/activate
-          ty check --ignore unresolved-import **/*.py
+          ty check --ignore unresolved-import ./**/*.py
 
   doc-style:
     name: "Doc style"
@@ -263,8 +266,9 @@ jobs:
         env:
           GEOMETRY_CONTAINER_EXEC_OPTS: ${{ secrets.GEOMETRY_CONTAINER_EXEC_OPTS }}
         run: |
-          docker pull ${ANSRV_GEO_IMAGE_DOCS_TAG}
-          docker run --detach --name ${GEO_CONT_NAME} -e LICENSE_SERVER=${ANSRV_GEO_LICENSE_SERVER} -p ${ANSRV_GEO_PORT}:50051 ${ANSRV_GEO_IMAGE_DOCS_TAG} ${GEOMETRY_CONTAINER_EXEC_OPTS}
+          docker pull "${ANSRV_GEO_IMAGE_DOCS_TAG}"
+          read -r -a container_exec_opts <<< "${GEOMETRY_CONTAINER_EXEC_OPTS//$'\n'/ }"
+          docker run --detach --name "${GEO_CONT_NAME}" -e LICENSE_SERVER="${ANSRV_GEO_LICENSE_SERVER}" -p "${ANSRV_GEO_PORT}":50051 "${ANSRV_GEO_IMAGE_DOCS_TAG}" "${container_exec_opts[@]}"
 
       - name: Run Ansys documentation building action
         uses: $/doc-build
@@ -284,9 +288,9 @@ jobs:
         if: always()
         shell: bash
         run: |
-          docker stop ${GEO_CONT_NAME}
-          docker logs ${GEO_CONT_NAME}
-          docker rm ${GEO_CONT_NAME}
+          docker stop "${GEO_CONT_NAME}"
+          docker logs "${GEO_CONT_NAME}"
+          docker rm "${GEO_CONT_NAME}"
 
   test-doc-build-pydpf-composites:
     name: "Test doc-build action for PyDPF-Composites on ${{ matrix.os.name }}"
@@ -333,8 +337,8 @@ jobs:
           LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
         shell: bash
         run: |
-          docker pull ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
-          docker run -d --restart always -p 50052:50052 -e DPF_DEFAULT_GRPC_MODE=insecure -e ANSYSLMD_LICENSE_FILE=1055@${LICENSE_SERVER} -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:${CONTAINER_IMAGE_TAG}
+          docker pull ghcr.io/ansys/pydpf-composites:"${CONTAINER_IMAGE_TAG}"
+          docker run -d --restart always -p 50052:50052 -e DPF_DEFAULT_GRPC_MODE=insecure -e ANSYSLMD_LICENSE_FILE=1055@"${LICENSE_SERVER}" -e ANSYS_DPF_ACCEPT_LA=Y ghcr.io/ansys/pydpf-composites:"${CONTAINER_IMAGE_TAG}"
 
       - name: Run Ansys documentation building action
         uses: $/doc-build
@@ -454,13 +458,14 @@ jobs:
           FULL_IMAGE_NAME: "${{ env.ANSRV_GEO_IMAGE }}:core-linux-latest"
           TRANSPORT_MODE_SELECTION: ${{ secrets.TRANSPORT_MODE_SELECTION }}
         run: |
-          docker pull ${FULL_IMAGE_NAME}
-          docker run --detach --name ${GEO_CONT_NAME} -e LICENSE_SERVER=${ANSRV_GEO_LICENSE_SERVER} -p ${ANSRV_GEO_PORT}:50051 ${FULL_IMAGE_NAME} ${TRANSPORT_MODE_SELECTION}
+          docker pull "${FULL_IMAGE_NAME}"
+          read -r -a transport_mode_opts <<< "${TRANSPORT_MODE_SELECTION//$'\n'/ }"
+          docker run --detach --name "${GEO_CONT_NAME}" -e LICENSE_SERVER="${ANSRV_GEO_LICENSE_SERVER}" -p "${ANSRV_GEO_PORT}":50051 "${FULL_IMAGE_NAME}" "${transport_mode_opts[@]}"
 
       - name: Copy test files into geometry service container
         run: |
-          docker cp tests/integration/files/. ${GEO_CONT_NAME}:/test-files
-          echo "ANSYS_GEOMETRY_TEST_FILES=/test-files" >> $GITHUB_ENV
+          docker cp tests/integration/files/. "${GEO_CONT_NAME}":/test-files
+          echo "ANSYS_GEOMETRY_TEST_FILES=/test-files" >> "$GITHUB_ENV"
 
       - name: "Run tests with pytest for PyAnsys Geometry"
         uses: $/tests-pytest
@@ -476,9 +481,9 @@ jobs:
       - name: Stop the Geometry service
         if: always()
         run: |
-          docker stop ${GEO_CONT_NAME}
-          docker logs ${GEO_CONT_NAME}
-          docker rm ${GEO_CONT_NAME}
+          docker stop "${GEO_CONT_NAME}"
+          docker logs "${GEO_CONT_NAME}"
+          docker rm "${GEO_CONT_NAME}"
 
   doc-deploy-pr:
     name: "Deploy PR documentation"
@@ -517,6 +522,20 @@ jobs:
           auditing-level: 'high'
           trust-ansys-actions: true
           checkout: false
+
+      - name: "Run ShellCheck on composite actions"
+        uses: saleor/shellcheck-gha@b85557d2e8b078120f0c43ede63236e9525731c7 # v0.1.2
+        with:
+          scan-directory-path: .
+
+      - name: "Run actionlint on workflows"
+        shell: bash
+        env:
+          ACTIONLINT_VERSION: ${{ env.ACTIONLINT_VERSION }}
+        run: |
+          go run "github.com/rhysd/actionlint/cmd/actionlint@v${ACTIONLINT_VERSION}" \
+            -ignore 'could not parse action metadata.*unexpected key "type"' \
+            -ignore '^specifying action "\$/[^"]+" in invalid format because ref is missing\.'
 
   python-utilites-test:
     name: "Run all python utilities tests"
