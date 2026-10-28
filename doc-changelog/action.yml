@@ -472,7 +472,7 @@ runs:
 
         # Create changelog fragment with towncrier
         # Fragment file contains the title of the PR
-        towncrier create -c "${CLEAN_TITLE}" $fragment
+        towncrier create --config "${TOWNCRIER_CONFIG_FILE}" -c "${CLEAN_TITLE}" $fragment
 
         # Configure git username & email
         git config user.name "${BOT_USER}"
