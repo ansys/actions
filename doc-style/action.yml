@@ -100,7 +100,7 @@ inputs:
   vale-version:
     description: |
       Version number for Vale.
-    default: '3.4.1'
+    default: '3.25.1'
     required: false
     type: string
 

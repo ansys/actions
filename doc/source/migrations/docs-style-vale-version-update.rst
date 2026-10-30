@@ -18,7 +18,7 @@ as input for the ``doc-style`` action like below.
           uses: ansys/actions/doc-style@v5
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
-            vale-version: "3.4.1"
+            vale-version: "3.25.1"
 
 In any of the preceding conditions, there are two mandatory changes and one optional (depending on
 the repository setup) needs to implemented:
