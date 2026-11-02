@@ -161,11 +161,28 @@ def update_quarto_version(path: Path, version: str) -> str:
     return new_hash
 
 
+def update_vale_version(path: Path, version: str) -> None:
+    """Update the Vale version input default in an action YAML file."""
+    text = path.read_text(encoding="utf-8")
+    updated_text, count = re.subn(
+        r"""(^  vale-version:\n(?:(?!^  \S)[^\n]*\n)*?^    default:\s*)(['"])\d+\.\d+\.\d+\2""",
+        lambda match: f"{match.group(1)}{match.group(2)}{version}{match.group(2)}",
+        text,
+        count=1,
+        flags=re.MULTILINE,
+    )
+    if count != 1:
+        raise SystemExit(f"Could not find the Vale version to update in {path}")
+
+    path.write_text(updated_text, encoding="utf-8")
+
+
 def apply_version_updates_to_matching_actions(
     action_files: Iterable[Path],
     syft_version: str | None,
     syft_git_sha: str | None,
     quarto_version: str | None,
+    vale_version: str | None,
 ) -> list[Path]:
     """Update the supported tools in any action.yml files that contain them."""
     updated_files: list[Path] = []
@@ -177,24 +194,28 @@ def apply_version_updates_to_matching_actions(
         if quarto_version is not None and "QUARTO_VERSION" in text:
             update_quarto_version(path, quarto_version)
             updated_files.append(path)
+        if vale_version is not None and "vale-version:" in text:
+            update_vale_version(path, vale_version)
+            updated_files.append(path)
     return updated_files
 
 
 def resolve_tooling_updates(
     cutoff_seconds: int,
-) -> tuple[str | None, str | None, str | None]:
-    """Return the eligible Syft and Quarto versions, plus the Git SHA for the Syft tag."""
+) -> tuple[str | None, str | None, str | None, str | None]:
+    """Return eligible Syft, Quarto, and Vale versions, plus the Syft tag's Git SHA."""
     syft_tag = get_eligible_release("anchore/syft", cutoff_seconds)
     quarto_tag = get_eligible_release("quarto-dev/quarto-cli", cutoff_seconds)
+    vale_tag = get_eligible_release("vale-cli/vale", cutoff_seconds)
     syft_git_sha = resolve_syft_git_commit_sha(syft_tag) if syft_tag else None
-    return syft_tag, syft_git_sha, quarto_tag
+    return syft_tag, syft_git_sha, quarto_tag, vale_tag
 
 
 def apply_tooling_updates(cutoff_seconds: int) -> None:
     """Resolve the eligible releases and update the matching action YAML files in place."""
-    syft_tag, syft_git_sha, quarto_tag = resolve_tooling_updates(cutoff_seconds)
-    if syft_tag is None and quarto_tag is None:
-        print("No eligible release found for Syft or Quarto. Nothing to update.")
+    syft_tag, syft_git_sha, quarto_tag, vale_tag = resolve_tooling_updates(cutoff_seconds)
+    if syft_tag is None and quarto_tag is None and vale_tag is None:
+        print("No eligible release found for Syft, Quarto, or Vale. Nothing to update.")
         return
 
     action_files = REPO_ROOT.rglob("action.yml")
@@ -203,6 +224,7 @@ def apply_tooling_updates(cutoff_seconds: int) -> None:
         syft_tag,
         syft_git_sha,
         quarto_tag,
+        vale_tag,
     )
 
     if not updated_files:
@@ -210,7 +232,10 @@ def apply_tooling_updates(cutoff_seconds: int) -> None:
     else:
         relative_paths = ", ".join(str(path.relative_to(REPO_ROOT)) for path in updated_files)
         print(f"Updated files: {relative_paths}")
-        print(f"Updated Syft={syft_tag or 'unchanged'}, Quarto={quarto_tag or 'unchanged'}")
+        print(
+            f"Updated Syft={syft_tag or 'unchanged'}, "
+            f"Quarto={quarto_tag or 'unchanged'}, Vale={vale_tag or 'unchanged'}"
+        )
 
 
 def build_parser() -> argparse.ArgumentParser:
