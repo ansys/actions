@@ -10,7 +10,7 @@ filelock==3.29.0
     #   virtualenv
 identify==2.6.19
     # via pre-commit
-nodeenv==1.10.0
+nodeenv==1.11.0
     # via pre-commit
 packaging==26.3
     # via virtualenv
