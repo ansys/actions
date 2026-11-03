@@ -139,4 +139,4 @@ urllib3==2.7.0
     # via
     #   pygithub
     #   requests
-uv==0.13.4
+uv==0.13.5
