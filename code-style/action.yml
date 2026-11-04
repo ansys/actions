@@ -542,7 +542,6 @@ runs:
         PR_NUMBER: ${{ github.event.pull_request.number }}
         HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         NON_FIXABLE: ${{ steps.commit-fixes.outputs.NON_FIXABLE }}
-        HOOK_TOOL: ${{ inputs.use-prek == 'true' && 'prek' || 'pre-commit' }}
       run: |
         MARKER="<!-- ansys-actions-code-style -->"
         RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
@@ -563,7 +562,7 @@ runs:
             echo
             grep -E '\.{3,}.*Failed$' "${LOG_FILE}" | sed -E 's/\.{3,}.*$//; s/^/- `/; s/$/`/' || true
             echo
-            echo "Run \`${HOOK_TOOL} run --all-files\` locally, fix the issues and push the changes."
+            echo "Run \`prek run --all-files\` or \`pre-commit run --all-files\` locally, fix the issues and push the changes."
             echo "See the [workflow run](${RUN_URL}) for details."
             echo
             echo "<details><summary>Hook output (last 200 lines)</summary>"
