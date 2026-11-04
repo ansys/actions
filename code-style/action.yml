@@ -153,8 +153,8 @@ inputs:
       Whether to commit and push the fixes applied by the pre-commit/prek hooks
       to the checked out branch. If ``true``, the ``token``, ``bot-user`` and
       ``bot-email`` inputs are required. Only changes to already tracked files
-      are committed. If ``checkout`` is ``false``, the workspace must have a
-      branch checked out (not the pull request merge commit).
+      are committed. The fixes are applied on top of the latest commit of the
+      branch, so the workspace may contain the pull request merge commit.
     required: false
     default: false
     type: boolean
@@ -487,24 +487,39 @@ runs:
         COMMIT_MESSAGE: ${{ inputs.commit-message }}
         BRANCH: ${{ steps.commit-config.outputs.BRANCH }}
       run: |
-        git config user.name "${BOT_USER}"
-        git config user.email "${BOT_EMAIL}"
-
-        # Only stage tracked files; .python-version may have been removed by this action
-        git add -u -- . ':(exclude).python-version'
-        if git diff --staged --quiet; then
+        # Only tracked files; .python-version may have been removed by this action
+        PATCH_FILE="${RUNNER_TEMP}/code-style-fixes.patch"
+        git diff --binary HEAD -- . ':(exclude).python-version' > "${PATCH_FILE}"
+        if [[ ! -s "${PATCH_FILE}" ]]; then
           echo "No fixes to commit."
           exit 0
         fi
 
-        git commit -m "${COMMIT_MESSAGE}"
-
         AUTH_HEADER="AUTHORIZATION: basic $(printf 'x-access-token:%s' "${TOKEN}" | base64 | tr -d '\n')"
         echo "::add-mask::${AUTH_HEADER#AUTHORIZATION: basic }"
-        # Reset any persisted credentials before setting the bot token to avoid duplicate headers
-        git -c "http.${GITHUB_SERVER_URL}/.extraheader=" \
-            -c "http.${GITHUB_SERVER_URL}/.extraheader=${AUTH_HEADER}" \
-            push origin "HEAD:refs/heads/${BRANCH}"
+        git_auth() {
+          # Reset any persisted credentials before setting the bot token to avoid duplicate headers
+          git -c "http.${GITHUB_SERVER_URL}/.extraheader=" \
+              -c "http.${GITHUB_SERVER_URL}/.extraheader=${AUTH_HEADER}" "$@"
+        }
+
+        # The workspace may be a PR merge commit or outdated, so apply the fixes on the branch tip
+        git_auth fetch --no-tags --depth=1 origin "refs/heads/${BRANCH}"
+        WORKTREE="${RUNNER_TEMP}/code-style-fixes"
+        git worktree add --detach "${WORKTREE}" FETCH_HEAD
+        cd "${WORKTREE}"
+
+        if ! git apply --3way --index "${PATCH_FILE}"; then
+          echo "::error::Unable to apply the fixes on top of '${BRANCH}'. Run the hooks locally and push the changes."
+          exit 1
+        fi
+        if git diff --staged --quiet; then
+          echo "Fixes are already present on '${BRANCH}'."
+          exit 0
+        fi
+
+        git -c user.name="${BOT_USER}" -c user.email="${BOT_EMAIL}" commit -m "${COMMIT_MESSAGE}"
+        git_auth push origin "HEAD:refs/heads/${BRANCH}"
 
     # ------------------------------------------------------------------------
 
