@@ -3,6 +3,7 @@ code-style:
   runs-on: ubuntu-latest
   permissions:
     contents: write  # Required to push the fixes applied by the hooks
+    pull-requests: write  # Required to comment on issues that cannot be fixed automatically
   steps:
     - name: "Run PyAnsys code style checks"
       uses: ansys/actions/code-style@{{ version }}

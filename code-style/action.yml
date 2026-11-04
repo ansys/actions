@@ -44,11 +44,15 @@ description: |
   ``bot-user`` and ``bot-email`` inputs. A token other than the default
   ``GITHUB_TOKEN`` is required for the pushed commit to trigger new workflow runs.
   Pull requests coming from forks are skipped, as the token cannot push to them.
+  On pull requests, if the hooks fail without changing any file, the issues cannot
+  be fixed automatically and a comment listing the failing hooks is added to the
+  pull request. The comment is updated once all hooks pass.
 
   .. important:: **Required GitHub Permissions**
 
      - **contents**: ``read`` - Required to checkout repository code when the repository is not public
      - **contents**: ``write`` - Required only if ``commit-changes`` is ``true``, to push the fixes
+     - **pull-requests**: ``write`` - Required only if ``commit-changes`` is ``true``, to comment on pull requests
 
 
 inputs:
@@ -247,7 +251,7 @@ runs:
       if: steps.commit-config.outputs.COMMIT == 'true'
       uses: $/_check-github-permissions
       with:
-        permissions: "contents: write"
+        permissions: "contents: write, pull-requests: write"
         token: ${{ inputs.token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#code-style-action"
 
@@ -454,9 +458,9 @@ runs:
       run: |
         $ACTIVATE_VENV
         if [[ "${SHOW_DIFF_ON_FAILURE}" == 'true' ]]; then
-          pre-commit run --all-files --show-diff-on-failure
+          pre-commit run --all-files --show-diff-on-failure 2>&1 | tee "${RUNNER_TEMP}/code-style-hooks.log"
         else
-          pre-commit run --all-files
+          pre-commit run --all-files 2>&1 | tee "${RUNNER_TEMP}/code-style-hooks.log"
         fi
 
     - name: "Run prek"
@@ -469,12 +473,13 @@ runs:
       run: |
         $ACTIVATE_VENV
         if [[ "${SHOW_DIFF_ON_FAILURE}" == 'true' ]]; then
-          prek run --all-files --show-diff-on-failure
+          prek run --all-files --show-diff-on-failure 2>&1 | tee "${RUNNER_TEMP}/code-style-hooks.log"
         else
-          prek run --all-files
+          prek run --all-files 2>&1 | tee "${RUNNER_TEMP}/code-style-hooks.log"
         fi
 
     - name: "Commit and push fixes"
+      id: commit-fixes
       if: >-
         failure() &&
         steps.commit-config.outputs.COMMIT == 'true' &&
@@ -491,7 +496,9 @@ runs:
         PATCH_FILE="${RUNNER_TEMP}/code-style-fixes.patch"
         git diff --binary HEAD -- . ':(exclude).python-version' > "${PATCH_FILE}"
         if [[ ! -s "${PATCH_FILE}" ]]; then
-          echo "No fixes to commit."
+          # Hooks failed without changing files, so the issues need manual fixes
+          echo "::error::Hooks reported issues that cannot be fixed automatically."
+          echo "NON_FIXABLE=true" >> ${GITHUB_OUTPUT}
           exit 0
         fi
 
@@ -520,6 +527,70 @@ runs:
 
         git -c user.name="${BOT_USER}" -c user.email="${BOT_EMAIL}" commit -m "${COMMIT_MESSAGE}"
         git_auth push origin "HEAD:refs/heads/${BRANCH}"
+
+    - name: "Comment on pull request"
+      if: >-
+        !cancelled() &&
+        steps.commit-config.outputs.COMMIT == 'true' &&
+        github.event.pull_request.number &&
+        (steps.commit-fixes.outputs.NON_FIXABLE == 'true' ||
+         steps.run-pre-commit.outcome == 'success' || steps.run-prek.outcome == 'success')
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        BOT_USER: ${{ inputs.bot-user }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        NON_FIXABLE: ${{ steps.commit-fixes.outputs.NON_FIXABLE }}
+        HOOK_TOOL: ${{ inputs.use-prek == 'true' && 'prek' || 'pre-commit' }}
+      run: |
+        MARKER="<!-- ansys-actions-code-style -->"
+        RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        LOG_FILE="${RUNNER_TEMP}/code-style-hooks.log"
+        BODY_FILE="${RUNNER_TEMP}/code-style-comment.md"
+
+        COMMENT_ID="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+          --paginate \
+          --jq ".[] | select(.user.login == \"${BOT_USER}\" and (.body | startswith(\"${MARKER}\"))) | .id" \
+          | head -n 1 || true)"
+
+        if [[ "${NON_FIXABLE}" == 'true' ]]; then
+          {
+            echo "${MARKER}"
+            echo "### :x: Code style issues require manual fixes"
+            echo
+            echo "These hooks report issues that cannot be fixed automatically:"
+            echo
+            grep -E '\.{3,}.*Failed$' "${LOG_FILE}" | sed -E 's/\.{3,}.*$//; s/^/- `/; s/$/`/' || true
+            echo
+            echo "Run \`${HOOK_TOOL} run --all-files\` locally, fix the issues and push the changes."
+            echo "See the [workflow run](${RUN_URL}) for details."
+            echo
+            echo "<details><summary>Hook output (last 200 lines)</summary>"
+            echo
+            echo '```'
+            tail -n 200 "${LOG_FILE}" | cut -c1-300
+            echo '```'
+            echo "</details>"
+          } > "${BODY_FILE}"
+        elif [[ -n "${COMMENT_ID}" ]]; then
+          {
+            echo "${MARKER}"
+            echo "### :white_check_mark: Code style issues resolved"
+            echo
+            echo "All hooks pass as of ${HEAD_SHA}."
+          } > "${BODY_FILE}"
+        else
+          echo "No issues requiring manual fixes. No comment needed."
+          exit 0
+        fi
+
+        if [[ -n "${COMMENT_ID}" ]]; then
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" \
+            -F body=@"${BODY_FILE}" > /dev/null
+        else
+          gh pr comment "${PR_NUMBER}" --repo "${GITHUB_REPOSITORY}" --body-file "${BODY_FILE}"
+        fi
 
     # ------------------------------------------------------------------------
 
