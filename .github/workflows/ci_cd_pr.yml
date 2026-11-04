@@ -152,7 +152,7 @@ jobs:
           prune-uv-cache: true
 
       - name: Create virtual environment
-        run: uv venv .venv    
+        run: uv venv .venv
 
       - name: Install dependencies
         run: |
