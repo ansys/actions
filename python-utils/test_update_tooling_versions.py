@@ -32,7 +32,7 @@ def test_apply_version_updates_to_matching_actions_updates_vale(tmp_path: Path) 
     action_file = tmp_path / "action.yml"
     action_file.write_text(
         "env:\n"
-        '  VALE_VERSION: ${{ inputs.vale-version }}\n'
+        "  VALE_VERSION: ${{ inputs.vale-version }}\n"
         '  DEFAULT_VALE_VERSION: "3.25.1"\n'
         '  OTHER_VERSION: "1.2.3"\n',
         encoding="utf-8",
