@@ -38,9 +38,17 @@ description: |
     If docker lint is enabled and directories docker or .devcontainer exist,
     the action will fail if it doesn't find a Dockerfile.
 
+  The action can optionally commit and push the fixes applied by the hooks back
+  to the branch, replicating the behavior of `pre-commit.ci <https://pre-commit.ci/>`_.
+  To enable it, set ``commit-changes`` to ``true`` and provide the ``token``,
+  ``bot-user`` and ``bot-email`` inputs. A token other than the default
+  ``GITHUB_TOKEN`` is required for the pushed commit to trigger new workflow runs.
+  Pull requests coming from forks are skipped, as the token cannot push to them.
+
   .. important:: **Required GitHub Permissions**
 
      - **contents**: ``read`` - Required to checkout repository code when the repository is not public
+     - **contents**: ``write`` - Required only if ``commit-changes`` is ``true``, to push the fixes
 
 
 inputs:
@@ -140,6 +148,49 @@ inputs:
     default: true
     type: boolean
 
+  commit-changes:
+    description: |
+      Whether to commit and push the fixes applied by the pre-commit/prek hooks
+      to the checked out branch. If ``true``, the ``token``, ``bot-user`` and
+      ``bot-email`` inputs are required. Only changes to already tracked files
+      are committed. If ``checkout`` is ``false``, the workspace must have a
+      branch checked out (not the pull request merge commit).
+    required: false
+    default: false
+    type: boolean
+
+  token:
+    description: |
+      Token used to push the commit with the fixes, e.g. the PYANSYS_CI_BOT_TOKEN.
+      Required if ``commit-changes`` is ``true``. Using the default
+      ``GITHUB_TOKEN`` does not trigger new workflow runs on the pushed commit.
+    required: false
+    default: ''
+    type: string
+
+  bot-user:
+    description: |
+      Username used as the git commit author, e.g. the PYANSYS_CI_BOT_USERNAME.
+      Required if ``commit-changes`` is ``true``.
+    required: false
+    default: ''
+    type: string
+
+  bot-email:
+    description: |
+      Email used as the git commit author, e.g. the PYANSYS_CI_BOT_EMAIL.
+      Required if ``commit-changes`` is ``true``.
+    required: false
+    default: ''
+    type: string
+
+  commit-message:
+    description: |
+      Message of the commit containing the fixes applied by the hooks.
+    required: false
+    default: 'chore: auto fixes from pre-commit hooks'
+    type: string
+
 runs:
   using: "composite"
   steps:
@@ -150,9 +201,61 @@ runs:
         permissions: "contents: read"
         doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#code-style-action"
 
+    - name: "Determine commit configuration"
+      id: commit-config
+      if: inputs.commit-changes == 'true'
+      shell: bash
+      env:
+        TOKEN: ${{ inputs.token }}
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+        EVENT_NAME: ${{ github.event_name }}
+        HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        REPOSITORY: ${{ github.repository }}
+        HEAD_REF: ${{ github.head_ref }}
+        REF_NAME: ${{ github.ref_name }}
+        REF_TYPE: ${{ github.ref_type }}
+      run: |
+        if [[ -n "${HEAD_REPO}" ]] && [[ "${HEAD_REPO}" != "${REPOSITORY}" ]]; then
+          echo "::warning::Pull request comes from a fork (${HEAD_REPO}). Skipping commit of the fixes."
+          echo "COMMIT=false" >> ${GITHUB_OUTPUT}
+          exit 0
+        fi
+
+        missing=()
+        [[ -z "${TOKEN}" ]] && missing+=("token")
+        [[ -z "${BOT_USER}" ]] && missing+=("bot-user")
+        [[ -z "${BOT_EMAIL}" ]] && missing+=("bot-email")
+        if [[ ${#missing[@]} -gt 0 ]]; then
+          echo "::error::Input(s) required when 'commit-changes' is 'true': ${missing[*]}"
+          exit 1
+        fi
+
+        if [[ -n "${HEAD_REF}" ]]; then
+          BRANCH="${HEAD_REF}"
+        elif [[ "${REF_TYPE}" == 'branch' ]]; then
+          BRANCH="${REF_NAME}"
+        else
+          echo "::error::Unable to determine the branch to push the fixes to (event: ${EVENT_NAME})."
+          exit 1
+        fi
+
+        echo "COMMIT=true" >> ${GITHUB_OUTPUT}
+        echo "BRANCH=${BRANCH}" >> ${GITHUB_OUTPUT}
+
+    - name: "Check GitHub permissions for committing"
+      if: steps.commit-config.outputs.COMMIT == 'true'
+      uses: $/_check-github-permissions
+      with:
+        permissions: "contents: write"
+        token: ${{ inputs.token }}
+        doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#code-style-action"
+
     - name: "Install Git and clone project"
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
+        # Check out the branch rather than the merge commit so that fixes can be pushed
+        ref: ${{ steps.commit-config.outputs.BRANCH }}
         persist-credentials: false
       if: ${{ inputs.checkout == 'true' }}
 
@@ -342,6 +445,7 @@ runs:
         fi
 
     - name: "Run pre-commit"
+      id: run-pre-commit
       if: inputs.use-prek == 'false'
       shell: bash
       env:
@@ -356,6 +460,7 @@ runs:
         fi
 
     - name: "Run prek"
+      id: run-prek
       if: inputs.use-prek == 'true'
       shell: bash
       env:
@@ -368,6 +473,38 @@ runs:
         else
           prek run --all-files
         fi
+
+    - name: "Commit and push fixes"
+      if: >-
+        failure() &&
+        steps.commit-config.outputs.COMMIT == 'true' &&
+        (steps.run-pre-commit.outcome == 'failure' || steps.run-prek.outcome == 'failure')
+      shell: bash
+      env:
+        TOKEN: ${{ inputs.token }}
+        BOT_USER: ${{ inputs.bot-user }}
+        BOT_EMAIL: ${{ inputs.bot-email }}
+        COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        BRANCH: ${{ steps.commit-config.outputs.BRANCH }}
+      run: |
+        git config user.name "${BOT_USER}"
+        git config user.email "${BOT_EMAIL}"
+
+        # Only stage tracked files; .python-version may have been removed by this action
+        git add -u -- . ':(exclude).python-version'
+        if git diff --staged --quiet; then
+          echo "No fixes to commit."
+          exit 0
+        fi
+
+        git commit -m "${COMMIT_MESSAGE}"
+
+        AUTH_HEADER="AUTHORIZATION: basic $(printf 'x-access-token:%s' "${TOKEN}" | base64 | tr -d '\n')"
+        echo "::add-mask::${AUTH_HEADER#AUTHORIZATION: basic }"
+        # Reset any persisted credentials before setting the bot token to avoid duplicate headers
+        git -c "http.${GITHUB_SERVER_URL}/.extraheader=" \
+            -c "http.${GITHUB_SERVER_URL}/.extraheader=${AUTH_HEADER}" \
+            push origin "HEAD:refs/heads/${BRANCH}"
 
     # ------------------------------------------------------------------------
 
