@@ -28,16 +28,13 @@ import update_tooling_versions as tooling_versions
 
 
 def test_apply_version_updates_to_matching_actions_updates_vale(tmp_path: Path) -> None:
-    """Update the Vale input default without changing other version defaults."""
+    """Update the pinned Vale version without changing other version pins."""
     action_file = tmp_path / "action.yml"
     action_file.write_text(
-        "inputs:\n"
-        "  vale-version:\n"
-        "    description: |\n"
-        "      Vale version.\n"
-        "    default: '3.25.1'\n"
-        "  other-version:\n"
-        "    default: '1.2.3'\n",
+        "env:\n"
+        '  VALE_VERSION: ${{ inputs.vale-version }}\n'
+        '  DEFAULT_VALE_VERSION: "3.25.1"\n'
+        '  OTHER_VERSION: "1.2.3"\n',
         encoding="utf-8",
     )
 
@@ -47,8 +44,8 @@ def test_apply_version_updates_to_matching_actions_updates_vale(tmp_path: Path) 
 
     assert updated_files == [action_file]
     updated_text = action_file.read_text(encoding="utf-8")
-    assert "default: '3.26.0'" in updated_text
-    assert "default: '1.2.3'" in updated_text
+    assert 'DEFAULT_VALE_VERSION: "3.26.0"' in updated_text
+    assert 'OTHER_VERSION: "1.2.3"' in updated_text
 
 
 def test_resolve_tooling_updates_includes_vale(monkeypatch) -> None:

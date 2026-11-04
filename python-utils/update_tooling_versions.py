@@ -162,14 +162,13 @@ def update_quarto_version(path: Path, version: str) -> str:
 
 
 def update_vale_version(path: Path, version: str) -> None:
-    """Update the Vale version input default in an action YAML file."""
+    """Update the pinned default Vale version in an action YAML file."""
     text = path.read_text(encoding="utf-8")
     updated_text, count = re.subn(
-        r"""(^  vale-version:\n(?:(?!^  \S)[^\n]*\n)*?^    default:\s*)(['"])\d+\.\d+\.\d+\2""",
-        lambda match: f"{match.group(1)}{match.group(2)}{version}{match.group(2)}",
+        r'(DEFAULT_VALE_VERSION:\s*")\d+\.\d+\.\d+(\")',
+        rf"\g<1>{version}\2",
         text,
         count=1,
-        flags=re.MULTILINE,
     )
     if count != 1:
         raise SystemExit(f"Could not find the Vale version to update in {path}")
@@ -194,7 +193,7 @@ def apply_version_updates_to_matching_actions(
         if quarto_version is not None and "QUARTO_VERSION" in text:
             update_quarto_version(path, quarto_version)
             updated_files.append(path)
-        if vale_version is not None and "vale-version:" in text:
+        if vale_version is not None and "DEFAULT_VALE_VERSION" in text:
             update_vale_version(path, vale_version)
             updated_files.append(path)
     return updated_files
