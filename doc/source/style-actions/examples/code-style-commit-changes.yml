@@ -8,6 +8,6 @@ code-style:
       uses: ansys/actions/code-style@{{ version }}
       with:
         commit-changes: true
-        token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-        bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-        bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+        token: ${{ '{{ secrets.PYANSYS_CI_BOT_TOKEN }}' }}
+        bot-user: ${{ '{{ secrets.PYANSYS_CI_BOT_USERNAME }}' }}
+        bot-email: ${{ '{{ secrets.PYANSYS_CI_BOT_EMAIL }}' }}
