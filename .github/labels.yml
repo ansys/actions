@@ -90,14 +90,3 @@
 - name: 'breaking'
   description: Changes that break backward compatibility
   color: ff0000
-
-# Hacktoberfest labels -------------------------------------------------------
-
-- name: 'hacktoberfest'
-  description: Hacktoberfest related
-  color: 62ca50
-
-- name: 'hacktoberfest-accepted'
-  description: Hacktoberfest accepted contribution
-  color: 62ca50
-

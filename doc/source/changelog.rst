@@ -9,6 +9,77 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.1.5 <https://github.com/ansys/actions/releases/tag/v11.1.5>`_ - November 03, 2026
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow doc-changelog to select Towncrier config file
+          - `#1567 <https://github.com/ansys/actions/pull/1567>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Avoid direct-URL requirements crashing safety
+          - `#1646 <https://github.com/ansys/actions/pull/1646>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump importlib-metadata from 9.0.0 to 10.1.0
+          - `#1636 <https://github.com/ansys/actions/pull/1636>`_
+
+        * - Bump actions/setup-python from 7.0.0 to 7.1.0 in /_setup-python in the github-actions group across 1 directory
+          - `#1639 <https://github.com/ansys/actions/pull/1639>`_
+
+        * - Bump docker/login-action from 4.6.0 to 4.7.0 in /.github/workflows in the test-related-actions group across 1 directory
+          - `#1642 <https://github.com/ansys/actions/pull/1642>`_
+
+        * - Bump the build-related-actions group across 3 directories with 2 updates
+          - `#1643 <https://github.com/ansys/actions/pull/1643>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump pypi publish action
+          - `#1644 <https://github.com/ansys/actions/pull/1644>`_
+
+
+`11.1.4 <https://github.com/ansys/actions/releases/tag/v11.1.4>`_ - October 27, 2026
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow backticks in pull request titles
+          - `#1626 <https://github.com/ansys/actions/pull/1626>`_
+
+
 `11.1.3 <https://github.com/ansys/actions/releases/tag/v11.1.3>`_ - October 23, 2026
 ====================================================================================
 

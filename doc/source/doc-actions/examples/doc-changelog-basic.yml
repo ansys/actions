@@ -26,3 +26,5 @@ changelog-fragment:
         # use-pull-request-title: true
         # uncomment this if you don't have any towncrier configuration in your pyproject.toml file
         # use-default-towncrier-config: true
+        # uncomment this line to force using a specific towncrier config file
+        # config-file: towncrier.toml

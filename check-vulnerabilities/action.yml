@@ -493,12 +493,13 @@ runs:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         ${ACTIVATE_VENV}
+        # Direct-URL lines ("pkg @ https://...") make "safety check" crash when a vulnerability is found
         if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
           poetry export --without-hashes --format=requirements.txt > "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip freeze > "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+          uv pip list --format freeze --exclude-editable > "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
         else
-          python -m pip freeze > "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
+          python -m pip list --format freeze --exclude-editable > "${GITHUB_ACTION_PATH}/requirements-for-safety.txt"
         fi
 
     # ------------------------------------------------------------------------
