@@ -7,7 +7,7 @@ env:
   MAIN_PYTHON_VERSION: '3.14'
   DOCUMENTATION_CNAME: 'actions.docs.ansys.com'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
-  ACTIONLINT_VERSION: '1.7.2'
+  ACTIONLINT_VERSION: '1.7.12'
 
 permissions:
   contents: read

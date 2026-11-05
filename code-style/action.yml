@@ -222,7 +222,7 @@ runs:
       run: |
         if [[ -n "${HEAD_REPO}" ]] && [[ "${HEAD_REPO}" != "${REPOSITORY}" ]]; then
           echo "::warning::Pull request comes from a fork (${HEAD_REPO}). Skipping commit of the fixes."
-          echo "COMMIT=false" >> ${GITHUB_OUTPUT}
+          echo "COMMIT=false" >> "${GITHUB_OUTPUT}"
           exit 0
         fi
 
@@ -244,8 +244,8 @@ runs:
           exit 1
         fi
 
-        echo "COMMIT=true" >> ${GITHUB_OUTPUT}
-        echo "BRANCH=${BRANCH}" >> ${GITHUB_OUTPUT}
+        echo "COMMIT=true" >> "${GITHUB_OUTPUT}"
+        echo "BRANCH=${BRANCH}" >> "${GITHUB_OUTPUT}"
 
     - name: "Check GitHub permissions for committing"
       if: steps.commit-config.outputs.COMMIT == 'true'
@@ -498,7 +498,7 @@ runs:
         if [[ ! -s "${PATCH_FILE}" ]]; then
           # Hooks failed without changing files, so the issues need manual fixes
           echo "::error::Hooks reported issues that cannot be fixed automatically."
-          echo "NON_FIXABLE=true" >> ${GITHUB_OUTPUT}
+          echo "NON_FIXABLE=true" >> "${GITHUB_OUTPUT}"
           exit 0
         fi
 
@@ -514,7 +514,7 @@ runs:
         git_auth fetch --no-tags --depth=1 origin "refs/heads/${BRANCH}"
         WORKTREE="${RUNNER_TEMP}/code-style-fixes"
         git worktree add --detach "${WORKTREE}" FETCH_HEAD
-        cd "${WORKTREE}"
+        cd "${WORKTREE}" || exit 1
 
         if ! git apply --3way --index "${PATCH_FILE}"; then
           echo "::error::Unable to apply the fixes on top of '${BRANCH}'. Run the hooks locally and push the changes."
@@ -560,6 +560,7 @@ runs:
             echo
             echo "These hooks report issues that cannot be fixed automatically:"
             echo
+            # shellcheck disable=SC2016
             grep -E '\.{3,}.*Failed$' "${LOG_FILE}" | sed -E 's/\.{3,}.*$//; s/^/- `/; s/$/`/' || true
             echo
             echo "Run \`prek run --all-files\` or \`pre-commit run --all-files\` locally, fix the issues and push the changes."

@@ -476,13 +476,14 @@ runs:
       run: |
         # shellcheck source=/dev/null
         source .venv/bin/activate
-        ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINXOPTS}"
+        read -r -a make_command <<< "${SPHINX_BUILD_MAKE}"
+        "${make_command[@]}" -C doc html SPHINXOPTS="${SPHINXOPTS}"
         if [[ "${BUILD_PDF}" == 'true' ]]; then
-          ${SPHINX_BUILD_MAKE} -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
+          "${make_command[@]}" -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
         fi
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          ${SPHINX_BUILD_MAKE} -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
+          "${make_command[@]}" -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
         fi
 
     - name: "Build HTML and PDF documentation using xvfb"
@@ -496,13 +497,14 @@ runs:
       run: |
         # shellcheck source=/dev/null
         source .venv/bin/activate
-        xvfb-run ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINXOPTS}"
+        read -r -a make_command <<< "${SPHINX_BUILD_MAKE}"
+        xvfb-run "${make_command[@]}" -C doc html SPHINXOPTS="${SPHINXOPTS}"
         if [[ "${BUILD_PDF}" == 'true' ]]; then
-          xvfb-run ${SPHINX_BUILD_MAKE} -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
+          xvfb-run "${make_command[@]}" -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
         fi
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          xvfb-run ${SPHINX_BUILD_MAKE} -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
+          xvfb-run "${make_command[@]}" -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
         fi
 
     # ------------------------------------------------------------------------
