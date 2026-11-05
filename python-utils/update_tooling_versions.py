@@ -233,7 +233,8 @@ def apply_tooling_updates(cutoff_seconds: int) -> None:
         print(f"Updated files: {relative_paths}")
         print(
             f"Updated Syft={syft_tag or 'unchanged'}, "
-            f"Quarto={quarto_tag or 'unchanged'}, Vale={vale_tag or 'unchanged'}"
+            f"Quarto={quarto_tag or 'unchanged'}, "
+            f"Vale={vale_tag or 'unchanged'}"
         )
 
 
