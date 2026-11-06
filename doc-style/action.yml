@@ -99,8 +99,9 @@ inputs:
 
   vale-version:
     description: |
-      Version number for Vale.
-    default: '3.4.1'
+      Version number for Vale. If empty, the version pinned by the action is
+      used.
+    default: ''
     required: false
     type: string
 
@@ -189,8 +190,10 @@ runs:
       shell: bash
       env:
         VALE_VERSION: ${{ inputs.vale-version }}
+        DEFAULT_VALE_VERSION: "3.25.1"
       run: |
-        version="${VALE_VERSION}"
+        version="${VALE_VERSION:-${DEFAULT_VALE_VERSION}}"
+        echo "VALE_VERSION=${version}" >> "${GITHUB_OUTPUT}"
         vale_major_version=$( echo "$version" | cut -d '.' -f 1)
         echo "VALE_MAJOR_VERSION=$vale_major_version" >> "${GITHUB_OUTPUT}"
         echo "VALE_MAJOR_VERSION set to $vale_major_version"  # Add this line for debugging
@@ -325,4 +328,4 @@ runs:
         fail_level: ${{ inputs.fail-level }}
         filter_mode: nofilter
         vale_flags: "${{ steps.vale-flags.outputs.VALE_FLAGS }}"
-        version: ${{ inputs.vale-version }}
+        version: ${{ steps.vale-major-version.outputs.VALE_VERSION }}
