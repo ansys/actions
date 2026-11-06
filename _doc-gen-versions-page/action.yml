@@ -61,9 +61,9 @@ runs:
       shell: bash
       run: |
         if [[ -f 'version/stable/index.html' || -f 'version/dev/index.html' ]]; then
-          echo "HAS_BASELINE=true" >> ${GITHUB_OUTPUT}
+          echo "HAS_BASELINE=true" >> "${GITHUB_OUTPUT}"
         else
-          echo "HAS_BASELINE=false" >> ${GITHUB_OUTPUT}
+          echo "HAS_BASELINE=false" >> "${GITHUB_OUTPUT}"
           echo "Warning: no 'version/stable/index.html' or 'version/dev/index.html' present; skipping versions-page generation."
         fi
 
@@ -96,13 +96,13 @@ runs:
       run: |
 
         # Move inside of the version folder
-        cd version
+        cd version || exit 1
 
         # Create an array of folder names in reversed order
-        folders=($(find . -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort -r))
-
-        # Get the absolute path of the current directory
-        abs_path=$(pwd)
+        folders=()
+        while IFS= read -r -d '' folder; do
+          folders+=("$folder")
+        done < <(find . -maxdepth 1 -mindepth 1 -type d -printf '%f\0' | sort -zr)
 
         # Start building the HTML table
         table="<table class='table'><thead><tr><th>Version</th><th>URL</th></tr></thead><tbody>"
@@ -124,12 +124,9 @@ runs:
         # Declare the HTML file
         html_file="index.html"
 
-        # Get the ID of the element hosting the content
-        content_element_id="${CONTENT_ELEMENT_ID}"
-
         # Declare the content of the script
         script_content=$(cat <<EOF
-        const element = document.getElementById("$content_element_id");
+        const element = document.getElementById("$CONTENT_ELEMENT_ID");
         element.innerHTML = "$content";
         EOF
         )

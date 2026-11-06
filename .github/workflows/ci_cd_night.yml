@@ -178,7 +178,7 @@ jobs:
           echo "========================================================"
 
           # Count missing actions
-          MISSING_COUNT=$(printf "$MISSING_ACTIONS" | wc -l)
+          MISSING_COUNT=$(printf '%b' "$MISSING_ACTIONS" | wc -l)
 
           echo "Total missing actions: $MISSING_COUNT"
 
@@ -187,12 +187,12 @@ jobs:
               echo ""
               echo "ERROR: Some third-party actions are not covered by dependabot.yml"
               echo "A pull request will be opened to add the missing actions to .github/dependabot.yml"
-              echo "MISSING_ACTIONS_FOUND=true" >> ${GITHUB_OUTPUT}
-              echo "MISSING_ACTIONS=${MISSING_ACTIONS}" >> ${GITHUB_OUTPUT}
+              echo "MISSING_ACTIONS_FOUND=true" >> "${GITHUB_OUTPUT}"
+              echo "MISSING_ACTIONS=${MISSING_ACTIONS}" >> "${GITHUB_OUTPUT}"
           else
               echo ""
               echo "SUCCESS: All third-party actions are covered by dependabot.yml"
-              echo "MISSING_ACTIONS_FOUND=false" >> ${GITHUB_OUTPUT}
+              echo "MISSING_ACTIONS_FOUND=false" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: "Update dependabot.yml with missing actions"
@@ -260,7 +260,7 @@ jobs:
           body_msg="Update dependabot.yml with missing actions.
 
           > [!NOTE]
-          > Before merging this pull request, check if any of the added actions can be moved from "must-be-assigned-actions" group to a more specific group and make the necessary changes"
+          > Before merging this pull request, check if any of the added actions can be moved from \"must-be-assigned-actions\" group to a more specific group and make the necessary changes"
 
           gh pr create --title "${pr_title}" --body "${body_msg}" --reviewer "ansys/pyansys-core"
 

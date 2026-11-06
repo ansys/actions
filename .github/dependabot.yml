@@ -84,6 +84,7 @@ updates:
         patterns:
           - "amannn/action-semantic-pull-request"
           - "jbergstroem/hadolint-gh-action"
+          - "saleor/shellcheck-gha"
       # Group dedicated to vale due to the use of a release branch (reviewdog20)
       vale-action:
         patterns:

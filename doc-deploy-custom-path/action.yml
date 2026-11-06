@@ -182,9 +182,9 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
       run: |
         if [[ "${INPUT_REPOSITORY}" == "current" ]]; then
-          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY=${GITHUB_REPOSITORY}" >> "${GITHUB_OUTPUT}"
         else
-          echo "REPOSITORY=${INPUT_REPOSITORY}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY=${INPUT_REPOSITORY}" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Checkout ${{ steps.get-repository-name.outputs.REPOSITORY }} repository"
@@ -267,7 +267,7 @@ runs:
         sudo apt-get install -y cargo && cargo install ouch --version 0.7.1
         export PATH="$HOME/.cargo/bin/:$PATH"
         ouch --version
-        cd "${CUSTOM_PATH}"
+        cd "${CUSTOM_PATH}" || exit 1
         compressed_artifact=$(find . -maxdepth 1 -type f -not -name ".*")
         mkdir _decomp
         ouch decompress "$compressed_artifact" --dir _decomp --yes
