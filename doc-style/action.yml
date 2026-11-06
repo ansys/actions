@@ -32,6 +32,8 @@ description: |
 
        - **contents**: ``read`` - Required to checkout repository code when the repository is not public
        - **pull-requests**: ``write`` - Required for Vale to add review comments and suggestions on pull requests
+       - **checks**: ``write`` - Required to report Vale results in a check run. Without it, results are
+         reported as log annotations, which GitHub limits to 10 errors and 10 warnings per step
 
 inputs:
 
@@ -150,7 +152,7 @@ runs:
     - name: "Check GitHub permissions"
       uses: $/_check-github-permissions
       with:
-        permissions: "contents: read, pull-requests: write"
+        permissions: "contents: read, pull-requests: write, checks: write"
         token: ${{ inputs.token }}
         doc-url: "https://actions.docs.ansys.com/version/stable/style-actions/index.html#doc-style-action"
 
@@ -320,6 +322,7 @@ runs:
         files: ${{ inputs.files }}
         reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
         fail_level: ${{ inputs.fail-level }}
+        fail_on_error: ${{ inputs.fail-level != 'none' }}
         filter_mode: nofilter
         vale_flags: "${{ steps.vale-flags.outputs.VALE_FLAGS }}"
         version: ${{ steps.vale-major-version.outputs.VALE_VERSION }}
