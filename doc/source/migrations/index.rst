@@ -7,6 +7,17 @@ This guide provides information on new features, breaking changes, how to migrat
 from one version of the actions to another, and other upstream dependencies that
 have been updated.
 
+Version ``v11.2``
+-----------------
+
+**New Features:**
+
+- **Check run reporting in doc-style:** The ``doc-style`` action now requires the ``checks: write``
+  permission so that Vale reports its results in a check run. Without this permission, results are
+  reported as log annotations, which GitHub limits to 10 errors and 10 warnings per step. The action
+  still fails when Vale finds issues at or above ``fail-level``. Add ``checks: write`` to the
+  ``permissions`` block of the job that runs ``doc-style``.
+
 Version ``v11.1``
 -----------------
 
