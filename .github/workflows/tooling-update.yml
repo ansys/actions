@@ -1,4 +1,4 @@
-# This helps in performing updates for tooling such as Syft and Quarto.
+# This helps in performing updates for tooling such as Syft, Quarto, and Vale.
 
 name: Semestrial or manual tooling update PR
 
@@ -55,7 +55,7 @@ jobs:
           PR_BODY=$(cat <<'EOF'
           ## Summary
 
-          This PR updates the pinned versions of Syft and Quarto to the latest stable releases older than one week.
+          This PR updates the pinned versions of Syft, Quarto, and Vale to their latest stable releases older than one week.
           EOF
           )
           CURRENT_DATE=$(date +%Y-%m)
