@@ -83,6 +83,7 @@ runs:
     # in the Post Run action saying that the cache folder doesn't exist on disk.
     # This is related to our use of uv to install packages, see https://github.com/ansys/actions/pull/811
     - name: "Set up Python using cache"
+      id: setup-python-cache
       if: ${{ inputs.use-cache == 'true' && inputs.provision-uv == 'false'}}
       uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
@@ -92,11 +93,54 @@ runs:
         cache-dependency-path: 'pyproject.toml'
 
     - name: "Set up Python without using cache"
+      id: setup-python-no-cache
       if: ${{ inputs.use-cache == 'false' || (inputs.use-cache == 'true' && inputs.provision-uv == 'true') }}
       uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: ${{ inputs.python-version }}
         check-latest: true
+
+    # Check the installed interpreter version (related to https://discuss.python.org/t/109678)
+    - name: "Verify Python includes the eMudhra security fix"
+      id: python-security-check
+      shell: bash
+      env:
+        PYTHON_VERSION: ${{ steps.setup-python-cache.outputs.python-version || steps.setup-python-no-cache.outputs.python-version }}
+      run: |
+        supported=false
+        if [[ "${PYTHON_VERSION}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+          major=$((10#${BASH_REMATCH[1]}))
+          minor=$((10#${BASH_REMATCH[2]}))
+          patch=$((10#${BASH_REMATCH[3]}))
+          if (( major == 3 )); then
+            case "${minor}" in
+              11) minimum_patch=18 ;;
+              12) minimum_patch=16 ;;
+              13) minimum_patch=18 ;;
+              14) minimum_patch=10 ;;
+              15) minimum_patch=2 ;;
+              *) minimum_patch=0 ;;
+            esac
+            if (( minor >= 11 && patch >= minimum_patch )); then
+              supported=true
+            fi
+          elif (( major > 3 )); then
+            supported=true
+          fi
+        fi
+        echo "python_version_supported=${supported}" >> "${GITHUB_OUTPUT}"
+
+    - uses: $/_logging
+      if: steps.python-security-check.outputs.python_version_supported == 'false'
+      env:
+        PYTHON_VERSION: ${{ steps.setup-python-cache.outputs.python-version || steps.setup-python-no-cache.outputs.python-version }}
+      with:
+        level: "ERROR"
+        message: >
+          Python ${ PYTHON_VERSION } does not meet the security version requirement.
+          Use a stable CPython release (>=3.11.18, >=3.12.16, >=3.13.18, >=3.14.10,
+          or >=3.15.2) within the corresponding minor branch, or a later stable branch.
+          Python 3.10 and older are not supported.
 
     - name: "Set up uv"
       if: ${{ inputs.provision-uv == 'true' }}
