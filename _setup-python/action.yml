@@ -104,9 +104,9 @@ runs:
     - name: "Verify Python includes the eMudhra security fix"
       id: python-security-check
       shell: bash
-      env:
-        PYTHON_VERSION: ${{ steps.setup-python-cache.outputs.python-version || steps.setup-python-no-cache.outputs.python-version }}
       run: |
+        PYTHON_VERSION=$(python -c "import platform; print(platform.python_version())")
+        echo "python-version=${PYTHON_VERSION}" >> "${GITHUB_OUTPUT}"
         supported=false
         if [[ "${PYTHON_VERSION}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
           major=$((10#${BASH_REMATCH[1]}))
@@ -132,15 +132,14 @@ runs:
 
     - uses: $/_logging
       if: steps.python-security-check.outputs.python_version_supported == 'false'
-      env:
-        PYTHON_VERSION: ${{ steps.setup-python-cache.outputs.python-version || steps.setup-python-no-cache.outputs.python-version }}
       with:
         level: "ERROR"
         message: >
-          Python ${ PYTHON_VERSION } does not meet the security version requirement.
-          Use a stable CPython release (>=3.11.18, >=3.12.16, >=3.13.18, >=3.14.10,
-          or >=3.15.2) within the corresponding minor branch, or a later stable branch.
-          Python 3.10 and older are not supported.
+          Python ${{ steps.python-security-check.outputs.python-version }} does not
+          meet the security version requirement. Use a stable CPython release
+          (>=3.11.18, >=3.12.16, >=3.13.18, >=3.14.10, or >=3.15.2) within the
+          corresponding minor branch, or a later stable branch. Python 3.10 and
+          older are not supported.
 
     - name: "Set up uv"
       if: ${{ inputs.provision-uv == 'true' }}
