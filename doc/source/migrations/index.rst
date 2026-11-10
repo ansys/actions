@@ -15,7 +15,7 @@ Version ``v11.2``
 - **Check run reporting in doc-style:** The ``doc-style`` action now requires the ``checks: write``
   permission so that Vale reports its results in a check run. Without this permission, results are
   reported as log annotations, which GitHub limits to 10 errors and 10 warnings per step. The action
-  still fails when Vale finds issues at or above ``fail-level``. Add ``checks: write`` to the
+  still fails when Vale finds issues with a severity equal to or higher than ``fail-level``. Add ``checks: write`` to the
   ``permissions`` block of the job that runs ``doc-style``.
 
 Version ``v11.1``
@@ -32,7 +32,7 @@ Version ``v11.1``
 - **Python 3.10 minimum:** Actions using the shared Python setup no longer support Python 3.9.
   Update the ``python-version`` input and workflow matrices to Python 3.10 or newer.
   The shared setup installs pip 26.2.2, which requires Python 3.10 or newer, to remove trust
-  in the compromised emSign CA.
+  in the compromised ``emSign`` CA.
 
 - **Minimum uv version:** The shared Python setup now provisions uv 0.13.4 or newer.
   Update any ``required-version`` setting in ``uv.toml`` or ``[tool.uv]`` that excludes
@@ -241,13 +241,13 @@ Version ``v11``
     content="noindex...">`` in their ``<head>`` and skips a default list of boilerplate/utility
     filenames (``announcement.html``, ``search.html``, ``genindex.html``, ``py-modindex.html``,
     ``404.html``, ``webpack-macros.html``). ``<lastmod>`` is emitted only for the site root, since
-    ``actions/download-artifact`` does not preserve per-file mtimes.
+    ``actions/download-artifact`` does not preserve per-file modification times.
   - The generated ``robots.txt`` conditionally advertises the sitemap: the deployment actions omit
     the ``Sitemap:`` line automatically when no ``version/stable/`` exists, so ``robots.txt`` no
     longer points at a URL that would return 404.
   - The root landing page is now stripped of any inherited ``robots`` meta tag and pinned to a
     self-referential ``<link rel="canonical" href="https://<cname>/">`` after being copied from
-    a non-stable version. This prevents the site's root from being deindexed when only prerelease
+    a non-stable version. This prevents search engines from removing the site's root from their index when only prerelease
     or development documentation is available.
 
 **Migration Steps:**
@@ -281,7 +281,7 @@ Version ``v11``
   future breaking changes.
 
 - **Changed default behavior of tests-pytest dependency inputs:** The ``tests-pytest`` action now mirrors the
-  ``doc-build`` behavior described above for the ``optional-dependencies-name`` and ``group-dependencies-name``
+  ``doc-build`` behavior described earlier for the ``optional-dependencies-name`` and ``group-dependencies-name``
   inputs. The important differences are:
 
   - The action defaults to ``optional-dependencies-name=tests`` (for backwards compatibility).
@@ -446,7 +446,7 @@ Version ``v10.1``
   - ``group-dependencies-name``: Refers to the dependency groups defined in the same file.
 
   If your documentation dependencies are defined as extras, changes to your workflow are likely not needed since the default value for ``optional-dependencies-name``
-  will target the ``doc`` extra. However, using dependency groups (as is the case with most PyAnsys libraries) requires the following update to your workflow:
+  targets the ``doc`` extra. However, using dependency groups (as is the case with most PyAnsys libraries) requires the following update to your workflow:
 
   .. tab-set::
 
@@ -536,7 +536,7 @@ Version ``v10``
   ``toml-version`` input.
 
 - **Build-Wheelhouse Changes:**  the ``build-wheelhouse`` action now installs packages in a virtual environment
-  instead of at the system level. If you have subsequent workflow steps (e.g., running smoke tests) that depend on
+  instead of at the system level. If you have subsequent workflow steps (for example, running smoke tests) that depend on
   these packages, activate the virtual environment using the action's ``activate-venv`` output. For example:
 
   .. code-block:: yaml
@@ -571,7 +571,7 @@ Version ``v9.0``
 
 - Use ``ansys/actions/check-licenses`` actions with Python version 3.10 or higher.
 - To use ``check-licenses: true`` with the ``ansys/actions/build-wheelhouse`` action, use Python version 3.10 or higher.
-- Update your workflow to not use ``use-trusted-publisher: true`` with our pypi release actions.
+- Update your workflow to not use ``use-trusted-publisher: true`` with the ``ansys/actions`` PyPI release actions.
 
   .. warning::
 
@@ -618,7 +618,7 @@ Version ``v8.2``
 
 - Added a new action named ``ansys/actions/hk-automerge-prs``. This action allows maintainers to auto-approve and merge
   ``dependabot`` PRs and ``pre-commit.ci`` PRs. It is recommended to add the action at the end of the workflow, once all the
-  stages have finished successfully. That way, in case a repository has failing stages, it is not run. This action will run in case
+  stages have finished successfully. That way, in case a repository has failing stages, it is not run. This action runs only if
   the PR has been created by ``dependabot`` or ``pre-commit.ci``. You can see an example of its implementation
   `here <https://github.com/ansys/pyansys/blob/e00400f3b0ad3c09d82d91a97045e6b4d3d7692c/.github/workflows/ci-build.yml#L226-L239>`_
   and the `associated PR/commit <https://github.com/ansys/pyansys/commit/e9f221428a9cc7fc64dd5f775699871288063512>`_.
@@ -703,8 +703,8 @@ Version ``v8``
 
 **Deprecated features:**
 
-- The ``ansys/actions/doc-deploy-index`` action has been deprecated and will be
-  removed in the next release. With the deprecation of ``pymeilisearch`` and
+- The ``ansys/actions/doc-deploy-index`` action has been deprecated and is
+  scheduled for removal in the next release. With the deprecation of ``pymeilisearch`` and
   the adoption of a static search index via the ``ansys-sphinx-theme``, the
   ``ansys/actions/doc-deploy-index`` action is no longer necessary.
 
@@ -748,7 +748,7 @@ Version ``v7``
 
 **New features:**
 
-- Added an optional input to the ``ansys/actions/build-library`` action to disable library build
+- Added an optional input to the ``ansys/actions/build-library`` action to turn off library build
   validation on demand using the ``validate-build: false`` argument. This is useful when you want to
   skip the library build validation step in the action.
 
@@ -781,7 +781,7 @@ Version ``v6``
   and the `doc-deploy-stable
   <https://actions.docs.ansys.com/version/stable/doc-actions/index.html#doc-deploy-stable-action>`_.
   Users are not required to apply any changes to their ``conf.py`` or
-  ``.github/workflows/*.yml`` files. Noticable changes include:
+  ``.github/workflows/*.yml`` files. Noticeable changes include:
 
   - No more redirect from landing page to `version/stable/index.html`
   - Generation of ``robots.txt`` file for avoiding indexing old documentation versions
@@ -789,7 +789,7 @@ Version ``v6``
   - Inclusion of `canonical` link tags in all HTML files for SEO purposes
 
 - Extend ``ansys/actions/doc-build`` to be able to run in Windows runners.
-  To build the documentation in a Windows runner, we install ``Chocolatey`` and ``MiKTeX``.
+  To build the documentation in a Windows runner, the action installs ``Chocolatey`` and ``MiKTeX``.
 
 - Allow ``ansys/actions/commit-style`` to work with upper case in the type field of a commit.
   Expected types are upper cases of  `conventional commit types
@@ -819,7 +819,7 @@ Version ``v5``
 - Allow using the ``ansys/actions/doc-build`` action to build documentation using a dedicated requirements file (and
   consequently, no need to have a Python project to use it).
 - Allow for independent documentation releases in case of patch release when using ``ansys/actions/doc-deploy-stable`` action.
-  This will create independent documentation versions for patch releases.
+  This creates independent documentation versions for patch releases.
 
 **Breaking changes:**
 

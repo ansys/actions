@@ -19,7 +19,7 @@ Subsequent syncs keep the migration branch up to date with the contributor's for
    The ``github-token`` input must be a token with the following permissions:
 
    - ``contents: write`` - push migration branches
-   - ``pull-requests: write`` - create PRs, manage comments and reactions
+   - ``pull-requests: write`` - create PRs, manage comments, and manage reactions
 
    Additionally, the provided ``github-token`` must have ``read:org`` scope
    to check team membership for authorization.
@@ -119,7 +119,7 @@ After the first migration, contributors should:
 - When they want their latest changes reflected in the migration PR, leave a
   comment on the fork PR tagging a member of the maintainer team and asking for
   a sync.
-- **Not** push directly to the ``migration/pr-<N>`` branch — they do not have
+- **Not** push directly to the ``migration/pr-<N>`` branch because they do not have
   access to it, and a subsequent sync would overwrite any such changes anyway.
 
 
