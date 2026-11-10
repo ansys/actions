@@ -201,6 +201,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{ steps.collect-vale-files.outputs.vale_files }}
           checkout: false
+          fail-level: warning
 
   doc-build:
     name: "Doc build"
