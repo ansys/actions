@@ -205,6 +205,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+        build-pdf: [true, false]
       fail-fast: false
     steps:
 
@@ -218,7 +219,8 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           use-python-cache: false
           needs-quarto: true
-          uploaded-artifact-name-prefix: documentation-${{ matrix.os }}
+          build-pdf: ${{ matrix.build-pdf }}
+          uploaded-artifact-name-prefix: documentation-${{ matrix.os }}${{ !matrix.build-pdf && '-no-pdf' || '' }}
           checkout: false
           group-dependencies-name: 'doc'
 
