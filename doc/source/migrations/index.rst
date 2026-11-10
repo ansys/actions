@@ -494,7 +494,7 @@ Version ``v10``
   `zizmor <https://docs.zizmor.sh/>`_ static analysis tool. See `zizmor audit rules <https://docs.zizmor.sh/audits/>`_
   for information about detected issues and their remediation.
 
-- **PR Documentation Deployment:** Added ``ansys/action/doc-deploy-pr`` to deploy HTML documentation
+- **PR Documentation Deployment:** added ``ansys/action/doc-deploy-pr`` to deploy HTML documentation
   for pull requests at ``https://<cname>/pull/<pr-number>/``. Documentation is automatically removed
   when the pull request is closed. Refer to :ref:`docs-deploy-pr-setup` for setup details.
 
@@ -725,7 +725,7 @@ Version ``v8``
     bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
     bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
-- Add the permissions and token to the ``ansys/actions/release-github`` action as follows:
+- Add the permissions and token to the ``ansys/actions/release-github`` action, as shown in this example.
 
 .. code:: yaml
 
