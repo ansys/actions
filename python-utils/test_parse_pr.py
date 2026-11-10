@@ -21,7 +21,7 @@
 # SOFTWARE.
 """Tests for the parse_pr module."""
 
-from parse_pr import get_invalid_title_characters
+from parse_pr import check_pull_request_title, get_invalid_title_characters
 import pytest
 
 
@@ -35,14 +35,24 @@ import pytest
         "fix: Update the ansys.mapdl.core import path",
         "build(pip): update click requirement from <9,>=8.3.3 to >=8.4.0,<9",
         'Revert "feat: Add support for Python 3.14"',
+        "Modified the class `MyClass`",
     ],
 )
 def test_allowed_title(title):
     """Test that typical PyAnsys pull request titles are accepted."""
     assert get_invalid_title_characters(title) == []
+    check_pull_request_title(title)
 
 
-@pytest.mark.parametrize("character", ["*", "`", "[", "]", "#", "\\", "@", "+", "|"])
+@pytest.mark.parametrize("character", ["*", "[", "]", "#", "\\", "@", "+", "|"])
 def test_rejects_unsupported_characters(character):
     """Test that rich text and other unsupported characters are rejected."""
     assert get_invalid_title_characters(f"fix: title {character}") == [character]
+
+
+@pytest.mark.parametrize("title", ["fix: Modified `MyClass", "fix: `a` and `b` and `c"])
+def test_rejects_unmatched_backticks(title, capsys):
+    """Test that titles with an odd number of backticks are rejected."""
+    with pytest.raises(SystemExit):
+        check_pull_request_title(title)
+    assert "unmatched backtick" in capsys.readouterr().out
