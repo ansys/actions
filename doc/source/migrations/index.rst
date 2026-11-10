@@ -12,7 +12,7 @@ Version ``v11.2``
 
 **New Features:**
 
-- **Check run reporting in doc-style:** The ``doc-style`` action now requires the ``checks: write``
+- **Check run reporting in doc-style:** the ``doc-style`` action now requires the ``checks: write``
   permission so that Vale reports its results in a check run. Without this permission, results are
   reported as log annotations, which GitHub limits to 10 errors and 10 warnings per step. The action
   still fails when Vale finds issues with a severity equal to or higher than ``fail-level``. Add ``checks: write`` to the
@@ -23,24 +23,24 @@ Version ``v11.1``
 
 **Breaking Changes:**
 
-- **Character limits for pull request titles:** The ``check-pr-title`` and ``doc-changelog`` actions
+- **Character limits for pull request titles:** the ``check-pr-title`` and ``doc-changelog`` actions
   now check the characters in the pull request title. A title can contain only letters, digits,
   spaces, and these characters: ``! ( ) : - / _ .``. If the title contains a different character,
   the action fails and shows the unsupported characters. This check prevents formatting errors in
   the changelog and in the GitHub release notes.
 
-- **Python 3.10 minimum:** Actions using the shared Python setup no longer support Python 3.9.
+- **Python 3.10 minimum:** actions using the shared Python setup no longer support Python 3.9.
   Update the ``python-version`` input and workflow matrices to Python 3.10 or newer.
   The shared setup installs pip 26.2.2, which requires Python 3.10 or newer, to remove trust
   in the compromised ``emSign`` CA.
 
-- **Minimum uv version:** The shared Python setup now provisions uv 0.13.4 or newer.
+- **Minimum uv version:** the shared Python setup now provisions uv 0.13.4 or newer.
   Update any ``required-version`` setting in ``uv.toml`` or ``[tool.uv]`` that excludes
   these versions.
 
 **New Features:**
 
-- **Same-workflow releases:** The ``doc-deploy-changelog`` action has a new ``same-workflow`` input
+- **Same-workflow releases:** the ``doc-deploy-changelog`` action has a new ``same-workflow`` input
   (default: ``false``). By default, the action stops the workflow after it updates the changelog and
   recreates the release tag. The new tag then starts a second workflow run. When ``same-workflow`` is
   ``true``, the release jobs continue in the workflow run of the user who pushed the tag. Use this
@@ -59,19 +59,19 @@ Version ``v11.1``
   The default values keep the previous behavior. For a complete workflow, see
   :ref:`same_workflow_release`.
 
-- **Permission checks:** All actions now check the permissions of the GitHub token when they start.
+- **Permission checks:** all actions now check the permissions of the GitHub token when they start.
   If a permission is missing, the action shows a ``Missing permission`` warning with a link to the
   action documentation. The check does not stop the job. The check uses only read operations. Thus,
   it cannot confirm write permissions.
 
-- **Optional uv audit vulnerability scanning:** The ``check-vulnerabilities`` action has a new
+- **Optional uv audit vulnerability scanning:** the ``check-vulnerabilities`` action has a new
   ``use-uv-audit`` input (default: ``false``). When enabled, ``uv audit`` runs in addition to Safety
   and Bandit, checks the dependencies pinned in ``uv.lock`` against the OSV advisory database, and
   performs a malware scan. The results are included in the action report and in the uploaded
   ``vulnerability-results`` artifact. A ``uv.lock`` file is required. Because ``uv audit`` and Safety
   use different advisory sources, the report can contain duplicate findings.
 
-- **Git LFS support during checkout:** The ``doc-build``, ``tests-pytest``,
+- **Git LFS support during checkout:** the ``doc-build``, ``tests-pytest``,
   ``build-library``, and ``build-wheelhouse`` actions now expose a new
   ``checkout-lfs`` boolean input (default ``false``). When set to ``true``, the
   checkout step downloads Git LFS-tracked files. Enable this input when the
@@ -79,29 +79,29 @@ Version ``v11.1``
   The default preserves the previous behavior, so no changes are required for existing
   workflows.
 
-- **Reproducible wheelhouses from uv.lock:** When ``use-uv`` is ``true`` and ``uv.lock`` exists,
+- **Reproducible wheelhouses from uv.lock:** when ``use-uv`` is ``true`` and ``uv.lock`` exists,
   ``build-wheelhouse`` now exports the locked runtime dependencies and selected extra before building
   the wheelhouse.
 
-- **Runtime-only license checks:** By default, ``check-licenses`` now installs and checks only the
+- **Runtime-only license checks:** by default, ``check-licenses`` now installs and checks only the
   project's runtime dependencies and any extra selected with ``target``. Development, documentation,
   test, and build dependency groups are excluded. When ``skip-install`` is ``true``, the action still
   checks every package in the environment supplied through ``activate-venv``; ensure that environment
   contains only the dependencies whose licenses you intend to check.
 
-- **Configurable Python setup in doc-style:** Three new inputs have been added to the ``doc-style``
+- **Configurable Python setup in doc-style:** three new inputs have been added to the ``doc-style``
   action to allow projects to customize Python setup when needed: ``python-version`` (default: ``3.12``),
   ``use-python-cache`` (default: ``true``), and ``skip-python-setup`` (default: ``false``). Most workflows
   require no changes.
 
-- **Improved artifact attestation notes:** When ``add-artifact-attestation-notes`` is ``true``,
+- **Improved artifact attestation notes:** when ``add-artifact-attestation-notes`` is ``true``,
   ``release-github`` now searches the release files for a verifiable attestation and adds a concrete
   ``gh attestation verify`` example to the release notes. Granting ``attestations: read`` is recommended
   so that the action can discover attestations; the existing generic verification instructions remain
   available when no attested artifact is found. To improve readability, the release body size has been
   reduced and no longer lists all the ``gh attestation verify ...`` commands.
 
-- **Custom release notes file:** The ``release-github`` action has a new ``release-notes-file`` input
+- **Custom release notes file:** the ``release-github`` action has a new ``release-notes-file`` input
   (default: ``''``). When set to the path of a Markdown file in the repository, the content of that
   file is used as the body of the GitHub release. This path must be relative to the project root.
   This input cannot be combined with ``changelog-release-notes`` or ``generate-release-notes``, which
@@ -118,14 +118,14 @@ Version ``v11.1``
         changelog-release-notes: false
         release-notes-file: "doc/release_notes.md"
 
-- **Command-line options for the local vulnerability script:** The ``check_vulnerabilities.py``
+- **Command-line options for the local vulnerability script:** the ``check_vulnerabilities.py``
   script now accepts command line options, for example ``--package``, ``--repository``, and
   ``--uv-audit``. Each option also has a ``DEPENDENCY_CHECK_*`` environment variable. Thus, the
   previous environment variables continue to work. For more information, see :ref:`pyansys_check_vulnerabilities`.
 
 **Migration Steps:**
 
-- **Activating uv audit:** Ensure the project's ``uv.lock`` is up-to-date, then enable the additional
+- **Activating uv audit:** ensure the project's ``uv.lock`` is up-to-date, then enable the additional
   ``check-vulnerabilities`` action input. The action forces malware scanning even when
   ``tool.uv.audit.malware-check`` is absent or ``false``.
 
@@ -146,7 +146,7 @@ Version ``v11.1``
     [tool.uv.audit]
     malware-check = true
 
-- **Update lock files before you build wheelhouses:** If the project commits a ``uv.lock`` file,
+- **Update lock files before you build wheelhouses:** if the project commits a ``uv.lock`` file,
   update this file before you build a release. Make sure that the file contains the runtime
   dependencies and the extras that you set in ``target``.
 
@@ -155,14 +155,14 @@ Version ``v11``
 
 **Breaking Changes:**
 
-- **Deprecation of release-pypi-public and release-pypi-test actions:** The ``release-pypi-public`` and
+- **Deprecation of release-pypi-public and release-pypi-test actions:** the ``release-pypi-public`` and
   ``release-pypi-test`` actions no longer support publishing packages to PyPI using tokens. As a result, they
   are deprecated starting with ``v11``. Projects must migrate to trusted publishing. Contact the PyAnsys Core
   Team at pyansys.core@ansys.com for enabling trusted publishing for your project and refer to
   :ref:`release_pypi_trusted_publisher` for setup details. Note that ``release-pypi-private`` is not affected
   and still supports token-based publishing due to the limitations of the private index.
 
-- **Removal of deprecated inputs from multiple actions:** Several inputs that were previously deprecated
+- **Removal of deprecated inputs from multiple actions:** several inputs that were previously deprecated
   have been completely removed:
 
   - ``generate_release_notes`` removed from ``release-github``. Use ``generate-release-notes`` instead.
@@ -174,7 +174,7 @@ Version ``v11``
   Note that the removal of ``use-uv`` from the ``hk-package-clean-*`` actions is unrelated to the
   new ``use-uv`` semantics described in the *Automatic install from uv.lock* new feature below.
 
-- **Conflict between uv.lock and legacy requirement files now errors:** Starting with ``v11``, the
+- **Conflict between uv.lock and legacy requirement files now errors:** starting with ``v11``, the
   ``doc-build``, ``tests-pytest``, and ``check-vulnerabilities`` (when ``skip-install: true``)
   actions fail with an error when both a ``uv.lock`` file and a ``requirements/requirements_<name>.txt``
   file are present in the working directory. Previously, one of the two was silently ignored.
@@ -191,7 +191,7 @@ Version ``v11``
 
 **New Features:**
 
-- **Pinned action dependencies:** All actions that install Python tooling at runtime
+- **Pinned action dependencies:** all actions that install Python tooling at runtime
   now install their dependencies from pinned requirements. Every direct
   and transitive dependency is version-locked, which makes action runs reproducible, mitigates
   supply chain risks, and prevents breakage of actions behaviour when a transitive dependency
@@ -199,7 +199,7 @@ Version ``v11``
   control tool versions no longer have any effect and are now scheduled for removal in ``v12`` (see
   the *Review usage of still-deprecated inputs* migration step).
 
-- **Automatic install from uv.lock:** The semantics of the ``use-uv`` input now goes beyond
+- **Automatic install from uv.lock:** the semantics of the ``use-uv`` input now goes beyond
   simply controlling whether the ``uv`` package manager should be used to install project dependencies.
   When ``use-uv`` is ``true`` (the default) and a ``uv.lock`` file is present in the working directory,
   the actions now install project dependencies from the lock file.
@@ -216,15 +216,15 @@ Version ``v11``
   - Projects that do not commit a ``uv.lock`` are unaffected; behavior falls back to using ``uv`` to
     install project dependencies.
 
-- **Poetry-native install in check-licenses:** For Poetry-based projects, the ``check-licenses`` action
+- **Poetry-native install in check-licenses:** for Poetry-based projects, the ``check-licenses`` action
   now installs the project and its dependency targets through Poetry, aligning with the installation
   behavior of the other actions. This improves reliability of license checks for Poetry projects. No
   user-facing input change is required.
 
-- **Minimum permissions documented in examples:** All action examples now also document the minimum GitHub permissions
+- **Minimum permissions documented in examples:** all action examples now also document the minimum GitHub permissions
   required to run them, making it easier to set up workflows with the correct permissions.
 
-- **SEO refinements in the documentation deployment actions:** The ``ansys/actions/doc-deploy-dev``,
+- **SEO refinements in the documentation deployment actions:** the ``ansys/actions/doc-deploy-dev``,
   ``ansys/actions/doc-deploy-stable`` and ``ansys/actions/_pr-doc-deployment`` actions now enforce a
   consistent set of SEO signals across every deployed page. No changes to ``conf.py`` or workflow files
   are required. Notable behavior changes:
@@ -252,7 +252,7 @@ Version ``v11``
 
 **Migration Steps:**
 
-- **Grant pull request permissions to doc-deploy-dev when using doc-deploy-pr cleanup:** If your
+- **Grant pull request permissions to doc-deploy-dev when using doc-deploy-pr cleanup:** if your
   project deploys PR documentation with ``doc-deploy-pr`` (``v10.2`` or later), cleanup of closed-PR
   directories is now performed by ``doc-deploy-dev``. When the ``token`` used is ``GITHUB_TOKEN``,
   ensure the ``doc-deploy-dev`` job has ``pull-requests: write`` in addition to ``contents: write``.
@@ -265,7 +265,7 @@ Version ``v11``
   ``PYANSYS_CI_BOT_USERNAME`` and ``PYANSYS_CI_BOT_EMAIL`` are configured and map to the same bot
   identity used for commit metadata and PR comments.
 
-- **Changed default behavior of doc-build dependency inputs:** The default behavior of the
+- **Changed default behavior of doc-build dependency inputs:** the default behavior of the
   ``optional-dependencies-name`` and ``group-dependencies-name`` inputs of the ``doc-build`` action has changed.
   Previously, ``optional-dependencies-name`` always defaulted to ``doc`` even when ``group-dependencies-name``
   is not empty, which can cause failures if ``doc`` optional extra is absent from the ``pyproject.toml`` file.
@@ -280,7 +280,7 @@ Version ``v11``
   Although backwards compatibility is maintained, you are advised to set one of the inputs explicitly to avoid
   future breaking changes.
 
-- **Changed default behavior of tests-pytest dependency inputs:** The ``tests-pytest`` action now mirrors the
+- **Changed default behavior of tests-pytest dependency inputs:** the ``tests-pytest`` action now mirrors the
   ``doc-build`` behavior described earlier for the ``optional-dependencies-name`` and ``group-dependencies-name``
   inputs. The important differences are:
 
@@ -288,7 +288,7 @@ Version ``v11``
   - The requirements-file lookup remains driven by ``optional-dependencies-name``: the action still installs from
     ``requirements/requirements_<optional-dependencies-name>.txt`` when that file exists.
 
-- **Remove references to removed inputs from your workflows:** Search your workflows for references to
+- **Remove references to removed inputs from your workflows:** search your workflows for references to
   the inputs listed in the preceding breaking changes section (``generate_release_notes`` on the ``release-github`` action,
   ``toml-version`` on the ``doc-*`` and ``release-github`` actions, and ``python-version`` / ``use-uv`` on the
   ``hk-package-clean-*`` actions) and drop them. For example, for ``hk-package-clean-untagged``:
@@ -315,13 +315,13 @@ Version ``v11``
           with:
             package-name: my-package
 
-- **Adoption of uv.lock installs:** If your project commits a ``uv.lock`` file, verify that
+- **Adoption of uv.lock installs:** if your project commits a ``uv.lock`` file, verify that
   the lockfile is up to date and includes every extra and group your workflows pass to the actions
   through relevant inputs. If you also maintain a legacy ``requirements/requirements_<name>.txt`` for
   ``doc-build``, ``tests-pytest``, or ``check-vulnerabilities`` actions, remove one of the two to
   avoid the new error described in the breaking changes section.
 
-- **Review usage of still-deprecated inputs:** The following inputs still exist but now emit an
+- **Review usage of still-deprecated inputs:** the following inputs still exist but now emit an
   ``ERROR``-level deprecation notice (previously ``WARNING``) and are scheduled for removal in ``v12``.
   In ``v11`` the inputs are no longer used because the corresponding tools are now installed from the action's
   pinned requirements (see *Pinned action dependencies* in the new feature section). Migrate away
@@ -338,12 +338,12 @@ Version ``v10.3``
 
 **New actions:**
 
-- **Migrate fork pull requests:** The ``hk-migrate-fork-pr`` action migrates pull requests from forks to
+- **Migrate fork pull requests:** the ``hk-migrate-fork-pr`` action migrates pull requests from forks to
   branches within the main repository, enabling workflows that require repository secrets to run. It handles
   team membership verification and automated PR creation during migration. Subsequent triggers sync the migration
   branch. See :ref:`hk-migrate-fork-pr-setup` for setup details.
 
-- **Tag repository version:** The ``hk-tag-repository-version`` action creates and updates ``vX`` and ``vX.Y``
+- **Tag repository version:** the ``hk-tag-repository-version`` action creates and updates ``vX`` and ``vX.Y``
   tags pointing to the latest released version. It also pushes a ``release/vX.Y.Z`` branch for hot fixes
   and optionally creates a ``latest`` branch. This action is intended to be used in a workflow triggered by a
   release event. The action is mostly useful for projects that only want to release code and do not need to
@@ -351,39 +351,39 @@ Version ``v10.3``
 
 **New features:**
 
-- **Prek for code style:** The ``code-style`` action now uses `prek <https://prek.j178.dev/>`_ as a
+- **Prek for code style:** the ``code-style`` action now uses `prek <https://prek.j178.dev/>`_ as a
   drop-in replacement for ``pre-commit`` to make execution faster. To revert to ``pre-commit``, set the
   new ``use-prek`` input to ``false`` (default: ``true``).
 
-- **Minimum permissions documented:** All action descriptions now document the minimum GitHub permissions
+- **Minimum permissions documented:** all action descriptions now document the minimum GitHub permissions
   required to run each action. Check the documentation for each action for details.
 
-- **Changelog improvements:** The changelog (``doc-changelog`` and ``doc-deploy-changelog``) actions include two new changes:
+- **Changelog improvements:** the changelog (``doc-changelog`` and ``doc-deploy-changelog``) actions include two new changes:
 
   - A new ``breaking`` fragment type has been added for tracking breaking changes in the changelog.
-  - Changelog tabs are now ordered by importance in the deployed changelog, with the following order:
+  - Changelog tabs in the deployed changelog are now ordered by importance, which gives
     Breaking > Added > Fixed > Documentation > Dependencies > Maintenance > Miscellaneous > Test.
 
-- **Filtering GitHub releases:** The ``release-github`` action now includes a ``dist-filter``
+- **Filtering GitHub releases:** the ``release-github`` action now includes a ``dist-filter``
   input (default: ``''``) that accepts a comma-separated list of glob patterns for filtering the ``dist/``
   directory. Files that do not match any of the provided patterns are removed before the
   GitHub release is created. This is useful for projects with large build matrices where only a subset of
   artifacts should appear on the release page.
 
-- **Safety policy file:** The ``check-vulnerabilities`` action now supports custom safety policy files, which
+- **Safety policy file:** the ``check-vulnerabilities`` action now supports custom safety policy files, which
   can be used for specifying vulnerabilities to ignore among other things.
 
-- **UV build in build-library:** When ``use-uv`` is set to ``true`` (the default), the ``build-library``
+- **UV build in build-library:** when ``use-uv`` is set to ``true`` (the default), the ``build-library``
   action now uses ``uv build`` instead of ``python -m build``, avoiding the need to install the ``build``
   package as a separate dependency and speeding up builds.
 
-- **Optional token for check-pr-title:** The ``check-pr-title`` action no longer requires a ``token`` input.
+- **Optional token for check-pr-title:** the ``check-pr-title`` action no longer requires a ``token`` input.
   It is now optional and defaults to the ``GITHUB_TOKEN``.
 
-- **Unified artifact names:** The artifacts generated by the build actions (``build-library`` and ``build-wheelhouse``)
+- **Unified artifact names:** the artifacts generated by the build actions (``build-library`` and ``build-wheelhouse``)
   now have consistent names that make use of underscores instead of hyphens for the library name.
 
-- **Version validation in release actions:** The ``release-github`` and ``release-pypi-*`` actions now ensure that
+- **Version validation in release actions:** the ``release-github`` and ``release-pypi-*`` actions now ensure that
   the tag that triggered a release matches the version specified in the ``pyproject.toml`` file.
 
 Version ``v10.2``
@@ -391,26 +391,26 @@ Version ``v10.2``
 
 **New Features:**
 
-- **Build-Library Changes:** The ``build-library`` action now includes two new inputs:
+- **Build-Library Changes:** the ``build-library`` action now includes two new inputs:
 
-  - ``checkout-fetch-depth`` (default: ``1``): Allows configuring the fetch depth when checking out the repository.
+  - ``checkout-fetch-depth`` (default: ``1``): allows configuring the fetch depth when checking out the repository.
     Setting this to ``0`` fetches the entire history, which may be necessary for certain build processes that
     rely on full commit history.
-  - ``checkout-fetch-tags`` (default: ``false``): When set to ``true``, this input enables fetching all tags from the repository.
+  - ``checkout-fetch-tags`` (default: ``false``): when set to ``true``, this input enables fetching all tags from the repository.
     This is useful for build processes that depend on tag information.
 
-- **Changelog Action Changes:** The ``doc-changelog`` action input ``use-conventional-commits`` has been renamed to ``use-pull-request-title`` for clarity.
+- **Changelog Action Changes:** the ``doc-changelog`` action input ``use-conventional-commits`` has been renamed to ``use-pull-request-title`` for clarity.
   If you use the old input, a deprecation warning appears.
 
-- **Check-Vulnerabilities Changes:** The ``check-vulnerabilities`` action now includes a ``safety-configfile`` input (default: ``""``) that allows users to
+- **Check-Vulnerabilities Changes:** the ``check-vulnerabilities`` action now includes a ``safety-configfile`` input (default: ``""``) that allows users to
   specify a custom configuration file to use with ``safety``. This is useful for users who want to customize the behavior of ``safety`` or provide additional
   configuration options.
 
-- **PR Documentation Deployment:** The ``doc-deploy-pr`` action is now easier to use. Starting with
+- **PR Documentation Deployment:** the ``doc-deploy-pr`` action is now easier to use. Starting with
   version ``v10.2``, you no longer need to include the ``closed`` pull request event in your workflows because
   deployed documentation is cleaned up asynchronously. For more details, see :ref:`docs-deploy-pr-setup`.
 
-- **Release-Github Changes:** The ``release-github`` action now includes a ``upload-documentation`` (default: ``true``) input. This input allows users
+- **Release-Github Changes:** the ``release-github`` action now includes a ``upload-documentation`` (default: ``true``) input. This input allows users
   to control whether documentation artifacts are included in the GitHub release. Setting this to ``false`` skips the upload of documentation artifacts,
   which can be useful for releases without documentation artifacts.
 
@@ -442,8 +442,8 @@ Version ``v10.1``
 
 - For Poetry-based projects, ensure that you provide the correct values for ``optional-dependencies-name`` (default: ``doc``) and ``group-dependencies-name``.
 
-  - ``optional-dependencies-name``: Refers to the extras defined in the ``pyproject.toml`` file.
-  - ``group-dependencies-name``: Refers to the dependency groups defined in the same file.
+  - ``optional-dependencies-name``: refers to the extras defined in the ``pyproject.toml`` file.
+  - ``group-dependencies-name``: refers to the dependency groups defined in the same file.
 
   If your documentation dependencies are defined as extras, changes to your workflow are likely not needed since the default value for ``optional-dependencies-name``
   targets the ``doc`` extra. However, using dependency groups (as is the case with most PyAnsys libraries) requires the following update to your workflow:
@@ -489,7 +489,7 @@ Version ``v10``
 
 **New Features:**
 
-- **Workflow Security Audits:** Introduced ``ansys/action/check-actions-security`` to audit workflow files
+- **Workflow Security Audits:** introduced ``ansys/action/check-actions-security`` to audit workflow files
   for security and vulnerability issues. Provides summary and detailed reports using the
   `zizmor <https://docs.zizmor.sh/>`_ static analysis tool. See `zizmor audit rules <https://docs.zizmor.sh/audits/>`_
   for information about detected issues and their remediation.
@@ -498,7 +498,7 @@ Version ``v10``
   for pull requests at ``https://<cname>/pull/<pr-number>/``. Documentation is automatically removed
   when the pull request is closed. Refer to :ref:`docs-deploy-pr-setup` for setup details.
 
-- **Faster Package Installation:** Added a ``use-uv`` option (default: true) to ``build-library``,
+- **Faster Package Installation:** added a ``use-uv`` option (default: true) to ``build-library``,
   ``build-wheelhouse``, ``check-licenses``, ``check-vulnerabilities``, ``code-style``, ``doc-build``,
   ``doc-changelog``, ``doc-deply-changelog``, ``hk-package-clean-except``, ``hk-package-clean-untagged``,
   ``release-github``, and ``tests-pytest`` actions. This leverages `uv <https://docs.astral.sh/uv/>`_ for faster package installation,
@@ -525,12 +525,12 @@ Version ``v10``
 
 **Breaking Changes:**
 
-- **Python Version Support:** Dropped support for Python versions below ``3.9``.
+- **Python Version Support:** dropped support for Python versions below ``3.9``.
 
 - **JSON Builder Removal:** ``ansys/actions/doc-build`` no longer supports the ``JSON`` builder
   for documentation rendering.
 
-- **Dependency Groups Parsing:** Replaced the ``toml`` library with ``tomli`` in ``doc-style``,
+- **Dependency Groups Parsing:** replaced the ``toml`` library with ``tomli`` in ``doc-style``,
   ``doc-changelog``, and ``release-github`` actions due to improved support for ``pyproject.toml``
   files with nested dependency groups. The ``tomli-version`` input replaces the former
   ``toml-version`` input.
@@ -748,7 +748,8 @@ Version ``v7``
 
 **New features:**
 
-- Added an optional input to the ``ansys/actions/build-library`` action to turn off library build
+- **Optional build validation in build-library:** an optional input was added to the
+  ``ansys/actions/build-library`` action to turn off library build
   validation on demand using the ``validate-build: false`` argument. This is useful when you want to
   skip the library build validation step in the action.
 
