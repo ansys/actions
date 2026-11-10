@@ -10,7 +10,7 @@ have been updated.
 Version ``v11.2``
 -----------------
 
-**New Features:**
+**New Features**
 
 - **Check run reporting in doc-style:** the ``doc-style`` action now requires the ``checks: write``
   permission so that Vale reports its results in a check run. Without this permission, results are
@@ -21,7 +21,7 @@ Version ``v11.2``
 Version ``v11.1``
 -----------------
 
-**Breaking Changes:**
+**Breaking Changes**
 
 - **Character limits for pull request titles:** the ``check-pr-title`` and ``doc-changelog`` actions
   now check the characters in the pull request title. A title can contain only letters, digits,
@@ -38,7 +38,7 @@ Version ``v11.1``
   Update any ``required-version`` setting in ``uv.toml`` or ``[tool.uv]`` that excludes
   these versions.
 
-**New Features:**
+**New Features**
 
 - **Same-workflow releases:** the ``doc-deploy-changelog`` action has a new ``same-workflow`` input
   (default: ``false``). By default, the action stops the workflow after it updates the changelog and
@@ -123,7 +123,7 @@ Version ``v11.1``
   ``--uv-audit``. Each option also has a ``DEPENDENCY_CHECK_*`` environment variable. Thus, the
   previous environment variables continue to work. For more information, see :ref:`pyansys_check_vulnerabilities`.
 
-**Migration Steps:**
+**Migration Steps**
 
 - **Activating uv audit:** ensure the project's ``uv.lock`` is up-to-date, then enable the additional
   ``check-vulnerabilities`` action input. The action forces malware scanning even when
@@ -153,7 +153,7 @@ Version ``v11.1``
 Version ``v11``
 ---------------
 
-**Breaking Changes:**
+**Breaking Changes**
 
 - **Deprecation of release-pypi-public and release-pypi-test actions:** the ``release-pypi-public`` and
   ``release-pypi-test`` actions no longer support publishing packages to PyPI using tokens. As a result, they
@@ -181,7 +181,7 @@ Version ``v11``
   Delete whichever file is no longer authoritative for your project (usually the legacy requirements file)
   to unblock the actions.
 
-**New actions:**
+**New actions**
 
 - **Deploy documentation to a custom path:** A new ``doc-deploy-custom-path`` action has been added. It
   deploys HTML documentation to a user-specified subdirectory of the deployment branch (``gh-pages`` by
@@ -189,7 +189,7 @@ Version ``v11``
   validates the ``custom-path`` input to prevent conflicts with reserved paths used by the other
   ``doc-deploy-*`` actions (such as ``version`` and ``pull``). See :doc:`../doc-actions/index` for usage details.
 
-**New Features:**
+**New Features**
 
 - **Pinned action dependencies:** all actions that install Python tooling at runtime
   now install their dependencies from pinned requirements. Every direct
@@ -250,7 +250,7 @@ Version ``v11``
     a non-stable version. This prevents search engines from removing the site's root from their index when only prerelease
     or development documentation is available.
 
-**Migration Steps:**
+**Migration Steps**
 
 - **Grant pull request permissions to doc-deploy-dev when using doc-deploy-pr cleanup:** if your
   project deploys PR documentation with ``doc-deploy-pr`` (``v10.2`` or later), cleanup of closed-PR
@@ -336,7 +336,7 @@ Version ``v11``
 Version ``v10.3``
 -----------------
 
-**New actions:**
+**New actions**
 
 - **Migrate fork pull requests:** the ``hk-migrate-fork-pr`` action migrates pull requests from forks to
   branches within the main repository, enabling workflows that require repository secrets to run. It handles
@@ -349,7 +349,7 @@ Version ``v10.3``
   release event. The action is mostly useful for projects that only want to release code and do not need to
   follow the usual release process of the PyAnsys ecosystem. See :doc:`../housekeeping-actions/index` for usage details.
 
-**New features:**
+**New features**
 
 - **Prek for code style:** the ``code-style`` action now uses `prek <https://prek.j178.dev/>`_ as a
   drop-in replacement for ``pre-commit`` to make execution faster. To revert to ``pre-commit``, set the
@@ -389,7 +389,7 @@ Version ``v10.3``
 Version ``v10.2``
 -----------------
 
-**New Features:**
+**New Features**
 
 - **Build-Library Changes:** the ``build-library`` action now includes two new inputs:
 
@@ -417,7 +417,7 @@ Version ``v10.2``
 Version ``v10.1``
 -----------------
 
-**New Features:**
+**New Features**
 
 - ``ansys/actions/doc-deploy-stable`` action now supports pre-releases. The identifiers must be one of ``a|b|rc`` for alpha, beta, and
   release candidates respectively. Furthermore, only patch pre-release are supported, meaning the `PEP 440 <https://peps.python.org/pep-0440/>`
@@ -438,7 +438,7 @@ Version ``v10.1``
   documentation artifact names. This also allows distinct documentation artifacts to be uploaded for separate documentation build jobs within the
   same workflow.
 
-**Migration Steps:**
+**Migration Steps**
 
 - For Poetry-based projects, ensure that you provide the correct values for ``optional-dependencies-name`` (default: ``doc``) and ``group-dependencies-name``.
 
@@ -487,7 +487,7 @@ Version ``v10.1``
 Version ``v10``
 -----------------
 
-**New Features:**
+**New Features**
 
 - **Workflow Security Audits:** introduced ``ansys/action/check-actions-security`` to audit workflow files
   for security and vulnerability issues. Provides summary and detailed reports using the
@@ -523,7 +523,7 @@ Version ``v10``
   SPDX format and uploads it as an artifact. This SBOM is generated using `Syft <https://github.com/anchore/syft>`_.
   Note that the SBOM artifacts are now included in the Github release.
 
-**Breaking Changes:**
+**Breaking Changes**
 
 - **Python Version Support:** dropped support for Python versions below ``3.9``.
 
@@ -567,7 +567,7 @@ Version ``v10``
 Version ``v9.0``
 ----------------
 
-**Breaking changes:**
+**Breaking changes**
 
 - Use ``ansys/actions/check-licenses`` actions with Python version 3.10 or higher.
 - To use ``check-licenses: true`` with the ``ansys/actions/build-wheelhouse`` action, use Python version 3.10 or higher.
@@ -585,7 +585,7 @@ Version ``v9.0``
     to PyPI. This allows to avoid adding upper bounds on build system like ``setuptools<=67.0.0``, ``wheel<0.46.0`` or
     ``flit_core>=3.2,<3.11``.
 
-**Migration Steps:**
+**Migration Steps**
 
 - Update input ``python-version`` to ``3.10`` or higher in the ``ansys/actions/check-licenses`` action or in
   the ``ansys/actions/build-wheelhouse`` action if you are using the ``check-licenses`` input.
@@ -614,7 +614,7 @@ Version ``v9.0``
 
 Version ``v8.2``
 ----------------
-**New Features:**
+**New Features**
 
 - Added a new action named ``ansys/actions/hk-automerge-prs``. This action allows maintainers to auto-approve and merge
   ``dependabot`` PRs and ``pre-commit.ci`` PRs. It is recommended to add the action at the end of the workflow, once all the
@@ -667,7 +667,7 @@ Version ``v8.2``
 
 - Added a new input parameter ``randomize`` to the ``ansys/actions/tests-pytest`` action to randomize the order of the tests.
 
-**Migration Steps:**
+**Migration Steps**
 
 - The default documentation includes tabs and tab items, providing a clean changelog reStructuredText (rst) file. To use this feature,
   add ``sphinx-design`` as a dependency in your ``pyproject.toml`` file and include ``sphinx_design`` as an extension in your ``conf.py`` file.
@@ -694,14 +694,14 @@ After merging the PR, the changelog file updates with the new template, and the 
 
 Version ``v8``
 --------------
-**Breaking changes:**
+**Breaking changes**
 
 - Use secrets for commit and push credentials within ``ansys/actions/doc-changelog``,
   ``ansys/actions/doc-deploy-changelog``, ``ansys/actions/doc-deploy-dev``, and
   ``ansys/actions/doc-deploy-stable``.
 - The token input is required in the ``ansys/actions/release-github`` action.
 
-**Deprecated features:**
+**Deprecated features**
 
 - The ``ansys/actions/doc-deploy-index`` action has been deprecated and is
   scheduled for removal in the next release. With the deprecation of ``pymeilisearch`` and
@@ -715,7 +715,7 @@ Version ``v8``
   `GitHub rulesets
   <https://dev.docs.pyansys.com/how-to/repository-protection.html#branch-protection>`_.
 
-**Migration steps:**
+**Migration steps**
 
 - Add the following required inputs to ``ansys/actions/doc-changelog``, ``ansys/actions/doc-deploy-changelog``,
   ``ansys/actions/doc-deploy-dev``, and ``ansys/actions/doc-deploy-stable``:
@@ -746,10 +746,9 @@ Version ``v8``
 Version ``v7``
 --------------
 
-**New features:**
+**New features**
 
-- **Optional build validation in build-library:** an optional input was added to the
-  ``ansys/actions/build-library`` action to turn off library build
+- Added an optional input to the ``ansys/actions/build-library`` action to turn off library build
   validation on demand using the ``validate-build: false`` argument. This is useful when you want to
   skip the library build validation step in the action.
 
@@ -757,7 +756,7 @@ Version ``v7``
   ``ansys/actions/release-pypi-*`` actions. This is useful when you want to sign the package before
   uploading it to PyPI.
 
-**Migration steps:**
+**Migration steps**
 
 - To set up your repository to use the ``ansys/actions/release-pypi-*`` action with the `Trusted Publisher`_ approach,
   see the :ref:`release_pypi_trusted_publisher`.
@@ -765,9 +764,9 @@ Version ``v7``
 Version ``v6``
 --------------
 
-**New features:**
+**New features**
 
-- **Vulnerability checks:** the ``ansys/actions/check-vulnerabilities`` action was added to check for third-party and first-party vulnerabilities.
+- Added the ``ansys/actions/check-vulnerabilities`` action to check for third-party and first-party vulnerabilities.
   This is useful when you want to hide the vulnerabilities from the logs, but still want to fail the action if vulnerabilities are found.
 
 - Avoid creating issues by default if vulnerabilities are found in the ``ansys/actions/check-vulnerabilities`` action.
@@ -796,12 +795,12 @@ Version ``v6``
   Expected types are upper cases of  `conventional commit types
   <https://github.com/commitizen/conventional-commit-types/blob/master/index.json>`_.
 
-**Breaking changes:**
+**Breaking changes**
 
 - Upgrade default ``vale`` version from ``2.29.6`` to ``3.4.1`` in ``ansys/actions/doc-style`` action.
 - Vale configuration file ``.vale.ini`` and ``Vocab/ANSYS`` has to be changed.
 
-**Migration steps:**
+**Migration steps**
 
 - To set up your repository to use the ``ansys/actions/doc-changelog`` action, see the :ref:`docs_changelog_action_setup`.
 - To set up your repository to use the ``ansys/actions/doc-deploy-changelog`` action, see the :ref:`docs_deploy_changelog_action_setup`.
@@ -810,7 +809,7 @@ Version ``v6``
 Version ``v5``
 --------------
 
-**New features:**
+**New features**
 
 - Added ``ansys/action/check-vulnerabilities`` to verify third party and first party vulnerabilities.
   This action uses ``bandit`` and ``safety`` to detect vulnerabilities in the code and dependencies, respectively.
@@ -822,12 +821,12 @@ Version ``v5``
 - Allow for independent documentation releases in case of patch release when using ``ansys/actions/doc-deploy-stable`` action.
   This creates independent documentation versions for patch releases.
 
-**Breaking changes:**
+**Breaking changes**
 
 - Upgrade ``actions/upload-artifact`` and ``actions/download-artifact`` to version ``v4``.
 - Upgrade ``actions/setup-python`` to version ``v5``.
 
-**Migration steps:**
+**Migration steps**
 
 - Since artifacts are uploaded/downloaded using the new ``actions/*-artifact``, artifact names cannot
   be duplicated inside the workflow. Also, versions ``v3`` and ``v4`` are incompatible with each other. If you are using
@@ -836,7 +835,7 @@ Version ``v5``
   However, it has been seen that in Windows self-hosted runners, if a certain Python version is not already stored in the
   cache, the action fails. This is a known issue and the workaround is to use the previous version of the action.
 
-**Dependency changes:**
+**Dependency changes**
 
 - Upgrade ``actions/checkout`` to version ``v4``.
 - Upgrade ``pypa/cibuildwheel`` to version ``v2.16.2``.
@@ -847,11 +846,11 @@ Version ``v5``
 Version ``v4``
 --------------
 
-**Breaking changes:**
+**Breaking changes**
 
 - Multi-version documentation deployment using ``ansys/actions/doc-deploy-stable`` and ``ansys/actions/doc-deploy-dev``.
 
-**Migration steps:**
+**Migration steps**
 
 - Visit `Enable multi-version documentation <https://dev.docs.pyansys.com/how-to/documenting.html#enable-multi-version-documentation>`_
   for a detailed migration guide.
