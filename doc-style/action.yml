@@ -321,8 +321,86 @@ runs:
         reviewdog_version: 0.21.0
         files: ${{ inputs.files }}
         reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
-        fail_level: ${{ inputs.fail-level }}
-        fail_on_error: ${{ inputs.fail-level != 'none' }}
+        # Report only: reviewdog fails past 10 log annotations regardless of severity, so the next step gates
+        fail_level: none
         filter_mode: nofilter
         vale_flags: "${{ steps.vale-flags.outputs.VALE_FLAGS }}"
         version: ${{ steps.vale-major-version.outputs.VALE_VERSION }}
+
+    - name: "Check Vale results against fail level"
+      if: inputs.fail-level != 'none'
+      shell: bash
+      env:
+        FAIL_LEVEL: ${{ inputs.fail-level }}
+        FILES: ${{ inputs.files }}
+        VALE_FLAGS: ${{ steps.vale-flags.outputs.VALE_FLAGS }}
+        VALE_VERSION: ${{ steps.vale-major-version.outputs.VALE_VERSION }}
+      run: |
+        python <<'EOF'
+        import glob
+        import json
+        import os
+        import subprocess
+        import sys
+
+        # reviewdog fail levels mapped onto Vale severities (suggestion < warning < error)
+        thresholds = {"any": 0, "info": 0, "warning": 1, "error": 2}
+        ranks = {"suggestion": 0, "warning": 1, "error": 2}
+
+        def fail(message):
+            print(f"::error::{message}")
+            sys.exit(1)
+
+        fail_level = os.environ["FAIL_LEVEL"]
+        if fail_level not in thresholds:
+            fail(f"Unsupported fail-level '{fail_level}'. Use one of: none, {', '.join(thresholds)}.")
+
+        version = os.environ["VALE_VERSION"]
+        exe = "vale.exe" if os.name == "nt" else "vale"
+        pattern = os.path.join(os.environ["RUNNER_TOOL_CACHE"], "vale", "*" if version == "latest" else version, "*", exe)
+        candidates = sorted(glob.glob(pattern))
+        if not candidates:
+            fail(f"Unable to find the Vale binary installed by vale-cli/vale-action ({pattern}).")
+
+        # Same path handling as vale-cli/vale-action
+        files = os.environ["FILES"].strip()
+        if files == "":
+            paths = []
+        elif files == "all":
+            paths = ["."]
+        elif os.path.exists(files):
+            paths = [files]
+        else:
+            try:
+                paths = json.loads(files)
+            except json.JSONDecodeError:
+                paths = ["."]
+        paths = [p.strip() for p in paths if p.strip()]
+        if not paths:
+            print("No files to lint.")
+            sys.exit(0)
+
+        cmd = [candidates[-1], "--output=JSON", "--no-exit", *os.environ["VALE_FLAGS"].split(), *paths]
+        result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
+        try:
+            alerts = json.loads(result.stdout or "{}")
+        except json.JSONDecodeError:
+            alerts = None
+        if result.returncode != 0 or not isinstance(alerts, dict):
+            print(result.stdout)
+            print(result.stderr)
+            fail(f"Vale exited with status code {result.returncode}.")
+
+        failing = [
+            (path, alert)
+            for path, items in alerts.items()
+            for alert in items
+            if ranks.get(alert["Severity"], 0) >= thresholds[fail_level]
+        ]
+        for path, alert in failing:
+            print(f"{path}:{alert['Line']}:{alert['Span'][0]}: [{alert['Severity']}] {alert['Check']}: {alert['Message']}")
+
+        if failing:
+            fail(f"Vale found {len(failing)} issue(s) with a severity of '{fail_level}' or higher.")
+        print(f"Vale found no issues with a severity of '{fail_level}' or higher.")
+        EOF
