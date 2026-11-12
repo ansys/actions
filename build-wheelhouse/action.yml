@@ -424,8 +424,8 @@ runs:
         WHEELHOUSE_TARGET: ${{ steps.specific-target-requested.outputs.wheelhouse_target }}
         OPERATING_SYSTEM: ${{ inputs.operating-system }}
         PYTHON_VERSION: ${{ inputs.python-version }}
-        SYFT_VERSION: "1.51.1"
-        SYFT_GIT_SHA: "91a0032987d91b7411b52f6f5c185c5e7f775495"
+        SYFT_VERSION: "1.56.0"
+        SYFT_GIT_SHA: "173055c39e9752f7b450ea404cd1801695277426"
       shell: bash
       run: |
         if ! command -v syft > /dev/null; then

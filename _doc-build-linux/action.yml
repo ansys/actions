@@ -212,8 +212,8 @@ runs:
       if: ${{ inputs.needs-quarto == 'true' }}
       shell: bash
       env:
-        QUARTO_VERSION: "1.10.18"
-        QUARTO_DEB_SHA256: "4bdf5a17df300003beb2f8f0e4dfe568e2ca0ff91318220c8537d2655015c430"
+        QUARTO_VERSION: "1.11.9"
+        QUARTO_DEB_SHA256: "64078d1623d9ab89da766591f3410a0756f3737a37efb0897c7e84b863bf092a"
       run: | # zizmor: ignore[github-env]
         cd /tmp
         curl -sSfL -o quarto-linux-amd64.deb \

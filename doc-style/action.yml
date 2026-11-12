@@ -190,7 +190,7 @@ runs:
       shell: bash
       env:
         VALE_VERSION: ${{ inputs.vale-version }}
-        DEFAULT_VALE_VERSION: "3.25.1"
+        DEFAULT_VALE_VERSION: "3.26.0"
       run: |
         version="${VALE_VERSION:-${DEFAULT_VALE_VERSION}}"
         echo "VALE_VERSION=${version}" >> ${GITHUB_OUTPUT}
