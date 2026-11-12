@@ -62,9 +62,10 @@ jobs:
           PR_TITLE="chore: bump tooling to latest releases (${CURRENT_DATE})"
           BRANCH_NAME="chore/bump-tooling-${CURRENT_DATE}"
 
-          if git ls-remote --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+          REMOTE_BRANCH=$(git ls-remote --heads origin "refs/heads/${BRANCH_NAME}")
+          if [[ -n "$REMOTE_BRANCH" ]]; then
             echo "Branch ${BRANCH_NAME} already exists. Skipping duplicate creation."
-            exit 1
+            exit 0
           fi
 
           git config user.name "${BOT_USER}"
