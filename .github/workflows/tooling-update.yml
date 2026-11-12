@@ -68,6 +68,7 @@ jobs:
             exit 0
           fi
 
+          git config --global url."https://${BOT_USER}:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
           git config user.name "${BOT_USER}"
           git config user.email "${BOT_EMAIL}"
 
