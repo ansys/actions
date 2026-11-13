@@ -32,7 +32,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          python "${GITHUB_ACTION_PATH}/../python-utils/update_tooling_versions.py"
+          python python-utils/update_tooling_versions.py
 
           # Exit if there are no changes to commit
           if git diff --quiet --exit-code; then
