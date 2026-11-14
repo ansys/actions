@@ -1,0 +1,181 @@
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: Label pull requests from trailers
+
+description: |
+  Adds pull request labels from trailers in the pull request description.
+  Configure trailer names in ``direct-trailers`` to add a label derived from
+  the trailer name, or in ``value-trailers`` to add each comma-separated
+  trailer value as a label. All generated labels are lowercase; semicolons are
+  not supported as value separators. Only trailers in the first level-2
+  section of the description are processed. Matching labels must already
+  exist in the repository.
+
+  For example, ``Product-Version: 25R1, 25R2`` adds the ``25R1`` and ``25R2``
+  labels, while ``Breaking-Changes: Remove compatibility with older servers``
+  adds the ``breaking-changes`` label.
+
+  .. important:: **Required GitHub Permissions**
+
+     The token must have ``pull-requests: write`` permission.
+
+inputs:
+  direct-trailers:
+    description: |
+      Comma-separated trailer names whose presence adds a label derived from
+      the trailer name converted to lowercase. For example,
+      ``Breaking-changes, Deprecation`` adds ``breaking-changes`` and
+      ``deprecation`` labels.
+    required: false
+    default: ""
+    type: string
+
+  value-trailers:
+    description: |
+      Comma-separated trailer names whose comma-separated values are added as
+      lowercase labels. Semicolons are not supported as separators. For
+      example, ``Product-Version`` adds ``25r1`` and ``25r2`` for
+      ``Product-Version: 25R1, 25R2``.
+    required: false
+    default: ""
+    type: string
+
+  token:
+    description: GitHub token with permission to add pull request labels.
+    required: false
+    default: ${{ github.token }}
+    type: string
+
+  pr-number:
+    description: Pull request number. Defaults to the pull request event number.
+    required: false
+    default: ${{ github.event.pull_request.number }}
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Apply labels from pull request trailers
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        REPOSITORY: ${{ github.repository }}
+        DIRECT_TRAILERS: ${{ inputs.direct-trailers }}
+        VALUE_TRAILERS: ${{ inputs.value-trailers }}
+      run: |
+        set -euo pipefail
+
+        if [[ -z "${PR_NUMBER}" ]]; then
+          echo "::error::This action must run for a pull request or receive the 'pr-number' input."
+          exit 1
+        fi
+
+        if [[ -z "${DIRECT_TRAILERS//[[:space:],]/}" \
+          && -z "${VALUE_TRAILERS//[[:space:],]/}" ]]; then
+          echo "::error::Configure at least one of 'direct-trailers' or 'value-trailers'."
+          exit 1
+        fi
+
+        PR_INFO=$(gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json body,labels)
+        PR_BODY=$(jq -r '.body // ""' <<< "${PR_INFO}")
+
+        extract_first_section() {
+          awk '
+            /^## / {
+              if (in_section) exit
+              in_section=1
+              next
+            }
+            in_section { print }
+          '
+        }
+
+        FIRST_SECTION=$(printf '%s\n' "${PR_BODY}" | extract_first_section)
+        TRAILERS=$(printf '\n%s\n' "${FIRST_SECTION}" | git interpret-trailers --parse)
+
+        declare -A seen_labels=()
+        while IFS= read -r label; do
+          [[ -z "${label}" ]] || seen_labels["${label,,}"]=1
+        done < <(jq -r '.labels[].name' <<< "${PR_INFO}")
+
+        # Return success when trailer_key matches one of the comma-separated
+        # configured trailer names, ignoring surrounding whitespace and case.
+        trailer_is_configured() {
+          local trailer_key="$1"
+          local configured_trailers="$2"
+          local candidate
+          local -a candidates=()
+
+          IFS=',' read -r -a candidates <<< "${configured_trailers}"
+          for candidate in "${candidates[@]}"; do
+            candidate="${candidate#"${candidate%%[![:space:]]*}"}"
+            candidate="${candidate%"${candidate##*[![:space:]]}"}"
+            [[ "${candidate,,}" == "${trailer_key}" ]] && return 0
+          done
+          return 1
+        }
+
+        # Add a label to the pull request unless it is empty or already present.
+        # Remember successful additions to avoid duplicate API calls in this run.
+        add_label() {
+          local label="$1"
+          label="${label,,}"
+          [[ -z "${label}" ]] && return 0
+          [[ -v "seen_labels[$label]" ]] && return 0
+
+          echo "Adding label: ${label}"
+          gh pr edit "${PR_NUMBER}" --repo "${REPOSITORY}" --add-label "${label}"
+          seen_labels["${label}"]=1
+        }
+
+        found_configured_trailer=false
+        while IFS= read -r trailer; do
+          [[ "${trailer}" == *:* ]] || continue
+          key="${trailer%%:*}"
+          normalized_key="${key,,}"
+
+          if trailer_is_configured "${normalized_key}" "${DIRECT_TRAILERS}"; then
+            found_configured_trailer=true
+            add_label "${normalized_key}"
+          fi
+
+          if trailer_is_configured "${normalized_key}" "${VALUE_TRAILERS}"; then
+            found_configured_trailer=true
+            value_text="${trailer#*:}"
+            if [[ "${value_text}" == *';'* ]]; then
+              echo "::error::Semicolons are not supported in value trailers; use commas to separate values."
+              exit 1
+            fi
+
+            while IFS= read -r value; do
+              value="${value#"${value%%[![:space:]]*}"}"
+              value="${value%"${value##*[![:space:]]}"}"
+              add_label "${value,,}"
+            done < <(printf '%s\n' "${value_text}" | tr ',' '\n')
+          fi
+        done <<< "${TRAILERS}"
+
+        if [[ "${found_configured_trailer}" != true ]]; then
+          echo "::warning::No configured trailers were found in the first level-2 section of the pull request description."
+        fi
