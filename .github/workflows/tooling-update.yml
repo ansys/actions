@@ -21,10 +21,10 @@ jobs:
       contents: write # Needed to create PR for tooling updates
       pull-requests: write # Needed to create PR for tooling updates
     steps:
-      - name: Checkout repository
+      - name: Checkout repository # zizmor: ignore[artipacked] git credentials need to be persisted on this job
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
 
       - name: Resolve eligible versions and update pins
         id: update
@@ -68,7 +68,6 @@ jobs:
             exit 0
           fi
 
-          git config --global url."https://${BOT_USER}:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
           git config user.name "${BOT_USER}"
           git config user.email "${BOT_EMAIL}"
 
