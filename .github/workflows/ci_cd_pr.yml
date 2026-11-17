@@ -204,7 +204,7 @@ jobs:
           fail-level: warning
 
   doc-build:
-    name: "Doc build"
+    name: "Doc build on ${{ matrix.os }} ${{ matrix.build-pdf && 'with' || 'without'}} pdf build"
     runs-on: ${{ matrix.os }}
     needs: doc-style
     strategy:
