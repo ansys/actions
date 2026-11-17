@@ -211,8 +211,9 @@ runs:
         $packages = $env:NEEDED_DEPS -split '\s+'
         choco install $packages -y
 
+    # NOTE: LaTeX is needed for the PDF documentation and for the Quarto cheatsheet.
     - name: Install MiKTeX and update PATH with MiKTeX binaries
-      if: ${{ inputs.build-pdf == 'true' && inputs.skip-latex-install == 'false' }}
+      if: ${{ (inputs.build-pdf == 'true' || inputs.needs-quarto == 'true') && inputs.skip-latex-install == 'false' }}
       shell: powershell
       run: | # zizmor: ignore[github-env]
         # NOTE: Declared at script scope so it can be accessed inside function
@@ -263,12 +264,14 @@ runs:
     # ------------------------------------------------------------------------
 
     - uses: $/_logging
+      if: ${{ inputs.build-pdf == 'true' || inputs.needs-quarto == 'true' }}
       with:
         level: "INFO"
         message: >
           Set up MiKTeX to allow downloading missing packages when building documentation.
 
     - name: Set up MiKTeX to automatically install packages
+      if: ${{ inputs.build-pdf == 'true' || inputs.needs-quarto == 'true' }}
       shell: powershell
       run: |
         initexmf --set-config-value [MPM]AutoInstall=1
