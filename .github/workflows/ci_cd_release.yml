@@ -142,6 +142,7 @@ jobs:
     needs: rolling-release
     permissions:
       contents: read
+      checks: write # Needed for Vale to report results in a check run
     steps:
       - uses: $/doc-style
         with:
