@@ -10,13 +10,61 @@ have been updated.
 Version ``v11.2``
 -----------------
 
+**Breaking Changes**
+
+- **New default Vale version:** the default value of the ``vale-version`` input of the ``doc-style``
+  action is now ``''``. When this input is empty, the action uses Vale 3.25.1. Previously, the
+  default version was 3.4.1. The new Vale version can find issues that the old version did not find.
+  Thus, the ``doc-style`` job can fail after the update.
+
+**New actions**
+
+- **Automated releases:** the new ``hk-autorelease`` action helps with automating releases. The action
+  increases the project version and pushes the ``vX.Y.Z`` release tag. The action supports ``patch``,
+  ``patch-cherry-pick``, ``minor``, and ``major`` releases. For a ``minor`` or ``major`` release,
+  the action creates the ``release/<major>.<minor>`` branch. It also opens a draft pull request that sets the next
+  development version on the main branch. The action does not build or publish packages. Use the
+  ``release-github`` action and a PyPI release action for these tasks. Start ``hk-autorelease`` only
+  with the ``workflow_dispatch`` trigger, in a workflow file that contains only this action. For more
+  information, see :doc:`../housekeeping-actions/index`.
+
 **New Features**
 
 - **Check run reporting in doc-style:** the ``doc-style`` action now requires the ``checks: write``
   permission so that Vale reports its results in a check run. Without this permission, results are
   reported as log annotations, which GitHub limits to 10 errors and 10 warnings per step. The action
-  still fails when Vale finds issues with a severity equal to or higher than ``fail-level``. Add ``checks: write`` to the
-  ``permissions`` block of the job that runs ``doc-style``.
+  now fails only when Vale finds issues with a severity equal to or higher than ``fail-level``.
+  Previously, the action could also fail when the number of annotations was more than this limit.
+  Add ``checks: write`` to the ``permissions`` block of the job that runs ``doc-style``.
+
+- **Optional PDF build in doc-build:** the ``doc-build`` action has a new ``build-pdf`` input
+  (default: ``true``). Set this input to ``false`` to skip the PDF documentation and decrease the
+  build time. The action fails if ``build-pdf`` is ``false`` and a Git tag starts the workflow,
+  because release builds must include the PDF documentation.
+
+- **Automatic fixes in code-style:** the ``code-style`` action has a new ``commit-changes`` input
+  (default: ``false``). When this input is ``true``, the action commits the fixes from the
+  pre-commit hooks and pushes them to the branch. This behavior is similar to
+  `pre-commit.ci <https://pre-commit.ci/>`_. When you enable this input, you must also set the
+  ``token``, ``bot-user``, and ``bot-email`` inputs. The new ``commit-message`` input sets the
+  message of the commit. Related changes:
+
+  - The job must have the ``contents: write`` and ``pull-requests: write`` permissions.
+  - Use a token other than ``GITHUB_TOKEN``. A commit pushed with ``GITHUB_TOKEN`` does not start
+    new workflow runs.
+  - The action does not push fixes to pull requests from forks.
+  - If a hook fails and does not change files, the action adds a comment to the pull request. The
+    comment shows the hooks that failed. The action updates the comment when all hooks pass.
+
+  .. code:: yaml
+
+    - name: "Run PyAnsys code style checks"
+      uses: ansys/actions/code-style@v11.2
+      with:
+        commit-changes: true
+        token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+        bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+        bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
 Version ``v11.1``
 -----------------
