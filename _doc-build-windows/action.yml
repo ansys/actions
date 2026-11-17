@@ -202,8 +202,9 @@ runs:
         key: choco-${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
         restore-keys: choco
 
+    # The cache holds only the downloaded packages, so they must always be installed.
     - name: Install packages with Chocolatey
-      if: ${{ (steps.cache.outputs.cache-hit != 'true') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
+      if: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS != '' }}
       shell: powershell
       env:
         NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
