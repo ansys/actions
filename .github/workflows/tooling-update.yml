@@ -47,6 +47,7 @@ jobs:
         env:
           BOT_USER: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
           BOT_EMAIL: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+          GH_TOKEN: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
