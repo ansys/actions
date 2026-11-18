@@ -17,16 +17,26 @@ Version ``v11.2``
   default version was 3.4.1. The new Vale version can find issues that the old version did not find.
   Thus, the ``doc-style`` job can fail after the update.
 
-**New actions**
+**New Actions**
 
-- **Automated releases:** the new ``hk-autorelease`` action helps with automating releases. The action
-  increases the project version and pushes the ``vX.Y.Z`` release tag. The action supports ``patch``,
-  ``patch-cherry-pick``, ``minor``, and ``major`` releases. For a ``minor`` or ``major`` release,
-  the action creates the ``release/<major>.<minor>`` branch. It also opens a draft pull request that sets the next
-  development version on the main branch. The action does not build or publish packages. Use the
-  ``release-github`` action and a PyPI release action for these tasks. Start ``hk-autorelease`` only
-  with the ``workflow_dispatch`` trigger, in a workflow file that contains only this action. For more
-  information, see :doc:`../housekeeping-actions/index`.
+- **Automated releases:** the new ``hk-autorelease`` action automates the release process.
+
+  The action:
+
+  - Increases the project version and pushes the ``vX.Y.Z`` release tag.
+  - Supports ``patch``, ``patch-cherry-pick``, ``minor``, and ``major`` releases.
+  - For ``minor`` and ``major`` releases, creates the ``release/<major>.<minor>`` branch and opens
+    a draft pull request that sets the next development version on the main branch.
+
+  The action does not build or publish packages. Use the ``release-github`` action and a PyPI
+  release action for these tasks.
+
+  .. important::
+
+     Start ``hk-autorelease`` only with the ``workflow_dispatch`` trigger, in a workflow file that
+     contains only this action.
+
+  For more information, see :doc:`../housekeeping-actions/index`.
 
 **New Features**
 
@@ -71,7 +81,7 @@ Version ``v11.1``
 
 **Breaking Changes**
 
-- **Character limits for pull request titles:** the ``check-pr-title`` and ``doc-changelog`` actions
+- **Allowed characters in pull request titles:** the ``check-pr-title`` and ``doc-changelog`` actions
   now check the characters in the pull request title. A title can contain only letters, digits,
   spaces, and these characters: ``! ( ) : - / _ .``. If the title contains a different character,
   the action fails and shows the unsupported characters. This check prevents formatting errors in
@@ -121,7 +131,7 @@ Version ``v11.1``
 
 - **Git LFS support during checkout:** the ``doc-build``, ``tests-pytest``,
   ``build-library``, and ``build-wheelhouse`` actions now expose a new
-  ``checkout-lfs`` boolean input (default ``false``). When set to ``true``, the
+  ``checkout-lfs`` boolean input (default: ``false``). When set to ``true``, the
   checkout step downloads Git LFS-tracked files. Enable this input when the
   repository stores files with Git LFS that must be materialized before the action runs.
   The default preserves the previous behavior, so no changes are required for existing
