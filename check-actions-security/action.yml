@@ -101,8 +101,9 @@ runs:
       shell: bash
       run: |
         uv venv .venv
+        # shellcheck source=/dev/null
         source .venv/bin/activate
-        uv pip install --no-managed-python -r ${GITHUB_ACTION_PATH}/requirements.txt
+        uv pip install --no-managed-python -r "${GITHUB_ACTION_PATH}"/requirements.txt
         zizmor --version
 
     - name: "Optionally set GH_TOKEN"
@@ -111,7 +112,7 @@ runs:
       env:
         TOKEN: ${{ inputs.token }}
       run: | # zizmor: ignore[github-env]
-        echo "GH_TOKEN=${TOKEN}" >> ${GITHUB_ENV}
+        echo "GH_TOKEN=${TOKEN}" >> "${GITHUB_ENV}"
 
     - name: "Check if custom zizmor.yml file exists"
       id: custom-zizmor
@@ -151,8 +152,16 @@ runs:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
+        # shellcheck source=/dev/null
         source .venv/bin/activate
-        zizmor ${HIGH_AUDIT_LEVEL} ${STRICT_AUDIT_LEVEL} .
+        audit_options=()
+        if [[ -n "${HIGH_AUDIT_LEVEL}" ]]; then
+          audit_options+=("${HIGH_AUDIT_LEVEL}")
+        fi
+        if [[ -n "${STRICT_AUDIT_LEVEL}" ]]; then
+          audit_options+=("${STRICT_AUDIT_LEVEL}")
+        fi
+        zizmor "${audit_options[@]}" .
 
     - name: "Output a summary of detected vulnerabilities"
       if: ${{ always() && inputs.generate-summary == 'true' }}
@@ -161,5 +170,6 @@ runs:
         HIGH_AUDIT_LEVEL: ${{ inputs.auditing-level == 'high' && '--persona=pedantic' || '' }}
         STRICT_AUDIT_LEVEL: ${{ inputs.auditing-level == 'strict' && '--persona=auditor' || '' }}
       run: |
+        # shellcheck source=/dev/null
         source .venv/bin/activate
-        python ${GITHUB_ACTION_PATH}/../python-utils/zizmor-summary.py
+        python "${GITHUB_ACTION_PATH}"/../python-utils/zizmor-summary.py

@@ -193,11 +193,11 @@ runs:
         USE_UV: ${{ inputs.use-uv }}
       run: |
         if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=poetry" >> "$GITHUB_OUTPUT"
         elif [[ "$USE_UV" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=uv" >> "$GITHUB_OUTPUT"
         else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
+          echo "BUILD_BACKEND=pip" >> "$GITHUB_OUTPUT"
         fi
 
     - uses: $/_logging
@@ -240,11 +240,11 @@ runs:
         GRP_DEPS: ${{ inputs.group-dependencies-name }}
       run: |
         if [[ -z "$OPT_DEPS" && -z "$GRP_DEPS" ]]; then
-          echo "resolved-optional=tests" >> $GITHUB_OUTPUT
-          echo "resolved-group=" >> $GITHUB_OUTPUT
+          echo "resolved-optional=tests" >> "$GITHUB_OUTPUT"
+          echo "resolved-group=" >> "$GITHUB_OUTPUT"
         else
-          echo "resolved-optional=$OPT_DEPS" >> $GITHUB_OUTPUT
-          echo "resolved-group=$GRP_DEPS" >> $GITHUB_OUTPUT
+          echo "resolved-optional=$OPT_DEPS" >> "$GITHUB_OUTPUT"
+          echo "resolved-group=$GRP_DEPS" >> "$GITHUB_OUTPUT"
         fi
 
     - uses: $/_logging
@@ -262,7 +262,7 @@ runs:
     - name: "Add pipx/bin directory to Github Path"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
+      run: echo "${RUNNER_TEMP}/pipx/bin" >> "$GITHUB_PATH" # zizmor: ignore[github-env] no workaround for this
 
     # NOTE: Poetry uses virtual environments when installing a project. As we
     # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
@@ -270,7 +270,7 @@ runs:
     - name: "Set poetry environment variable(s)"
       if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
       shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
+      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> "$GITHUB_ENV"
 
     # NOTE: Install pipx in a location that can be used in following CICD jobs
     # but ensure that poetry is installed in a temporary folder cleaned before
@@ -301,9 +301,9 @@ runs:
       shell: bash
       run: |
         if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=source .venv/scripts/activate" >> "$GITHUB_OUTPUT"
         else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
+          echo "ACTIVATE_VENV=source .venv/bin/activate" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Auto-detect uv lockfile"
@@ -312,9 +312,9 @@ runs:
       shell: bash
       run: |
         if [[ -f "uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=true" >> "${GITHUB_OUTPUT}"
         else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
+          echo "USE_UV_LOCKFILE=false" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Suppress .python-version file for uv"
@@ -334,7 +334,7 @@ runs:
       env:
         OPTIONAL_DEPENDENCIES_NAME: ${{ steps.resolve-deps.outputs.resolved-optional }}
       run: |
-        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_"${OPTIONAL_DEPENDENCIES_NAME}".txt ]; then echo 'true'; else echo 'false'; fi)" >> "$GITHUB_OUTPUT"
 
     - name: "Print previous output"
       shell: bash
@@ -399,9 +399,9 @@ runs:
       run: |
         $ACTIVATE_VENV
         if [[ "$USE_UV" == 'true' ]]; then
-          uv pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
+          uv pip install -r requirements/requirements_"${OPTIONAL_DEPENDENCIES_NAME}".txt
         else
-          python -m pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
+          python -m pip install -r requirements/requirements_"${OPTIONAL_DEPENDENCIES_NAME}".txt
         fi
 
     - name: "Install test dependencies from pyproject.toml"
@@ -423,7 +423,7 @@ runs:
           fi
         else
           # Optional dependencies handling
-          extra_dependencies_flags=""
+          extra_dependencies_flags=()
           project_spec="."
           if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
             if [[ "${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
@@ -431,7 +431,7 @@ runs:
               for extra in "${extras_list[@]}"; do
                 trimmed_extra="$(echo "${extra}" | xargs)"
                 if [[ -n "${trimmed_extra}" ]]; then
-                  extra_dependencies_flags="$extra_dependencies_flags --extra ${trimmed_extra}"
+                  extra_dependencies_flags+=(--extra "${trimmed_extra}")
                 fi
               done
             else
@@ -439,22 +439,23 @@ runs:
             fi
           fi
           # Group dependencies handling
-          group_dependencies_flag=""
+          group_dependencies_flag=()
           if [ -n "${GROUP_DEPENDENCIES_NAME}" ]; then
             IFS=',' read -ra group_list <<< "${GROUP_DEPENDENCIES_NAME}"
             for group in "${group_list[@]}"; do
-              group_dependencies_flag="$group_dependencies_flag --group $group"
+              trimmed_group="$(echo "${group}" | xargs)"
+              group_dependencies_flag+=(--group "${trimmed_group}")
             done
           fi
           # Install dependencies (potentially mix of optional and group)
           if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
             if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --no-default-groups $group_dependencies_flag $extra_dependencies_flags
+              uv sync --frozen --no-default-groups "${group_dependencies_flag[@]}" "${extra_dependencies_flags[@]}"
             else
-              uv pip install $group_dependencies_flag $project_spec
+              uv pip install "${group_dependencies_flag[@]}" "$project_spec"
             fi
           else
-            python -m pip install $group_dependencies_flag $project_spec
+            python -m pip install "${group_dependencies_flag[@]}" "$project_spec"
           fi
         fi
 
@@ -465,11 +466,11 @@ runs:
         BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
       run: |
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
-          echo "PYTEST_RUN=$(echo 'poetry run pytest')" >> $GITHUB_OUTPUT
+          echo "PYTEST_RUN=poetry run pytest" >> "$GITHUB_OUTPUT"
         elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          echo "PYTEST_RUN=$(echo 'uv run --no-sync pytest')" >> $GITHUB_OUTPUT
+          echo "PYTEST_RUN=uv run --no-sync pytest" >> "$GITHUB_OUTPUT"
         else
-          echo "PYTEST_RUN=$(echo 'python -m pytest')" >> $GITHUB_OUTPUT
+          echo "PYTEST_RUN=python -m pytest" >> "$GITHUB_OUTPUT"
         fi
 
     - name: "Randomize the order of the tests"
@@ -485,9 +486,9 @@ runs:
           done
           poetry install
         elif [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-          uv pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+          uv pip install -r "${GITHUB_ACTION_PATH}"/requirements.txt
         else
-          python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+          python -m pip install -r "${GITHUB_ACTION_PATH}"/requirements.txt
         fi
 
     - name: "Executing test suite"
