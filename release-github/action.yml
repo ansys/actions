@@ -26,9 +26,12 @@ name: |
 description: |
     Release library artifacts to the GitHub release section. Some minimum
     artifacts are required before running this action. These artifacts include
-    ``documentation-html``, ``documentation-pdf``, and
-    ``<library-name>-artifacts`` files. This last file must contain the wheels and
+    ``<library-name>-artifacts`` files. This file must contain the wheels and
     source distribution files of the library.
+
+    If ``upload-documentation`` is ``true``, the ``documentation-html`` artifact
+    is also required. The ``documentation-pdf`` artifact is optional. If it
+    exists, it is included in the release.
 
     If you are using the ``title_format`` and ``issue_format`` from the ``doc-changelog`` action
     setup guide, https://actions.docs.ansys.com/version/dev/migrations/docs-changelog-setup.html,
@@ -153,8 +156,9 @@ inputs:
   upload-documentation:
     description: |
       Whether to include documentation artifacts (HTML and PDF) in the GitHub
-      release. Set to ``false`` to skip uploading documentation. Default value
-      is ``true``.
+      release. The ``documentation-html`` artifact is required. A missing
+      ``documentation-pdf`` artifact is skipped with a warning. Set to
+      ``false`` to skip uploading documentation. Default value is ``true``.
     required: false
     default: true
     type: boolean
@@ -305,12 +309,25 @@ runs:
           Finally, compress both artifacts.
 
     - name: "Moving documentation artifacts to dist/documentation directory"
+      id: documentation
       if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
       shell: bash
       run: |
         mkdir -p dist/documentation
+
+        if [[ ! -d /tmp/artifacts/documentation-html ]]; then
+          echo "::error::The 'documentation-html' artifact was not found. Build it before this action, or set 'upload-documentation' to 'false'."
+          exit 1
+        fi
         mv /tmp/artifacts/documentation-html dist/documentation/documentation-html
-        mv /tmp/artifacts/documentation-pdf dist/documentation/documentation-pdf
+
+        if [[ -d /tmp/artifacts/documentation-pdf ]]; then
+          mv /tmp/artifacts/documentation-pdf dist/documentation/documentation-pdf
+          echo "pdf=true" >> "${GITHUB_OUTPUT}"
+        else
+          echo "::warning::The 'documentation-pdf' artifact was not found. It is not included in the release."
+          echo "pdf=false" >> "${GITHUB_OUTPUT}"
+        fi
 
     - name: "Compressing HTML documentation"
       if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
@@ -320,7 +337,7 @@ runs:
         dest: dist/documentation/documentation-html.zip
 
     - name: "Compressing PDF documentation"
-      if: inputs.only-code == 'false' && inputs.upload-documentation == 'true'
+      if: steps.documentation.outputs.pdf == 'true'
       uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
       with:
         files: dist/documentation/documentation-pdf
@@ -645,10 +662,7 @@ runs:
         fi
 
         if [[ "${ONLY_CODE}" == "false" && "${UPLOAD_DOCUMENTATION}" == "true" ]]; then
-          artifacts+=(
-            dist/documentation/documentation-html.zip
-            dist/documentation/documentation-pdf.zip
-          )
+          artifacts+=(dist/documentation/documentation-*.zip)
         fi
 
         # Immutable releases lock the tag and the assets as soon as the release
