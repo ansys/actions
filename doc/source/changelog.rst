@@ -9,6 +9,135 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.2.0 <https://github.com/ansys/actions/releases/tag/v11.2.0>`_ - November 18, 2026
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add hk-autorelease action for automated releases
+          - `#1598 <https://github.com/ansys/actions/pull/1598>`_
+
+        * - Add commit option to code-style action
+          - `#1648 <https://github.com/ansys/actions/pull/1648>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Fail when a fail level different than none is provided
+          - `#1649 <https://github.com/ansys/actions/pull/1649>`_
+
+        * - MikTex installation logic on Windows
+          - `#1652 <https://github.com/ansys/actions/pull/1652>`_
+
+        * - Update path for tool update
+          - `#1653 <https://github.com/ansys/actions/pull/1653>`_
+
+        * - Prevent duplicate branch creation in tooling update workflow
+          - `#1654 <https://github.com/ansys/actions/pull/1654>`_
+
+        * - Always install Chocolatey packages in Windows doc-build
+          - `#1658 <https://github.com/ansys/actions/pull/1658>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update \`\`CONTRIBUTORS.md\`\` with the latest contributors
+          - `#1584 <https://github.com/ansys/actions/pull/1584>`_
+
+        * - Update migration guide for v11.2
+          - `#1659 <https://github.com/ansys/actions/pull/1659>`_
+
+        * - Revise migration documentation for v11.2
+          - `#1660 <https://github.com/ansys/actions/pull/1660>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump project version to 11.2.dev0
+          - `#1623 <https://github.com/ansys/actions/pull/1623>`_
+
+        * - Bump the pre-commit-hooks group with 2 updates
+          - `#1635 <https://github.com/ansys/actions/pull/1635>`_
+
+        * - Bump jupyter-builder from 1.2.1 to 1.2.3
+          - `#1637 <https://github.com/ansys/actions/pull/1637>`_
+
+        * - Bump click from 8.4.2 to 8.5.0
+          - `#1638 <https://github.com/ansys/actions/pull/1638>`_
+
+        * - Bump pytest from 9.0.3 to 9.1.1
+          - `#1640 <https://github.com/ansys/actions/pull/1640>`_
+
+        * - Bump nodeenv from 1.10.0 to 1.11.0
+          - `#1641 <https://github.com/ansys/actions/pull/1641>`_
+
+        * - Bump pyvista/setup-headless-display-action from 5.1.0 to 5.2.0 in /.github/workflows in the cicd-actions group across 1 directory
+          - `#1645 <https://github.com/ansys/actions/pull/1645>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update CHANGELOG for v11.1.0rc0
+          - `#1573 <https://github.com/ansys/actions/pull/1573>`_
+
+        * - Update CHANGELOG for v11.1.0
+          - `#1615 <https://github.com/ansys/actions/pull/1615>`_
+
+        * - Update CHANGELOG for v11.1.1
+          - `#1617 <https://github.com/ansys/actions/pull/1617>`_
+
+        * - Update CHANGELOG for v11.1.2
+          - `#1619 <https://github.com/ansys/actions/pull/1619>`_
+
+        * - Update CHANGELOG for v11.1.3
+          - `#1622 <https://github.com/ansys/actions/pull/1622>`_
+
+        * - Update CHANGELOG for v11.1.4
+          - `#1627 <https://github.com/ansys/actions/pull/1627>`_
+
+        * - Remove hacktoberfest label
+          - `#1628 <https://github.com/ansys/actions/pull/1628>`_
+
+        * - Update vale version
+          - `#1632 <https://github.com/ansys/actions/pull/1632>`_
+
+        * - Update CHANGELOG for v11.1.5
+          - `#1647 <https://github.com/ansys/actions/pull/1647>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Allow skip pdf on doc-build
+          - `#1602 <https://github.com/ansys/actions/pull/1602>`_
+
+
 `11.1.5 <https://github.com/ansys/actions/releases/tag/v11.1.5>`_ - November 03, 2026
 =====================================================================================
 
