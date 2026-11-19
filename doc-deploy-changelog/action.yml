@@ -312,6 +312,7 @@ runs:
     - name: "Install towncrier, tomlkit, and the project"
       shell: bash
       run: |
+        python -m pip install -U pip
         python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
 
     - name: "Get towncrier directory and project name"
