@@ -22,8 +22,6 @@ updates:
     directories:
       - ".github/workflows"
       - "_check-environment-approval"
-      - "_doc-build-linux"
-      - "_doc-build-windows"
       - "_doc-gen-canonical"
       - "_doc-gen-robots"
       - "_doc-gen-sitemap"

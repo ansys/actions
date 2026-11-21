@@ -283,7 +283,7 @@ runs:
           The ``add-pdf-html-docs-as-assets`` input requires PDF generation.
           Set ``build-pdf`` to ``true`` or disable ``add-pdf-html-docs-as-assets``.
 
-    # --------------- Common to linux and windows doc-build ----------------
+    # ------------------------------------------------------------------------
 
     - name: "Install Git and clone project"
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -333,27 +333,213 @@ runs:
           Both 'optional-dependencies-name' and 'group-dependencies-name' are specified.
           Both will be used for installation.
 
+    # ------------------------- Linux system setup -------------------------
+
+    - name: "Collect system dependencies"
+      id: needed-dependencies
+      if: ${{ runner.os == 'Linux' }}
+      env:
+        DEPENDENCIES: ${{ inputs.dependencies }}
+        REQUIRES_XVFB: ${{ inputs.requires-xvfb }}
+      shell: bash
+      run: |
+        if [[ "$REQUIRES_XVFB" == 'true' ]]; then
+          echo "NEEDED_DEPS=$(echo "$DEPENDENCIES xvfb")" >> $GITHUB_OUTPUT
+        else
+          echo "NEEDED_DEPS=$(echo "$DEPENDENCIES")" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Cache apt packages needed"
+      uses: awalsh128/cache-apt-pkgs-action@553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9 # v1.6.3
+      if: ${{ runner.os == 'Linux' && inputs.skip-dependencies-cache == 'false' && steps.needed-dependencies.outputs.NEEDED_DEPS != '' }}
+      with:
+        packages: ${{ steps.needed-dependencies.outputs.NEEDED_DEPS }}
+        version: 1.0
+
+    - name: "Update apt-get"
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        sudo apt-get update
+
+    - name: "Install system dependencies"
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      env:
+        NEEDED_DEPS: ${{ steps.needed-dependencies.outputs.NEEDED_DEPS }}
+      run: |
+        sudo apt-get install -y $NEEDED_DEPS
+
+    - name: "Install LaTeX"
+      if: ${{ runner.os == 'Linux' && inputs.build-pdf == 'true' && inputs.skip-latex-install == 'false' }}
+      shell: bash
+      run: |
+        sudo apt-get install -y texlive-latex-extra latexmk
+
+    - name: Install Quarto and TinyTeX
+      if: ${{ runner.os == 'Linux' && inputs.needs-quarto == 'true' }}
+      shell: bash
+      env:
+        QUARTO_VERSION: "1.10.18"
+        QUARTO_DEB_SHA256: "4bdf5a17df300003beb2f8f0e4dfe568e2ca0ff91318220c8537d2655015c430"
+      run: | # zizmor: ignore[github-env]
+        cd /tmp
+        curl -sSfL -o quarto-linux-amd64.deb \
+          "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb"
+
+        if ! echo "${QUARTO_DEB_SHA256}  quarto-linux-amd64.deb" | sha256sum -c -; then
+          echo "Quarto .deb SHA256 mismatch for v${QUARTO_VERSION}"
+          exit 1
+        fi
+
+        sudo apt-get update
+        sudo apt-get install -y ./quarto-linux-amd64.deb
+
+        quarto --version
+        quarto install tool tinytex --no-prompt --log-level warning
+        echo "$HOME/bin" >> "$GITHUB_PATH"
+
+    - name: "Install Poppler for PDF to PNG conversion"
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y poppler-utils
+
+    # ------------------------ Windows system setup ------------------------
+
+    - uses: $/_logging
+      if: ${{ runner.os == 'Windows' }}
+      with:
+        level: "INFO"
+        message: >
+          Install Chocolatey to install dependencies.
+
+    - name: Download script and install Chocolatey
+      if: ${{ runner.os == 'Windows' }}
+      shell: powershell
+      run: |  # zizmor: ignore[github-env]
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        echo "C:\ProgramData\chocolatey\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
     # ------------------------------------------------------------------------
 
-    - name: Documentation build (Linux)
-      if: ${{ runner.os == 'Linux' }}
-      uses: $/_doc-build-linux
+    - uses: $/_logging
+      if: ${{ runner.os == 'Windows' }}
       with:
-        sphinxopts: ${{ inputs.sphinxopts }}
-        dependencies: ${{ inputs.dependencies }}
-        skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
-        requires-xvfb: ${{ inputs.requires-xvfb }}
-        skip-install: ${{ inputs.skip-install }}
-        requirements-file: ${{ inputs.requirements-file }}
-        check-links: ${{ inputs.check-links }}
-        add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        needs-quarto: ${{ inputs.needs-quarto }}
-        use-uv: ${{ inputs.use-uv }}
-        optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
-        group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
-        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
-        skip-latex-install: ${{ inputs.skip-latex-install }}
-        build-pdf: ${{ inputs.build-pdf }}
+        level: "INFO"
+        message: >
+          Install system dependencies. Even if no dependencies are provided,
+          MiKTeX is installed at user level to build the documentation.
+
+    - name: Collect system dependencies
+      id: collect-system-dependencies
+      if: ${{ runner.os == 'Windows' }}
+      shell: powershell
+      env:
+        DEPENDENCIES: ${{ inputs.dependencies }}
+      run: |
+        echo "NEEDED_DEPS=$(echo "$env:DEPENDENCIES")" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+    - name: Cache Chocolatey packages
+      id: cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      if: ${{ runner.os == 'Windows' && ((inputs.skip-dependencies-cache == 'false') && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '')) }}
+      with:
+        path: ~\AppData\Local\Temp\chocolatey
+        key: choco-${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
+        restore-keys: choco
+
+    # The cache holds only the downloaded packages, so they must always be installed.
+    - name: Install packages with Chocolatey
+      if: ${{ runner.os == 'Windows' && (steps.collect-system-dependencies.outputs.NEEDED_DEPS != '') }}
+      shell: powershell
+      env:
+        NEEDED_DEPS: ${{ steps.collect-system-dependencies.outputs.NEEDED_DEPS }}
+      run: |
+        $packages = $env:NEEDED_DEPS -split '\s+'
+        choco install $packages -y
+
+    # NOTE: LaTeX is needed for the PDF documentation and for the Quarto cheatsheet.
+    - name: Install MiKTeX and update PATH with MiKTeX binaries
+      if: ${{ runner.os == 'Windows' && ((inputs.build-pdf == 'true' || inputs.needs-quarto == 'true') && inputs.skip-latex-install == 'false') }}
+      shell: powershell
+      run: | # zizmor: ignore[github-env]
+        # NOTE: Declared at script scope so it can be accessed inside function
+        $script:userMiKTeX = "$env:LocalAppData\Programs\MiKTeX\miktex\bin\x64"
+
+        function Invoke-MiKTeXCheck {
+          param(
+            [string]$InstallPath,
+            [string]$Level
+          )
+          Write-Host "MiKTeX already installed at $Level level, using existing installation."
+          $miktexVersion = & "$InstallPath\miktex.exe" --version
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Existing MiKTeX installation at $Level level is not working properly, reinstalling it at user level..."
+            choco install miktex --params '"/Set:basic /ThisUser"' -y --force
+            echo "$script:userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          } else {
+            Write-Host "Existing MiKTeX installation at $Level level is working properly (version: $miktexVersion)."
+            echo "$InstallPath" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          }
+        }
+
+        $systemMiKTeX = "C:\Program Files\MiKTeX\miktex\bin\x64"
+        if (Test-Path "$script:userMiKTeX\miktex.exe") {
+          Invoke-MiKTeXCheck -InstallPath $script:userMiKTeX -Level "user"
+        } elseif (Test-Path "$systemMiKTeX\miktex.exe") {
+          Invoke-MiKTeXCheck -InstallPath $systemMiKTeX -Level "system"
+        } else {
+          Write-Host "MiKTeX is not installed, installing it at user level..."
+          choco install miktex --params '"/Set:basic /ThisUser"' -y
+          echo "$script:userMiKTeX" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        }
+
+    - name: "Install Poppler for PDF to PNG conversion"
+      if: ${{ runner.os == 'Windows' && (inputs.needs-quarto == 'true') }}
+      shell: powershell
+      run: | # zizmor: ignore[github-env]
+        choco install poppler -y
+        echo "C:\Program Files\poppler\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+    - name: "Install quarto for cheatsheet"
+      if: ${{ runner.os == 'Windows' && (inputs.needs-quarto == 'true') }}
+      shell: powershell
+      run: | # zizmor: ignore[github-env]
+        choco install quarto -y
+        echo "C:\ProgramData\chocolatey\lib\quarto\tools" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+    # ------------------------------------------------------------------------
+
+    - uses: $/_logging
+      if: ${{ runner.os == 'Windows' && (inputs.build-pdf == 'true' || inputs.needs-quarto == 'true') }}
+      with:
+        level: "INFO"
+        message: >
+          Set up MiKTeX to allow downloading missing packages when building documentation.
+
+    - name: Set up MiKTeX to automatically install packages
+      if: ${{ runner.os == 'Windows' && (inputs.build-pdf == 'true' || inputs.needs-quarto == 'true') }}
+      shell: powershell
+      run: |
+        initexmf --set-config-value [MPM]AutoInstall=1
+
+    - name: Install additional packages for MiKTeX (known to be required for Quarto cheatsheet)
+      if: ${{ runner.os == 'Windows' && (inputs.needs-quarto == 'true') }}
+      shell: powershell
+      run: |
+        mpm --install lm-math
+
+    # ------------------------------------------------------------------------
+
+    - name: Check Quarto Version
+      if: ${{ runner.os == 'Windows' && (inputs.needs-quarto == 'true') }}
+      shell: powershell
+      run: |
+        quarto --version
 
     # ------------------------------------------------------------------------
 
@@ -365,21 +551,219 @@ runs:
         message: >
           X virtual framebuffer is not used when building with Windows.
 
-    - name: Documentation build (Windows)
-      if: ${{ runner.os == 'Windows' }}
-      uses: $/_doc-build-windows
+    - uses: $/_logging
       with:
-        sphinxopts: ${{ inputs.sphinxopts }}
-        dependencies: ${{ inputs.dependencies }}
-        skip-dependencies-cache: ${{ inputs.skip-dependencies-cache }}
-        skip-install: ${{ inputs.skip-install }}
-        requirements-file: ${{ inputs.requirements-file }}
-        check-links: ${{ inputs.check-links }}
-        add-pdf-html-docs-as-assets: ${{ inputs.add-pdf-html-docs-as-assets }}
-        needs-quarto: ${{ inputs.needs-quarto }}
+        level: "INFO"
+        message: >
+          Set up the project environment to build the documentation.
+
+    - name: "Set up project environment"
+      id: project-env
+      uses: $/_setup-project-env
+      with:
         use-uv: ${{ inputs.use-uv }}
+        skip-install: ${{ inputs.skip-install }}
         optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
         group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
-        uploaded-artifact-name-prefix: ${{ inputs.uploaded-artifact-name-prefix }}
-        skip-latex-install: ${{ inputs.skip-latex-install }}
-        build-pdf: ${{ inputs.build-pdf }}
+        requirements-file: ${{ inputs.requirements-file }}
+
+    # ------------------------------------------------------------------------
+
+    - uses: $/_logging
+      with:
+        level: "INFO"
+        message: >
+          Build HTML and, when enabled, PDF documentation.
+
+    - name: "Build HTML and optional PDF documentation (Linux)"
+      if: ${{ runner.os == 'Linux' }}
+      env:
+        SPHINXOPTS: ${{ inputs.sphinxopts }}
+        CHECK_LINKS: ${{ inputs.check-links }}
+        BUILD_PDF: ${{ inputs.build-pdf }}
+        REQUIRES_XVFB: ${{ inputs.requires-xvfb }}
+        RUN_PREFIX: ${{ steps.project-env.outputs.run-prefix }}
+      shell: bash
+      run: |
+        source .venv/bin/activate
+        XVFB_RUN=""
+        if [[ "${REQUIRES_XVFB}" == 'true' ]]; then
+          XVFB_RUN="xvfb-run"
+        fi
+        ${XVFB_RUN} ${RUN_PREFIX} make -C doc html SPHINXOPTS="${SPHINXOPTS}"
+        if [[ "${BUILD_PDF}" == 'true' ]]; then
+          ${XVFB_RUN} ${RUN_PREFIX} make -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
+        fi
+        if [[ "${CHECK_LINKS}" == 'true' ]]; then
+          ${XVFB_RUN} ${RUN_PREFIX} make -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
+        fi
+
+    - name: "Build HTML and optional PDF documentation (Windows)"
+      if: ${{ runner.os == 'Windows' }}
+      shell: powershell
+      env:
+        RUN_PREFIX: ${{ steps.project-env.outputs.run-prefix }}
+        CHECK_LINKS: ${{ inputs.check-links }}
+        BUILD_PDF: ${{ inputs.build-pdf }}
+        SPHINXOPTS: ${{ inputs.sphinxopts }}
+      run: |
+        .venv\Scripts\Activate.ps1
+        cd doc
+        function Invoke-Make([string]$Target) {
+          $command = @($env:RUN_PREFIX -split '\s+' | Where-Object { $_ }) + @('.\make.bat', $Target, "SPHINXOPTS=$env:SPHINXOPTS")
+          & $command[0] @($command | Select-Object -Skip 1)
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        }
+        Invoke-Make html
+        if ($env:BUILD_PDF -eq 'true') { Invoke-Make pdf }
+        if ($env:CHECK_LINKS -eq 'true') { Invoke-Make linkcheck }
+
+    # ------------------------------------------------------------------------
+
+    - uses: $/_logging
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Set environment variable PDF_FILENAME.
+
+    - name: Parse PDF file name
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      shell: bash
+      run: |
+        if [[ "${RUNNER_OS}" == 'Windows' ]]; then
+          source .venv/Scripts/activate
+        else
+          source .venv/bin/activate
+        fi
+        python "${GITHUB_ACTION_PATH}/../python-utils/parse_doc_conf.py"
+
+    - uses: $/_logging
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME == '') }}
+      with:
+        level: "ERROR"
+        message: >
+          Unable to determine PDF filename using conf.py file.
+
+    - uses: $/_logging
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true' ) && (env.PDF_FILENAME != '') }}
+      with:
+        level: "INFO"
+        message: >
+          Environment variable PDF_FILENAME set to ${{ env.PDF_FILENAME }}.
+
+    # ------------------------------------------------------------------------
+
+    - uses: $/_logging
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Check if expected directories exist.
+
+    - name: Check expected build directory
+      id: check-expected-build-dir
+      shell: bash
+      run: |
+        echo "EXISTS_EXPECTED_BUILD_DIR=$( [ -d doc/_build ] && echo 'true' || echo 'false' )" >> "${GITHUB_OUTPUT}"
+
+    - uses: $/_logging
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-build-dir.outputs.EXISTS_EXPECTED_BUILD_DIR == 'false') }}
+      with:
+        level: "ERROR"
+        message: >
+          Expected build directory doc/_build does not exist.
+
+    - name: Check expected download directory
+      id: check-expected-download-directory
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      shell: bash
+      run: |
+        echo "EXISTS_EXPECTED_DOWNLOAD_DIR=$( [ -d doc/_build/html/_static/assets/download ] && echo 'true' || echo 'false' )" >> "${GITHUB_OUTPUT}"
+
+    - uses: $/_logging
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      with:
+        level: "WARNING"
+        message: >
+          Expected download directory doc/_build/html/_static/assets/download does not exist. Creating it...
+
+    - name: Create expected download directory
+      if: ${{ (inputs.add-pdf-html-docs-as-assets == 'true') && (steps.check-expected-download-directory.outputs.EXISTS_EXPECTED_DOWNLOAD_DIR == 'false') }}
+      shell: bash
+      run: |
+        mkdir -p doc/_build/html/_static/assets/download
+
+    # ------------------------------------------------------------------------
+
+    - name: Verify that documentation has been generated properly
+      if: ${{ runner.os == 'Windows' && steps.check-expected-build-dir.outputs.EXISTS_EXPECTED_BUILD_DIR == 'true' }}
+      shell: powershell
+      env:
+        EXPECTED_BUILD_DIR: 'doc\_build'
+        BUILD_PDF: ${{ inputs.build-pdf }}
+      run: |
+        # Check if the HTML files have been generated
+        if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\html\index.html") {
+          Write-Host "Documentation has been generated successfully"
+        } else {
+          Write-Error "Documentation has not been generated properly"
+        }
+        if ($env:BUILD_PDF -eq 'true') {
+          # Check if the PDF files have been generated
+          if (Test-Path -Path "${env:EXPECTED_BUILD_DIR}\latex\${env:PDF_FILENAME}") {
+            Write-Host "PDF file has been generated successfully"
+          } else {
+            Write-Error "PDF file has not been generated properly"
+          }
+        }
+
+    # ------------------------------------------------------------------------
+
+    - uses: $/_logging
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      with:
+        level: "INFO"
+        message: >
+          Add PDF and HTML documentation as assets.
+
+    - name: Compress HTML documentation
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      uses: vimtor/action-zip@5407800dfb2b1b37d48df912330cb22f4ab6f422 # v1.3
+      with:
+        files: doc/_build/html
+        dest: documentation-html.zip
+
+    - name: Add assets to HTML docs
+      if: ${{ inputs.add-pdf-html-docs-as-assets == 'true' }}
+      shell: bash
+      env:
+        EXPECTED_BUILD_DIR: doc/_build
+        EXPECTED_DOWNLOAD_DIR: doc/_build/html/_static/assets/download
+        PDF_FILENAME: ${{ env.PDF_FILENAME }}
+      run: |
+        mv documentation-html.zip "${EXPECTED_DOWNLOAD_DIR}"
+        if [ -e "${EXPECTED_BUILD_DIR}/latex/${PDF_FILENAME}" ]; then
+            cp "${EXPECTED_BUILD_DIR}/latex/${PDF_FILENAME}" "${EXPECTED_DOWNLOAD_DIR}"
+            echo "File ${EXPECTED_BUILD_DIR}/latex/${PDF_FILENAME} has been copied."
+        else
+            cp "${EXPECTED_BUILD_DIR}"/latex/*.pdf "${EXPECTED_DOWNLOAD_DIR}"
+            echo "Couldn't find ${EXPECTED_BUILD_DIR}/latex/${PDF_FILENAME}, every existing PDF file has been copied."
+        fi
+
+    # ------------------------------------------------------------------------
+
+    - name: "Upload HTML documentation artifact"
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.uploaded-artifact-name-prefix }}-html
+        path: doc/_build/html
+        retention-days: 7
+
+    - name: "Upload PDF documentation artifact"
+      if: ${{ inputs.build-pdf == 'true' }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.uploaded-artifact-name-prefix }}-pdf
+        path: doc/_build/latex/*.pdf
+        retention-days: 7
