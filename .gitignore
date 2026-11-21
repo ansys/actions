@@ -168,3 +168,6 @@ cython_debug/
 
 # Ignore local superpowers skill specs/notes
 docs/superpowers/
+
+# Ignore autopilot
+.synopsys_*

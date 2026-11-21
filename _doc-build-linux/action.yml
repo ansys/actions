@@ -243,213 +243,17 @@ runs:
       with:
         level: "INFO"
         message: >
-          Determine context.
+          Set up the project environment to build the documentation.
 
-    - name: "Determine GitHub environment variables"
-      id: environment-variables
-      shell: bash
-      env:
-        USE_UV: ${{ inputs.use-uv }}
-      run: |
-        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
-          echo "SPHINX_BUILD_MAKE=$(echo 'poetry run -- make')" >> $GITHUB_OUTPUT
-        elif [[ "$USE_UV" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
-          echo "SPHINX_BUILD_MAKE=$(echo 'uv run --no-sync -- make')" >> $GITHUB_OUTPUT
-        else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
-          echo "SPHINX_BUILD_MAKE=$(echo 'make')" >> $GITHUB_OUTPUT
-        fi
-
-    - uses: $/_logging
+    - name: "Set up project environment"
+      id: project-env
+      uses: $/_setup-project-env
       with:
-        level: "INFO"
-        message: >
-          Build backend: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
-          Sphinx build make: ${{ steps.environment-variables.outputs.SPHINX_BUILD_MAKE }}
-
-    # ------------------------------------------------------------------------
-
-    - uses: $/_logging
-      with:
-        level: "INFO"
-        message: >
-          Set up python to build the documentation.
-
-    # NOTE: Installation of poetry in a separate environment to the project to
-    # avoid situations in which both poetry and the project have shared
-    # dependencies with different version. This can lead to CICD failures. For
-    # more information, see https://github.com/ansys/actions/pull/560
-    - name: "Add pipx/bin directory to Github Path"
-      if: steps.environment-variables.outputs.BUILD_BACKEND == 'poetry'
-      shell: bash
-      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH  # zizmor: ignore[github-env]
-
-    # NOTE: Poetry uses virtual environments when installing a project. As we
-    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
-    # in the GitHub environment.
-    - name: "Set poetry environment variable(s)"
-      if: steps.environment-variables.outputs.BUILD_BACKEND == 'poetry'
-      shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV # zizmor: ignore[github-env]
-
-    # NOTE: Install pipx in a location that can be used in following CICD jobs
-    # but ensure that poetry is installed in a temporary folder cleaned before
-    # and after each job. This way poetry is kinda "installed at system level"
-    # making it available in the following call and installed in a different
-    # environment from the project.
-    - name: "Install poetry and create a virtual environment"
-      if: steps.environment-variables.outputs.BUILD_BACKEND == 'poetry'
-      shell: bash
-      run: |
-        python -m pip install pipx
-        python -m pipx install poetry
-      env:
-        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
-        PIPX_HOME : ${{ runner.temp }}/pipx/home
-
-    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
-    # the installation speed "uv pip" offers is what needs to be taken advantage of,
-    # using "uv venv" in a separate step is not necessary since "uv pip" will still
-    # work with existing virtual environments.
-    - name: "Create a virtual environment"
-      shell: bash
-      run: |
-        python -m venv .venv
-
-    - name: "Auto-detect uv lockfile"
-      id: auto-detect-uv-lockfile
-      if: ${{ inputs.use-uv == 'true' }}
-      shell: bash
-      run: |
-        if [[ -f "uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
-        else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
-        fi
-
-    - name: "Suppress .python-version file for uv"
-      if: ${{ inputs.use-uv == 'true' }}
-      shell: bash
-      run: |
-        if [[ -f ".python-version" ]]; then
-          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
-          rm .python-version
-        else
-          echo ".python-version file not detected. No action required."
-        fi
-
-    # ------------------------------------------------------------------------
-
-    - name: "Update pip"
-      shell: bash
-      run: |
-        source .venv/bin/activate
-        python -m pip --disable-pip-version-check install --no-cache-dir --force-reinstall "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
-
-    - name: "Check if requirements.txt file exists"
-      id: check-exists-requirements-file
-      shell: bash
-      env:
-        REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
-      run: |
-        echo "EXISTS_DOC_REQUIREMENTS=$(if [ -f "${REQUIREMENTS_FILE}" ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
-
-    - uses: $/_logging
-      if: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'true' }}
-      with:
-        level: "ERROR"
-        message: >
-          A uv.lock file was detected and a requirements file exists. Please, either use the
-          lock file or the requirements file, but not both.
-
-    - name: "Install documentation dependencies from requirements file"
-      if: steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'true'
-      shell: bash
-      env:
-        REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
-        USE_UV: ${{ inputs.use-uv }}
-      run: |
-        source .venv/bin/activate
-        if [[ "${USE_UV}" == 'true' ]]; then
-          uv pip install -r "${REQUIREMENTS_FILE}"
-        else
-          python -m pip install -r "${REQUIREMENTS_FILE}"
-        fi
-
-    - name: "Install Python library"
-      shell: bash
-      if: inputs.skip-install == 'false'
-      env:
-        BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
-        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
-      run: |
-        source .venv/bin/activate
-        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          poetry install
-        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-            uv sync --frozen --no-default-groups
-          else
-            uv pip install .
-          fi
-        else
-          python -m pip install .
-        fi
-
-    - name: "Install documentation dependencies from pyproject.toml"
-      shell: bash
-      if: steps.check-exists-requirements-file.outputs.EXISTS_DOC_REQUIREMENTS == 'false'
-      env:
-        BUILD_BACKEND: ${{ steps.environment-variables.outputs.BUILD_BACKEND }}
-        GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
-        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
-        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
-      run: |
-        source .venv/bin/activate
-        if [[ "${BUILD_BACKEND}" == 'poetry' ]]; then
-          if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]]; then
-            poetry install --with "${GROUP_DEPENDENCIES_NAME}" --extras "${OPTIONAL_DEPENDENCIES_NAME}"
-          else
-            poetry install --extras "${OPTIONAL_DEPENDENCIES_NAME}"
-          fi
-        else
-          # Optional dependencies handling
-          extra_dependencies_flags=""
-          project_spec="."
-          if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
-            if [[ "${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
-              for extra in "${extras_list[@]}"; do
-                trimmed_extra="$(echo "${extra}" | xargs)"
-                if [[ -n "${trimmed_extra}" ]]; then
-                  extra_dependencies_flags="$extra_dependencies_flags --extra ${trimmed_extra}"
-                fi
-              done
-            else
-              project_spec=".[${OPTIONAL_DEPENDENCIES_NAME}]"
-            fi
-          fi
-          # Group dependencies handling
-          group_dependencies_flag=""
-          if [ -n "${GROUP_DEPENDENCIES_NAME}" ]; then
-            IFS=',' read -ra group_list <<< "${GROUP_DEPENDENCIES_NAME}"
-            for group in "${group_list[@]}"; do
-              group_dependencies_flag="$group_dependencies_flag --group $group"
-            done
-          fi
-          # Install dependencies (potentially mix of optional and group)
-          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --no-default-groups $group_dependencies_flag $extra_dependencies_flags
-            else
-              uv pip install $group_dependencies_flag $project_spec
-            fi
-          else
-            python -m pip install $project_spec
-          fi
-        fi
+        use-uv: ${{ inputs.use-uv }}
+        skip-install: ${{ inputs.skip-install }}
+        optional-dependencies-name: ${{ inputs.optional-dependencies-name }}
+        group-dependencies-name: ${{ inputs.group-dependencies-name }}
+        requirements-file: ${{ inputs.requirements-file }}
 
     # ------------------------------------------------------------------------
 
@@ -465,17 +269,17 @@ runs:
         SPHINXOPTS: ${{ inputs.sphinxopts }}
         CHECK_LINKS: ${{ inputs.check-links }}
         BUILD_PDF: ${{ inputs.build-pdf }}
-        SPHINX_BUILD_MAKE: ${{ steps.environment-variables.outputs.SPHINX_BUILD_MAKE }}
+        RUN_PREFIX: ${{ steps.project-env.outputs.run-prefix }}
       shell: bash
       run: |
         source .venv/bin/activate
-        ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINXOPTS}"
+        ${RUN_PREFIX} make -C doc html SPHINXOPTS="${SPHINXOPTS}"
         if [[ "${BUILD_PDF}" == 'true' ]]; then
-          ${SPHINX_BUILD_MAKE} -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
+          ${RUN_PREFIX} make -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
         fi
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          ${SPHINX_BUILD_MAKE} -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
+          ${RUN_PREFIX} make -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
         fi
 
     - name: "Build HTML and PDF documentation using xvfb"
@@ -484,17 +288,17 @@ runs:
         SPHINXOPTS: ${{ inputs.sphinxopts }}
         CHECK_LINKS: ${{ inputs.check-links }}
         BUILD_PDF: ${{ inputs.build-pdf }}
-        SPHINX_BUILD_MAKE: ${{ steps.environment-variables.outputs.SPHINX_BUILD_MAKE }}
+        RUN_PREFIX: ${{ steps.project-env.outputs.run-prefix }}
       shell: bash
       run: |
         source .venv/bin/activate
-        xvfb-run ${SPHINX_BUILD_MAKE} -C doc html SPHINXOPTS="${SPHINXOPTS}"
+        xvfb-run ${RUN_PREFIX} make -C doc html SPHINXOPTS="${SPHINXOPTS}"
         if [[ "${BUILD_PDF}" == 'true' ]]; then
-          xvfb-run ${SPHINX_BUILD_MAKE} -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
+          xvfb-run ${RUN_PREFIX} make -C doc pdf SPHINXOPTS="${SPHINXOPTS}"
         fi
         if [[ "${CHECK_LINKS}" == 'true' ]];
         then
-          xvfb-run ${SPHINX_BUILD_MAKE} -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
+          xvfb-run ${RUN_PREFIX} make -C doc linkcheck SPHINXOPTS="${SPHINXOPTS}"
         fi
 
     # ------------------------------------------------------------------------

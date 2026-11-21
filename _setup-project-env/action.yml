@@ -1,0 +1,90 @@
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: "Set up project environment"
+description: |
+  Create a ``.venv`` virtual environment in the working directory and install the
+  project and its dependencies into it. The build backend (poetry, uv or pip) is
+  detected automatically and a ``uv.lock`` file is honoured when ``use-uv`` is
+  ``true``. The logic lives in ``python-utils/project_env.py``.
+
+  Python (and uv, if needed) must already be available, for example through
+  ``_setup-python``.
+
+inputs:
+  use-uv:
+    description: 'Whether to use uv instead of pip. Ignored for poetry projects.'
+    required: true
+    type: boolean
+  skip-install:
+    description: 'Whether to skip installing the project itself.'
+    required: true
+    type: boolean
+  optional-dependencies-name:
+    description: |
+      Comma-separated extras to install. Space-separated for poetry projects.
+      No default is applied: pass exactly what should be installed.
+    required: false
+    default: ''
+    type: string
+  group-dependencies-name:
+    description: 'Comma-separated dependency groups to install.'
+    required: false
+    default: ''
+    type: string
+  requirements-file:
+    description: |
+      Path to a requirements file. When the file exists, it is installed instead
+      of the extras and groups from ``pyproject.toml``. It cannot be combined with
+      a ``uv.lock`` file.
+    required: false
+    default: ''
+    type: string
+
+outputs:
+  build-backend:
+    description: 'Detected build backend: ``poetry``, ``uv`` or ``pip``.'
+    value: ${{ steps.project-env.outputs.build-backend }}
+  use-uv-lockfile:
+    description: 'Whether a ``uv.lock`` file was used.'
+    value: ${{ steps.project-env.outputs.use-uv-lockfile }}
+  run-prefix:
+    description: |
+      Prefix that runs a command inside the environment, once it is activated:
+      ``poetry run --``, ``uv run --no-sync --`` or empty for pip.
+    value: ${{ steps.project-env.outputs.run-prefix }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Set up project environment"
+      id: project-env
+      shell: bash
+      env:
+        USE_UV: ${{ inputs.use-uv }}
+        SKIP_INSTALL: ${{ inputs.skip-install }}
+        OPTIONAL_DEPENDENCIES_NAME: ${{ inputs.optional-dependencies-name }}
+        GROUP_DEPENDENCIES_NAME: ${{ inputs.group-dependencies-name }}
+        REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
+      run: |
+        python "${GITHUB_ACTION_PATH}/../python-utils/project_env.py"
