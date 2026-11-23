@@ -246,11 +246,6 @@ jobs:
             '
         )"
 
-        if [[ -z "${previous_tag}" ]]; then
-          echo "::error::Could not find a published stable release older than ${TAG_NAME}."
-          exit 1
-        fi
-
         echo "Using ${previous_tag} as the release-notes comparison tag for ${TAG_NAME}."
         echo "tag=${previous_tag}" >> "$GITHUB_OUTPUT"
 
