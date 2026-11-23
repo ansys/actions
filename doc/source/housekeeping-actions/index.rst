@@ -45,20 +45,6 @@ action emits a warning and does not apply labels. For example:
     Breaking-changes: Remove compatibility with older servers
     Deprecation: The legacy endpoint will be removed
 
-Together, these trailers add two version labels, the ``breaking-changes`` label, and the
-``deprecation`` label:
-
-.. code-block:: yaml
-
-    permissions:
-      pull-requests: write
-
-    steps:
-      - uses: ansys/actions/hk-label-from-trailers@v11
-        with:
-          direct-trailers: Breaking-changes, Deprecation
-          value-trailers: Product-version
-
 The version labels added by this example are ``25r1`` and ``25r2``.
 
 Migrate fork pull requests

@@ -1,0 +1,10 @@
+hk-label-from-trailers:
+  name: "Label pull requests from trailers"
+  runs-on: ubuntu-latest
+  permissions:
+    pull-requests: write  # Required to add labels to pull requests
+  steps:
+    - uses: ansys/actions/hk-label-from-trailers@{{ version }}
+      with:
+        direct-trailers: Breaking-changes, Deprecation
+        value-trailers: Product-version

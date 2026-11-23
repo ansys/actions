@@ -24,14 +24,15 @@ name: Label pull requests from trailers
 
 description: |
   Adds pull request labels from trailers in the pull request description.
+  Run this action on a workflow triggered by a ``pull_request`` event; the
+  pull request number is read directly from that event.
   Configure trailer names in ``direct-trailers`` to add a label derived from
   the trailer name, or in ``value-trailers`` to add each comma-separated
-  trailer value as a label. All generated labels are lowercase; semicolons are
-  not supported as value separators. Only trailers in the first level-2
-  section of the description are processed. Matching labels must already
-  exist in the repository.
+  trailer value as a label. All generated labels are lowercase. Only trailers
+  in the first level-2 section of the description are processed. Matching
+  labels must already exist in the repository.
 
-  For example, ``Product-Version: 25R1, 25R2`` adds the ``25R1`` and ``25R2``
+  For example, ``Product-Version: 25R1, 25R2`` adds the ``25r1`` and ``25r2``
   labels, while ``Breaking-Changes: Remove compatibility with older servers``
   adds the ``breaking-changes`` label.
 
@@ -44,8 +45,8 @@ inputs:
     description: |
       Comma-separated trailer names whose presence adds a label derived from
       the trailer name converted to lowercase. For example,
-      ``Breaking-changes, Deprecation`` adds ``breaking-changes`` and
-      ``deprecation`` labels.
+      ``Breaking-changes: Remove compatibility with older servers`` adds
+      ``breaking-changes`` label.
     required: false
     default: ""
     type: string
@@ -53,23 +54,10 @@ inputs:
   value-trailers:
     description: |
       Comma-separated trailer names whose comma-separated values are added as
-      lowercase labels. Semicolons are not supported as separators. For
-      example, ``Product-Version`` adds ``25r1`` and ``25r2`` for
-      ``Product-Version: 25R1, 25R2``.
+      lowercase labels. For example, ``Product-Version: 25R1, 25R2`` adds
+      ``25r1`` and ``25r2`` labels.
     required: false
     default: ""
-    type: string
-
-  token:
-    description: GitHub token with permission to add pull request labels.
-    required: false
-    default: ${{ github.token }}
-    type: string
-
-  pr-number:
-    description: Pull request number. Defaults to the pull request event number.
-    required: false
-    default: ${{ github.event.pull_request.number }}
     type: string
 
 runs:
@@ -78,8 +66,8 @@ runs:
     - name: Apply labels from pull request trailers
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.token }}
-        PR_NUMBER: ${{ inputs.pr-number }}
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
         REPOSITORY: ${{ github.repository }}
         DIRECT_TRAILERS: ${{ inputs.direct-trailers }}
         VALUE_TRAILERS: ${{ inputs.value-trailers }}
@@ -87,7 +75,7 @@ runs:
         set -euo pipefail
 
         if [[ -z "${PR_NUMBER}" ]]; then
-          echo "::error::This action must run for a pull request or receive the 'pr-number' input."
+          echo "::error::This action must run in a pull request event context."
           exit 1
         fi
 
@@ -102,12 +90,25 @@ runs:
 
         extract_first_section() {
           awk '
-            /^## / {
-              if (in_section) exit
-              in_section=1
-              next
+            BEGIN {
+              in_section=0
             }
-            in_section { print }
+
+            {
+              # Normalize CRLF lines before heading and trailer parsing.
+              line=$0
+              sub(/\r$/, "", line)
+
+              # Start at the first unindented level-2 heading and stop before the next.
+              if (line ~ /^##([[:space:]]|$)/) {
+                if (in_section) exit
+                in_section=1
+                next
+              }
+
+              # Send only the first section's contents to trailer parsing.
+              if (in_section) print line
+            }
           '
         }
 
