@@ -227,16 +227,6 @@ runs:
           Both 'optional-dependencies-name' and 'group-dependencies-name' are specified.
           Both will be used for installation.
 
-    - name: "Set up virtual environment activation command"
-      id: virtual-environment-activation-command
-      shell: bash
-      run: |
-        if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
-        else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
-        fi
-
     - name: "Set up project environment"
       id: project-env
       uses: $/_setup-project-env
@@ -294,7 +284,7 @@ runs:
        PYTEST_EXTRA_ARGS: ${{ inputs.pytest-extra-args }}
        PYTEST_POST_ARGS: ${{ inputs.pytest-postargs }}
        PYTEST_RUN: ${{ steps.pytest-run-command.outputs.PYTEST_RUN }}
-       ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+       ACTIVATE_VENV: ${{ steps.project-env.outputs.activate-venv }}
       run: |
         ${ACTIVATE_VENV}
         eval "${PYTEST_RUN} ${PYTEST_MARKERS} ${PYTEST_EXTRA_ARGS} ${PYTEST_POST_ARGS}"
@@ -307,7 +297,7 @@ runs:
        PYTEST_EXTRA_ARGS: ${{ inputs.pytest-extra-args }}
        PYTEST_POST_ARGS: ${{ inputs.pytest-postargs }}
        PYTEST_RUN: ${{ steps.pytest-run-command.outputs.PYTEST_RUN }}
-       ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+       ACTIVATE_VENV: ${{ steps.project-env.outputs.activate-venv }}
       run: |
         ${ACTIVATE_VENV}
         eval "xvfb-run ${PYTEST_RUN} ${PYTEST_MARKERS} ${PYTEST_EXTRA_ARGS} ${PYTEST_POST_ARGS}"
