@@ -520,7 +520,7 @@ runs:
           --repo "${ORGANIZATION}/${REPOSITORY}" \
           --head "${PR_BASE}" \
           --base main \
-          --title "chore: migrate fork PR #${PR_NUMBER}" \
+          --title "chore: migrate fork PR ${PR_NUMBER}" \
           --body "${NEW_PR_BODY}")
 
         # Extract new PR number from URL
