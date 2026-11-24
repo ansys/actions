@@ -91,15 +91,16 @@ runs:
         fi
 
         REPOSITORY_LABELS=$(gh api --paginate --slurp "repos/${REPOSITORY}/labels?per_page=100")
+
         validate_label() {
           local label="${1,,}"
-          [[ -z "${label}" ]] && return 0
           if ! jq -e --arg label "${label}" \
             'any(.[][]; .name | ascii_downcase == $label)' <<< "${REPOSITORY_LABELS}" > /dev/null; then
             return 1
           fi
         }
 
+        # Check and validate direct-trailers against repository labels
         IFS=',' read -r -a direct_names <<< "${DIRECT_TRAILERS}"
         for label in "${direct_names[@]}"; do
           label="${label#"${label%%[![:space:]]*}"}"
@@ -160,13 +161,14 @@ runs:
           return 1
         }
 
-        # Validate each candidate
+        # Validate each label extracted from value trailers
         check_label() {
           local label="$1"
+          local trailer_key="$2"
           label="${label,,}"
           [[ -z "${label}" ]] && return 0
           if ! validate_label "${label}"; then
-            echo "::warning::Label '${label}' for trailer '${key}' does not exist in repository ${REPOSITORY}; skipping it."
+            echo "::warning::Label '${label}' from trailer '${trailer_key}' does not exist in repository ${REPOSITORY}; skipping it."
             return 0
           fi
           validated_labels+=("${label}")
@@ -182,7 +184,7 @@ runs:
           if trailer_is_configured "${normalized_key}" "${DIRECT_TRAILERS}"; then
             found_configured_trailer=true
             trailer_configured=true
-            check_label "${normalized_key}"
+            check_label "${normalized_key}" "${key}"
           fi
 
           if trailer_is_configured "${normalized_key}" "${VALUE_TRAILERS}"; then
@@ -197,7 +199,7 @@ runs:
             while IFS= read -r value; do
               value="${value#"${value%%[![:space:]]*}"}"
               value="${value%"${value##*[![:space:]]}"}"
-              check_label "${value,,}"
+              check_label "${value,,}" "${key}"
             done < <(printf '%s\n' "${value_text}" | tr ',' '\n')
           fi
 
