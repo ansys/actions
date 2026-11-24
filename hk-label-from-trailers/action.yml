@@ -30,8 +30,9 @@ description: |
   the trailer name, or in ``value-trailers`` to add each comma-separated
   trailer value as a label. All generated labels are lowercase. Only trailers
   in the first level-2 section of the description are processed. Matching
-  labels must already exist in the repository. Labels expected to be added
-  need to exist as repository labels.
+  labels must already exist in the repository. Configured direct-trailer
+  names and values extracted from value-trailers are checked against the
+  repository labels; value-trailer names do not need to be labels themselves.
 
   For example, ``Product-Version: 25R1, 25R2`` adds the ``25r1`` and ``25r2``
   labels, while ``Breaking-Changes: Remove compatibility with older servers``
@@ -64,7 +65,8 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Check context and input validity
+    - name: Check context and labels
+      id: check
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
@@ -87,30 +89,24 @@ runs:
         fi
 
         REPOSITORY_LABELS=$(gh api --paginate --slurp "repos/${REPOSITORY}/labels?per_page=100")
-        IFS=',' read -r -a trailer_names <<< "${DIRECT_TRAILERS},${VALUE_TRAILERS}"
-        for label in "${trailer_names[@]}"; do
+        validate_label() {
+          local label="${1,,}"
+          [[ -z "${label}" ]] && return 0
+          if ! jq -e --arg label "${label}" \
+            'any(.[][]; .name | ascii_downcase == $label)' <<< "${REPOSITORY_LABELS}" > /dev/null; then
+            echo "::error::Label '${label}' does not exist in repository ${REPOSITORY}."
+            return 1
+          fi
+        }
+
+        IFS=',' read -r -a direct_names <<< "${DIRECT_TRAILERS}"
+        for label in "${direct_names[@]}"; do
           label="${label#"${label%%[![:space:]]*}"}"
           label="${label%"${label##*[![:space:]]}"}"
-          [[ -z "${label}" ]] && continue
-          if ! jq -e --arg label "${label,,}" \
-            'any(.[][]; .name | ascii_downcase == $label)' <<< "${REPOSITORY_LABELS}" > /dev/null; then
-            echo "::error::Label '${label,,}' does not exist in repository ${REPOSITORY}."
-            exit 1
-          fi
+          validate_label "${label}"
         done
 
-    - name: Apply labels from pull request trailers
-      shell: bash
-      env:
-        GH_TOKEN: ${{ github.token }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
-        REPOSITORY: ${{ github.repository }}
-        DIRECT_TRAILERS: ${{ inputs.direct-trailers }}
-        VALUE_TRAILERS: ${{ inputs.value-trailers }}
-      run: |
-        set -euo pipefail
-
-        PR_INFO=$(gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json body,labels)
+        PR_INFO=$(gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json body)
         PR_BODY=$(jq -r '.body // ""' <<< "${PR_INFO}")
 
         extract_first_section() {
@@ -140,11 +136,7 @@ runs:
         FIRST_SECTION=$(printf '%s\n' "${PR_BODY}" | extract_first_section)
         TRAILERS=$(printf '\n%s\n' "${FIRST_SECTION}" | git interpret-trailers --parse)
 
-        EXISTING_NAMES=$(jq -r '.labels[].name' <<< "${PR_INFO}")
-        seen_labels=()
-        while IFS= read -r label; do
-          [[ -z "${label}" ]] || seen_labels+=("${label,,}")
-        done <<< "${EXISTING_NAMES}"
+        validated_labels=()
 
         # Return success when trailer_key matches one of the comma-separated
         # configured trailer names, ignoring surrounding whitespace and case.
@@ -163,18 +155,13 @@ runs:
           return 1
         }
 
-        # Add each label unless it is already present.
-        add_label() {
+        # Validate each candidate
+        check_label() {
           local label="$1"
-          local seen_label
           label="${label,,}"
           [[ -z "${label}" ]] && return 0
-          for seen_label in "${seen_labels[@]}"; do
-            [[ "${seen_label}" == "${label}" ]] && return 0
-          done
-          echo "Adding label: ${label}"
-          gh pr edit "${PR_NUMBER}" --repo "${REPOSITORY}" --add-label "${label}"
-          seen_labels+=("${label}")
+          validate_label "${label}"
+          validated_labels+=("${label}")
         }
 
         found_configured_trailer=false
@@ -185,7 +172,7 @@ runs:
 
           if trailer_is_configured "${normalized_key}" "${DIRECT_TRAILERS}"; then
             found_configured_trailer=true
-            add_label "${normalized_key}"
+            check_label "${normalized_key}"
           fi
 
           if trailer_is_configured "${normalized_key}" "${VALUE_TRAILERS}"; then
@@ -199,7 +186,7 @@ runs:
             while IFS= read -r value; do
               value="${value#"${value%%[![:space:]]*}"}"
               value="${value%"${value##*[![:space:]]}"}"
-              add_label "${value,,}"
+              check_label "${value,,}"
             done < <(printf '%s\n' "${value_text}" | tr ',' '\n')
           fi
         done <<< "${TRAILERS}"
@@ -207,4 +194,39 @@ runs:
         if [[ "${found_configured_trailer}" != true ]]; then
           echo "::info::No configured trailers were found in the first level-2 section of the pull request description."
         fi
+
+        labels_json=$(jq -cn '$ARGS.positional' --args "${validated_labels[@]}")
+        echo "labels=${labels_json}" >> "${GITHUB_OUTPUT}"
+
+    - name: Apply labels from pull request trailers
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPOSITORY: ${{ github.repository }}
+        LABELS: ${{ steps.check.outputs.labels }}
+      run: |
+        set -euo pipefail
+
+        PR_INFO=$(gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json labels)
+        EXISTING_NAMES=$(jq -r '.labels[].name' <<< "${PR_INFO}")
+        seen_labels=()
+        while IFS= read -r label; do
+          [[ -z "${label}" ]] || seen_labels+=("${label,,}")
+        done <<< "${EXISTING_NAMES}"
+
+        while IFS= read -r label; do
+          [[ -z "${label}" ]] && continue
+          already_seen=false
+          for seen_label in "${seen_labels[@]}"; do
+            if [[ "${seen_label}" == "${label}" ]]; then
+              already_seen=true
+              break
+            fi
+          done
+          [[ "${already_seen}" == true ]] && continue
+          echo "Adding label: ${label}"
+          gh pr edit "${PR_NUMBER}" --repo "${REPOSITORY}" --add-label "${label}"
+          seen_labels+=("${label}")
+        done < <(jq -r '.[]' <<< "${LABELS}")
 
