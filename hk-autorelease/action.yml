@@ -271,7 +271,7 @@ runs:
       shell: bash
       run: |
         uv pip install --no-managed-python --system --upgrade pip
-        uv pip install --no-managed-python --system --no-deps -r ${GITHUB_ACTION_PATH}/requirements.txt
+        uv pip install --no-managed-python --system --no-deps -r "${GITHUB_ACTION_PATH}"/requirements.txt
 
     - name: "Run auto release"
       id: autorelease
@@ -286,4 +286,4 @@ runs:
         CHERRY_PICK_COMMITS: ${{ inputs.cherry-pick-commits }}
         LOCK_FILE_TOOL: ${{ inputs.lock-file-tool }}
       run: |
-        python ${GITHUB_ACTION_PATH}/autorelease.py
+        python "${GITHUB_ACTION_PATH}"/autorelease.py

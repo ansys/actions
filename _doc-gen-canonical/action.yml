@@ -71,7 +71,6 @@ runs:
 
         add_canonical_tag() {
             local file=$1
-            local filename=$(basename "$file")
             local relative_path=${file#*version/*/}
             local stable_target="${VERSION_DIRECTORY}/stable/${relative_path}"
             if [[ ! -f "$stable_target" ]]; then
@@ -100,7 +99,7 @@ runs:
                 -exec bash -c 'add_canonical_tag "$0"' {} \;
         }
 
-        find_html_files ${VERSION_DIRECTORY}
+        find_html_files "${VERSION_DIRECTORY}"
 
         # Ensure that 'version/{stable|dev}/index.html' uses as canonical the
         # landing page of the documentation. When ``add_canonical_tag`` above

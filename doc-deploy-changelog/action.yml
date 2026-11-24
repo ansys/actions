@@ -295,15 +295,15 @@ runs:
       id: save-tag-version
       shell: bash
       run: |
-        # /refs/tags/v0.1.0 -> 0.1.0
+        # Strip the tag ref prefix: refs/tags/v0.1.0 -> 0.1.0
         tag_version=${GITHUB_REF##*/v}
-        echo "TAG_VERSION=$tag_version" >> ${GITHUB_OUTPUT}
+        echo "TAG_VERSION=$tag_version" >> "${GITHUB_OUTPUT}"
 
         # Check if the tag is a pre-release
         if [[ $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-           echo "IS_PRE_RELEASE=false" >> ${GITHUB_OUTPUT}
+           echo "IS_PRE_RELEASE=false" >> "${GITHUB_OUTPUT}"
         elif [[ $tag_version =~ ^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$ ]]; then
-           echo "IS_PRE_RELEASE=true" >> ${GITHUB_OUTPUT}
+           echo "IS_PRE_RELEASE=true" >> "${GITHUB_OUTPUT}"
         else
            echo "Error: '${tag_version}' is not a valid release or pre-release tag."
            exit 1
@@ -312,7 +312,7 @@ runs:
     - name: "Install towncrier, tomlkit, and the project"
       shell: bash
       run: |
-        python -m pip install -r ${GITHUB_ACTION_PATH}/requirements.txt
+        python -m pip install -r "${GITHUB_ACTION_PATH}"/requirements.txt
 
     - name: "Get towncrier directory and project name"
       shell: python
@@ -356,7 +356,7 @@ runs:
         head_branch=$(git remote show origin | grep "HEAD branch:")
         formatted_head_branch=${head_branch#*: }
 
-        echo "MAIN_BRANCH=$formatted_head_branch" >> ${GITHUB_OUTPUT}
+        echo "MAIN_BRANCH=$formatted_head_branch" >> "${GITHUB_OUTPUT}"
 
     - name: "Set the branch to update the CHANGELOG file on"
       shell: bash
@@ -367,25 +367,24 @@ runs:
         RELEASE_FROM_MAIN: ${{ inputs.release-from-main }}
       run: |
         if [[ "${RELEASE_FROM_MAIN}" == "true" ]]; then
-          echo "UPDATE_BRANCH=${MAIN_BRANCH}" >> ${GITHUB_OUTPUT}
-          echo "RELEASE_BRANCH_EXISTS=true" >> ${GITHUB_OUTPUT}
+          echo "UPDATE_BRANCH=${MAIN_BRANCH}" >> "${GITHUB_OUTPUT}"
+          echo "RELEASE_BRANCH_EXISTS=true" >> "${GITHUB_OUTPUT}"
         else
           # Assume release branch is "release/major.minor"
           # v0.1.0 (tag) -> release/0.1
-          tag_version=${TAG_VERSION}
-          release_branch="release/${tag_version%.*}"
+          release_branch="release/${TAG_VERSION%.*}"
 
           # Check release_branch exists on remote
-          release_branch_exists=$(git ls-remote --branches origin refs/heads/$release_branch 2>&1)
+          release_branch_exists=$(git ls-remote --branches origin refs/heads/"$release_branch" 2>&1)
 
           # If the release branch doesn't exist, then use the temporary branch
           if [ -z "$release_branch_exists" ]; then
             # docs/changelog-update-v0.1.0
-            echo "UPDATE_BRANCH=docs/changelog-update-v${TAG_VERSION}" >> ${GITHUB_OUTPUT}
-            echo "RELEASE_BRANCH_EXISTS=false" >> ${GITHUB_OUTPUT}
+            echo "UPDATE_BRANCH=docs/changelog-update-v${TAG_VERSION}" >> "${GITHUB_OUTPUT}"
+            echo "RELEASE_BRANCH_EXISTS=false" >> "${GITHUB_OUTPUT}"
           else
-            echo "UPDATE_BRANCH=${release_branch}" >> ${GITHUB_OUTPUT}
-            echo "RELEASE_BRANCH_EXISTS=true" >> ${GITHUB_OUTPUT}
+            echo "UPDATE_BRANCH=${release_branch}" >> "${GITHUB_OUTPUT}"
+            echo "RELEASE_BRANCH_EXISTS=true" >> "${GITHUB_OUTPUT}"
           fi
         fi
 
@@ -427,7 +426,7 @@ runs:
         # Get number of .md files in ${{ env.TOWNCRIER_DIR }}
         count=$(find "${TOWNCRIER_DIR}" -type f -name "*.md" | wc -l)
 
-        if [ $count -gt 0 ]; then
+        if [ "$count" -gt 0 ]; then
           echo "Using ${UPDATE_BRANCH} to update the CHANGELOG file"
           if [[ ${RELEASE_BRANCH_EXISTS} == "false" ]]; then
             git checkout -b "${UPDATE_BRANCH}"
@@ -440,10 +439,10 @@ runs:
           # Update changelog with the tag version
           if [[ "${IS_PRE_RELEASE}" == "true" ]]; then
             echo "Creating CHANGELOG section for pre-release version ${TAG_VERSION}"
-            buildcmd=$(towncrier build --keep --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+            towncrier build --keep --name "${TOWNCRIER_NAME}" --version "${TAG_VERSION}" --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true
           else
             echo "Creating CHANGELOG section for version ${TAG_VERSION}"
-            buildcmd=$(towncrier build --yes --name ${TOWNCRIER_NAME} --version ${TAG_VERSION} --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true)
+            towncrier build --yes --name "${TOWNCRIER_NAME}" --version "${TAG_VERSION}" --date "${CURRENT_DATE}" >> builderr.txt 2>&1 || true
           fi
 
           cat builderr.txt
@@ -476,7 +475,7 @@ runs:
           else
             git commit -m "CHORE: updating CHANGELOG for v${TAG_VERSION}"
           fi
-          echo "COMMIT_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+          echo "COMMIT_SHA=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 
           # Push CHANGELOG.md changes
           if [[ "${RELEASE_BRANCH_EXISTS}" == "true" ]]; then
@@ -485,10 +484,10 @@ runs:
             git push -u origin "${UPDATE_BRANCH}"
           fi
 
-          echo "UPDATED_CHANGELOG=true" >> ${GITHUB_OUTPUT}
+          echo "UPDATED_CHANGELOG=true" >> "${GITHUB_OUTPUT}"
         else
           echo "There are no changelog fragment files to update the CHANGELOG for v${TAG_VERSION}"
-          echo "UPDATED_CHANGELOG=false" >> ${GITHUB_OUTPUT}
+          echo "UPDATED_CHANGELOG=false" >> "${GITHUB_OUTPUT}"
         fi
 
     - name: "Create PR into main with the CHANGELOG file changes"
@@ -503,25 +502,25 @@ runs:
       shell: bash
       run: |
         # Checkout main & create a branch
-        git checkout ${MAIN_BRANCH}
+        git checkout "${MAIN_BRANCH}"
         git pull
 
         # Set branch for PR
         pr_branch=docs/v${TAG_VERSION}-changelog
 
         # Check if pr_branch exists on remote
-        remote_branch_exists=$(git ls-remote --branches origin refs/heads/$pr_branch 2>&1)
+        remote_branch_exists=$(git ls-remote --branches origin refs/heads/"$pr_branch" 2>&1)
 
         # Delete the remote branch if it exists
         if [ -n "$remote_branch_exists" ]; then
           echo "Deleting $pr_branch from remote"
-          git push origin --delete $pr_branch
+          git push origin --delete "$pr_branch"
         fi
 
         # Create a new $pr_branch
-        git checkout -b $pr_branch
+        git checkout -b "$pr_branch"
 
-        cherrypick=$(git cherry-pick "${COMMIT_SHA}" >> cherrypickerr.txt 2>&1 || true)
+        git cherry-pick "${COMMIT_SHA}" >> cherrypickerr.txt 2>&1 || true
         cat cherrypickerr.txt
         conflict=$(grep "CONFLICT" cherrypickerr.txt || true)
 
@@ -541,7 +540,7 @@ runs:
         fi
 
         # Push CHANGELOG.md changes to $pr_branch
-        git push -u origin $pr_branch
+        git push -u origin "$pr_branch"
 
         if [[ "${USE_UPPER_CASE}" == "false" ]] ; then
           pr_title="chore: update CHANGELOG for v${TAG_VERSION}"
@@ -583,16 +582,16 @@ runs:
           git pull
 
           # Delete the tag locally
-          git tag -d v${TAG_VERSION}
+          git tag -d v"${TAG_VERSION}"
 
           # Delete the tag on remote
-          git push origin --delete v${TAG_VERSION}
+          git push origin --delete v"${TAG_VERSION}"
 
           # Create the tag locally
-          git tag v${TAG_VERSION}
+          git tag v"${TAG_VERSION}"
 
           # Create the tag on remote
-          git push origin v${TAG_VERSION}
+          git push origin v"${TAG_VERSION}"
 
           if [[ "${RELEASE_BRANCH_EXISTS}" == "false" ]]; then
             # Delete branch created from deleted tag with CHANGELOG update

@@ -376,7 +376,7 @@ runs:
       env:
         LIBRARY_NAME: ${{ inputs.library-name }}
       run: |
-        mv /tmp/artifacts/${LIBRARY_NAME}-artifacts dist/${LIBRARY_NAME}-artifacts
+        mv /tmp/artifacts/"${LIBRARY_NAME}"-artifacts dist/"${LIBRARY_NAME}"-artifacts
 
     # ------------------------------------------------------------------------
 
@@ -405,7 +405,9 @@ runs:
         echo "Git tag version: ${TAG_VERSION}"
 
         # Find first wheel or sdist
-        ARTIFACT_FILE="$(ls "${ARTIFACT_DIR}"/*.whl "${ARTIFACT_DIR}"/*.tar.gz 2>/dev/null | head -n 1)"
+        shopt -s nullglob
+        artifact_files=("${ARTIFACT_DIR}"/*.whl "${ARTIFACT_DIR}"/*.tar.gz)
+        ARTIFACT_FILE="${artifact_files[0]:-}"
 
         if [[ -z "${ARTIFACT_FILE}" ]]; then
           echo "No wheel or sdist found in ${ARTIFACT_DIR}"
@@ -454,7 +456,7 @@ runs:
       run: |
         mkdir -p dist/extra
         for artifact in $ADDITIONAL_ARTIFACTS; do
-          mv /tmp/artifacts/$artifact dist/extra/$artifact
+          mv /tmp/artifacts/"$artifact" dist/extra/"$artifact"
         done
 
     # ------------------------------------------------------------------------
@@ -483,7 +485,7 @@ runs:
         INSTALL_COMMAND: ${{ inputs.use-uv == 'true' && 'uv pip install --no-managed-python --system' || 'python -m pip install' }}
         UV_EXCLUDE_NEWER: "false"
       run: |
-        ${INSTALL_COMMAND} -r ${GITHUB_ACTION_PATH}/requirements.txt
+        ${INSTALL_COMMAND} -r "${GITHUB_ACTION_PATH}"/requirements.txt
 
     - name: "Filter SBOM or wheelhouse files (if needed)"
       if: inputs.dist-filter != ''
@@ -549,7 +551,7 @@ runs:
     - name: "Set RELEASE_NOTES_BODY env variable"
       if: inputs.changelog-release-notes == 'false' && inputs.release-notes-file == ''
       shell: bash
-      run: echo "RELEASE_NOTES_BODY= " >> $GITHUB_ENV
+      run: echo "RELEASE_NOTES_BODY= " >> "$GITHUB_ENV"
 
     - name: "Extend RELEASE_NOTES_BODY with attestation notes"
       if: ${{ inputs.add-artifact-attestation-notes == 'true' && (inputs.only-code == 'false' || inputs.additional-artifacts != '') }}
@@ -564,12 +566,12 @@ runs:
         attested_file=""
 
         # Standard release artifacts: wheels, sdist, wheelhouse, SBOM.
-        for artifact in $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \)); do
+        while IFS= read -r -d '' artifact; do
           if gh attestation verify "$artifact" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             attested_file="$(basename "$artifact")"
             break
           fi
-        done
+        done < <(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" -o -name "*wheelhouse*.zip" -o -name "*sbom.spdx" \) -print0)
 
         # If none found yet, also try files from additional-artifacts.
         if [[ -z "${attested_file}" && -n "${ADDITIONAL_ARTIFACTS}" ]]; then
