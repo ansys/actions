@@ -178,5 +178,5 @@ runs:
         done <<< "${TRAILERS}"
 
         if [[ "${found_configured_trailer}" != true ]]; then
-          echo "::warning::No configured trailers were found in the first level-2 section of the pull request description."
+          echo "::info::No configured trailers were found in the first level-2 section of the pull request description."
         fi
