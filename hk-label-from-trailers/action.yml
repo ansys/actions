@@ -106,7 +106,7 @@ runs:
                 next
               }
 
-              # Send only the first section's contents to trailer parsing.
+              # Send only the contents of the first section to trailer parsing.
               if (in_section) print line
             }
           '
