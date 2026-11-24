@@ -312,10 +312,7 @@ runs:
           echo VALE_FLAGS="--config=${VALE_CONFIG}" >> ${GITHUB_OUTPUT}
         fi
 
-    # WARNING: This step is not meant to be executed and is here to track changes
-    # in the vale-action. If a PR is opened by dependabot, we need to update the
-    # reviewdog20 branch with the new release changes, see next step.
-    - name: "Dummy step to track vale-action changes"
+    - name: "Run Vale documentation style check"
       uses: vale-cli/vale-action@518a9136acc6e6668ce7c00d367051e0941e87ff # v3.0.0
       with:
         reviewdog_version: 0.21.0
