@@ -26,40 +26,45 @@ description: |
   Adds pull request labels from trailers in the pull request description.
   Run this action on a workflow triggered by a ``pull_request`` event; the
   pull request number is read directly from that event.
-  Configure trailer names in ``direct-trailers`` to add a label derived from
-  the trailer name, or in ``value-trailers`` to add each comma-separated
-  trailer value as a label. All generated labels are lowercase. Only trailers
-  in the first level-2 section of the description are processed. Matching
-  labels must already exist in the repository. All configured direct-trailer
-  names must exist as labels, even if they are absent from the PR. Missing
-  labels derived from value-trailers are skipped with a warning; value-trailer
-  names do not need to be labels themselves. Detected trailers not configured
-  in either input are skipped with an info message.
+  Both inputs accept comma-separated trailer names. Configure names in
+  ``trailer-keys-as-labels`` to add the trailer key as a label, or in
+  ``trailer-values-as-labels`` to add each comma-separated trailer value as a
+  label. All generated labels are lowercase. Only trailers in the first
+  level-2 section of the pull request description are processed. Matching labels
+  must already exist in the repository. Names configured in
+  ``trailer-keys-as-labels`` must exist as labels, even if absent from the PR.
+  Missing labels derived from trailer values are skipped with a warning;
+  names configured in ``trailer-values-as-labels`` do not need to be labels.
+  Detected trailers not configured in either input are skipped with an info
+  message.
 
-  For example, ``Product-Version: 25R1, 25R2`` adds the ``25r1`` and ``25r2``
-  labels, while ``Breaking-Changes: Remove compatibility with older servers``
-  adds the ``breaking-changes`` label.
+  For example, if ``Product-version`` is listed in ``trailer-values-as-labels``
+  then ``Product-version: 25R1, 25R2`` adds the ``25r1`` and ``25r2``
+  labels to the pull request. If ``Breaking-changes`` is listed in
+  ``trailer-keys-as-labels`` then
+  ``Breaking-changes: Remove compatibility with older servers`` adds the
+  ``breaking-changes`` label.
 
   .. important:: **Required GitHub Permissions**
 
      The token must have ``pull-requests: write`` permission.
 
 inputs:
-  direct-trailers:
+  trailer-keys-as-labels:
     description: |
-      Comma-separated trailer names whose presence adds a label derived from
-      the trailer name converted to lowercase. For example,
-      ``Breaking-changes: Remove compatibility with older servers`` adds
-      ``breaking-changes`` label.
+      Comma-separated trailer names. When a configured trailer is present,
+      its name is converted to lowercase and added as a label; its value is
+      ignored. Each configured name must already exist as a repository label.
     required: false
     default: ""
     type: string
 
-  value-trailers:
+  trailer-values-as-labels:
     description: |
-      Comma-separated trailer names whose comma-separated values are added as
-      lowercase labels. For example, ``Product-Version: 25r1, 25R2`` adds
-      ``25r1`` and ``25r2`` labels.
+      Comma-separated trailer names. When a configured trailer is present,
+      each of its comma-separated values is converted to lowercase and added
+      as a label if that label exists in the repository. The trailer name is
+      not added as a label.
     required: false
     default: ""
     type: string
@@ -74,8 +79,8 @@ runs:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         REPOSITORY: ${{ github.repository }}
-        DIRECT_TRAILERS: ${{ inputs.direct-trailers }}
-        VALUE_TRAILERS: ${{ inputs.value-trailers }}
+        TRAILER_KEYS_AS_LABELS: ${{ inputs.trailer-keys-as-labels }}
+        TRAILER_VALUES_AS_LABELS: ${{ inputs.trailer-values-as-labels }}
       run: |
         set -euo pipefail
 
@@ -84,9 +89,9 @@ runs:
           exit 1
         fi
 
-        if [[ -z "${DIRECT_TRAILERS//[[:space:],]/}" \
-          && -z "${VALUE_TRAILERS//[[:space:],]/}" ]]; then
-          echo "::error::Configure at least one of 'direct-trailers' or 'value-trailers'."
+        if [[ -z "${TRAILER_KEYS_AS_LABELS//[[:space:],]/}" \
+          && -z "${TRAILER_VALUES_AS_LABELS//[[:space:],]/}" ]]; then
+          echo "::error::Configure at least one of 'trailer-keys-as-labels' or 'trailer-values-as-labels'."
           exit 1
         fi
 
@@ -100,14 +105,14 @@ runs:
           fi
         }
 
-        # Check and validate direct-trailers against repository labels
-        IFS=',' read -r -a direct_names <<< "${DIRECT_TRAILERS}"
-        for label in "${direct_names[@]}"; do
+        # Check configured trailer keys against repository labels
+        IFS=',' read -r -a key_label_names <<< "${TRAILER_KEYS_AS_LABELS}"
+        for label in "${key_label_names[@]}"; do
           label="${label#"${label%%[![:space:]]*}"}"
           label="${label%"${label##*[![:space:]]}"}"
           [[ -z "${label}" ]] && continue
           if ! validate_label "${label}"; then
-            echo "::error::Label '${label,,}' configured in direct-trailers does not exist in repository ${REPOSITORY}."
+            echo "::error::Label '${label,,}' configured in trailer-keys-as-labels does not exist in repository ${REPOSITORY}."
             exit 1
           fi
         done
@@ -161,7 +166,7 @@ runs:
           return 1
         }
 
-        # Validate each label extracted from value trailers
+        # Validate each label extracted from trailer values
         check_label() {
           local label="$1"
           local trailer_key="$2"
@@ -181,18 +186,18 @@ runs:
           normalized_key="${key,,}"
           trailer_configured=false
 
-          if trailer_is_configured "${normalized_key}" "${DIRECT_TRAILERS}"; then
+          if trailer_is_configured "${normalized_key}" "${TRAILER_KEYS_AS_LABELS}"; then
             found_configured_trailer=true
             trailer_configured=true
             check_label "${normalized_key}" "${key}"
           fi
 
-          if trailer_is_configured "${normalized_key}" "${VALUE_TRAILERS}"; then
+          if trailer_is_configured "${normalized_key}" "${TRAILER_VALUES_AS_LABELS}"; then
             found_configured_trailer=true
             trailer_configured=true
             value_text="${trailer#*:}"
             if [[ "${value_text}" == *';'* ]]; then
-              echo "::error::Semicolons are not supported in value trailers; use commas to separate values."
+              echo "::error::Semicolons are not supported in trailer values; use commas to separate values."
               exit 1
             fi
 
@@ -204,7 +209,7 @@ runs:
           fi
 
           if [[ "${trailer_configured}" != true ]]; then
-            echo "Info: Trailer '${key}' is not configured in direct-trailers or value-trailers; skipping it."
+            echo "Info: Trailer '${key}' is not configured in trailer-keys-as-labels or trailer-values-as-labels; skipping it."
           fi
         done <<< "${TRAILERS}"
 

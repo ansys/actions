@@ -6,5 +6,5 @@ hk-label-from-trailers:
   steps:
     - uses: ansys/actions/hk-label-from-trailers@{{ version }}
       with:
-        direct-trailers: Breaking-changes, Deprecation
-        value-trailers: Product-version
+        trailer-keys-as-labels: Breaking-changes, Deprecation
+        trailer-values-as-labels: Product-version
