@@ -184,34 +184,6 @@ runs:
       with:
         level: "INFO"
         message: >
-          Determine context.
-
-    - name: "Determine GitHub environment variables"
-      id: github-environment-variables
-      shell: bash
-      env:
-        USE_UV: ${{ inputs.use-uv }}
-      run: |
-        if [[ -f "pyproject.toml" ]] && grep -q 'build-backend = "poetry\.core\.masonry\.api"' "pyproject.toml"; then
-          echo "BUILD_BACKEND=$(echo 'poetry')" >> $GITHUB_OUTPUT
-        elif [[ "$USE_UV" == 'true' ]]; then
-          echo "BUILD_BACKEND=$(echo 'uv')" >> $GITHUB_OUTPUT
-        else
-          echo "BUILD_BACKEND=$(echo 'pip')" >> $GITHUB_OUTPUT
-        fi
-
-    - uses: $/_logging
-      with:
-        level: "INFO"
-        message: >
-          Build backend: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
-
-    # ------------------------------------------------------------------------
-
-    - uses: $/_logging
-      with:
-        level: "INFO"
-        message: >
           Set up python to test.
 
     - name: "Set up Python ${{ inputs.python-version }}"
@@ -255,132 +227,15 @@ runs:
           Both 'optional-dependencies-name' and 'group-dependencies-name' are specified.
           Both will be used for installation.
 
-    # NOTE: Installation of poetry in a separate environment to the project to
-    # avoid situations in which both poetry and the project have shared
-    # dependencies with different version. This can lead to CICD failures. For
-    # more information, see https://github.com/ansys/actions/pull/560
-    - name: "Add pipx/bin directory to Github Path"
-      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
-      shell: bash
-      run: echo "${RUNNER_TEMP}/pipx/bin" >> $GITHUB_PATH # zizmor: ignore[github-env] no workaround for this
-
-    # NOTE: Poetry uses virtual environments when installing a project. As we
-    # want to control that creation, we store POETRY_VIRTUALENVS_CREATE=false
-    # in the GitHub environment.
-    - name: "Set poetry environment variable(s)"
-      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
-      shell: bash
-      run: echo "POETRY_VIRTUALENVS_CREATE=false" >> $GITHUB_ENV
-
-    # NOTE: Install pipx in a location that can be used in following CICD jobs
-    # but ensure that poetry is installed in a temporary folder cleaned before
-    # and after each job. This way poetry is kinda "installed at system level"
-    # making it available in the following call and installed in a different
-    # environment from the project.
-    - name: "Install poetry and create a virtual environment"
-      if: steps.github-environment-variables.outputs.BUILD_BACKEND == 'poetry'
-      shell: bash
-      run: |
-        python -m pip install pipx
-        python -m pipx install poetry
-      env:
-        PIPX_BIN_DIR: ${{ runner.temp }}/pipx/bin
-        PIPX_HOME : ${{ runner.temp }}/pipx/home
-
-    # NOTE: A virtual environment is needed regardless in all cases. In uv's case,
-    # the installation speed "uv pip" offers is what needs to be taken advantage of,
-    # using "uv venv" in a separate step is not necessary since "uv pip" will still
-    # work with existing virtual environments.
-    - name: "Create a virtual environment"
-      shell: bash
-      run: |
-        python -m venv .venv
-
-    - name: "Set up virtual environment activation command"
-      id: virtual-environment-activation-command
-      shell: bash
-      run: |
-        if [[ ${RUNNER_OS} == 'Windows' ]]; then
-          echo "ACTIVATE_VENV=$(echo 'source .venv/scripts/activate')" >> $GITHUB_OUTPUT
-        else
-          echo "ACTIVATE_VENV=$(echo 'source .venv/bin/activate')" >> $GITHUB_OUTPUT
-        fi
-
-    - name: "Auto-detect uv lockfile"
-      id: auto-detect-uv-lockfile
-      if: ${{ inputs.use-uv == 'true' }}
-      shell: bash
-      run: |
-        if [[ -f "uv.lock" ]]; then
-          echo "USE_UV_LOCKFILE=true" >> ${GITHUB_OUTPUT}
-        else
-          echo "USE_UV_LOCKFILE=false" >> ${GITHUB_OUTPUT}
-        fi
-
-    - name: "Suppress .python-version file for uv"
-      if: ${{ inputs.use-uv == 'true' }}
-      shell: bash
-      run: |
-        if [[ -f ".python-version" ]]; then
-          echo ".python-version file detected. Removing it to prevent uv from overriding the Python version."
-          rm .python-version
-        else
-          echo ".python-version file not detected. No action required."
-        fi
-
-    - name: "Check if requirements.txt file exists"
-      id: check-exists-requirements-file
-      shell: bash
-      env:
-        OPTIONAL_DEPENDENCIES_NAME: ${{ steps.resolve-deps.outputs.resolved-optional }}
-      run: |
-        echo "EXISTS_TESTS_REQUIREMENTS=$(if [ -f requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
-
-    - name: "Print previous output"
-      shell: bash
-      env:
-        EXISTS_TESTS_REQUIREMENTS: ${{ steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS }}
-      run:
-        echo "Output was found $EXISTS_TESTS_REQUIREMENTS"
-
-    - uses: $/_logging
-      if: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE == 'true' && steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS == 'true' }}
+    - name: "Set up project environment"
+      id: project-env
+      uses: $/_setup-project-env
       with:
-        level: "ERROR"
-        message: >
-          A uv.lock file was detected and a requirements file exists. Please, either use the
-          lock file or the requirements file, but not both.
-
-    # ------------------------------------------------------------------------
-
-    - name: "Update pip"
-      shell: bash
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-      run: |
-        $ACTIVATE_VENV
-        python -m pip --disable-pip-version-check install --no-cache-dir --force-reinstall "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
-
-    - name: "Install project (if required)"
-      if: inputs.skip-install == 'false'
-      shell: bash
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
-        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
-      run: |
-        $ACTIVATE_VENV
-        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
-          poetry install
-        elif [[ "$BUILD_BACKEND" == 'uv' ]]; then
-          if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-            uv sync --frozen --no-default-groups
-          else
-            uv pip install .
-          fi
-        else
-          python -m pip install .
-        fi
+        use-uv: ${{ inputs.use-uv }}
+        skip-install: ${{ inputs.skip-install }}
+        optional-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-optional }}
+        group-dependencies-name: ${{ steps.resolve-deps.outputs.resolved-group }}
+        requirements-file: requirements/requirements_${{ steps.resolve-deps.outputs.resolved-optional }}.txt
 
     - name: "Install X Virtual Frame Buffer"
       shell: bash
@@ -389,80 +244,11 @@ runs:
         sudo apt-get update
         sudo apt-get install -y xvfb
 
-    - name: "Install test dependencies from the requirements file"
-      shell: bash
-      if: steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS == 'true'
-      env:
-        OPTIONAL_DEPENDENCIES_NAME: ${{ steps.resolve-deps.outputs.resolved-optional }}
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        USE_UV: ${{ inputs.use-uv }}
-      run: |
-        $ACTIVATE_VENV
-        if [[ "$USE_UV" == 'true' ]]; then
-          uv pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
-        else
-          python -m pip install -r requirements/requirements_${OPTIONAL_DEPENDENCIES_NAME}.txt
-        fi
-
-    - name: "Install test dependencies from pyproject.toml"
-      shell: bash
-      if: steps.check-exists-requirements-file.outputs.EXISTS_TESTS_REQUIREMENTS == 'false'
-      env:
-        ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
-        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
-        GROUP_DEPENDENCIES_NAME: ${{ steps.resolve-deps.outputs.resolved-group }}
-        OPTIONAL_DEPENDENCIES_NAME: ${{ steps.resolve-deps.outputs.resolved-optional }}
-        USE_UV_LOCKFILE: ${{ steps.auto-detect-uv-lockfile.outputs.USE_UV_LOCKFILE }}
-      run: |
-        $ACTIVATE_VENV
-        if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
-          if [[ -n "${GROUP_DEPENDENCIES_NAME}" ]]; then
-            poetry install --with "${GROUP_DEPENDENCIES_NAME}" --extras "${OPTIONAL_DEPENDENCIES_NAME}"
-          else
-            poetry install --extras "${OPTIONAL_DEPENDENCIES_NAME}"
-          fi
-        else
-          # Optional dependencies handling
-          extra_dependencies_flags=""
-          project_spec="."
-          if [ -n "${OPTIONAL_DEPENDENCIES_NAME}" ]; then
-            if [[ "${BUILD_BACKEND}" == 'uv' && "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              IFS=',' read -ra extras_list <<< "${OPTIONAL_DEPENDENCIES_NAME}"
-              for extra in "${extras_list[@]}"; do
-                trimmed_extra="$(echo "${extra}" | xargs)"
-                if [[ -n "${trimmed_extra}" ]]; then
-                  extra_dependencies_flags="$extra_dependencies_flags --extra ${trimmed_extra}"
-                fi
-              done
-            else
-              project_spec=".[${OPTIONAL_DEPENDENCIES_NAME}]"
-            fi
-          fi
-          # Group dependencies handling
-          group_dependencies_flag=""
-          if [ -n "${GROUP_DEPENDENCIES_NAME}" ]; then
-            IFS=',' read -ra group_list <<< "${GROUP_DEPENDENCIES_NAME}"
-            for group in "${group_list[@]}"; do
-              group_dependencies_flag="$group_dependencies_flag --group $group"
-            done
-          fi
-          # Install dependencies (potentially mix of optional and group)
-          if [[ "${BUILD_BACKEND}" == 'uv' ]]; then
-            if [[ "${USE_UV_LOCKFILE}" == 'true' ]]; then
-              uv sync --frozen --no-default-groups $group_dependencies_flag $extra_dependencies_flags
-            else
-              uv pip install $group_dependencies_flag $project_spec
-            fi
-          else
-            python -m pip install $group_dependencies_flag $project_spec
-          fi
-        fi
-
     - name: "Set up pytest run command"
       id: pytest-run-command
       shell: bash
       env:
-        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        BUILD_BACKEND: ${{ steps.project-env.outputs.build-backend }}
       run: |
         if [[ "$BUILD_BACKEND" == 'poetry' ]]; then
           echo "PYTEST_RUN=$(echo 'poetry run pytest')" >> $GITHUB_OUTPUT
@@ -476,7 +262,7 @@ runs:
       shell: bash
       if: inputs.randomize == 'true'
       env:
-        BUILD_BACKEND: ${{ steps.github-environment-variables.outputs.BUILD_BACKEND }}
+        BUILD_BACKEND: ${{ steps.project-env.outputs.build-backend }}
         SKIP_INSTALL: ${{ inputs.skip-install }}
       run: |
         if [[ "${BUILD_BACKEND}" == 'poetry' ]] && [[ "${SKIP_INSTALL}" == 'false' ]]; then
@@ -498,7 +284,7 @@ runs:
        PYTEST_EXTRA_ARGS: ${{ inputs.pytest-extra-args }}
        PYTEST_POST_ARGS: ${{ inputs.pytest-postargs }}
        PYTEST_RUN: ${{ steps.pytest-run-command.outputs.PYTEST_RUN }}
-       ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+       ACTIVATE_VENV: ${{ steps.project-env.outputs.activate-venv }}
       run: |
         ${ACTIVATE_VENV}
         eval "${PYTEST_RUN} ${PYTEST_MARKERS} ${PYTEST_EXTRA_ARGS} ${PYTEST_POST_ARGS}"
@@ -511,7 +297,7 @@ runs:
        PYTEST_EXTRA_ARGS: ${{ inputs.pytest-extra-args }}
        PYTEST_POST_ARGS: ${{ inputs.pytest-postargs }}
        PYTEST_RUN: ${{ steps.pytest-run-command.outputs.PYTEST_RUN }}
-       ACTIVATE_VENV: ${{ steps.virtual-environment-activation-command.outputs.ACTIVATE_VENV }}
+       ACTIVATE_VENV: ${{ steps.project-env.outputs.activate-venv }}
       run: |
         ${ACTIVATE_VENV}
         eval "xvfb-run ${PYTEST_RUN} ${PYTEST_MARKERS} ${PYTEST_EXTRA_ARGS} ${PYTEST_POST_ARGS}"
