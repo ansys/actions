@@ -8,6 +8,8 @@ Add any applicable trailer lines at the end of the section, separated from
 the description by a blank line. Use commas (not semicolons) between values.
 
   Breaking-changes: <describe the compatibility impact>
+  Deprecation: <describe the deprecation changes>
+  Os: <name of impacted operating system(s)>
 
 Copy only the trailer lines that apply to this pull request.
 -->
