@@ -44,6 +44,7 @@ description: |
   ``bot-user`` and ``bot-email`` inputs. A token other than the default
   ``GITHUB_TOKEN`` is required for the pushed commit to trigger new workflow runs.
   Pull requests coming from forks are skipped, as the token cannot push to them.
+  On tag refs, committing is disabled and the hooks run in check-only mode.
   On pull requests, if the hooks fail without changing any file, the issues cannot
   be fixed automatically and a comment listing the failing hooks is added to the
   pull request. The comment is updated once all hooks pass.
@@ -159,6 +160,8 @@ inputs:
       ``bot-email`` inputs are required. Only changes to already tracked files
       are committed. The fixes are applied on top of the latest commit of the
       branch, so the workspace may contain the pull request merge commit.
+      Ignored on tag refs, where the hooks run in check-only mode and the
+      ``token``, ``bot-user`` and ``bot-email`` inputs are not required.
     required: false
     default: false
     type: boolean
@@ -220,7 +223,11 @@ runs:
         REF_NAME: ${{ github.ref_name }}
         REF_TYPE: ${{ github.ref_type }}
       run: |
-        if [[ -n "${HEAD_REPO}" ]] && [[ "${HEAD_REPO}" != "${REPOSITORY}" ]]; then
+        if [[ "${REF_TYPE}" == 'tag' ]]; then
+          echo "::notice::Tag ref detected. Skipping commit of the fixes."
+          echo "COMMIT=false" >> ${GITHUB_OUTPUT}
+          exit 0
+        elif [[ -n "${HEAD_REPO}" ]] && [[ "${HEAD_REPO}" != "${REPOSITORY}" ]]; then
           echo "::warning::Pull request comes from a fork (${HEAD_REPO}). Skipping commit of the fixes."
           echo "COMMIT=false" >> ${GITHUB_OUTPUT}
           exit 0
