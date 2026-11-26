@@ -184,11 +184,11 @@ def extract_first_section(pr_body: str) -> str:
     for line in pr_body.splitlines():
         # Ignore the entire line if it is in, opens, or closes an HTML comment.
         line_has_comment = in_comment
-        for marker in re.finditer(r"<!--|-->", line):
+        for marker in re.finditer(r"<!--|--!?>", line):
             if marker.group() == "<!--" and not in_comment:
                 in_comment = True
                 line_has_comment = True
-            elif marker.group() == "-->" and in_comment:
+            elif marker.group() in ("-->", "--!>") and in_comment:
                 in_comment = False
                 line_has_comment = True
         if line_has_comment:
