@@ -1,3 +1,9 @@
+# on:
+#   pull_request:
+#     types: [opened, edited, reopened, synchronize]
+# As shown above, it is recommended to add the "edited" activity type
+# to the pull_request event that triggers this action.
+
 hk-label-from-trailers:
   name: "Label pull requests from trailers"
   runs-on: ubuntu-latest
