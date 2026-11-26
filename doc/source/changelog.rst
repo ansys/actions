@@ -9,6 +9,38 @@ This document contains the release notes for the Ansys Actions project.
 
 .. towncrier release notes start
 
+`11.2.1 <https://github.com/ansys/actions/releases/tag/v11.2.1>`_ - November 24, 2026
+=====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Use supported PR titles for migrated PRs
+          - `#1664 <https://github.com/ansys/actions/pull/1664>`_
+
+        * - Avoid code-style commit of changes if tag ref_type
+          - `#1670 <https://github.com/ansys/actions/pull/1670>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Explicitly set the comparison tag for generated release notes
+          - `#1663 <https://github.com/ansys/actions/pull/1663>`_
+
+        * - Clarify the doc-style check step name
+          - `#1669 <https://github.com/ansys/actions/pull/1669>`_
+
+
 `11.2.0 <https://github.com/ansys/actions/releases/tag/v11.2.0>`_ - November 18, 2026
 =====================================================================================
 
