@@ -33,6 +33,7 @@ description: |
   level-2 section of the pull request description are processed. Matching labels
   must already exist in the repository. Names configured in
   ``trailer-keys-as-labels`` must exist as labels, even if absent from the PR.
+  Content inside HTML comments is ignored when finding the section and trailers.
   Missing labels derived from trailer values are skipped with a warning;
   names configured in ``trailer-values-as-labels`` do not need to be labels.
   Detected trailers not configured in either input are skipped with an info
@@ -72,6 +73,29 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Extract first PR section
+      id: extract
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+      shell: python
+      run: |
+        import os
+        import secrets
+        import sys
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f"{github_action_path}/../python-utils/")
+
+        from parse_pr import extract_first_section
+
+        first_section = extract_first_section(os.environ.get("PR_BODY", ""))
+        delimiter = f"ghadelim_{secrets.token_hex(16)}"
+
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+            output.write(f"first_section<<{delimiter}\n")
+            output.write(first_section)
+            output.write(f"\n{delimiter}\n")
+
     - name: Check context and labels
       id: check
       shell: bash
@@ -79,6 +103,7 @@ runs:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         REPOSITORY: ${{ github.repository }}
+        FIRST_SECTION: ${{ steps.extract.outputs.first_section }}
         TRAILER_KEYS_AS_LABELS: ${{ inputs.trailer-keys-as-labels }}
         TRAILER_VALUES_AS_LABELS: ${{ inputs.trailer-values-as-labels }}
       run: |
@@ -117,34 +142,6 @@ runs:
           fi
         done
 
-        PR_INFO=$(gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json body)
-        PR_BODY=$(jq -r '.body // ""' <<< "${PR_INFO}")
-
-        extract_first_section() {
-          awk '
-            BEGIN {
-              in_section=0
-            }
-
-            {
-              # Normalize CRLF lines before heading and trailer parsing.
-              line=$0
-              sub(/\r$/, "", line)
-
-              # Start at the first unindented level-2 heading and stop before the next.
-              if (line ~ /^##([[:space:]]|$)/) {
-                if (in_section) exit
-                in_section=1
-                next
-              }
-
-              # Send only the contents of the first section to trailer parsing.
-              if (in_section) print line
-            }
-          '
-        }
-
-        FIRST_SECTION=$(printf '%s\n' "${PR_BODY}" | extract_first_section)
         TRAILERS=$(printf '\n%s\n' "${FIRST_SECTION}" | git interpret-trailers --parse)
 
         validated_labels=()
