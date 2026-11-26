@@ -82,6 +82,18 @@ jobs:
        with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+  hk-assign-label:
+    name: Assign label
+    runs-on: ubuntu-latest
+    needs: labeler
+    permissions:
+      contents: read         # Required to read repository content for vulnerability scanning
+      pull-requests: write   # Required to assign labels to pull requests
+    steps:
+      - uses: $/hk-label-from-trailers
+        with:
+          trailer-keys-as-labels: Breaking-changes, Deprecation
+          trailer-values-as-labels: Os
 
   changelog-fragment:
     name: "Create changelog fragment"

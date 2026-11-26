@@ -87,6 +87,20 @@
   description: Docker maintenance related
   color: 000075
 
-- name: 'breaking'
+# -- Labels related to trailers ------------------------------------------------------------
+
+- name: 'breaking-changes'
   description: Changes that break backward compatibility
   color: ff0000
+
+- name: 'deprecation'
+  description: Deprecated features that should no longer be used
+  color: ff9900
+
+- name: 'linux'
+  description: Changes related to Linux platform
+  color: 0000ff
+
+- name: 'windows'
+  description: Changes related to Windows platform
+  color: 00ff00

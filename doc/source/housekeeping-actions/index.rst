@@ -21,6 +21,12 @@ Auto-merge pull requests
 .. jinja:: hk-automerge-prs
     :file: _templates/action.rst.jinja
 
+Label pull requests from trailers
+---------------------------------
+
+.. jinja:: hk-label-from-trailers
+    :file: _templates/action.rst.jinja
+
 Migrate fork pull requests
 ---------------------------
 

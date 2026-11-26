@@ -1,0 +1,251 @@
+# Copyright (C) 2022 - 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: Label pull requests from trailers
+
+description: |
+  Adds pull request labels from trailers in the pull request description.
+  Run this action on a workflow triggered by a ``pull_request`` event; the
+  pull request number is read directly from that event.
+  Both inputs accept comma-separated trailer names. Configure names in
+  ``trailer-keys-as-labels`` to add the trailer key as a label, or in
+  ``trailer-values-as-labels`` to add each comma-separated trailer value as a
+  label. All generated labels are lowercase. Only trailers in the first
+  level-2 section of the pull request description are processed. Matching labels
+  must already exist in the repository. Names configured in
+  ``trailer-keys-as-labels`` must exist as labels, even if absent from the PR.
+  Content inside HTML comments is ignored when finding the section and trailers.
+  Missing labels derived from trailer values are skipped with a warning;
+  names configured in ``trailer-values-as-labels`` do not need to be labels.
+  Detected trailers not configured in either input are skipped with an info
+  message.
+
+  For example, if ``Product-version`` is listed in ``trailer-values-as-labels``
+  then ``Product-version: 25R1, 25R2`` adds the ``25r1`` and ``25r2``
+  labels to the pull request. If ``Breaking-changes`` is listed in
+  ``trailer-keys-as-labels`` then
+  ``Breaking-changes: Remove compatibility with older servers`` adds the
+  ``breaking-changes`` label.
+
+  .. important:: **Required GitHub Permissions**
+
+     The token must have ``pull-requests: write`` permission.
+
+inputs:
+  trailer-keys-as-labels:
+    description: |
+      Comma-separated trailer names. When a configured trailer is present,
+      its name is converted to lowercase and added as a label; its value is
+      ignored. Each configured name must already exist as a repository label.
+    required: false
+    default: ""
+    type: string
+
+  trailer-values-as-labels:
+    description: |
+      Comma-separated trailer names. When a configured trailer is present,
+      each of its comma-separated values is converted to lowercase and added
+      as a label if that label exists in the repository. The trailer name is
+      not added as a label.
+    required: false
+    default: ""
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Extract first PR section
+      id: extract
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+      shell: python
+      run: |
+        import os
+        import secrets
+        import sys
+
+        github_action_path = os.getenv("GITHUB_ACTION_PATH")
+        sys.path.insert(1, f"{github_action_path}/../python-utils/")
+
+        from parse_pr import extract_first_section
+
+        first_section = extract_first_section(os.environ.get("PR_BODY", ""))
+        delimiter = f"ghadelim_{secrets.token_hex(16)}"
+
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+            output.write(f"first_section<<{delimiter}\n")
+            output.write(first_section)
+            output.write(f"\n{delimiter}\n")
+
+    - name: Check context and labels
+      id: check
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPOSITORY: ${{ github.repository }}
+        FIRST_SECTION: ${{ steps.extract.outputs.first_section }}
+        TRAILER_KEYS_AS_LABELS: ${{ inputs.trailer-keys-as-labels }}
+        TRAILER_VALUES_AS_LABELS: ${{ inputs.trailer-values-as-labels }}
+      run: |
+        set -euo pipefail
+
+        if [[ -z "${PR_NUMBER}" ]]; then
+          echo "::error::This action must run in a pull request event context."
+          exit 1
+        fi
+
+        if [[ -z "${TRAILER_KEYS_AS_LABELS//[[:space:],]/}" \
+          && -z "${TRAILER_VALUES_AS_LABELS//[[:space:],]/}" ]]; then
+          echo "::error::Configure at least one of 'trailer-keys-as-labels' or 'trailer-values-as-labels'."
+          exit 1
+        fi
+
+        REPOSITORY_LABELS=$(gh api --paginate --slurp "repos/${REPOSITORY}/labels?per_page=100")
+
+        validate_label() {
+          local label="${1,,}"
+          if ! jq -e --arg label "${label}" \
+            'any(.[][]; .name | ascii_downcase == $label)' <<< "${REPOSITORY_LABELS}" > /dev/null; then
+            return 1
+          fi
+        }
+
+        # Check configured trailer keys against repository labels
+        IFS=',' read -r -a key_label_names <<< "${TRAILER_KEYS_AS_LABELS}"
+        for label in "${key_label_names[@]}"; do
+          label="${label#"${label%%[![:space:]]*}"}"
+          label="${label%"${label##*[![:space:]]}"}"
+          [[ -z "${label}" ]] && continue
+          if ! validate_label "${label}"; then
+            echo "::error::Label '${label,,}' configured in trailer-keys-as-labels does not exist in repository ${REPOSITORY}."
+            exit 1
+          fi
+        done
+
+        TRAILERS=$(printf '\n%s\n' "${FIRST_SECTION}" | git interpret-trailers --parse)
+
+        validated_labels=()
+
+        # Return success when trailer_key matches one of the comma-separated
+        # configured trailer names, ignoring surrounding whitespace and case.
+        trailer_is_configured() {
+          local trailer_key="$1"
+          local configured_trailers="$2"
+          local candidate
+          local -a candidates=()
+
+          IFS=',' read -r -a candidates <<< "${configured_trailers}"
+          for candidate in "${candidates[@]}"; do
+            candidate="${candidate#"${candidate%%[![:space:]]*}"}"
+            candidate="${candidate%"${candidate##*[![:space:]]}"}"
+            [[ "${candidate,,}" == "${trailer_key}" ]] && return 0
+          done
+          return 1
+        }
+
+        # Validate each label extracted from trailer values
+        check_label() {
+          local label="$1"
+          local trailer_key="$2"
+          label="${label,,}"
+          [[ -z "${label}" ]] && return 0
+          if ! validate_label "${label}"; then
+            echo "::warning::Label '${label}' from trailer '${trailer_key}' does not exist in repository ${REPOSITORY}; skipping it."
+            return 0
+          fi
+          validated_labels+=("${label}")
+        }
+
+        found_configured_trailer=false
+        while IFS= read -r trailer; do
+          [[ "${trailer}" == *:* ]] || continue
+          key="${trailer%%:*}"
+          normalized_key="${key,,}"
+          trailer_configured=false
+
+          if trailer_is_configured "${normalized_key}" "${TRAILER_KEYS_AS_LABELS}"; then
+            found_configured_trailer=true
+            trailer_configured=true
+            check_label "${normalized_key}" "${key}"
+          fi
+
+          if trailer_is_configured "${normalized_key}" "${TRAILER_VALUES_AS_LABELS}"; then
+            found_configured_trailer=true
+            trailer_configured=true
+            value_text="${trailer#*:}"
+            if [[ "${value_text}" == *';'* ]]; then
+              echo "::error::Semicolons are not supported in trailer values; use commas to separate values."
+              exit 1
+            fi
+
+            while IFS= read -r value; do
+              value="${value#"${value%%[![:space:]]*}"}"
+              value="${value%"${value##*[![:space:]]}"}"
+              check_label "${value,,}" "${key}"
+            done < <(printf '%s\n' "${value_text}" | tr ',' '\n')
+          fi
+
+          if [[ "${trailer_configured}" != true ]]; then
+            echo "Info: Trailer '${key}' is not configured in trailer-keys-as-labels or trailer-values-as-labels; skipping it."
+          fi
+        done <<< "${TRAILERS}"
+
+        if [[ "${found_configured_trailer}" != true ]]; then
+          echo "::info::No configured trailers were found in the first level-2 section of the pull request description."
+        fi
+
+        labels_json=$(jq -cn '$ARGS.positional' --args "${validated_labels[@]}")
+        echo "labels=${labels_json}" >> "${GITHUB_OUTPUT}"
+
+    - name: Apply labels from pull request trailers
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPOSITORY: ${{ github.repository }}
+        LABELS: ${{ steps.check.outputs.labels }}
+      run: |
+        set -euo pipefail
+
+        PR_INFO=$(gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json labels)
+        EXISTING_NAMES=$(jq -r '.labels[].name' <<< "${PR_INFO}")
+        seen_labels=()
+        while IFS= read -r label; do
+          [[ -z "${label}" ]] || seen_labels+=("${label,,}")
+        done <<< "${EXISTING_NAMES}"
+
+        while IFS= read -r label; do
+          [[ -z "${label}" ]] && continue
+          already_seen=false
+          for seen_label in "${seen_labels[@]}"; do
+            if [[ "${seen_label}" == "${label}" ]]; then
+              already_seen=true
+              break
+            fi
+          done
+          [[ "${already_seen}" == true ]] && continue
+          echo "Adding label: ${label}"
+          gh pr edit "${PR_NUMBER}" --repo "${REPOSITORY}" --add-label "${label}"
+          seen_labels+=("${label}")
+        done < <(jq -r '.[]' <<< "${LABELS}")
+

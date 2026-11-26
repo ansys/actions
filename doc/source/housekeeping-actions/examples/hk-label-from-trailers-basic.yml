@@ -1,0 +1,16 @@
+# on:
+#   pull_request:
+#     types: [opened, edited, reopened, synchronize]
+# As shown above, it is recommended to add the "edited" activity type
+# to the pull_request event that triggers this action.
+
+hk-label-from-trailers:
+  name: "Label pull requests from trailers"
+  runs-on: ubuntu-latest
+  permissions:
+    pull-requests: write  # Required to add labels to pull requests
+  steps:
+    - uses: ansys/actions/hk-label-from-trailers@{{ version }}
+      with:
+        trailer-keys-as-labels: Breaking-changes, Deprecation
+        trailer-values-as-labels: Product-version

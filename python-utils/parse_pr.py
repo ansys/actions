@@ -175,6 +175,38 @@ def has_body_breaking_changes(pr_body: str) -> bool:
     return False
 
 
+def extract_first_section(pr_body: str) -> str:
+    """Return the first level-2 section, skipping lines in HTML comments."""
+    in_comment = False
+    in_section = False
+    section_lines: list[str] = []
+
+    for line in pr_body.splitlines():
+        # Ignore the entire line if it is in, opens, or closes an HTML comment.
+        line_has_comment = in_comment
+        for marker in re.finditer(r"<!--|--!?>", line):
+            if marker.group() == "<!--" and not in_comment:
+                in_comment = True
+                line_has_comment = True
+            elif marker.group() in ("-->", "--!>") and in_comment:
+                in_comment = False
+                line_has_comment = True
+        if line_has_comment:
+            continue
+
+        # Match the first level-2 heading and stop when the next one begins.
+        if re.match(r"^##(?:\s|$)", line):
+            if in_section:
+                break
+            in_section = True
+            continue
+
+        if in_section:
+            section_lines.append(line)
+
+    return "\n".join(section_lines)
+
+
 def get_conventional_commit_type(pr_title: str, pr_body: str):
     """Get the conventional commit type from the pull request.
 
